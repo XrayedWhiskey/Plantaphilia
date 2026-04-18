@@ -2,7 +2,16 @@
 app/public/wp-config.php
 
 # ===== UPLOADS (zu groß für GitHub, 1.5 GB) =====
-app/public/wp-content/uploads/
+# Ausnahme: 2022/01 enthält Logo, Favicon, Banner, Fonts
+app/public/wp-content/uploads/*
+!app/public/wp-content/uploads/2022/
+app/public/wp-content/uploads/2022/*
+!app/public/wp-content/uploads/2022/01/
+app/public/wp-content/uploads/2022/01/**
+!app/public/wp-content/uploads/2022/01/*.svg
+!app/public/wp-content/uploads/2022/01/*.png
+!app/public/wp-content/uploads/2022/01/*.jpg
+!app/public/wp-content/uploads/2022/01/*.woff2
 
 # ===== WP BACKUPS =====
 app/public/wp-content/wpvividbackups/

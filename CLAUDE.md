@@ -1,33 +1,32 @@
-# Plantaphilia - WordPress OER Project
+# Plantaphilia – WordPress Pflanzenprojekt
 
-## Project Overview
-This is a WordPress-based Open Educational Resources (OER) project for plant education and biology.
+## Ziel
+Der Nutzer möchte, dass du folgendes beachtest:
 
-## Code Style
-- PHP: Follow WordPress coding standards
-- Use semantic HTML5
-- Maintain consistent indentation (4 spaces for PHP)
+> **Erstelle ein Design-Mockup für die Plantaphilia-Website.**
+> Die Website ist ein WordPress-Webshop für Pflanzen und Pflanzenzubehör.
+> Das Mockup soll das bestehende Branding aufgreifen und ein modernes, ansprechendes Design vorschlagen –
+> mit Fokus auf Übersichtlichkeit, Pflanzen-Ästhetik und einer guten User Experience im Shop.
 
-## Project Structure
-- `app/public/` - WordPress installation
-  - `wp-content/themes/Impreza-child/` - Custom child theme
-  - `wp-content/plugins/` - Custom plugins
-- `conf/` - Server configuration files (nginx, php, mysql)
-- `logs/` - Application logs (not in git)
+## Branding & Assets
+- **Logo:** `app/public/wp-content/uploads/2022/01/Logo-Plantaphilia-1.svg`
+- **Favicon:** `app/public/wp-content/uploads/2022/01/favicon_Zeichenflaeche-1.png`
+- **Header-Banner:** `app/public/wp-content/uploads/2022/01/Banner-Plantaphilia.jpg`
+- **Footer-Banner:** `app/public/wp-content/uploads/2022/01/Footer-Banner-Plantaphilia.jpg`
+- **Schriftart:** Montserrat (Regular 400, Medium 500, Bold 700) – Dateien im selben Ordner
 
-## Key Files for Claude
-- `app/public/wp-content/themes/Impreza-child/functions.php` - Theme functions and hooks
-- `app/public/wp-content/themes/Impreza-child/page-produkt-liste.php` - Product listing template
-- `app/public/wp-config.php` - WordPress configuration (not in git - use local copy)
+## Theme
+- Basis: **Impreza** (UpSolution) mit Child-Theme unter `app/public/wp-content/themes/Impreza-child/`
+- Theme-Einstellungen (Farben, Layout, Widgets) sind in der Datenbank gespeichert: `app/sql/local.sql`
+- Eigene PHP-Templates: `page-produkt-liste.php`, `page-bestellungen.php`
 
-## Development Workflow
-1. Make changes to theme files in `wp-content/themes/Impreza-child/`
-2. Test changes in local environment
-3. Commit changes with descriptive messages
-4. Push to GitHub for Claude Code review and collaboration
+## Projektstruktur
+- `app/public/` – WordPress-Installation
+- `app/public/wp-content/themes/Impreza-child/` – Eigenes Child-Theme
+- `app/public/wp-content/plugins/` – Installierte Plugins
+- `app/sql/local.sql` – Datenbank-Dump (Inhalte, Produkte, Einstellungen)
+- `app/public/wp-config.php` – **Nicht im Repo** (enthält DB-Credentials)
 
-## Important Notes
-- Database dumps are excluded from git (too large for Claude context)
-- Media uploads are excluded (use separate media storage)
-- Server configs are for local development only
-- Always check `wp-config.php` locally for database credentials
+## Wichtige Hinweise
+- `wp-content/uploads/` ist ausgeschlossen (1,5 GB) – nur `uploads/2022/01/` ist im Repo (Branding-Assets)
+- Lokale Entwicklung läuft über LocalWP
