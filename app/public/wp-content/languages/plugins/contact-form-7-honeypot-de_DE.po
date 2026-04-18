@@ -1,0 +1,259 @@
+# Translation of Plugins - Honeypot for Contact Form 7 — Protect Contact Form 7 spam with ease! [100% FREE Anti-Spam Plugin] - Stable (latest release) in German
+# This file is distributed under the same license as the Plugins - Honeypot for Contact Form 7 — Protect Contact Form 7 spam with ease! [100% FREE Anti-Spam Plugin] - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2024-08-22 18:50:06+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/4.0.1\n"
+"Language: de\n"
+"Project-Id-Version: Plugins - Honeypot for Contact Form 7 — Protect Contact Form 7 spam with ease! [100% FREE Anti-Spam Plugin] - Stable (latest release)\n"
+
+#: includes/class-honeypot4cf7-data-table.php:81
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: includes/class-honeypot4cf7-data-table.php:69
+msgid "no"
+msgstr "nein"
+
+#: includes/class-honeypot4cf7-data-table.php:66
+msgid "yes"
+msgstr "ja"
+
+#: includes/class-honeypot4cf7-data-table.php:18
+msgid "Action"
+msgstr "Aktion"
+
+#: includes/class-honeypot4cf7-data-table.php:17
+msgid "Date"
+msgstr "Datum"
+
+#: includes/class-honeypot4cf7-data-table.php:15
+msgid "Shortcode"
+msgstr "Shortcode"
+
+#: includes/class-honeypot4cf7-data-table.php:14
+msgid "Title"
+msgstr "Titel"
+
+#: includes/admin.php:174
+msgid "Forms"
+msgstr "Formulare"
+
+#: includes/admin.php:170
+msgid "General"
+msgstr "Allgemein"
+
+#: includes/honeypot4cf7.php:318
+msgid "Move inline CSS"
+msgstr "Inline-CSS verschieben"
+
+#: includes/honeypot4cf7.php:300
+msgid "Placeholder"
+msgstr "Platzhalter"
+
+#: includes/honeypot4cf7.php:291
+msgid "Wrapper ID"
+msgstr "Wrapper-ID"
+
+#: includes/honeypot4cf7.php:282
+msgid "Class"
+msgstr "Klasse"
+
+#: includes/honeypot4cf7.php:273
+msgid "ID"
+msgstr "ID"
+
+#: includes/honeypot4cf7.php:267
+msgid "Optional Settings"
+msgstr "Optionale Einstellungen"
+
+#: includes/honeypot4cf7.php:262
+msgid "For better security, change \"honeypot\" to something more appealing to a bot, such as text including \"email\" or \"website\"."
+msgstr "Ändere „honeypot“ zu etwas attraktiverem für einen Bot, wie ein Text mit „email“ oder „website“ für eine höhere Sicherheit."
+
+#. translators: %s: Link to Honeypot settings page
+#: includes/honeypot4cf7.php:246
+msgid "Generate a form-tag for a spam-stopping honeypot field. Check out %s for more settings/info."
+msgstr "Generiere ein Form-Tag für ein Spam-blockierendes Honeypot-Feld. Schau dir %s für weitere Einstellungen/Informationen an."
+
+#: includes/honeypot4cf7.php:236
+msgid "Honeypot for CF7"
+msgstr "Honeypot for CF7"
+
+#. translators: %s: honeypot field ID
+#: includes/honeypot4cf7.php:202
+msgid "Something is stuck in the honey. Field ID = %s"
+msgstr "Etwas ist im Honig stecken geblieben. Feld-ID = %s"
+
+#. translators: 1: submission interval integer 2: honeypot field ID
+#: includes/honeypot4cf7.php:177
+msgid "Honeypot detected form submitted too fast (%1$s seconds). Field ID = %2$s"
+msgstr "Honeypot hat erkannt, dass das Formular zu schnell abgesendet wurde (%1$s Sekunden). Feld-ID: %2$s"
+
+#. translators: %s: Plugin's reviews page link
+#: includes/admin.php:425
+msgid "Please rate us on %s. Thanks!!"
+msgstr "Bitte bewerte uns auf %s. Danke!"
+
+#. translators: 1: spam count 2: install date
+#: includes/admin.php:373
+msgid "Honeypot has stopped %1$s spam submissions since %2$s"
+msgstr "Honeypot hat %1$s Spam-Einsendungen seit %2$s gestoppt"
+
+#: includes/admin.php:345
+msgid "Reset to Defaults"
+msgstr "Auf Standard zurücksetzen"
+
+#: includes/admin.php:344
+msgid "Save"
+msgstr "Speichern"
+
+#: includes/admin.php:339
+msgid "If enabled, this will perform an additional check for spam bots using the time it takes to submit the form under the idea that bots submit forms faster than people. The value is set to 4 seconds by default, but adjust based on your needs. If you're not sure, leave this unchecked."
+msgstr "Wenn aktiviert, wird dies eine zusätzliche Überprüfung für Spam-Bots hinzufügen, indem die Zeit überprüft wird, die es dauert, ein Formular abzusenden. Die Idee dahinter ist, dass Bots ein Formular schneller absenden als Menschen. Der Wert ist standardmäßig auf 4 Sekunden gesetzt, aber passe ihn an deine Bedürfnisse an. Wenn du dir unsicher bist, lass dies hier nicht ausgewählt."
+
+#: includes/admin.php:335 includes/honeypot4cf7.php:340
+msgid "seconds"
+msgstr "Sekunden"
+
+#: includes/admin.php:333 includes/honeypot4cf7.php:336
+msgid "Enable Time Check"
+msgstr "Zeit-Überprüfung aktivieren"
+
+#: includes/admin.php:323 includes/honeypot4cf7.php:327
+msgid "Disable Accessibility Label"
+msgstr "Barrierefreiheit-Label deaktivieren"
+
+#: includes/admin.php:319
+msgid "By default Honeypot uses inline CSS on the honeypot field to hide it. Checking this box moves that CSS to the footer of the page. It may help confuse bots."
+msgstr "Standardmäßig verwendet Honeypot Inline-CSS für das Honeypot-Feld, um es auszublenden. Wenn du dieses Kontrollkästchen aktivierst, wird das CSS in die Fußzeile der Seite verschoben. Das kann helfen, Bots zu verwirren."
+
+#: includes/admin.php:313
+msgid "Move Inline CSS"
+msgstr "Inline-CSS verschieben"
+
+#: includes/admin.php:309
+msgid "To assure the honeypot isn't auto-completed by a browser, we add an atypical \"autocomplete\" attribute value. If you have any problems with this, you can switch it to the more standard (but less effective) \"off\" value. If you're unsure, leave this unchecked."
+msgstr "Um sicherzustellen, dass der Honeypot nicht automatisch vom Browser ausgefüllt wird, fügen wir einen nicht-typischen Wert für das „autocomplete“-Attribut hinzu. Wenn du Probleme damit hast, kannst du es zu dem eher standardmäßigen (aber weniger effektivem) Wert „off“ ändern. Wenn du dir unsicher bist, lass dies hier nicht ausgewählt."
+
+#: includes/admin.php:303 includes/honeypot4cf7.php:309
+msgid "Use Standard Autocomplete Value"
+msgstr "Standard-Autovervollständigungswert benutzen"
+
+#. translators: %s: default value
+#: includes/admin.php:295
+msgid "You can customize the (hidden) accessibility message, or just leave it the default value: %s"
+msgstr "Du kannst diese (versteckte) Barrierefreiheits-Nachricht anpassen oder sie beim Standardwert belassen: %s"
+
+#: includes/admin.php:285
+msgid "Accessibility Message"
+msgstr "Barrierefreiheits-Nachricht"
+
+#: includes/admin.php:281
+msgid "If using placeholders on other fields, this can help honeypot mimic a \"real\" field. This can be overridden in the contact form. If you're unsure, leave blank."
+msgstr "Wenn du Platzhalter bei anderen Feldern benutzt, kann dies helfen, dass das Honeypot wie ein „reales“ Feld aussieht. Dies kann im Kontaktformular überschrieben werden. Wenn du dir unsicher bist, lass es leer."
+
+#: includes/admin.php:275
+msgid "Global Placeholder"
+msgstr "Globaler Platzhalter"
+
+#: includes/admin.php:268
+msgid "Flamingo"
+msgstr "Flamingo"
+
+#. translators: 1: Link to Flamingo plugin page
+#: includes/admin.php:267
+msgid "(Recommended) By default the Honeypot field is not stored with other fields in form-saving plugins like %1$s. However, saving the field can be useful to see what spam bots are leaving behind to help you improve your spam stopping superpowers. If you'd like to store the value of the field, simply check this box (and install %1$s)."
+msgstr "(Empfohlen) Standardmäßig wird das Honeypot-Feld nicht mit anderen Feldern in Plugins für die Formularspeicherung wie %1$s gespeichert. Dennoch kann das Speichern des Feldes sinnvoll sein, wenn du siehst, was Spam-Bots zurücklassen, um dir zu helfen, deine Spam-Blockierung-Superkräfte zu verbessern. Wenn du den Wert des Feldes speichern möchtest, aktiviere einfach diese Auswahlbox (und installiere %1$s)."
+
+#: includes/admin.php:257
+msgid "Store Honeypot Value"
+msgstr "Honeypot-Wert speichern"
+
+#: includes/admin.php:253
+msgid "Below are global settings for the Honeypot plugin. Many of these settings can be overridden when inserting the Honeypot field shortcode when creating your CF7 contact form."
+msgstr "Unten findest du globale Einstellungen für das Honeypot-Plugin. Viele dieser Einstellungen können überschrieben werden, wenn du den Honeypot-Feld-Shortcode beim Erstellen eines CF7-Kontaktformulars einfügst."
+
+#: includes/admin.php:252 includes/honeypot4cf7.php:243
+msgid "Honeypot Settings"
+msgstr "Honeypot-Einstellungen"
+
+#: includes/admin.php:250
+msgid "Get Support"
+msgstr "Support erhalten"
+
+#: includes/admin.php:239
+msgid "The changes have been saved."
+msgstr "Die Änderungen wurden gespeichert."
+
+#: includes/admin.php:218
+msgid "The settings have been reset to their defaults."
+msgstr "Die Einstellungen wurden auf die Standardwerte zurückgesetzt."
+
+#: includes/admin.php:112
+msgid "Settings"
+msgstr "Einstellungen"
+
+#. translators: %s: Link to Contact Form 7 plugin page.
+#: includes/admin.php:62
+msgid "The version of %s that is installed will not work with this version of Honeypot for CF7."
+msgstr "Die Version von %s, die installiert ist, wird mit dieser Version von Honeypot for CF7 nicht funktionieren."
+
+#: includes/admin.php:47 includes/admin.php:63
+msgid "Contact Form 7"
+msgstr "Contact Form 7"
+
+#. Author of the plugin
+#: honeypot.php
+msgid "WPExperts"
+msgstr "WPExperts"
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: honeypot.php
+msgid "https://wpexperts.io/"
+msgstr "https://wpexperts.io/"
+
+#. Plugin Name of the plugin
+#: honeypot.php includes/admin.php:160 includes/admin.php:185
+msgid "Honeypot for Contact Form 7"
+msgstr "Honeypot for Contact Form 7"
+
+#: includes/admin.php:329
+msgid "If checked, the accessibility label will not be generated. This is not recommended, but may improve spam blocking. If you're unsure, leave this unchecked."
+msgstr "Wenn diese Option aktiviert ist, wird das Barrierefreiheits-Label nicht generiert. Dies wird nicht empfohlen, kann aber den Spamschutz verbessern. Wenn du unsicher bist, lass das unausgewählt."
+
+#. Description of the plugin
+#: honeypot.php
+msgid "Add honeypot anti-spam functionality to the popular Contact Form 7 plugin."
+msgstr "Fügt zum beliebten Contact Form 7 Plugin eine Honeypot-Anti-Spam-Funktion hinzu."
+
+#: includes/honeypot4cf7.php:352
+msgid "Insert Tag"
+msgstr "Tag einfügen"
+
+#: includes/honeypot4cf7.php:255
+msgid "Name"
+msgstr "Name"
+
+#: includes/honeypot4cf7.php:235
+msgid "Generate a form-tag for a spam-stopping honeypot field. For more details, see %s."
+msgstr "Erzeuge ein Form-Tag als Honeypot Feld gegen Spam. Für weitere Informationen, siehe %s."
+
+#: includes/admin.php:161 includes/class-honeypot4cf7-data-table.php:16
+#: includes/honeypot4cf7.php:230
+msgid "Honeypot"
+msgstr "Honeypot"
+
+#: includes/admin.php:296 includes/honeypot4cf7.php:62
+msgid "Please leave this field empty."
+msgstr "Bitte lasse dieses Feld leer."
+
+#. translators: %s: Link to Contact Form 7 plugin page.
+#: includes/admin.php:46
+msgid "%s must be installed and activated for the CF7 Honeypot plugin to work"
+msgstr "%s muss installiert und aktiviert sein, damit CF7 Honeypot funktioniert"

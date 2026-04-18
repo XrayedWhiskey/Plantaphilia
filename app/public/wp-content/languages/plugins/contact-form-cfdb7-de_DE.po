@@ -1,0 +1,101 @@
+# Translation of Plugins - Contact Form 7 Database Addon &#8211; CFDB7 - Stable (latest release) in German
+# This file is distributed under the same license as the Plugins - Contact Form 7 Database Addon &#8211; CFDB7 - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2024-07-23 14:51:07+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/4.0.1\n"
+"Language: de\n"
+"Project-Id-Version: Plugins - Contact Form 7 Database Addon &#8211; CFDB7 - Stable (latest release)\n"
+
+#. Plugin URI of the plugin
+#: contact-form-cfdb-7.php
+msgid "https://ciphercoin.com/"
+msgstr "https://ciphercoin.com/"
+
+#. Author of the plugin
+#: contact-form-cfdb-7.php
+msgid "Arshid"
+msgstr "Arshid"
+
+#. Description of the plugin
+#: contact-form-cfdb-7.php
+msgid "Save and manage Contact Form 7 messages. Never lose important data. Contact Form CFDB7 plugin is an add-on for the Contact Form 7 plugin."
+msgstr "Speichere und verwalte Nachrichten von Contact Form 7. Verliere importierte Daten niemals. Das Plugin Contact Form CFDB7 ist ein Add-on für das Plugin Contact Form 7."
+
+#. Author URI of the plugin
+#: contact-form-cfdb-7.php
+msgid "http://ciphercoin.com/"
+msgstr "http://ciphercoin.com/"
+
+#. Plugin Name of the plugin
+#: contact-form-cfdb-7.php
+msgid "Contact Form CFDB7"
+msgstr "Contact Form CFDB7"
+
+#: inc/admin-subpage.php:466
+msgid "Export CSV"
+msgstr "CSV exportieren"
+
+#: inc/admin-subpage.php:461
+msgid "Apply"
+msgstr "Anwenden"
+
+#: inc/admin-subpage.php:451
+msgid "Bulk Actions"
+msgstr "Mehrfachaktionen"
+
+#: inc/admin-subpage.php:449
+msgid "Select bulk action"
+msgstr "Mehrfachaktion auswählen"
+
+#: inc/admin-subpage.php:201
+msgid "Delete"
+msgstr "Löschen"
+
+#: inc/admin-subpage.php:200
+msgid "Unread"
+msgstr "Ungelesen"
+
+#: inc/admin-subpage.php:199
+msgid "Read"
+msgstr "Gelesen"
+
+#: inc/admin-mainpage.php:126
+msgid "Count"
+msgstr "Anzahl"
+
+#: inc/admin-mainpage.php:125
+msgid "Name"
+msgstr "Name"
+
+#: inc/admin-mainpage.php:69
+msgid "Contact Forms List"
+msgstr "Kontakt-Formular-Liste"
+
+#: inc/admin-mainpage.php:32
+msgid "Contact Forms"
+msgstr "Kontakt-Formulare"
+
+#: inc/add-ons.php:45
+msgid "There was an error retrieving the extensions list from the server. Please try again later."
+msgstr "Beim Abrufen der Liste der Erweiterungen vom Server ist ein Fehler aufgetreten. Bitte später erneut versuchen."
+
+#: inc/add-ons.php:16
+msgid "These extensions <strong>add functionality</strong> to CFDB7"
+msgstr "Diese Erweiterungen <strong>ergänzen Funktionen</strong> zu CFDB7"
+
+#: inc/add-ons.php:13
+msgid "Browse All Extensions"
+msgstr "Alle Erweiterungen durchstöbern"
+
+#: inc/add-ons.php:11
+msgid "Extensions for CFDB7"
+msgstr "Erweiterungen für CFDB7"
+
+#: contact-form-cfdb-7.php:255
+msgid "Awesome, you've been using <a href=\"admin.php?page=cfdb7-list.php\">Contact Form CFDB7</a> for more than 1 week. May we ask you to give it a 5-star rating on WordPress? | <a href=\"%2$s\" target=\"_blank\">Ok, you deserved it</a> | <a href=\"%1$s\">I already did</a> | <a href=\"%1$s\">No, not good enough</a>"
+msgstr "Toll, du benutzt <a href=\"admin.php?page=cfdb7-list.php\">Contact Form CFDB7</a> seit über einer Woche. Dürfen wir dich bitten, eine 5-Sterne-Bewertung auf WordPress abzugeben? | <a href=\"%2$s\" target=\"_blank\">Ok, du verdienst es</a> | <a href=\"%1$s\">Habe ich schon</a> | <a href=\"%1$s\">Nein, dafür reicht es nicht</a>"

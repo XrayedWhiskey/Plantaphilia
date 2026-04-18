@@ -1,0 +1,124 @@
+/**
+ * UpSolution Element: Add to Favorites
+ */
+! function( $, _undefined ) {
+	"use strict";
+
+	window.$us = window.$us || {};
+
+	/**
+	 * @class AddToFavorites
+	 * @param {String|Node} container
+	 */
+	function AddToFavorites( container ) {
+		let self = this;
+
+		self.$wrapperFavs = $( container );
+		self.$btnFavs = $( '.w-btn.us_add_to_favs', container );
+		self.$btnFavsTooltip = $( '.us-add-to-favs-tooltip', container );
+		self.$btnFavsLabel = $( '.w-btn-label', self.$btnFavs );
+
+		self.xhr = _undefined;
+		self.data = {
+			post_ID: 0,
+			labelAfterAdding: '',
+			labelBeforeAdding: '',
+		};
+		if ( self.$btnFavs.is( '[onclick]' ) ) {
+			$.extend( self.data, self.$btnFavs[0].onclick() || {} );
+		}
+
+		// Delete data everywhere except for the preview of the usbuilder,
+		// the data may be needed again to restore the elements.
+		if ( ! $us.usbPreview() ) {
+			self.$btnFavs.removeAttr( 'onclick' );
+		}
+
+		self._events = {
+			toggleFavorites: self._toggleFavorites.bind( self ),
+		};
+
+		self.$btnFavs.on( 'click', self._events.toggleFavorites);
+
+		self.setButtonState( self.getPostIDs().includes( self.data.post_ID ) );
+	};
+
+	// Add to Favorites API
+	$.extend( AddToFavorites.prototype, {
+
+		getPostIDs: function() {
+			return $ush.toString( $us.userFavoritePostIds )
+				.split( ',' )
+				.map( $ush.parseInt )
+				.filter( ( v ) => { return v } );
+		},
+
+		setButtonState: function( isAdded ) {
+			let self = this;
+			self.$btnFavs
+				.removeAttr( 'disabled' )
+				.removeClass( 'loading' );
+			if ( isAdded ) {
+				self.$btnFavs.addClass( 'added' );
+				self.$btnFavsLabel.text( self.data.labelAfterAdding );
+			} else {
+				self.$btnFavs.removeClass( 'added' );
+				self.$btnFavsLabel.text( self.data.labelBeforeAdding );
+			}
+		},
+
+		_toggleFavorites: function( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			let self = this;
+
+			if ( self.$btnFavsTooltip.length ) {
+				var removeFavsTooltip = function( event ) {
+					$us.$window.off( 'click', removeFavsTooltip );
+					if ( self.$btnFavsTooltip.hasClass( 'show' ) ) {
+						self.$btnFavsTooltip.removeClass( 'show' );
+					}
+				};
+				self.$btnFavsTooltip.addClass( 'show' );
+				$ush.timeout( () => {
+					$us.$window.on( 'click', removeFavsTooltip );
+				}, 1 );
+				return;
+			}
+
+			let postIDs = self.getPostIDs(),
+				index = postIDs.indexOf( self.data.post_ID );
+			if ( index > -1 ) {
+				postIDs.splice( index, 1 );
+			} else {
+				postIDs.push( self.data.post_ID );
+			}
+			$us.userFavoritePostIds = postIDs.join( ',' );
+
+			self.setButtonState( ! self.$btnFavs.hasClass( 'added' ) );
+
+			if ( ! $ush.isUndefined( self.xhr ) ) {
+				self.xhr.abort();
+			}
+			self.xhr = $.ajax( {
+				url: $us.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'us_add_post_to_favorites',
+					post_id: self.data.post_ID,
+				}
+			} );
+		}
+	} );
+
+	$.fn.usAddToFavorites = function() {
+		return this.each( function() {
+			$( this ).data( 'usAddToFavorites', new AddToFavorites( this ) );
+		} );
+	};
+
+	$( function() {
+		$( '.w-btn-wrapper.for_add_to_favs' ).usAddToFavorites();
+	} );
+
+}( jQuery );

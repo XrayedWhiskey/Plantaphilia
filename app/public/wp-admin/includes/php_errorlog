@@ -1,0 +1,9 @@
+[27-Oct-2021 21:28:01 UTC] PHP Fatal error:  Uncaught Error: Class 'WP_List_Table' not found in /home/customer/www/ander-land.eu/public_html/wp-admin/includes/class-wp-comments-list-table.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/customer/www/ander-land.eu/public_html/wp-admin/includes/class-wp-comments-list-table.php on line 18
+[28-Oct-2021 14:07:07 UTC] PHP Fatal error:  require_once(): Failed opening required 'ABSPATHwp-admin/includes/class-wp-privacy-requests-table.php' (include_path='.:/usr/local/php74/pear') in /home/customer/www/ander-land.eu/public_html/wp-admin/includes/class-wp-privacy-data-export-requests-list-table.php on line 11
+[28-Oct-2021 15:01:12 UTC] PHP Fatal error:  Uncaught Error: Class 'WP_Privacy_Data_Export_Requests_List_Table' not found in /home/customer/www/ander-land.eu/public_html/wp-admin/includes/deprecated.php:1530
+Stack trace:
+#0 {main}
+  thrown in /home/customer/www/ander-land.eu/public_html/wp-admin/includes/deprecated.php on line 1530

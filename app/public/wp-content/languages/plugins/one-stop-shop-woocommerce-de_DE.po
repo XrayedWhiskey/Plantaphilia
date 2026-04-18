@@ -1,0 +1,654 @@
+# Translation of Plugins - One Stop Shop for WooCommerce - Stable (latest release) in German
+# This file is distributed under the same license as the Plugins - One Stop Shop for WooCommerce - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2023-03-09 12:10:33+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/4.0.0-alpha.4\n"
+"Language: de\n"
+"Project-Id-Version: Plugins - One Stop Shop for WooCommerce - Stable (latest release)\n"
+
+#. translators: %s: WP admin email
+#: src/DeliveryThresholdEmailNotification.php:127
+msgctxt "oss"
+msgid "Enter recipients (comma separated) for this email. Defaults to %s."
+msgstr "Gib (kommasepariert) die Empfänger für die E-Mail ein. Standard: %s."
+
+#: src/DeliveryThresholdEmailNotification.php:124
+msgctxt "oss"
+msgid "Recipient(s)"
+msgstr "Empfänger"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:870
+msgctxt "tax-helper-rate-import"
+msgid "VAT %1$s %% %2$s"
+msgstr "MwSt. %1$s %% %2$s"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:799
+msgctxt "tax-helper-rate-import"
+msgid "Exempt"
+msgstr "Ausnahme"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:786
+msgctxt "tax-helper"
+msgid "Northern Ireland"
+msgstr "Nordirland"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:750
+msgctxt "tax-helper"
+msgid "Acores"
+msgstr "Azoren"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:743
+msgctxt "tax-helper"
+msgid "Madeira"
+msgstr "Madeira"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:320
+msgctxt "tax-helper-tax-class-name"
+msgid "Super reduced rate"
+msgstr "Stark reduzierter Preis"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:319
+msgctxt "tax-helper-tax-class-name"
+msgid "Greater reduced rate"
+msgstr "Zusätzlicher reduzierter Preis"
+
+#: src/Tax.php:351 src/Tax.php:352 src/Tax.php:363 src/Tax.php:364
+#: src/Tax.php:485
+msgctxt "oss"
+msgid "EU-wide"
+msgstr "EU-weit"
+
+#: src/Admin.php:617
+msgctxt "oss"
+msgid "Export BOP"
+msgstr "BOP-CSV exportieren"
+
+#: src/Settings.php:139
+msgctxt "oss"
+msgid "refresh VAT rates"
+msgstr "Steuersätze erneuern"
+
+#: src/Settings.php:105
+msgctxt "oss"
+msgid "Apply the same gross price for third countries too."
+msgstr "Verwende den Bruttopreis auch für Drittländer."
+
+#: src/Settings.php:104
+msgctxt "oss"
+msgid "Third countries"
+msgstr "Drittländer"
+
+#: src/Settings.php:98
+msgctxt "oss"
+msgid "Apply the same gross price regardless of the tax rate for EU countries."
+msgstr "Verwende den Bruttopreis für EU-Länder unabhängig vom Steuersatz."
+
+#: src/Settings.php:86
+msgctxt "oss"
+msgid "Date created"
+msgstr "Erstellungsdatum"
+
+#: src/Settings.php:85
+msgctxt "oss"
+msgid "Date paid"
+msgstr "Zahlungsdatum"
+
+#: src/Settings.php:80
+msgctxt "oss"
+msgid "Select the relevant order date to be used to determine whether to include an order in a report."
+msgstr "Wähle das relevante Bestelldatum aus auf Basis dessen entschieden wird ob eine Bestellung in einen Bericht inkludiert wird."
+
+#: src/Settings.php:79
+msgctxt "oss"
+msgid "Report Order Date"
+msgstr "Bericht Bestelldatum"
+
+#: src/Settings.php:193
+msgctxt "oss"
+msgid "As of: %s"
+msgstr "Stand: %s"
+
+#: src/Settings.php:98
+msgctxt "oss"
+msgid "This option will make sure that your customers pay the same price no matter the tax rate (based on the country chosen) to be applied."
+msgstr "Diese Option bewirkt, dass Kunden, unabhängig vom Land und damit vom Steuersatz den selben Bruttopreis bezahlen."
+
+#: src/Settings.php:97
+msgctxt "oss"
+msgid "Fixed gross prices"
+msgstr "Feste Bruttopreise"
+
+#: src/Admin.php:541
+msgctxt "oss"
+msgid "Date range"
+msgstr "Zeitraum"
+
+#: src/Admin.php:529
+msgctxt "oss"
+msgid "Month"
+msgstr "Monat"
+
+#: src/Admin.php:517
+msgctxt "oss"
+msgid "Quarter"
+msgstr "Quartal"
+
+#: src/Admin.php:505
+msgctxt "oss"
+msgid "Year"
+msgstr "Jahr"
+
+#: src/Admin.php:84
+msgctxt "oss"
+msgid "This option will delete all of your current EU VAT rates and re-import them based on your current <a href=\"%s\">OSS status</a>."
+msgstr "Diese Option löscht alle deine aktuellen EU Steuersätze und importiert sie anschließend auf Basis deines <a href=\"%s\">OSS Status</a> neu."
+
+#: src/Admin.php:83
+msgctxt "oss"
+msgid "Note:"
+msgstr "Hinweis:"
+
+#: src/Admin.php:78 src/Admin.php:79
+msgctxt "oss"
+msgid "Refresh VAT rates (OSS)"
+msgstr "EU Steuersätze erneuern (OSS)"
+
+#. translators: 1: composer command. 2: plugin directory
+#: one-stop-shop-woocommerce.php:44 one-stop-shop-woocommerce.php:62
+msgctxt "oss"
+msgid "Your installation of the One Stop Shop feature plugin is incomplete. Please run %1$s within the %2$s directory."
+msgstr "Deine Installation des One Stop Shop Feature Plugins ist nicht komplett. Bitte führe %1$s innerhalb des %2$s Verzeichnisses aus."
+
+#: src/AdminNote.php:46
+msgctxt "oss"
+msgid "Dismiss"
+msgstr "Ausblenden"
+
+#: src/ReportTable.php:516
+msgctxt "oss"
+msgid "Delete Permanently"
+msgstr "Unwiderruflich löschen"
+
+#: src/ReportTable.php:423
+msgctxt "oss"
+msgid "Select %s"
+msgstr "%s auswählen"
+
+#: src/ReportTable.php:359
+msgctxt "oss"
+msgid "Actions"
+msgstr "Aktionen"
+
+#: src/ReportTable.php:358
+msgctxt "oss"
+msgid "Status"
+msgstr "Status"
+
+#: src/ReportTable.php:355
+msgctxt "oss"
+msgid "End"
+msgstr "Ende"
+
+#: src/ReportTable.php:354
+msgctxt "oss"
+msgid "Start"
+msgstr "Start"
+
+#: src/ReportTable.php:353
+msgctxt "oss"
+msgid "Title"
+msgstr "Titel"
+
+#: src/ReportTable.php:326
+msgctxt "oss"
+msgid "Filter"
+msgstr "Filtern"
+
+#: src/ReportTable.php:227
+msgctxt "oss"
+msgid "All <span class=\"count\">(%s)</span>"
+msgid_plural "All <span class=\"count\">(%s)</span>"
+msgstr[0] "Alle <span class=\"count\">(%s)</span>"
+msgstr[1] "Alle <span class=\"count\">(%s)</span>"
+
+#: src/ReportTable.php:187
+msgctxt "oss"
+msgid "No reports found"
+msgstr "Keine Berichte gefunden"
+
+#: src/ReportTable.php:124
+msgctxt "oss"
+msgid "%d report deleted."
+msgid_plural "%d reports deleted."
+msgstr[0] "%d Bericht gelöscht."
+msgstr[1] "%d Berichte gelöscht."
+
+#: src/SettingsPage.php:23
+msgctxt "oss"
+msgid "Learn More"
+msgstr "Mehr erfahren"
+
+#: src/AsyncReportGenerator.php:286
+msgctxt "oss"
+msgid "No orders found."
+msgstr "Keine Bestellungen gefunden."
+
+#: src/DeliveryThresholdEmailNotification.php:48
+msgctxt "oss"
+msgid "OSS delivery threshold reached"
+msgstr "OSS Lieferschwelle erreicht"
+
+#: src/DeliveryThresholdEmailNotification.php:38
+msgctxt "oss"
+msgid "[{site_title}]: OSS delivery threshold reached"
+msgstr "[{site_title}]: OSS Lieferschwelle erreicht"
+
+#: src/DeliveryThresholdEmailNotification.php:20
+msgctxt "oss"
+msgid "This email notifies shop owners in case the delivery threshold (OSS) is close to being reached."
+msgstr "Diese E-Mail benachrichtigt den Shopbetreiber über eine in Kürze anstehende Überschreitung der Lieferschwelle (OSS)."
+
+#: src/DeliveryThresholdEmailNotification.php:19
+msgctxt "oss"
+msgid "OSS Delivery Threshold Notification"
+msgstr "OSS Lieferschwelle Benachrichtigung"
+
+#: libs/woocommerce-eu-tax-helper/src/Helper.php:318
+msgid "Reduced rate"
+msgstr "Ermäßigter Steuersatz"
+
+#: src/Tax.php:317 src/Tax.php:405
+msgctxt "oss"
+msgid "Select country"
+msgstr "Land auswählen"
+
+#: src/Tax.php:310 src/Tax.php:398
+msgctxt "oss"
+msgid "Add country specific tax class (OSS)"
+msgstr "Länderspezifische Steuerklasse hinzufügen (OSS)"
+
+#: src/Tax.php:300 src/Tax.php:333 src/Tax.php:387 src/Tax.php:421
+msgctxt "oss"
+msgid "remove"
+msgstr "Löschen"
+
+#: src/Tax.php:298
+msgctxt "oss"
+msgid "Same as parent"
+msgstr "Gleiche wie übergeordnet"
+
+#: src/Tax.php:297 src/Tax.php:385
+msgctxt "oss"
+msgid "Tax class (%s)"
+msgstr "Steuerklasse (%s)"
+
+#: src/Package.php:665
+msgctxt "oss"
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
+#: src/Package.php:664
+msgctxt "oss"
+msgid "Completed"
+msgstr "Fertiggestellt"
+
+#: src/Package.php:663
+msgctxt "oss"
+msgid "Pending"
+msgstr "In Bearbeitung"
+
+#: src/Package.php:649
+msgctxt "oss"
+msgid "Observer"
+msgstr "Beobachter"
+
+#: src/Package.php:645
+msgctxt "oss"
+msgid "Custom"
+msgstr "Individuell"
+
+#: src/Package.php:644
+msgctxt "oss"
+msgid "Monthly"
+msgstr "Monatlich"
+
+#: src/Package.php:643
+msgctxt "oss"
+msgid "Yearly"
+msgstr "Jährlich"
+
+#: src/Package.php:642
+msgctxt "oss"
+msgid "Quarterly"
+msgstr "Quartalsweise"
+
+#: src/Package.php:390
+msgctxt "oss"
+msgid "Observer %1$s"
+msgstr "Beobachter %1$s"
+
+#: src/Package.php:385
+msgctxt "oss"
+msgid "%1$s - %2$s"
+msgstr "%1$s - %2$s"
+
+#: src/Package.php:380
+msgctxt "oss"
+msgid "%1$s"
+msgstr "%1$s"
+
+#: src/Package.php:356 src/ReportTable.php:40
+msgctxt "oss"
+msgid "Report"
+msgstr "Bericht"
+
+#: src/Package.php:176
+msgctxt "oss"
+msgid "To use the OSS for WooCommerce plugin please make sure that WooCommerce is installed and activated."
+msgstr "Um das OSS für WooCommerce Plugin nutzen zu können muss WooCommerce installiert und aktiviert sein."
+
+#: src/DeliveryThresholdWarning.php:14
+msgctxt "oss"
+msgid "See details"
+msgstr "Details ansehen"
+
+#: src/CSVExporter.php:57
+msgctxt "oss"
+msgid "Amount"
+msgstr "Umsatzsteuerbetrag"
+
+#: src/CSVExporter.php:56
+msgctxt "oss"
+msgid "Taxable base"
+msgstr "Nettobetrag"
+
+#: src/CSVExporter.php:55
+msgctxt "oss"
+msgid "Tax rate"
+msgstr "Umsatzsteuersatz"
+
+#: src/CSVExporter.php:54
+msgctxt "oss"
+msgid "Country code"
+msgstr "Land des Verbrauchs"
+
+#: src/Settings.php:194
+msgctxt "oss"
+msgid "This value indicates your current net total amount applicable for the One Stop Shop procedure delivery threshold of the current year. You should take action in case the delivery threshold is or is close to being exceeded. <a href=\"%s\">Find out more</a> about the calculation."
+msgstr "Dieser Wert entspricht der Bemessungsgrundlage (Nettobetrag) des aktuellen Jahres für die Lieferschwelle des One Stop Shop Verfahrens. Du solltest tätig werden, wenn die Lieferschwelle kurz vor einer Überschreitung steht oder bereits überschritten wurde. <a href=\"%s\">Erfahre mehr</a> über die Berechnung."
+
+#: src/Settings.php:193
+msgctxt "oss"
+msgid "see details"
+msgstr "Details ansehen"
+
+#: src/Settings.php:193
+msgctxt "oss-amounts"
+msgid "of"
+msgstr "von"
+
+#: src/Settings.php:175
+msgctxt "oss"
+msgid "Report not yet started. %s"
+msgstr "Bericht noch nicht gestartet. %s"
+
+#: src/Settings.php:175
+msgctxt "oss"
+msgid "Report not yet completed. %s"
+msgstr "Bericht noch nicht abgeschlossen. %s"
+
+#: src/Settings.php:174
+msgctxt "oss"
+msgid "Start initial report"
+msgstr "Initialen Bericht erstellen"
+
+#: src/Settings.php:174
+msgctxt "oss"
+msgid "See status"
+msgstr "Status ansehen"
+
+#: src/Settings.php:142
+msgctxt "oss"
+msgid "Use this option to automatically adjust tax-related options in WooCommerce. Warning: This option will delete your current tax rates and add new tax rates based on your OSS participation status."
+msgstr "Nutze diese Option um deine Steuereinstellungen in WooCommerce automatisch anpassen zu lassen. Achtung: Diese Option löscht deine aktuellen Steuersätze und fügt neue Steuersätze basierend auf deinem OSS Status hinzu."
+
+#: src/Settings.php:140
+msgctxt "oss"
+msgid "learn more"
+msgstr "Mehr erfahren"
+
+#: src/Settings.php:138
+msgctxt "oss"
+msgid "Start OSS participation"
+msgstr "OSS Teilnahme starten"
+
+#: src/Settings.php:138
+msgctxt "oss"
+msgid "End OSS participation"
+msgstr "OSS Teilnahme beenden"
+
+#: src/Settings.php:138 src/Settings.php:139
+msgctxt "oss"
+msgid "Are you sure? Please backup your tax rates before proceeding."
+msgstr "Bist du sicher? Bitte erstelle vorab ein Backup deiner Steuersätze."
+
+#: src/Settings.php:72
+msgctxt "oss"
+msgid "Participation"
+msgstr "Teilnahme"
+
+#: src/Settings.php:59
+msgctxt "oss"
+msgid "Delivery threshold"
+msgstr "Lieferschwelle"
+
+#: src/Settings.php:47
+msgctxt "oss"
+msgid "This option will automatically calculate the amount applicable for the OSS procedure delivery threshold once per day for the current year. The report will only recalculated for the days which are not yet subject to the observation to save processing time."
+msgstr "Diese Option überwacht automatisch die Lieferschwelle des OSS Verfahrens für das aktuelle Jahr, indem der dazugehörige Bericht täglich erweitert und nachberechnet wird. Der Bericht wird nur für die Tage nachberechnet, für die aktuell noch keine Überwachung stattfindet."
+
+#: src/Settings.php:47
+msgctxt "oss"
+msgid "Automatically observe the delivery threshold of the current year."
+msgstr "Überwache die Lieferschwelle des aktuellen Jahres automatisch."
+
+#: src/Settings.php:46
+msgctxt "oss"
+msgid "Observation"
+msgstr "Überwachung"
+
+#: src/Settings.php:39
+msgctxt "oss"
+msgid "Yes, I'm currently participating in the OSS procedure."
+msgstr "Ja, ich nehme aktuell am One Stop Shop Verfahren teil."
+
+#: src/Settings.php:38
+msgctxt "oss"
+msgid "OSS status"
+msgstr "OSS Status"
+
+#: src/Settings.php:21
+msgctxt "oss"
+msgid "Find useful options regarding the <a href=\"https://ec.europa.eu/taxation_customs/business/vat/oss_en\" target=\"_blank\" rel=\"noopener\">One Stop Shop procedure</a> here."
+msgstr "Finde hier nützliche Optionen zum <a href=\"https://ec.europa.eu/taxation_customs/business/vat/oss_de\" target=\"_blank\" rel=\"noopener\">One Stop Shop Verfahren</a>."
+
+#: src/Settings.php:16
+msgctxt "oss"
+msgid "General"
+msgstr "Allgemein"
+
+#: src/Admin.php:747 src/ReportTable.php:39 src/SettingsPage.php:23
+msgctxt "oss"
+msgid "Reports"
+msgstr "Berichte"
+
+#: src/Admin.php:716
+msgctxt "oss"
+msgid "Not yet known"
+msgstr "Noch nicht bekannt"
+
+#: src/Admin.php:716
+msgctxt "oss"
+msgid "Currently processed %1$s orders. Next iteration is scheduled for %2$s. <a href=\"%3$s\">Find pending actions</a>"
+msgstr "Aktuell %1$s Bestellung verarbeitet. Nächster Durchlauf planmäßig am %2$s. <a href=\"%3$s\">Offene Aktionen finden</a>"
+
+#: src/Admin.php:703
+msgctxt "oss"
+msgid "%1$s %%"
+msgstr "%1$s %%"
+
+#: src/Admin.php:672
+msgctxt "oss"
+msgid "Tax Total"
+msgstr "Steuerbertrag"
+
+#: src/Admin.php:671
+msgctxt "oss"
+msgid "Net Total"
+msgstr "Nettobetrag"
+
+#: src/Admin.php:670
+msgctxt "oss"
+msgid "Tax Rate"
+msgstr "Steuersatz"
+
+#: src/Admin.php:669
+msgctxt "oss"
+msgid "Country"
+msgstr "Land"
+
+#: src/Admin.php:631
+msgctxt "oss"
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/Admin.php:625
+msgctxt "oss"
+msgid "Delete"
+msgstr "Löschen"
+
+#: src/Admin.php:621
+msgctxt "oss"
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+#: src/Admin.php:613
+msgctxt "oss"
+msgid "Export"
+msgstr "Exportieren"
+
+#: src/Admin.php:609
+msgctxt "oss"
+msgid "View"
+msgstr "Ansehen"
+
+#: src/Admin.php:567
+msgctxt "oss"
+msgid "New report"
+msgstr "Neuer Bericht"
+
+#: src/Admin.php:553
+msgctxt "oss"
+msgid "Start report"
+msgstr "Bericht starten"
+
+#: src/Admin.php:493
+msgctxt "oss"
+msgid "Type"
+msgstr "Typ"
+
+#: src/Admin.php:486
+msgctxt "oss"
+msgid "New Report"
+msgstr "Neuer Bericht"
+
+#: src/Admin.php:478 src/Package.php:376
+msgctxt "oss"
+msgid "%1$s/%2$s"
+msgstr "%1$s/%2$s"
+
+#: src/Admin.php:469 src/Package.php:371
+msgctxt "oss"
+msgid "Q%1$s/%2$s"
+msgstr "Q%1$s/%2$s"
+
+#: src/Admin.php:448 src/Admin.php:566 src/SettingsPage.php:23
+msgctxt "oss"
+msgid "One Stop Shop"
+msgstr "One Stop Shop"
+
+#: src/Admin.php:448 src/SettingsPage.php:17
+msgctxt "oss"
+msgid "OSS"
+msgstr "OSS"
+
+#: src/Admin.php:218
+msgctxt "oss"
+msgid "Delivery threshold reached (OSS)"
+msgstr "Lieferschwelle erreicht (OSS)"
+
+#: src/Admin.php:214
+msgctxt "oss"
+msgid "Seems like you have reached (or are close to reaching) the delivery threshold for the current year. Please make sure to check the <a href=\"%s\" target=\"_blank\">report details</a> and take action in case necessary."
+msgstr "Du bist kurz davor oder hast bereits die Lieferschwelle für das aktuelle Jahr überschritten. Bitte prüfe die <a href=\"%s\" target=\"_blank\">Details des Berichts</a> und unternimm weitere Schritte."
+
+#: templates/emails/admin-delivery-threshold.php:29
+msgctxt "oss"
+msgid "See report details"
+msgstr "Details des Berichts abrufen"
+
+#: src/ReportTable.php:357 templates/emails/admin-delivery-threshold.php:26
+msgctxt "oss"
+msgid "Tax total"
+msgstr "Steuerbertrag"
+
+#: src/ReportTable.php:356 templates/emails/admin-delivery-threshold.php:25
+msgctxt "oss"
+msgid "Net total"
+msgstr "Nettobetrag"
+
+#: templates/emails/admin-delivery-threshold.php:24
+msgctxt "oss"
+msgid "Period"
+msgstr "Periode"
+
+#: templates/emails/admin-delivery-threshold.php:21
+msgctxt "oss"
+msgid "Report Details"
+msgstr "Details des Berichts"
+
+#. translators: %s: Customer billing full name
+#: templates/emails/admin-delivery-threshold.php:19
+msgctxt "oss"
+msgid "Your OSS delivery threshold of %1$s has been reached. Please take action immediately. Visit the <a href=\"%2$s\">OSS Settings Panel</a> for details."
+msgstr "Deine OSS Lieferschwelle von %1$s wurde erreicht. Bitte werde umgehend tätig. Besuche die <a href=\"%2$s\">OSS Einstellungen</a> um Details zu erfahren."
+
+#: templates/emails/plain/admin-delivery-threshold.php:17
+msgctxt "oss"
+msgid "Your OSS delivery threshold of %1$s has been reached. Please take action immediately. Visit the OSS Settings Panel (%2$s) for details."
+msgstr "Deine OSS Lieferschwelle von %1$s wurde erreicht. Bitte werde umgehend tätig. Besuche die OSS Einstellungen (%2$s) um Details zu erfahren."
+
+#. Author URI of the plugin
+msgid "https://vendidero.de"
+msgstr "https://vendidero.de"
+
+#. Author of the plugin
+msgid "vendidero"
+msgstr "vendidero"
+
+#. Description of the plugin
+msgid "Comply with the One Stop Shop procedure while using WooCommerce."
+msgstr "Nutze das One Stop Shop Verfahren zusammen mit WooCommerce."
+
+#. Plugin URI of the plugin
+msgid "https://github.com/vendidero/one-stop-shop-woocommerce"
+msgstr "https://github.com/vendidero/one-stop-shop-woocommerce"
+
+#. Plugin Name of the plugin
+msgid "One Stop Shop for WooCommerce"
+msgstr "One Stop Shop für WooCommerce"
