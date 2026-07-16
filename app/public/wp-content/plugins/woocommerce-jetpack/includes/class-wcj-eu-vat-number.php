@@ -2,7 +2,7 @@
 /**
  * Booster for WooCommerce - Module - EU VAT Number
  *
- * @version 7.1.6
+ * @version 7.3.0
  * @since   2.3.9
  * @author  Pluggabl LLC.
  * @package Booster_For_WooCommerce/includes
@@ -27,14 +27,14 @@ if ( ! class_exists( 'WCJ_EU_VAT_Number' ) ) :
 		/**
 		 * Constructor.
 		 *
-		 * @version 5.3.7
+		 * @version 7.3.0
 		 * @todo    [feature] add option to add "Verify" button to frontend
 		 */
 		public function __construct() {
 
 			$this->id         = 'eu_vat_number';
 			$this->short_desc = __( 'EU VAT Number', 'woocommerce-jetpack' );
-			$this->desc       = __( 'Collect and validate EU VAT numbers on the checkout. Automatically disable VAT for valid numbers. Add all EU countries VAT standard rates to WooCommerce. Show VAT field for EU countries only (Plus). Check for IP Location Country  (Plus)', 'woocommerce-jetpack' );
+			$this->desc       = __( 'Collect and validate EU VAT numbers on the checkout. Automatically disable VAT for valid numbers. Add all EU countries VAT standard rates to WooCommerce. Show VAT field for EU countries only (Elite). Check for IP Location Country  (Elite)', 'woocommerce-jetpack' );
 			$this->desc_pro   = __( 'Collect and validate EU VAT numbers on the checkout. Automatically disable VAT for valid numbers. Add all EU countries VAT standard rates to WooCommerce.', 'woocommerce-jetpack' );
 			$this->link_slug  = 'woocommerce-eu-vat-number';
 			parent::__construct();
@@ -208,7 +208,7 @@ if ( ! class_exists( 'WCJ_EU_VAT_Number' ) ) :
 		/**
 		 * Create_meta_box.
 		 *
-		 * @version 7.1.4
+		 * @version 7.2.4
 		 * @since   2.6.0
 		 */
 		public function create_meta_box() {
@@ -217,8 +217,12 @@ if ( ! class_exists( 'WCJ_EU_VAT_Number' ) ) :
 			} else {
 				$order_id = get_the_ID();
 			}
-			$_order               = wcj_get_order( $order_id );
-			$_customer_ip_address = ( WCJ_IS_WC_VERSION_BELOW_3 ? $_order->customer_ip_address : $_order->get_customer_ip_address() );
+			$_order = wcj_get_order( $order_id );
+			if ( isset( $_order ) && false !== $_order ) {
+				$_customer_ip_address = ( WCJ_IS_WC_VERSION_BELOW_3 ? $_order->customer_ip_address : $_order->get_customer_ip_address() );
+			} else {
+				$_customer_ip_address = '';
+			}
 
 			// Country by IP.
 			if ( class_exists( 'WC_Geolocation' ) ) {
@@ -234,18 +238,24 @@ if ( ! class_exists( 'WCJ_EU_VAT_Number' ) ) :
 			}
 
 			// Customer EU VAT number.
-			if ( true === wcj_is_hpos_enabled() && $_order && false !== $_order ) {
-				$customer_eu_vat_number = $_order->get_meta( '_billing_eu_vat_number' );
-			} else {
-				$customer_eu_vat_number = get_post_meta( $order_id, '_billing_eu_vat_number', true );
+			if ( isset( $_order ) && false !== $_order ) {
+				if ( true === wcj_is_hpos_enabled() ) {
+					$customer_eu_vat_number = $_order->get_meta( '_billing_eu_vat_number' );
+				} else {
+					$customer_eu_vat_number = get_post_meta( $order_id, '_billing_eu_vat_number', true );
+				}
 			}
-			if ( '' === $customer_eu_vat_number ) {
+			if ( ! isset( $customer_eu_vat_number ) || ( isset( $customer_eu_vat_number ) && '' === $customer_eu_vat_number ) ) {
 				$customer_eu_vat_number = '-';
 			}
 
 			// Taxes.
-			$taxes       = '';
-			$taxes_array = $_order->get_tax_totals();
+			$taxes = '';
+			if ( isset( $_order ) && false !== $_order ) {
+				$taxes_array = $_order->get_tax_totals();
+			} else {
+				$taxes_array = array();
+			}
 			if ( empty( $taxes_array ) ) {
 				$taxes = '-';
 			} else {

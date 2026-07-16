@@ -1,0 +1,53 @@
+{% import "system/macro/card/card-heading.html.twig" as card_heading %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% set breadCrumbTitle = localized.breadcrumb.quickSetup %}
+
+{% if data.setupType is not empty and data.setupType == 'custom' %}
+    {% set breadCrumbTitle = localized.breadcrumb.customSetup %}
+{% endif %}
+
+{% if data.setupType is not empty and data.setupType == 'guided' %}
+    {% set breadCrumbTitle = localized.breadcrumb.guidedSetup %}
+{% endif %}
+
+{{ breadcrumb.component({
+    items: [
+        [localized.breadcrumb.module, "?page=#{controllerId}"],
+        breadCrumbTitle
+    ]
+}, localized) }}
+
+{{ messages() | raw }}
+
+<div data-brlbs-scroll-target style="scroll-margin-top: 4rem;">
+    {% include "setup-assistant/partials/guided-setup-step-basic-concept.html.twig" %}
+
+    {% include "setup-assistant/partials/guided-setup-step-button-colors.html.twig" %}
+
+    {% include "setup-assistant/partials/guided-setup-step-form-separator.html.twig" %}
+
+    {% include "setup-assistant/partials/guided-setup-step-settings-information.html.twig" %}
+
+    {% include "setup-assistant/partials/guided-setup-step-first-aid-debug-console.html.twig" %}
+
+    {% include "setup-assistant/partials/dialog-layout.html.twig" %}
+
+    {% include "setup-assistant/partials/dialog-colors.html.twig" %}
+
+    {% include "setup-assistant/partials/dialog-logo.html.twig" %}
+
+    {% include "setup-assistant/partials/dialog-language-switcher.html.twig" %}
+
+    {% include "setup-assistant/partials/dialog-legal-pages.html.twig" %}
+
+    {% include "setup-assistant/partials/admin-plugin-display-mode-settings.html.twig" %}
+
+    {% include "setup-assistant/partials/admin-plugin-wordpress-admin-sidebar-menu-mode.html.twig" %}
+
+    {% include "setup-assistant/partials/background-tasks-status.html.twig" %}
+
+    {% include "setup-assistant/partials/finalize-setup.html.twig" %}
+
+    {% include "setup-assistant/partials/setup-completed.html.twig" %}
+</div>

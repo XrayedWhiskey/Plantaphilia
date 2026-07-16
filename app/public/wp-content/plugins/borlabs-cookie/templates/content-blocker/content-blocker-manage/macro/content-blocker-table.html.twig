@@ -1,0 +1,136 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.name | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.id | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.hosts | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.global.table.languageName | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.status | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                {% block content %}
+                    {{ trash_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                {% block content %}
+                    {{ edit_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.contentBlockers is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        <td colspan="7"
+                            class="bc-py-4 bc-text-center bc-rounded-b-md">{{ localized.alert.noContentBlockerConfigured | raw }}
+                        </td>
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for contentBlocker in config.contentBlockers %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+                                {% block content %}
+                                    <div class="bc-flex bc-items-center">
+                                        <span>{{ contentBlocker.name }}</span>
+                                        {% if contentBlocker.key == 'default' %}
+                                            {{ hint.component({
+                                                hint: localized.hint.defaultContentBlocker,
+                                                position: 'bottom-right',
+                                            }) }}
+                                        {% endif %}
+                                    </div>
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ contentBlocker.key }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ contentBlocker.contentBlockerLocations | column('hostname') | join(', ') }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ languageName(contentBlocker.language) }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/table/toggle-switch.html.twig" as toggle_switch %}
+                                {% block content %}
+                                    {{ toggle_switch.component({
+                                        status: contentBlocker.status,
+                                        href:  wpNonceUrl("?page=#{config.controllerId}&action=switch-status&id=#{contentBlocker.id}", "#{config.controllerId}-#{contentBlocker.id}-switch-status")
+                                    }) }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                {% block content %}
+                                    {% if contentBlocker.undeletable == true %}
+                                        -
+                                    {% else %}
+                                        <button
+                                            data-brlbs-modal-target="{{ 'borlabsModalDelete-' ~ contentBlocker.id }}">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            action: wpNonceUrl("?page=#{config.controllerId}&action=delete&id=#{contentBlocker.id}", "#{config.controllerId}-#{contentBlocker.id}-delete"),
+                                            buttonText: localized.global.button.delete,
+                                            id: 'borlabsModalDelete-' ~ contentBlocker.id,
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                            {% block description %}
+                                                <p class="bc-text-sm"><strong>{{ localized.table.name | raw }}
+                                                        :</strong> {{ contentBlocker.name }}</p>
+                                                <p class="bc-text-sm"><strong>{{ localized.table.id | raw }}
+                                                        :</strong> {{ contentBlocker.key }}</p>
+                                            {% endblock %}
+                                            {% block formData %}
+                                                <input type="hidden" name="id" value="{{ contentBlocker.id }}">
+                                            {% endblock %}
+                                        {% endembed %}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                                {% block content %}
+                                    <a href="{{ wpNonceUrl("?page=#{config.controllerId}&action=edit&id=#{contentBlocker.id}", "#{config.controllerId}-#{contentBlocker.id}-edit") | raw }}">
+                                        {{ edit_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

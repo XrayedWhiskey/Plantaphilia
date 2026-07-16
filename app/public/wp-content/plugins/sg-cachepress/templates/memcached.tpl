@@ -2,7 +2,7 @@
 /*
 Plugin Name: Memcached
 Description: Memcached Dropin for SGO
-Version: 1.0.0
+Version: 1.0.2
 
 Install this file to wp-content/object-cache.php
 */
@@ -244,6 +244,9 @@ class WP_Object_Cache {
 				$value = $this->cache[$key];
 		} else if ( in_array( $group, $this->no_mc_groups ) ) {
 			$this->cache[$key] = $value = false;
+			if ( strpos( $key, 'atum-stock-manager-for-woocommerce' ) ) {
+				$this->cache[$key] = $value = null;
+			}
 		} else {
 			$value = $mc->get( $key );
 			if ( ( empty( $value ) && ! strpos( $key, 'et_check_mod_pagespeed' ) ) || ( is_integer( $value ) && -1 == $value ) ){
@@ -262,6 +265,17 @@ class WP_Object_Cache {
 		if ( 'checkthedatabaseplease' === $value ) {
 			unset( $this->cache[$key] );
 			$value = false;
+		}
+
+
+		if ( is_multisite() && class_exists( 'PLL_Base' ) ) {
+			if ( false !== strpos( $group, 'relationships' ) ) {
+				return array();
+			}
+		}
+
+		if ( false !== strpos( $key, 'wcboost' ) ) {
+			return false;
 		}
 
 		return $value;

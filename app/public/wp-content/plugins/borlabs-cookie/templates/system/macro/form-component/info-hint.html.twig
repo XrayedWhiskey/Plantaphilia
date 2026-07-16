@@ -1,0 +1,14 @@
+{% macro component(config) %}
+    {% set config = {hint: '', dataAttribute: ''} | merge(config) %}
+    {% embed "system/embed/hint.html.twig" with { dataAttribute: config.dataAttribute, hint: config.hint, position: config.position } %}
+        {% import "system/macro/icons/info.html.twig" as info_icon %}
+
+        {% block icon %}
+            {{ info_icon.component({
+                cssClasses: ['bc-cursor-pointer'],
+                height: ' bc-h-6',
+                width: 'bc-w-6',
+            }) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

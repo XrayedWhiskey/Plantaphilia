@@ -29,7 +29,7 @@ defined("ABSPATH") || exit;
         </div>
 
         <div class="">
-            <a href="<?php echo esc_url(\Duplicator\Utils\Upsell::getCampaignUrl('welcome-page', 'Upgrade Now')); ?>"
+            <a href="<?php echo esc_url(\Duplicator\Utils\LinkManager::getCampaignUrl('welcome-page', 'Upgrade Now')); ?>"
                rel="noopener noreferrer"
                target="_blank"
                class="dup-btn dup-btn-block dup-btn-lg dup-btn-green">

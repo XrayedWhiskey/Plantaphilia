@@ -1,10 +1,10 @@
 === Speed Optimizer - The All-In-One Performance-Boosting Plugin ===
-Contributors: Hristo Sg, siteground, sstoqnov, stoyangeorgiev, elenachavdarova, ignatggeorgiev
+Contributors: Hristo Sg, siteground, sstoqnov, stoyangeorgiev, elenachavdarova, ignatggeorgiev, asparuhtenev
 Tags: nginx, caching, speed, performance, siteground
 Requires at least: 4.7
 Requires PHP: 7.0
-Tested up to: 6.6
-Stable tag: 7.6.6
+Tested up to: 6.9
+Stable tag: 7.7.10
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -117,6 +117,91 @@ Our plugin uses a cookie in order to function properly. It does not store person
 1. Go to Plugins -> Installed Plugins and click the 'Activate' link under the WordPress SiteGround Optimizer listing
 
 == Changelog ==
+
+= Version 7.7.10 =
+Release Date: May 5th, 2026
+* Email Service improvements
+
+= Version 7.7.9 =
+Release Date: Apr 15th, 2026
+* Security improvements
+
+= Version 7.7.8 =
+Release Date: Apr 7th, 2026
+
+* Memcache improvements
+* WP Cli improvements
+* Layout improvements
+* Heartbeat compatibility improvements
+
+= Version 7.7.7 =
+Release Date: Feb 16th, 2026
+
+* Version bump
+
+= Version 7.7.6 =
+Release Date: Dec 15th, 2025
+
+* Image Optimization improvements
+
+= Version 7.7.5 =
+Release Date: Dec 4th, 2025
+
+* JS Combinator improvements
+* Dynamic cache purge improvements
+* CSS combination improvements
+* WebP deletion improvements
+* Query string exclude support for Dynamic Cache
+
+
+= Version 7.7.4 =
+Release Date: Nov 11th, 2025
+
+* Dynamic Cache Purge improvements
+
+= Version 7.7.3 =
+Release Date: Nov 3rd, 2025
+
+* File-based cache purge improvements
+* Third-Party plugins compatibility improvements
+* WP CLI improvements
+
+
+= Version 7.7.2 =
+Release Date: Dec 9th, 2024
+
+* Memcache improvements
+* JavaScript Combination improvements
+* Database Optimization improvements
+* Woocommerce compatibility improvements
+* File-caching improvements
+
+= Version 7.7.1 =
+Release Date: Nov 21st, 2024
+
+* Translation loading improvements
+
+= Version 7.7.0 =
+Release Date: Nov 7th, 2024
+
+* Disable Emojis optimization improvements
+* File-Caching improvements
+
+= Version 7.6.8 =
+Release Date: Oct 23rd, 2024
+
+* CSS Combination improvements
+* File-based caching improvements
+* Database-Optimizer improvements
+* Improved Memcache handling of excluded options
+
+= Version 7.6.7 =
+Release Date: Oct 7th, 2024
+
+* JS & CSS Combination improvements
+* Front-end Optimizations improvements
+* Image Optimization improvements
+
 = Version 7.6.6 =
 Release Date: Sept 18th, 2024
 
@@ -136,7 +221,6 @@ Release Date: Aug 14th, 2024
 
 * Improved memcache handling of autoload options
 * Improved handling of heartbeat optimizations
-
 
 = Version 7.6.3 =
 Release Date: Aug 1st, 2024

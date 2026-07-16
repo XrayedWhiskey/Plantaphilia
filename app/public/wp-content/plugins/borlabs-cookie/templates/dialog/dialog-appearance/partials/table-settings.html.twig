@@ -1,0 +1,205 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true } %}
+    {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+    {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+    {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.tableSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogTableRowBackgroundColorOdd',
+                label: localized.field.backgroundColor,
+                value: data.dialogTableRowBackgroundColorOdd,
+            },
+            colorB:
+            {
+                id: 'dialogTableRowTextColorOdd',
+                label: localized.field.textColor,
+                value: data.dialogTableRowTextColorOdd,
+            },
+            title: localized.field.dialogTableRowOdd,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogTableRowBackgroundColorEven',
+                label: localized.field.backgroundColor,
+                value: data.dialogTableRowBackgroundColorEven,
+            },
+            colorB:
+            {
+                id: 'dialogTableRowTextColorEven',
+                label: localized.field.textColor,
+                value: data.dialogTableRowTextColorEven,
+            },
+            title: localized.field.dialogTableRowEven,
+        }) }}
+
+        {{ row_color_selection.component({
+            id: 'dialogTableRowBorderColor',
+            label: localized.field.dialogTableRowBorderColor,
+            value: data.dialogTableRowBorderColor,
+        }) }}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+            {% block label %}
+                <label>{{ localized.field.dialogTableBorderRadius | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <div class="bc-relative bc-flex bc-gap-x-4">
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableBorderRadiusTopLeft',
+                            min: 0,
+                            value: data.dialogTableBorderRadiusTopLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableBorderRadiusTopLeft">{{ localized.field.topLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableBorderRadiusTopRight',
+                            min: 0,
+                            value: data.dialogTableBorderRadiusTopRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableBorderRadiusTopRight">{{ localized.field.topRight | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableBorderRadiusBottomLeft',
+                            min: 0,
+                            value: data.dialogTableBorderRadiusBottomLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableBorderRadiusBottomLeft">{{ localized.field.bottomLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableBorderRadiusBottomRight',
+                            min: 0,
+                            value: data.dialogTableBorderRadiusBottomRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableBorderRadiusBottomRight">{{ localized.field.bottomRight | raw }}</label>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+            {% block label %}
+                <label>{{ localized.field.dialogTableCellPadding | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <div class="bc-relative bc-flex bc-gap-x-4">
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableCellPaddingTop',
+                            min: 0,
+                            value: data.dialogTableCellPaddingTop,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableCellPaddingTop">{{ localized.field.top | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableCellPaddingRight',
+                            min: 0,
+                            value: data.dialogTableCellPaddingRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableCellPaddingRight">{{ localized.field.right | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableCellPaddingBottom',
+                            min: 0,
+                            value: data.dialogTableCellPaddingBottom,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableCellPaddingBottom">{{ localized.field.bottom | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogTableCellPaddingLeft',
+                            min: 0,
+                            value: data.dialogTableCellPaddingLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogTableCellPaddingLeft">{{ localized.field.left | raw }}</label>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionTableSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineOnWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.tableExplained | raw }}</p>
+                        <p>{{ localized.thingsToKnow.onWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}</p>
+                        <p>
+                            <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalTableSettings" href="#" role="button">
+                                <img class="bc-w-48 bc-h-48 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-dialog-appearance-table-settings.png') }}" alt="">
+                            </a>
+                        </p>
+                        {% embed "system/embed/modal/modal.html.twig" with {
+                            id: 'borlabsModalTableSettings',
+                            maxWidth: 'bc-max-w-2xl',
+                            title: localized.headline.tableSettings,
+                        } %}
+                            {% block icon %}
+                                {% import "system/macro/icons/paint-brush.html.twig" as pain_brush_icon %}
+                                <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                    {{ pain_brush_icon.component({}) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block description %}
+                                <img src="{{ imageUrl('ttk-dialog-appearance-table-settings.png') }}" alt="">
+                                <p class="bc-text-center">{{ localized.thingsToKnow.tableExplained | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,7 @@
+{% if dataAttribute is empty %}
+    {% set dataAttribute = '' %}
+{% endif %}
+
+<tr class="bc-pr-3 bc-text-sm odd:bc-bg-gray-50 last:bc-rounded-b-md {% if hidden is not empty %}bc-hidden{% endif %}" {{ dataAttribute | raw }}>
+    {% block rowContent %}{% endblock %}
+</tr>

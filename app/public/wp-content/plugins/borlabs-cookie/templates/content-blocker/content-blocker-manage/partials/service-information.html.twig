@@ -1,0 +1,48 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.serviceInformation,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+
+        {{ row_select.component({
+            id: 'serviceId',
+            label: localized.field.serviceId,
+            name: 'serviceId',
+            options: services.list,
+            value: data.serviceId == '' ? '' : data.serviceId,
+        }) }}
+
+        {{ row_save.component({
+            backLink: "?page=#{controllerId}",
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPurposeService', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlinePurposeService | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.purposeServiceExplainedA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.purposeServiceExplainedB | raw }}</p>
+                        <p>{{ localized.thingsToKnow.purposeServiceExplainedC | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,80 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="guide-first-aid-debug-console">
+    {% embed "system/embed/card/card-with-title.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/icons/chevron-down.html.twig" as chevron_down_icon %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {% block header %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.firstAidDebugConsole,
+                subtitle: localized.headline.basics,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            <div class="bc-flex bc-flex-col sm:bc-flex-row bc-justify-center bc-p-6 bc-gap-x-6 bc-gap-y-6">
+                <div class="bc-w-full sm:bc-w-2/5">
+                    <h4 class="bc-opacity-0 bc-mb-2 bc-text-lg bc-font-medium bc-text-center brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-down">
+                        {{ localized.headline.fastestWayDetectAndSolveCommonIssues | raw }}
+                    </h4>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.firstAidDebugConsoleA | raw }}
+                    </p>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.firstAidDebugConsoleB | raw }}
+                    </p>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.firstAidDebugConsoleC | raw }}
+                    </p>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.firstAidDebugConsoleD | raw }}
+                    </p>
+                </div>
+                <div class="bc-w-full sm:bc-w-2/5">
+                    <div class="bc-opacity-0 bc-w-full" data-brlbs-animate="brlbs-animate-slide-in-right">
+                        <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalDebugConsole" href="#" role="button">
+                            <img class="bc-w-full bc-max-w-96 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-debug-console-video-thumbnail.jpg') }}" alt="">
+                        </a>
+                    </div>
+                    {% embed "system/embed/modal/modal.html.twig" with {
+                        id: 'borlabsModalDebugConsole',
+                        maxWidth: 'bc-max-w-2xl',
+                        title: localized.headline.firstAidDebugConsole,
+                    } %}
+                        {% block icon %}
+                            {% import "system/macro/icons/video-camera.html.twig" as video_camera_icon %}
+                            <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                {{ video_camera_icon.component({}) }}
+                            </div>
+                        {% endblock %}
+
+                        {% block description %}
+                            <video class="bc-w-full bc-py-2.5 bc-px-5" controls autoplay loop muted playsinline>
+                                <source src="https://cdn-public.borlabs.io/videos/en/borlabs-cookie-debug-console.mp4">
+                            </video>
+                        {% endblock %}
+                    {% endembed %}
+                </div>
+            </div>
+
+            <div class="bc-flex bc-flex-col bc-place-items-center bc-gap-y-6 bc-px-6 bc-pb-6">
+                <div class="bc-w-full bc-flex bc-justify-end bc-gap-x-2 bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                    <span class="bc-text-sm bc-font-medium brlbs-cmpnt-text">{{ localized.text.pressNextStartCustomizing | raw }}</span>
+                    <span class="bc-animate-bounce">{{ chevron_down_icon.component({ }) }}</span>
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 5,
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

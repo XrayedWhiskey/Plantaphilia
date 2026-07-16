@@ -1,0 +1,68 @@
+<div>
+    {% if buttonConfig is not defined %}
+        {% set buttonConfig = {} %}
+    {% endif %}
+    {% set buttonConfig = {
+        backgroundColor: '',
+        backgroundColorHover: '',
+        border: '',
+        focus: 'focus:bc-ring-2',
+        focusColor: ' focus:bc-ring-gray-300',
+        disabled: '',
+        fontWeight: '',
+        padding: '',
+        radius: 'bc-rounded-full',
+        textColor: 'bc-text-gray-600',
+        textSize: 'bc-text-sm',
+    } | merge(buttonConfig) %}
+    {% set buttonCssClasses = [
+        buttonConfig.backgroundColor,
+        buttonConfig.border,
+        buttonConfig.fontWeight,
+        buttonConfig.focus,
+        buttonConfig.focusColor,
+        buttonConfig.disabled,
+        buttonConfig.padding,
+        buttonConfig.radius,
+        buttonConfig.textColor,
+        buttonConfig.textSize,
+        buttonConfig.width,
+        buttonConfig.backgroundColorHover,
+        'bc-peer bc-group bc-transition-all'
+    ] %}
+
+    {% if position == 'top-left' %}
+        {% set cssClasses = ['bc-bottom-[34px]', 'bc-left-[-198px]'] %}
+        {% set triangleCssClasses = ['bc-bottom-[-10px]', 'bc-right-[10px]'] %}
+    {% elseif position == 'bottom-left' %}
+        {% set cssClasses = ['bc-top-[34px]', 'bc-left-[-198px]'] %}
+        {% set triangleCssClasses = ['bc-rotate-180', 'bc-top-[-10px]', 'bc-right-[10px]'] %}
+    {% elseif position == 'bottom-right' %}
+        {% set cssClasses = ['bc-top-[34px]', 'bc-left-[-8px]'] %}
+        {% set triangleCssClasses = ['bc-rotate-180', 'bc-top-[-10px]'] %}
+    {% else %}
+        {% set cssClasses = ['bc-bottom-[34px]', 'bc-left-[-8px]' ] %}
+        {% set triangleCssClasses = ['bc-bottom-[-10px]'] %}
+    {% endif %}
+
+    {% if customPosition is defined and customPosition.cssClasses is not empty and customPosition.triangleCssClasses is not empty %}
+        {% set cssClasses = customPosition.cssClasses %}
+        {% set triangleCssClasses = customPosition.triangleCssClasses %}
+    {% endif %}
+
+    <div class="bc-relative bc-group bc-flex bc-items-center">
+        <button {% if dataAttribute is not empty %} {{ dataAttribute | raw }}{% endif %}
+            type="button"
+            class="{{ buttonCssClasses | join(' ') }}">
+            {% block icon %}{% endblock %}
+        </button>
+        <div
+            class="brlbs-cmpnt-hint-text peer-focus:bc-block bc-z-10 peer-hover:bc-block bc-bg-gray-600 bc-hidden bc-mx-auto bc-container bc-w-[228px] bc-p-3 bc-shadow-md bc-rounded bc-absolute {{ cssClasses | join(' ') }}">
+            <p class="bc-text-xs bc-text-white">{{ hint | raw }}</p>
+            <svg class="bc-absolute bc-z-10 bc-drop-shadow-md {{ triangleCssClasses | join(' ') }}" width="16" height="10"
+                 viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 10L0 0L16 1.41326e-06L8 10Z" fill="#4b5563"></path>
+            </svg>
+        </div>
+    </div>
+</div>

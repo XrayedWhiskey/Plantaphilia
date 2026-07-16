@@ -2,10 +2,10 @@
 Contributors: vendidero, vdwoocommercesupport
 Tags: one stop shop, woocommerce, OSS, EU, compliance
 Requires at least: 5.4
-Tested up to: 6.4
+Tested up to: 7.0
 WC requires at least: 3.9
-WC tested up to: 8.6
-Stable tag: 1.6.2
+WC tested up to: 10.7
+Stable tag: 1.8.4
 Requires PHP: 5.6
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -14,7 +14,7 @@ The One Stop Shop compliance helper allows you to easily monitor your One Stop S
 
 == Description ==
 
-One Stop Shop for WooCommerce adds compliance with the new [One Stop Shop procedure](https://ec.europa.eu/taxation_customs/business/vat/oss_en) of the european union to WooCommerce.
+One Stop Shop for WooCommerce adds compliance with the new [One Stop Shop procedure](https://vat-one-stop-shop.ec.europa.eu) of the european union to WooCommerce.
 With the help of this little plugin you may easily monitor the delivery threshold (10.000 €) for B2C exports to other EU countries. Furthermore you may generate tax reports (e.g. quarterly, monthly, yearly) applicable to the OSS procedure and export them as CSV to easily notify your local tax authorities about your sales.
 
 * *Delivery Threshold Observation* - The plugin may automatically observe the yearly delivery threshold and send notices by email and via the admin panel in case the threshold is close to being reached.
@@ -61,6 +61,36 @@ Bug reports may be filed via our [GitHub repository](https://github.com/vendider
 3. Create a new report
 
 == Changelog ==
+= 1.8.4 =
+* Improvement: WP 7.0 compatibility
+* Improvement: Asset bundling
+* Fix: Determine tax type (reduced vs standard)
+
+= 1.8.3 =
+* Improvement: Latest tax rate changes for 2026
+
+= 1.8.2 =
+* Fix: Edge case reporting when date paid is greater than date created
+
+= 1.8.1 =
+* Improvement: New tax rates for RO, EE
+
+= 1.8.0 =
+* Improvement: Timezone handling
+
+= 1.7.1 =
+* Improvement: Bump BOP CSV export version to 2.0, see https://www.elster.de/bportal/helpGlobal?themaGlobal=osseust_import
+
+= 1.7.0 =
+* Improvement: Work with UTC dates to build order queues
+
+= 1.6.4 =
+* Improvement: Updated FI tax rates
+
+= 1.6.3 =
+* New: Indicate WP latest + Woo latest support
+* Improvement: Local pickup detection
+
 = 1.6.2 =
 * Fix: Revert (default) exclusion of (potential) b2b orders without vat id as it is highly controversial
 * Improvement: Added woocommerce_eu_tax_helper_exclude_b2b_without_vat_id_from_oss filter to allow b2b exclusion

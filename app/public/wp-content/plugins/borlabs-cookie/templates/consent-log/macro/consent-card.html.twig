@@ -1,0 +1,93 @@
+{% macro component(config, localized) %}
+    <div class="bc-w-2/3">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+            {% block header %}
+                {{ card_heading.component({
+                    title: adjustTimezone(config.consentLog.stamp).format('Y-m-d H:i:s'),
+                }) }}
+            {% endblock %}
+
+            {% block content %}
+                {% import "system/macro/row/input.html.twig" as row_input %}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                    {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+
+                    {% block label %}
+                        {{ localized.field.isLatest }}
+                    {% endblock %}
+
+                    {% block input %}
+                        {% if config.consentLog.isLatest == false %}
+                            <span class="bc-text-red-600">{{ x_circle_icon.component({}) }}</span>
+                        {% else %}
+                            <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                        {% endif %}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center">
+                            <span>{{ localized.field.cookieVersion }}</span>
+                            <div class="bc-inline-block bc-pl-1">
+                                {{ hint.component({
+                                    hint: localized.hint.cookieVersion,
+                                }) }}
+                            </div>
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        {{ config.consentLog.cookieVersion }}
+                    {% endblock %}
+                {% endembed %}
+
+                {{ row_input.component({
+                    clipboard: true,
+                    hint: localized.hint.uid,
+                    id: 'uid',
+                    isDisabled: true,
+                    isRequired: false,
+                    label: localized.field.uid,
+                    value: config.consentLog.uid | upper,
+                }, localized) }}
+
+                {% if config.consentLog.iabTcfTCString is not empty %}
+                    {{ row_input.component({
+                        clipboard: true,
+                        hint: localized.hint.iabTcfTCString,
+                        id: 'iabTcfTCString',
+                        isDisabled: true,
+                        isRequired: false,
+                        label: localized.field.iabTcfTCString,
+                        value: config.consentLog.iabTcfTCString,
+                    }, localized) }}
+                {% endif %}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% block label %}
+                        {{ localized.field.consents }}
+                    {% endblock %}
+
+                    {% block input %}
+                        {% for serviceGroup in config.consentLog.consents.list %}
+                            <div>
+                                <span class="bc-font-bold">{{ findObject(config.serviceGroups, 'key', serviceGroup.key).name }}</span>:
+                                {% for service in serviceGroup.services %}
+                                    {{ findObject(config.services, 'key', service).name }}
+                                    {% if loop.last == false %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    </div>
+{% endmacro %}

@@ -1,0 +1,83 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.adminSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/row/checkbox-list.html.twig" as row_checkbox_list %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {{ row_select.component({
+            id: 'displayModeSettings',
+            hint: localized.hint.displayModeSettings,
+            label: localized.field.displayModeSettings,
+            options: enum.displayModeSettings.list,
+            value: data.displayModeSettings,
+        }, localized) }}
+
+        {{ row_select.component({
+            id: 'wordPressAdminSidebarMenuMode',
+            hint: localized.hint.wordPressAdminSidebarMenuMode,
+            label: localized.field.wordPressAdminSidebarMenuMode,
+            options: enum.wordPressAdminSidebarMenuMode.list,
+            value: data.wordPressAdminSidebarMenuMode,
+        }, localized) }}
+
+        {{ row_switch_button.component({
+            id: 'clearThirdPartyCache',
+            hideInSimplifiedMode: true,
+            hint: localized.hint.clearThirdPartyCache,
+            label: localized.field.clearThirdPartyCache,
+            value: data.clearThirdPartyCache,
+        }) }}
+
+        {{ row_checkbox_list.component({
+            checkboxes: options.postTypes.list,
+            checkedKeys: data.metaBox,
+            hideInSimplifiedMode: true,
+            hint: localized.hint.metaBox,
+            id: 'metaBox',
+            title: localized.field.metaBox,
+        }, localized) }}
+
+        {{ row_save.component({
+            action: 'save',
+            nonce: wpNonceField("#{controllerId}-save")
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionDisplayModeSettings', expanded: true } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineDisplayModeSettings | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.displayModeSettingsA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.displayModeSettingsB | raw }}</p>
+                        <p>{{ localized.thingsToKnow.displayModeSettingsC | raw }}</p>
+                        <p>{{ localized.thingsToKnow.displayModeSettingsD | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with { hideInSimplifiedMode: true, id: 'accordionMetaBox' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineWhatIsTheMetaBox }}
+                    {% endblock %}
+                    {% block content %}
+                        {{ localized.thingsToKnow.whatIsTheMetaBox | raw }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

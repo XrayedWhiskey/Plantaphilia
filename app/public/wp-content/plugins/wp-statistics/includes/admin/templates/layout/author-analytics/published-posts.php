@@ -1,4 +1,5 @@
-<div class="wps-card">
+<?php if (!defined('ABSPATH')) exit; // Exit if accessed directly ?>
+<div class="wps-card wps-wrap">
     <div class="wps-card__title">
         <h2>
             <?php echo esc_html($title); ?>
@@ -9,7 +10,7 @@
     </div>
     <div class="wps-scatter-chart">
         <div class="chart-container">
-            <canvas id="publishedChart"></canvas>
+            <canvas id="publishedChart" aria-label="<?php echo esc_html__('published chart', 'wp-statistics') ?>" role="img"></canvas>
         </div>
     </div>
 </div>

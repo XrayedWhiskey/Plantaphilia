@@ -1,0 +1,77 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [localized.breadcrumb.module]}, localized)
+    }}
+
+    {{ messages() | raw }}
+
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+        {% import "consent-log/macro/consent-log-table.html.twig" as consent_log_table %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/navigation/pagination.html.twig" as pagination %}
+
+        {% block mainHeader %}
+            <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+                {{ card_heading.component({
+                    title: localized.headline.consentLogs,
+                    searchNonce: wpNonceField("#{controllerId}-search"),
+                    searchPlaceholder: localized.placeholder.search,
+                    searchTerm: data.searchTerm ? data.searchTerm : '',
+                    showSearch: true,
+                }, localized) }}
+            </form>
+        {% endblock %}
+
+        {% block mainContent %}
+            {{ consent_log_table.component({
+                controllerId: controllerId,
+                consentLogs: data.consentLogs.data,
+            }, localized) }}
+
+            {{ pagination.component({
+                controllerId: controllerId,
+                pagination: data.consentLogs,
+            }, localized) }}
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionConsentLogs', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineConsentLogs | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.consentLogsA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.consentLogsB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionSymbolsExplained' } %}
+                        {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                        {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                        {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineSymbolsExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <ul class="bc-space-y-2 bc-text-left">
+                                <li>{{ identification_icon.component({}) }} {{ localized.thingsToKnow.consentLogDetails | raw }}</li>
+                                <li>{{ check_circle_icon.component({}) }} {{ localized.thingsToKnow.iabTcfConsentTrue | raw }}</li>
+                                <li>{{ x_circle_icon.component({}) }} {{ localized.thingsToKnow.iabTcfConsentFalse | raw }}</li>
+                            </ul>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+{% endif %}

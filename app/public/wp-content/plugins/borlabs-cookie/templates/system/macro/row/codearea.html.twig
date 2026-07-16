@@ -1,0 +1,29 @@
+{% macro component(config) %}
+    {% import "system/macro/form-component/codearea.html.twig" as codearea %}
+    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+    {% import "system/macro/icons/clipboard.html.twig" as clipboard_icon %}
+
+    {# Sets a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    <div class="odd:bc-bg-white even:bc-bg-gray-50 last:bc-rounded-b-md">
+        <label class="bc-flex bc-space-x-2 bc-items-center bc-px-5 bc-py-2.5" for="{{ config.id }}">
+            <span>{{ config.label | raw }}</span>
+            {% if config.hint is not empty %}
+                {{ hint.component({
+                    hint: config.hint,
+                    position: config.hintPopupPosition
+                }) }}
+            {% endif %}
+
+            {% if config.clipboard == true %}
+                <button class="bc-text-gray-600" type="button" data-brlbs-clipboard="{{ config.id }}" data-bs-toggle="hint" title="{{ localized.global.hint.clipboard | raw }}">
+                    {{ clipboard_icon.component({}) }}
+                </button>
+            {% endif %}
+        </label>
+        {{ codearea.component(config) }}
+    </div>
+{% endmacro %}

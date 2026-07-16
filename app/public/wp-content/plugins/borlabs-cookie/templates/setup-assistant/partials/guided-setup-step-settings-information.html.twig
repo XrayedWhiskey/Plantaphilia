@@ -1,0 +1,121 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="guide-settings-information">
+    {% embed "system/embed/card/card-with-title.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/icons/chevron-down.html.twig" as chevron_down_icon %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {% block header %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.settingsInformation,
+                subtitle: localized.headline.basics,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            <div class="bc-flex bc-flex-col bc-items-center bc-p-6 bc-gap-x-6 bc-gap-y-6">
+                <div class="bc-w-full sm:bc-w-3/5">
+                    <h4 class="bc-opacity-0 bc-mb-2 bc-text-lg bc-font-medium bc-text-center brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-down">
+                        {{ localized.headline.whereToFindInformationAboutSettings | raw }}
+                    </h4>
+
+                    <div class="bc-opacity-0 bc-flex bc-items-center bc-mb-4 bc-space-x-1" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-left">
+                            {{ hint.component({
+                                hint: localized.hint.demoText,
+                            }) }}
+                        </div>
+                        <p class="bc-opacity-0 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-fade-in">
+                            {{ localized.text.settingsInformationA | raw }}
+                        </p>
+                    </div>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.settingsInformationB | raw }}
+                    </p>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.settingsInformationC | raw }}
+                    </p>
+                </div>
+                <div class="bc-w-full">
+                    <div class="bc-opacity-0 bc-full bc-rounded-md bc-shadow-inner bc-p-6 bc-bg-neutral-200" data-brlbs-animate="brlbs-animate-fade-in">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                            {% embed "system/embed/card/card-with-info-panel.html.twig" with { noMarginBottom: true } %}
+                                {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+                                {% block mainHeader %}
+                                    {{ card_heading.component({
+                                        title: localized.headline.exampleSettings,
+                                    }) }}
+                                {% endblock %}
+                                {% block mainContent %}
+                                    {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+                                    {{ row_switch_button.component({
+                                        hint: localized.hint.guidedSetupExampleSettingA,
+                                        id: 'guidedSetupExampleSettingA',
+                                        label: localized.field.guidedSetupExampleSettingA,
+                                        value: '1',
+                                    }) }}
+
+                                    <div>
+                                        {% embed "system/embed/form-row.html.twig" %}
+                                            {% block label %}
+                                            {% endblock %}
+                                            {% block input %}
+                                                {% import "system/macro/form-component/button.html.twig" as button %}
+                                                <div>
+                                                    {{ button.component({
+                                                        button: localized.button.button,
+                                                    }, localized) }}
+                                                </div>
+                                            {% endblock %}
+                                        {% endembed %}
+                                    </div>
+                                {% endblock %}
+
+                                {% block infoPanelHeader %}
+                                    {{ localized.global.headline.thingsToKnow | raw }}
+                                {% endblock %}
+
+                                {% block infoPanelContent %}
+                                    {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                                        {% block content %}
+                                            {% embed "system/embed/accordion/accordion.html.twig" with { expanded: true, id: 'accordionExample' } %}
+                                                {% block title %}
+                                                    {{ localized.thingsToKnow.headlineAdditionalBackgroundInformation }}
+                                                {% endblock %}
+                                                {% block content %}
+                                                    <p>{{ localized.thingsToKnow.additionalBackgroundInformatioA | raw }}</p>
+                                                    <p>{{ localized.thingsToKnow.additionalBackgroundInformatioB | raw }}</p>
+                                                {% endblock %}
+                                            {% endembed %}
+                                        {% endblock %}
+                                    {% endembed %}
+                                {% endblock %}
+                            {% endembed %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bc-flex bc-flex-col bc-place-items-center bc-gap-y-6 bc-px-6 bc-pb-6">
+                <div class="bc-w-full bc-flex bc-justify-end bc-gap-x-2 bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                    <span class="bc-text-sm bc-font-medium brlbs-cmpnt-text">{{ localized.text.pressNextToProceed | raw }}</span>
+                    <span class="bc-animate-bounce">{{ chevron_down_icon.component({ }) }}</span>
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 4,
+        steps: data.setupSteps,
+    }, localized) }}
+</div>
+
+
+

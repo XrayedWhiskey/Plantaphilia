@@ -1,0 +1,20 @@
+{% if data.displayModeSettings.value == 'simplified' %}
+    <div class="md:bc-w-2/3 bc-rounded-md bc-my-6 bc-p-0.5">
+        <div class="bc-flex bc-items-center bc-space-x-4 brlbs-cmpnt-alert brlbs-cmpnt-alert-info">
+            <div class="bc-text-xs">
+                {% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+                {{ switch_button.component({
+                    backgroundColorChecked: 'aria-checked:bc-bg-slate-950',
+                    focusColor: 'focus:bc-ring-slate-950',
+                    iconColorChecked: 'bc-text-slate-950',
+                    id: 'displayModeSettingsToggle',
+                    label: localized.field.displayModeSettingsToggle,
+                    value: data.displayModeSettings.value == 'simplified',
+                }) }}
+            </div>
+            <div>
+                {{ localized.alert.displayModeSettingsIsSetToSimplified | raw }}
+            </div>
+        </div>
+    </div>
+{% endif %}

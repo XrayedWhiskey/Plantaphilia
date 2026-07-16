@@ -1,11 +1,96 @@
 /**
  * New admin js
  *
- * @version 7.0.0
+ * @version 7.3.1
  */
 
 jQuery( document ).ready(
   function ($) {
+    // D4: Success Toast after settings save
+    (function() {
+      var urlParams = new URLSearchParams( window.location.search );
+      if ( urlParams.get( 'success' ) === '1' ) {
+        // Create toast element
+        var toast = $( '<div class="wcj-success-toast">' +
+          '<span class="dashicons dashicons-yes-alt"></span>' +
+          '<span>Settings saved successfully</span>' +
+          '<button type="button" class="wcj-success-toast-close" aria-label="Dismiss">' +
+            '<span class="dashicons dashicons-no-alt"></span>' +
+          '</button>' +
+        '</div>' );
+
+        $( 'body' ).append( toast );
+
+        // Auto-dismiss after 5 seconds
+        var dismissTimeout = setTimeout( function() {
+          dismissToast( toast );
+        }, 5000 );
+
+        // Manual dismiss on click
+        toast.find( '.wcj-success-toast-close' ).on( 'click', function() {
+          clearTimeout( dismissTimeout );
+          dismissToast( toast );
+        } );
+
+        function dismissToast( toastEl ) {
+          toastEl.addClass( 'wcj-toast-hiding' );
+          setTimeout( function() {
+            toastEl.remove();
+          }, 300 );
+        }
+
+        // Remove success param from URL without reload (clean URL)
+        if ( window.history.replaceState ) {
+          urlParams.delete( 'success' );
+          var newUrl = window.location.pathname + '?' + urlParams.toString() + window.location.hash;
+          window.history.replaceState( {}, '', newUrl );
+        }
+      }
+    })();
+
+    // GTM/GA4 click tracking using stable data attributes
+    $(document).on('click keydown', '.wcj-btn-chip', function(e){
+      var isKeyboard = (e.type === 'keydown' && (e.key === 'Enter' || e.key === ' '));
+      if (e.type === 'click' || isKeyboard) {
+        var $chips = $(this).closest('#wcj-promo-chips');
+        var eventName = $(this).attr('data-gtm') || $(this).attr('data-ga') || 'promo_click';
+        var payload = {
+          event: eventName,
+          placement: $(this).attr('data-placement') || '',
+          page: $chips.attr('data-page') || '',
+          section: $chips.attr('data-section') || ''
+        };
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(payload);
+        if (isKeyboard) {
+          // Space key should activate link navigation
+          if (e.key === ' ') {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (href) { window.location.href = href; }
+          }
+        }
+      }
+    });
+
+    // Educator link tracking
+    $(document).on('click', '.wcj-educator-link', function(){
+      var context = $(this).data('context') || '';
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: 'educator_link', context: context });
+    });
+
+    // Sidebar click tracking
+    $(document).on('click', '.wcj-menubar a, #wcj-sidebar a', function(){
+      var $wrap = $(this).closest('.wcj-menubar');
+      if (!$wrap.length) { $wrap = $(this).closest('#wcj-sidebar'); }
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: $wrap.data('gtm') || 'booster_click_sidebar',
+        page: $wrap.data('page') || '',
+        section: $wrap.data('section') || ''
+      });
+    });
 
     $( '.wcj-setting-color-picker' ).wpColorPicker();
     $( 'select.wcj_setting_multiselect' ).select2();

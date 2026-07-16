@@ -32,13 +32,13 @@ class Helper {
 
 		if ( empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$is_mobile = false;
-		} elseif ( @strpos( $_SERVER['HTTP_USER_AGENT'], 'Mobile' ) !== false // many mobile devices (all iPhone, iPad, etc.)
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Android' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Silk/' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Kindle' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'BlackBerry' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mini' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mobi' ) !== false ) {
+		} elseif ( @strpos( $_SERVER['HTTP_USER_AGENT'], 'Mobile' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Android' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Silk/' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Kindle' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'BlackBerry' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mini' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mobi' ) !== false ) { // phpcs:ignore
 				$is_mobile = true;
 		} else {
 			$is_mobile = false;
@@ -72,7 +72,7 @@ class Helper {
 		);
 
 		foreach ( $builder_paramas as $param ) {
-			if ( isset( $_GET[ $param ] ) ) {
+			if ( isset( $_GET[ $param ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				return true;
 			}
 		}
@@ -87,8 +87,8 @@ class Helper {
 	 */
 	public function is_plugin_installed() {
 		if (
-			isset( $_GET['sgCacheCheck'] ) &&
-			md5( 'wpCheck' ) === $_GET['sgCacheCheck']
+			isset( $_GET['sgCacheCheck'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			md5( 'wpCheck' ) === $_GET['sgCacheCheck'] // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		) {
 			die( 'OK' );
 		}
@@ -165,7 +165,7 @@ class Helper {
 		// Check if action is set and if it's set, check if it exists in the whitelist.
 		if (
 			empty( $_POST['action'] ) || // phpcs:ignore
-			! empty( $_POST['action'] ) && ! in_array( $_POST['action'], Helper::$whitelisted_ajax_actions )
+			! empty( $_POST['action'] ) && ! in_array( $_POST['action'], Helper::$whitelisted_ajax_actions ) // phpcs:ignore
 		) {
 			return true;
 		}

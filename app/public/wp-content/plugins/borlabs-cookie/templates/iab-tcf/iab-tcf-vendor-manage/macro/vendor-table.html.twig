@@ -1,0 +1,168 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.name | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.vendorId | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.purposes | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.features | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.legIntPurposes | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.specialFeatures | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.specialPurposes | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.status | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                {% block content %}
+                    {{ identification_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.vendors.data is empty %}
+                <tr>
+                    <td colspan="9" class="bc-py-4 bc-text-center">
+                        {{ localized.alert.noVendorConfigured | raw }}
+                    </td>
+                </tr>
+            {% else %}
+                {% for vendor in config.vendors.data %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ vendor.name | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ vendor.vendorId }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if vendor.purposes | length %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        {{ x_circle_icon.component({}) }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if vendor.features | length %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        {{ x_circle_icon.component({}) }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if vendor.legIntPurposes | length %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        {{ x_circle_icon.component({}) }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if vendor.specialFeatures | length %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        {{ x_circle_icon.component({}) }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if vendor.specialPurposes | length %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        {{ x_circle_icon.component({}) }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/table/toggle-switch.html.twig" as toggle_switch %}
+                                {% block content %}
+                                    {{ toggle_switch.component({
+                                        status: vendor.status,
+                                        href:  wpNonceUrl("?page=#{config.controllerId}&action=switch-status&id=#{vendor.id}", "#{config.controllerId}-#{vendor.id}-switch-status")
+                                    }) }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                                {% block content %}
+                                    <button
+                                        data-brlbs-modal-target="{{ 'borlabsModalVendorDetails-' ~ vendor.id }}">
+                                        {{ identification_icon.component({}) }}
+                                    </button>
+                                    {% embed "system/embed/modal/modal.html.twig" with {
+                                        id: 'borlabsModalVendorDetails-' ~ vendor.id,
+                                        maxWidth: 'bc-max-w-2xl',
+                                        title: vendor.name,
+                                    } %}
+                                        {% block icon %}
+                                            {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                                            <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                                {{ identification_icon.component({}) }}
+                                            </div>
+                                        {% endblock %}
+
+                                        {% block description %}
+                                            {% import "iab-tcf/iab-tcf-vendor-manage/macro/vendor-details.html.twig" as vendor_details %}
+                                            {{ vendor_details.component(vendor, localized.vendorDetails) }}
+                                        {% endblock %}
+                                    {% endembed %}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

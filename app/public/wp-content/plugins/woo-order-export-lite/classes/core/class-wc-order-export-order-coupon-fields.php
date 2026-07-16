@@ -13,9 +13,10 @@ class WC_Order_Export_Order_Coupon_Fields {
 		global $wpdb;
 
 		$this->coupon_meta     = array();
-		$get_coupon_meta = ( array_diff( $labels->get_keys(), array( 'code', 'discount_amount', 'discount_amount_tax', 'excerpt' ) ) );
+		$get_coupon_meta = array_intersect( $labels->get_keys(), array( 'code', 'discount_amount', 'discount_amount_tax', 'excerpt' ) ) ;
 
 		if ( $get_coupon_meta ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$recs = $wpdb->get_results( $wpdb->prepare( "SELECT meta_value,meta_key FROM {$wpdb->postmeta} AS meta
 				JOIN {$wpdb->posts} AS posts ON posts.ID = meta.post_id
 				WHERE posts.post_title=%s", $item->get_name() ) );
@@ -29,7 +30,7 @@ class WC_Order_Export_Order_Coupon_Fields {
 					$this->coupon_meta[ $meta->key ] = $meta->value;
 				};
 			} catch (Exception $e) {
-				// Invalid coupon. deleted ? 
+				// Invalid coupon. deleted ?
 			}
 		}
 		$this->item = $item;
@@ -47,6 +48,11 @@ class WC_Order_Export_Order_Coupon_Fields {
 			return $this->item->get_discount();
 		} elseif ( $field == 'discount_amount_tax' ) {
 			return $this->item->get_discount_tax();
+		} elseif ( $field == 'discount_type' ) {
+			if(!$this->coupon_object) return '';
+			$types = wc_get_coupon_types();
+			$type = $this->coupon_object->get_discount_type();
+			return $types[$type]??$type;
 		} elseif ( $field == 'excerpt' ) {
 			return $this->coupon_object ? $this->coupon_object->get_description(): '';
 		} elseif ( isset( $this->coupon_meta[ $field ] ) ) {

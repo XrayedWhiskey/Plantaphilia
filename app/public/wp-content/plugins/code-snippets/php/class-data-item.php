@@ -2,6 +2,8 @@
 
 namespace Code_Snippets;
 
+use WP_Exception;
+
 /**
  * Base class for representing an item of data without needing to use direct access or individual getter and setter functions.
  *
@@ -16,21 +18,21 @@ abstract class Data_Item {
 	 *
 	 * @var array<string, mixed>
 	 */
-	protected $fields;
+	protected array $fields;
 
 	/**
 	 * List of default values provided for fields.
 	 *
 	 * @var array<string, mixed>
 	 */
-	protected $default_values;
+	protected array $default_values;
 
 	/**
 	 * Optional list of field name aliases to map when resolving a field name.
 	 *
 	 * @var array<string, string> Field alias names keyed to actual field names.
 	 */
-	protected $field_aliases;
+	protected array $field_aliases;
 
 	/**
 	 * Class constructor.
@@ -81,7 +83,13 @@ abstract class Data_Item {
 	 * @return array<string, mixed> Field names keyed to current values.
 	 */
 	public function get_fields(): array {
-		return $this->fields;
+		$fields = [];
+
+		foreach ( $this->get_allowed_fields() as $field_name ) {
+			$fields[ $field_name ] = $this->$field_name;
+		}
+
+		return $fields;
 	}
 
 	/**
@@ -90,15 +98,13 @@ abstract class Data_Item {
 	 * @return array<string, mixed>
 	 */
 	public function get_modified_fields(): array {
-		$modified_fields = [];
-
-		foreach ( $this->get_fields() as $field => $value ) {
-			if ( $value && $value !== $this->default_values[ $field ] ) {
-				$modified_fields[ $field ] = $value;
-			}
-		}
-
-		return $modified_fields;
+		return array_filter(
+			$this->get_fields(),
+			function ( $value, $field ) {
+				return $value && $value !== $this->default_values[ $field ];
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
 	}
 
 	/**
@@ -130,6 +136,8 @@ abstract class Data_Item {
 	 * @param string $field The field name.
 	 *
 	 * @return mixed The field value
+	 *
+	 * @throws WP_Exception If the field name is not allowed.
 	 */
 	public function __get( string $field ) {
 		$field = $this->resolve_field_name( $field );
@@ -139,10 +147,10 @@ abstract class Data_Item {
 		}
 
 		if ( ! $this->is_allowed_field( $field ) ) {
-			if ( WP_DEBUG ) {
-				$message = sprintf( 'Trying to access invalid property on "%s" class: %s', get_class( $this ), $field );
-				// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
-				trigger_error( esc_html( $message ), E_USER_WARNING );
+			if ( function_exists( 'wp_trigger_error' ) ) {
+				// translators: 1: class name, 2: field name.
+				$message = sprintf( 'Trying to access invalid property on "%1$s" class: %2$s', get_class( $this ), $field );
+				wp_trigger_error( __FUNCTION__, $message, E_USER_WARNING );
 			}
 
 			return null;
@@ -156,15 +164,17 @@ abstract class Data_Item {
 	 *
 	 * @param string $field The field name.
 	 * @param mixed  $value The field value.
+	 *
+	 * @throws WP_Exception If the field name is not allowed.
 	 */
 	public function __set( string $field, $value ) {
 		$field = $this->resolve_field_name( $field );
 
 		if ( ! $this->is_allowed_field( $field ) ) {
-			if ( WP_DEBUG ) {
+			if ( function_exists( 'wp_trigger_error' ) ) {
+				// translators: 1: class name, 2: field name.
 				$message = sprintf( 'Trying to set invalid property on "%s" class: %s', get_class( $this ), $field );
-				// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
-				trigger_error( esc_html( $message ), E_USER_ERROR );
+				wp_trigger_error( __FUNCTION__, $message, E_USER_ERROR );
 			}
 
 			return;
@@ -204,8 +214,8 @@ abstract class Data_Item {
 	 * @return bool true if the is allowed, false if invalid.
 	 */
 	public function is_allowed_field( string $field ): bool {
-		return $this->fields && array_key_exists( $field, $this->fields ) ||
-		       $this->field_aliases && array_key_exists( $field, $this->field_aliases );
+		return ( $this->fields && array_key_exists( $field, $this->fields ) ) ||
+		       ( $this->field_aliases && array_key_exists( $field, $this->field_aliases ) );
 	}
 
 	/**
@@ -216,12 +226,19 @@ abstract class Data_Item {
 	 * @param mixed  $value The field value.
 	 *
 	 * @return bool true if the field was set successfully, false if the field name is invalid.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 */
 	public function set_field( string $field, $value ): bool {
 		if ( ! $this->is_allowed_field( $field ) ) {
 			return false;
 		}
 
+		/**
+		 * Above is_allowed_field check should bypass exception.
+		 *
+		 * @noinspection PhpUnhandledExceptionInspection
+		 */
 		$this->__set( $field, $value );
 
 		return true;

@@ -67,7 +67,7 @@ function wc_gzd_get_gzd_product( $product ) {
 		return $product;
 	}
 
-	if ( ! $product ) {
+	if ( ! is_a( $product, 'WC_Product' ) ) {
 		return false;
 	}
 
@@ -186,6 +186,8 @@ function wc_gzd_product_matches_extended_type( $types, $product ) {
 				$matches_type = wc_gzd_get_product( $product )->is_defective_copy();
 			} elseif ( 'photovoltaic_system' === $type ) {
 				$matches_type = wc_gzd_get_product( $product )->is_photovoltaic_system();
+			} elseif ( 'is_food' === $type ) {
+				$matches_type = wc_gzd_get_product( $product )->is_food();
 			} else {
 				$getter = 'is_' . $type;
 				try {
@@ -349,16 +351,16 @@ function wc_gzd_recalculate_unit_price( $args = array(), $product = false ) {
  *
  * @return array|string|boolean
  */
-function wc_gzd_get_valid_product_delivery_time_slugs( $maybe_slug, $allow_add_new = true ) {
+function wc_gzd_get_or_create_product_term_slug( $maybe_slug, $taxonomy, $allow_add_new = true ) {
 	if ( is_array( $maybe_slug ) ) {
 		return array_filter(
 			array_map(
-				function( $maybe_slug ) use ( $allow_add_new ) {
-					return wc_gzd_get_valid_product_delivery_time_slugs( $maybe_slug, $allow_add_new );
+				function ( $maybe_slug ) use ( $allow_add_new, $taxonomy ) {
+					return wc_gzd_get_or_create_product_term_slug( $maybe_slug, $taxonomy, $allow_add_new );
 				},
 				$maybe_slug
 			),
-			function( $x ) {
+			function ( $x ) {
 				return false !== $x;
 			}
 		);
@@ -368,7 +370,7 @@ function wc_gzd_get_valid_product_delivery_time_slugs( $maybe_slug, $allow_add_n
 		if ( is_a( $maybe_slug, 'WP_Term' ) ) {
 			$slug = $maybe_slug->slug;
 		} elseif ( is_numeric( $maybe_slug ) ) {
-			$term = get_term_by( 'term_id', $maybe_slug, 'product_delivery_time' );
+			$term = get_term_by( 'term_id', $maybe_slug, $taxonomy );
 
 			if ( $term ) {
 				$slug = $term->slug;
@@ -377,16 +379,16 @@ function wc_gzd_get_valid_product_delivery_time_slugs( $maybe_slug, $allow_add_n
 
 		if ( ! $slug ) {
 			$possible_name = $maybe_slug;
-			$term          = get_term_by( 'slug', sanitize_title( $possible_name ), 'product_delivery_time' );
+			$term          = get_term_by( 'slug', sanitize_title( $possible_name ), $taxonomy );
 
 			if ( ! $term ) {
 				$slug = false;
 
 				if ( $allow_add_new ) {
-					$term_details = wp_insert_term( $possible_name, 'product_delivery_time' );
+					$term_details = wp_insert_term( $possible_name, $taxonomy );
 
 					if ( ! is_wp_error( $term_details ) ) {
-						if ( $term = get_term_by( 'id', $term_details['term_id'], 'product_delivery_time' ) ) {
+						if ( $term = get_term_by( 'id', $term_details['term_id'], $taxonomy ) ) {
 							$slug = $term->slug;
 						}
 					}
@@ -398,6 +400,15 @@ function wc_gzd_get_valid_product_delivery_time_slugs( $maybe_slug, $allow_add_n
 
 		return $slug;
 	}
+}
+
+/**
+ * @param $maybe_slug
+ *
+ * @return array|string|boolean
+ */
+function wc_gzd_get_valid_product_delivery_time_slugs( $maybe_slug, $allow_add_new = true ) {
+	return wc_gzd_get_or_create_product_term_slug( $maybe_slug, 'product_delivery_time', $allow_add_new );
 }
 
 function wc_gzd_product_review_is_verified( $comment_id ) {
@@ -477,5 +488,5 @@ function wc_gzd_get_product_delivery_time_classname( $product ) {
 	$delivery_time_str = str_replace( str_replace( '{delivery_time}', '', get_option( 'woocommerce_gzd_delivery_time_text' ) ), '', $delivery_time );
 	$classname         = strtolower( sanitize_html_class( preg_replace( '#[ -]+#', '-', trim( $delivery_time_str ) ) ) );
 
-	return apply_filters( 'woocommerce_gzd_product_delivery_time_classname', $classname, $product );
+	return apply_filters( 'woocommerce_gzd_product_delivery_time_classname', "delivery-time-{$classname}", $product );
 }

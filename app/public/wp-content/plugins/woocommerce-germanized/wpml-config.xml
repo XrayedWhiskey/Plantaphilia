@@ -23,8 +23,10 @@
         <custom-field action="copy">_deposit_type</custom-field>
         <custom-field action="copy">_deposit_quantity</custom-field>
         <custom-field action="copy">_tax_class_by_countries</custom-field>
+        <custom-field action="copy">_manufacturer_slug</custom-field>
         <custom-field action="translate">_mini_desc</custom-field>
         <custom-field action="translate">_defect_description</custom-field>
+        <custom-field action="translate">_safety_instructions</custom-field>
         <custom-field action="translate">_ingredients</custom-field>
         <custom-field action="translate">_food_distributor</custom-field>
         <custom-field action="translate">_food_place_of_origin</custom-field>
@@ -32,6 +34,7 @@
         <custom-field action="copy">_service</custom-field>
         <custom-field action="copy">_differential_taxation</custom-field>
         <custom-field action="translate">_warranty_attachment_id</custom-field>
+        <custom-field action="translate">_safety_attachment_ids</custom-field>
         <custom-field action="copy-once">_ts_mpn</custom-field>
         <custom-field action="copy-once">_ts_gtin</custom-field>
         <custom-field action="translate">_legal_text</custom-field>
@@ -40,12 +43,17 @@
         <custom-field action="copy">_rounding_rule</custom-field>
         <custom-field action="copy">_nutrient_type</custom-field>
     </custom-fields>
+    <custom-term-fields>
+		<custom-term-field action="copy-once" style="textarea">formatted_address</custom-term-field>
+		<custom-term-field action="copy-once" style="textarea">formatted_eu_address</custom-term-field>
+	</custom-term-fields>
     <taxonomies>
         <taxonomy translate="1">product_price_label</taxonomy>
         <taxonomy translate="1">product_unit</taxonomy>
         <taxonomy translate="1">product_delivery_time</taxonomy>
         <taxonomy translate="1">product_allergen</taxonomy>
         <taxonomy translate="1">product_nutrient</taxonomy>
+        <taxonomy translate="1">product_manufacturer</taxonomy>
     </taxonomies>
     <admin-texts>
         <key name="woocommerce_gzd_small_enterprise_text" />

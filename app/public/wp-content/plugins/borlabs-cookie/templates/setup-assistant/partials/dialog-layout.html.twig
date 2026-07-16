@@ -1,0 +1,88 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="dialog-layout">
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/radio-card.html.twig" as radio_card %}
+
+        {% block mainHeader %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.layout,
+                subtitle: localized.headline.dialogSettings,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            <fieldset class="bc-p-6">
+                <legend class="bc-pt-6 bc-text-lg bc-font-medium bc-text-center">{{ localized.headline.chooseDialogLayout | raw }}</legend>
+                <div class="bc-flex bc-flex-col sm:bc-flex-row bc-gap-y-6 sm:bc-gap-x-4 bc-justify-center">
+                    {{ radio_card.component({
+                        checked: true,
+                        description: localized.text.layoutBoxCompact,
+                        label: localized.option.layoutBoxCompact,
+                        id: 'layoutBoxCompact',
+                        imageUrl: imageUrl('borlabs-cookie-layout-box-compact.png'),
+                        name: 'layout',
+                        value: 'box-compact',
+                        width: 'bc-w-full sm:bc-w-1/4',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.layoutBoxAdvanced,
+                        label: localized.option.layoutBoxAdvanced,
+                        id: 'layoutBoxAdvanced',
+                        imageUrl: imageUrl('borlabs-cookie-layout-box-advanced.png'),
+                        name: 'layout',
+                        value: 'box-advanced',
+                        width: 'bc-w-full sm:bc-w-1/4',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.layoutBoxPlus,
+                        label: localized.option.layoutBoxPlus,
+                        id: 'layoutBoxPlus',
+                        imageUrl: imageUrl('borlabs-cookie-layout-box-plus.png'),
+                        name: 'layout',
+                        value: 'box-plus',
+                        width: 'bc-w-full sm:bc-w-1/4',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.layoutBarAdvanced,
+                        label: localized.option.layoutBarAdvanced,
+                        id: 'layoutBarAdvanced',
+                        imageUrl: imageUrl('borlabs-cookie-layout-bar-advanced.png'),
+                        name: 'layout',
+                        value: 'bar-advanced',
+                        width: 'bc-w-full sm:bc-w-1/4',
+                    }, localized) }}
+                </div>
+            </fieldset>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLayout', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineLayout | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.layoutA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.layoutB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 1 + (data.setupType == 'guided' ? 5 : 0),
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

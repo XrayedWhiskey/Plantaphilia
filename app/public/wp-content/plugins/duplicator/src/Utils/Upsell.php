@@ -6,27 +6,11 @@
 
 namespace Duplicator\Utils;
 
-use Duplicator\Installer\Utils\InstallerUpsell;
-
 /**
  * Upsell class, this class is used on plugin and installer
  */
-class Upsell extends InstallerUpsell
+class Upsell
 {
-    /**
-     * Utils::getCampainUrl
-     * Get upgrade campaign URL
-     *
-     * @param string $medium  utm_medium flag
-     * @param string $content utm_content flag
-     *
-     * @return string
-     */
-    public static function getCampaignUrl($medium, $content = '')
-    {
-        return apply_filters('duplicator_upsell_url_filter', parent::getCampaignUrl($medium, $content));
-    }
-
     /**
      * Get Pro features list
      *

@@ -1,0 +1,31 @@
+{% macro component(config) %}
+    {# Import the color-selection field macro #}
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+        {% import "system/macro/form-component/color-selection.html.twig" as color_selection %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% block label %}
+            <label class="bc-flex bc-items-center bc-space-x-1">
+                <span>{{ config.title | raw }}</span>
+                {% if config.hint is not empty %}
+                    {{ hint.component({
+                        hint: config.hint,
+                    }) }}
+                {% endif %}
+            </label>
+        {% endblock %}
+        {% block input %}
+            <div class="bc-flex">
+                <div class="bc-w-1/2">
+                    {# Embed color-selection field #}
+                    {{ color_selection.component(config.colorA) }}
+                    <label class="bc-block" for="{{ config.colorA.id }}">{{ config.colorA.label | raw }}</label>
+                </div>
+                <div class="bc-w-1/2">
+                    {# Embed color-selection field #}
+                    {{ color_selection.component(config.colorB) }}
+                    <label class="bc-block" for="{{ config.colorB.id }}">{{ config.colorB.label | raw }}</label>
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

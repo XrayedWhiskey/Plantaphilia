@@ -11,7 +11,7 @@ define(
 );
 
 if (function_exists('plugin_dir_url')) {
-    define('DUPLICATOR_VERSION', '1.5.10.2');
+    define('DUPLICATOR_VERSION', '1.5.16');
     define('DUPLICATOR_PLUGIN_URL', plugin_dir_url(__FILE__));
     define('DUPLICATOR_SITE_URL', get_site_url());
 
@@ -20,7 +20,7 @@ if (function_exists('plugin_dir_url')) {
       win:  D:/home/path/file.txt
       SSDIR = SnapShot Directory */
     if (!defined('ABSPATH')) {
-        define('ABSPATH', dirname(__FILE__));
+        define('ABSPATH', __DIR__);
     }
 
     //PATH CONSTANTS
@@ -67,6 +67,8 @@ if (function_exists('plugin_dir_url')) {
     define("DUPLICATOR_FEEDBACK_NOTICE_SHOW_AFTER_NO_PACKAGE", 5);
 
     define('DUPLICATOR_LOCAL_OVERWRITE_PARAMS', 'duplicator_pro_params_overwrite');
+
+    define('DUPLICATOR_LOGS_DIR_NAME', 'logs');
 
     // MATCH archive pattern, matches[1] is archive name and hash
     define('DUPLICATOR_ARCHIVE_REGEX_PATTERN', '/^(.+_[a-z0-9]{7,}_[0-9]{14})_archive\.(?:zip|daf)$/');

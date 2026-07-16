@@ -25,6 +25,7 @@ namespace Code_Snippets\Settings;
  * @property-read mixed                 $default            Default setting value.
  *
  * @property-read string                $input_name         Value of `name` HTML attribute on an input element.
+ * @property-read string                $element_id
  */
 class Setting_Field {
 
@@ -33,21 +34,21 @@ class Setting_Field {
 	 *
 	 * @var string
 	 */
-	private $field_id;
+	private string $field_id;
 
 	/**
 	 * Settings section identifier.
 	 *
 	 * @var string
 	 */
-	private $section;
+	private string $section;
 
 	/**
 	 * List of possible arguments.
 	 *
 	 * @var array<string, mixed>
 	 */
-	private $args = array(
+	private array $args = array(
 		'desc'    => '',
 		'label'   => '',
 		'min'     => null,
@@ -116,7 +117,11 @@ class Setting_Field {
 	 * Render a callback field.
 	 */
 	public function render_callback_field() {
-		call_user_func( $this->render_callback );
+		if ( ! is_callable( $this->render_callback ) ) {
+			return;
+		}
+		
+		call_user_func( $this->render_callback, $this->args );
 	}
 
 	/**
@@ -191,9 +196,11 @@ class Setting_Field {
 	 */
 	private function render_text_field() {
 		printf(
-			'<input type="text" name="%s" value="%s" class="regular-text">',
+			'<input id="%s" type="text" name="%s" value="%s" class="regular-text %s">',
+			esc_attr( $this->element_id ),
 			esc_attr( $this->input_name ),
-			esc_attr( $this->get_saved_value() )
+			esc_attr( $this->get_saved_value() ),
+			esc_attr( $this->element_id )
 		);
 
 		if ( $this->label ) {

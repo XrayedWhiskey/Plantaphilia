@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de" data-accent="amethyst" data-density="compact" data-viewport="desktop">
+<head>
+<meta charset="utf-8">
+<title>Kasse · Plantaphilia</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="ui_kits/web/styles.css">
+<link rel="stylesheet" href="cart-checkout.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: var(--bg-deep); color: var(--creme); font-family: var(--sans-body); }
+  body { overflow-x: hidden; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="ui_kits/web/components.jsx"></script>
+  <script type="text/babel" src="cart-checkout.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+
+  <script type="text/babel">
+    const {useState, useEffect} = React;
+    const {Footer} = window.PA;
+    const {
+      Steps, MiniCart, MiniHead,
+      ContactForm, AddressForm, ShippingOptions, PaymentOptions,
+      ConfirmCard, LoginBar, Summary, Field,
+      SAMPLE_CART, ADDONS, SHIPPING, fmt,
+    } = window.CC;
+
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "viewport": "desktop",
+      "auth": "guest",
+      "billingDifferent": false
+    }/*EDITMODE-END*/;
+
+    // Pre-filled buyer values (when auth = buyer)
+    const PREFILL = {
+      email: 'friedrich.koehler@example.de',
+      ship_salutation: 'herr',
+      ship_first: 'Friedrich',
+      ship_last: 'Köhler',
+      ship_street: 'Karl-Tauchnitz-Straße 4',
+      ship_zip: '04107',
+      ship_city: 'Leipzig',
+      ship_country: 'DE',
+      ship_phone: '+49 341 1234567',
+    };
+    const EMPTY = {
+      email: '',
+      ship_salutation: '', ship_first: '', ship_last: '',
+      ship_street: '', ship_zip: '', ship_city: '', ship_country: 'DE',
+      ship_phone: '',
+    };
+
+    function App() {
+      const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+      const [values, setValues] = useState(t.auth === 'buyer' ? PREFILL : EMPTY);
+      const [shipping, setShipping] = useState('standard');
+      const [payment, setPayment] = useState('invoice');
+      const [pay, setPay] = useState({});
+      const [confirm, setConfirm] = useState({ agb: false, privacy: false });
+      const [addons] = useState({ care: true, gift: true });
+
+      // Reflect viewport
+      useEffect(() => {
+        document.documentElement.setAttribute('data-viewport', t.viewport);
+      }, [t.viewport]);
+
+      // Reset prefill when auth changes
+      useEffect(() => {
+        setValues(t.auth === 'buyer' ? PREFILL : EMPTY);
+      }, [t.auth]);
+
+      function set(k, v) { setValues((s) => ({ ...s, [k]: v })); }
+      function setPayField(k, v) { setPay((s) => ({ ...s, [k]: v })); }
+      function setConf(k, v) { setConfirm((s) => ({ ...s, [k]: v })); }
+
+      const items = SAMPLE_CART;
+      const subtotal = items.reduce((s, i) => s + i.priceN * i.qty, 0);
+      const shipObj = SHIPPING.find((s) => s.id === shipping);
+      const shipPriceN = (shipObj.free80 && subtotal >= 80) ? 0 : shipObj.priceN;
+
+      const canSubmit = confirm.agb && confirm.privacy && values.email && values.ship_first && values.ship_last && values.ship_street && values.ship_zip && values.ship_city;
+
+      return (
+        <>
+          <MiniHead />
+
+          <main className="cc-page" data-screen-label="Kasse">
+            <div className="cc-wrap">
+              <Steps current="shipping" />
+
+              <header className="cc-pagehead">
+                <div className="cc-pagehead-l">
+                  <div className="eyebrow">· Versand & Zahlung ·</div>
+                  <h1>Zur <em>Kasse</em>.</h1>
+                </div>
+                <div className="cc-pagehead-r">
+                  Letzter Schritt vor der Reise Ihrer Pflanzen. Wir packen Mo bis Mi — Ihre Lieferung kommt voraussichtlich <a href="#">Mi, 20. Mai</a>.
+                </div>
+              </header>
+
+              <div className="cc-grid">
+                <div className="cc-main">
+
+                  {t.auth === 'guest' && <LoginBar />}
+
+                  {/* — Section 1: Contact — */}
+                  <section className="cc-section">
+                    <div className="cc-sect-head">
+                      <h2><em>I.</em> &nbsp;Kontakt</h2>
+                      <span className="meta">Schritt 1 von 4</span>
+                    </div>
+                    <ContactForm values={values} onChange={set} />
+                  </section>
+
+                  {/* — Section 2: Shipping address — */}
+                  <section className="cc-section">
+                    <div className="cc-sect-head">
+                      <h2><em>II.</em> &nbsp;Lieferadresse</h2>
+                      <span className="meta">Schritt 2 von 4</span>
+                    </div>
+                    <AddressForm values={values} onChange={set} prefix="ship" />
+
+                    <label className="cc-checkbox" style={{marginTop: 18, display:'flex'}}>
+                      <input type="checkbox" checked={!!t.billingDifferent}
+                        onChange={(ev) => setTweak('billingDifferent', ev.target.checked)} />
+                      <span className="box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12l5 5L20 7"/></svg></span>
+                      <span>Rechnungsadresse weicht von der Lieferadresse ab.</span>
+                    </label>
+
+                    {t.billingDifferent && (
+                      <div style={{marginTop:24, paddingTop:24, borderTop:'1px solid var(--border-hair)'}}>
+                        <div className="cc-sect-head" style={{borderBottom:0, paddingBottom:0, marginBottom: 14}}>
+                          <h2 style={{fontSize: 18}}>· Rechnungsadresse ·</h2>
+                        </div>
+                        <AddressForm values={values} onChange={set} prefix="bill" />
+                      </div>
+                    )}
+                  </section>
+
+                  {/* — Section 3: Shipping method — */}
+                  <section className="cc-section">
+                    <div className="cc-sect-head">
+                      <h2><em>III.</em> &nbsp;Versandart</h2>
+                      <span className="meta">Schritt 3 von 4</span>
+                    </div>
+                    <ShippingOptions selected={shipping} onSelect={setShipping} subtotal={subtotal} />
+                  </section>
+
+                  {/* — Section 4: Payment — */}
+                  <section className="cc-section">
+                    <div className="cc-sect-head">
+                      <h2><em>IV.</em> &nbsp;Zahlungsart</h2>
+                      <span className="meta">Schritt 4 von 4</span>
+                    </div>
+                    <PaymentOptions selected={payment} onSelect={setPayment} values={pay} onChange={setPayField} />
+                  </section>
+
+                  {/* — Confirm — */}
+                  <section className="cc-section">
+                    <ConfirmCard values={confirm} onChange={setConf} />
+                  </section>
+
+                </div>
+
+                <div className="cc-aside">
+                  <aside className="cc-summary">
+                    <div className="cc-summary-stamp">Tafel · Bestellung</div>
+                    <div className="cc-summary-eyebrow">· Ihre Bestellung ·</div>
+                    <h2 className="cc-summary-h">{items.reduce((s,i)=>s+i.qty,0)} <em>Pflanzen</em></h2>
+
+                    <MiniCart items={items} />
+
+                    <div className="cc-summary-row">
+                      <span className="lab">Zwischensumme</span>
+                      <span className="val">{fmt(subtotal)}</span>
+                    </div>
+                    {addons.gift && (
+                      <div className="cc-summary-row">
+                        <span className="lab">Pflanzenpass · Geschenk</span>
+                        <span className="val">{fmt(4.50)}</span>
+                      </div>
+                    )}
+                    <div className={'cc-summary-row ' + (shipPriceN === 0 ? 'free' : '')}>
+                      <span className="lab">Versand · {shipObj.name.split(' · ')[0]}</span>
+                      <span className="val">{shipPriceN === 0 ? 'Frei' : fmt(shipPriceN)}</span>
+                    </div>
+
+                    <div className="cc-summary-divider"></div>
+
+                    <div className="cc-summary-total">
+                      <span className="lab">Gesamt</span>
+                      <span className="val">{fmt(subtotal + (addons.gift ? 4.50 : 0) + shipPriceN)}</span>
+                    </div>
+                    <div className="cc-summary-tax">
+                      inkl. {fmt(((subtotal + (addons.gift ? 4.50 : 0) + shipPriceN) * 19 / 119))} MwSt. (19 %)
+                    </div>
+
+                    <button className="cc-cta" disabled={!canSubmit}>
+                      Jetzt bestellen
+                      <span className="arrow">→</span>
+                    </button>
+
+                    <div className="cc-trust" style={{marginTop: 22}}>
+                      <div className="cc-trust-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l9 4-3 11-6 5-6-5-3-11z"/></svg>
+                        <span>
+                          <b style={{fontStyle:'normal', fontFamily:'var(--sans-body)', fontSize:'10px', letterSpacing:'0.22em', textTransform:'uppercase', color:'var(--creme)'}}>14 Tage Pflanzengarantie</b>
+                          <br/>Bei Schäden tauschen wir aus oder erstatten — auf unsere Kosten.
+                        </span>
+                      </div>
+                      <div className="cc-trust-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                        <span>
+                          <b style={{fontStyle:'normal', fontFamily:'var(--sans-body)', fontSize:'10px', letterSpacing:'0.22em', textTransform:'uppercase', color:'var(--creme)'}}>Versand frühestens Mo, 19. Mai</b>
+                          <br/>Damit Ihre Pelargonien das Wochenende nicht im Lager verbringen.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{marginTop: 22, paddingTop: 22, borderTop: '1px solid var(--border-hair)', fontFamily: 'var(--serif-display)', fontStyle: 'italic', fontSize: 13, color: 'var(--creme-muted)', lineHeight: 1.5}}>
+                      <a href="Warenkorb.html" style={{color: 'var(--amethyst)', textDecoration: 'none', borderBottom: '1px solid var(--amethyst-dim)'}}>
+                        ← Warenkorb bearbeiten
+                      </a>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <Footer />
+
+          <TweaksPanel title="Tweaks">
+            <TweakSection label="Anzeige" />
+            <TweakRadio
+              label="Vorschau"
+              value={t.viewport}
+              options={['desktop','mobile']}
+              onChange={(v) => setTweak('viewport', v)}
+            />
+            <TweakSection label="Nutzer:in" />
+            <TweakRadio
+              label="Anmeldung"
+              value={t.auth}
+              options={[{value:'guest', label:'Gast'},{value:'buyer', label:'Eingeloggt'}]}
+              onChange={(v) => setTweak('auth', v)}
+            />
+            <TweakSection label="Adresse" />
+            <TweakToggle
+              label="Rechnungsadresse abweichend"
+              value={!!t.billingDifferent}
+              onChange={(v) => setTweak('billingDifferent', v)}
+            />
+          </TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+{% import "system/macro/row/checkbox-list.html.twig" as row_checkbox_list %}
+
+{% if isLicenseExpired() %}
+    {% if withOverwriteConfigurationOption %}
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+            {% block label %}
+                {% set synchronizeConfigurationHintText = localized.global.hint.synchronizeConfigurationRepositoryEntry %}
+
+                {% if isCreateAction == true and hasRepository == true %}
+                    {% set synchronizeConfigurationHintText = localized.global.hint.languages %}
+                {% elseif hasRepository == false %}
+                    {% set synchronizeConfigurationHintText = localized.global.hint.synchronizeConfiguration %}
+                {% endif %}
+
+                <div id="{{ generateFormFieldId('configuration', collectionName) }}-parent" class="bc-flex bc-items-center">
+                    <span>{{ isCreateAction == true and hasRepository == true ? localized.global.field.languages : localized.global.field.synchronizeConfiguration | raw }}</span>
+                    <div class="bc-inline-block bc-pl-1">
+                        {{ hint.component({
+                            hint: synchronizeConfigurationHintText
+                        }) }}
+                    </div>
+                </div>
+            {% endblock %}
+
+            {% block input %}
+                {{ getLicenseAlertMessage('licenseExpiredFeatureNotAvailable') | raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+
+    {% if withOverwriteTranslationOption and isCreateAction == false %}
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+            {% block label %}
+                {% set synchronizeTranslationHintText = localized.global.hint.synchronizeTranslationRepositoryEntry %}
+
+                {% if hasRepository == false %}
+                    {% set synchronizeTranslationHintText = localized.global.hint.synchronizeTranslation %}
+                {% endif %}
+
+                <div id="{{ generateFormFieldId('translation', collectionName) }}-parent" class="bc-flex bc-items-center">
+                    <span>{{ localized.global.field.synchronizeTranslation | raw }}</span>
+                    <div class="bc-inline-block bc-pl-1">
+                        {{ hint.component({
+                            hint: synchronizeTranslationHintText
+                        }) }}
+                    </div>
+                </div>
+            {% endblock %}
+
+            {% block input %}
+                {{ getLicenseAlertMessage('licenseExpiredFeatureNotAvailable') | raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+{% else %}
+    {% if withOverwriteConfigurationOption and checkboxes|length %}
+        {% set synchronizeConfigurationHintText = localized.global.hint.synchronizeConfigurationRepositoryEntry %}
+
+        {% if isCreateAction == true and hasRepository == true %}
+            {% set synchronizeConfigurationHintText = localized.global.hint.languages %}
+        {% elseif hasRepository == false %}
+            {% set synchronizeConfigurationHintText = localized.global.hint.synchronizeConfiguration %}
+        {% endif %}
+
+        {{ row_checkbox_list.component({
+            checkboxes: checkboxes,
+            checkedKeys: isCreateAction == true and hasRepository == true  ? checkedKeys : [],
+            hint: synchronizeConfigurationHintText,
+            id: generateFormFieldId('configuration', collectionName),
+            name: generateFormFieldName('configuration', collectionName),
+            title: isCreateAction == true and hasRepository == true ? localized.global.field.languages : localized.global.field.synchronizeConfiguration,
+        }, localized) }}
+    {% endif %}
+
+    {% if withOverwriteTranslationOption and checkboxes|length %}
+        {% if isCreateAction == false %}
+            {% set synchronizeTranslationHintText = localized.global.hint.synchronizeTranslationRepositoryEntry %}
+
+            {% if hasRepository == false %}
+                {% set synchronizeTranslationHintText = localized.global.hint.synchronizeTranslation %}
+            {% endif %}
+
+            {{ row_checkbox_list.component({
+                checkboxes: checkboxes,
+                checkedKeys: [],
+                hint: synchronizeTranslationHintText,
+                id: generateFormFieldId('translation', collectionName),
+                name: generateFormFieldName('translation', collectionName),
+                title: localized.global.field.synchronizeTranslation,
+            }, localized) }}
+        {% endif %}
+    {% endif %}
+{% endif %}

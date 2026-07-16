@@ -129,7 +129,7 @@ function wpvivid_general_settings()
         <div>
             <label>
                 <input type="checkbox" option="setting" name="ismerge" <?php echo esc_attr($wpvivid_ismerge); ?> />
-                <span><?php esc_html_e('Merge all the backup files into single package when a backup completes. This will save great disk spaces, though takes longer time. We recommended you check the option especially on sites with insufficient server resources.', 'wpvivid-backuprestore'); ?></span>
+                <span><?php esc_html_e('Merge all backup parts into single zip when a backup completes. This helps save disk spaces but can cause timeouts on restricted servers. We recommended unchecking it on servers with limited resources.', 'wpvivid-backuprestore'); ?></span>
             </label>
         </div>
         <div>

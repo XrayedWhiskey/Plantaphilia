@@ -173,7 +173,7 @@ class Front_End_Optimization {
 		// Get the home_url from database. Some plugins like qtranslate for example,
 		// modify the home_url, which result to wrong replacement with ABSPATH for resources loaded via link.
 		// Very ugly way to handle resources without protocol.
-		$result = parse_url( $home_url );
+		$result = wp_parse_url( $home_url );
 
 		$replace = $result['scheme'] . '://';
 
@@ -297,7 +297,7 @@ class Front_End_Optimization {
 	 */
 	public static function remove_query_strings( $src ) {
 		// Get the host.
-		$host = parse_url( $src, PHP_URL_HOST );
+		$host = wp_parse_url( $src, PHP_URL_HOST );
 
 		// Bail if the host is empty.
 		if ( empty( $host ) ) {
@@ -501,7 +501,7 @@ class Front_End_Optimization {
 		Supercacher::delete_assets();
 		Supercacher::purge_cache();
 		Supercacher::flush_memcache();
-		File_Cacher::purge_everything();
+		File_Cacher::get_instance()->purge_everything();
 	}
 
 	/**

@@ -61,7 +61,7 @@ trait File_Cacher_Trait {
 	 */
 	public function has_skip_cache_query_params() {
 		// Iterate through the query array and check for skip cache params.
-		foreach ( $_GET as $param => $value ) {
+		foreach ( $_GET as $param => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( in_array( $param, $this->bypass_query_params, true ) ) {
 				return true;
 			}
@@ -137,13 +137,13 @@ trait File_Cacher_Trait {
 	public static function is_mobile() {
 		if ( empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$is_mobile = false;
-		} elseif ( @strpos( $_SERVER['HTTP_USER_AGENT'], 'Mobile' ) !== false // many mobile devices (all iPhone, iPad, etc.)
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Android' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Silk/' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Kindle' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'BlackBerry' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mini' ) !== false
-			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mobi' ) !== false ) {
+		} elseif ( @strpos( $_SERVER['HTTP_USER_AGENT'], 'Mobile' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Android' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Silk/' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Kindle' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'BlackBerry' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mini' ) !== false // phpcs:ignore
+			|| @strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mobi' ) !== false ) { // phpcs:ignore
 				$is_mobile = true;
 		} else {
 			$is_mobile = false;

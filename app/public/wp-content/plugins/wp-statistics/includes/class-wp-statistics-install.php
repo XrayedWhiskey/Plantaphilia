@@ -2,29 +2,15 @@
 
 namespace WP_STATISTICS;
 
-use WP_Statistics\Components\AssetNameObfuscator;
+use WP_Statistics\Service\Database\Managers\TableHandler;
 
+/**
+ * DEPRECATED: This class is not supported anymore. Please do not use it in your code.
+ *
+ * @deprecated This class is deprecated. Use Core operations instead.
+ */
 class Install
 {
-
-    public function __construct()
-    {
-
-        // Create or Remove WordPress DB Table in Multi Site
-        add_action('wpmu_new_blog', array($this, 'add_table_on_create_blog'), 10, 1);
-        add_filter('wpmu_drop_tables', array($this, 'remove_table_on_delete_blog'));
-
-        // Change Plugin Action link in Plugin.php admin
-        add_filter('plugin_action_links_' . plugin_basename(WP_STATISTICS_MAIN_FILE), array($this, 'settings_links'), 10, 2);
-        add_filter('plugin_row_meta', array($this, 'add_meta_links'), 10, 2);
-
-        // Upgrade WordPress Plugin
-        add_action('init', array($this, 'plugin_upgrades'));
-
-        // Page Type Updater @since 12.6
-        Install::init_page_type_updater();
-    }
-
     /**
      * Install
      *
@@ -32,9 +18,37 @@ class Install
      */
     public function install($network_wide)
     {
+        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-option.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/DatabaseManager.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/Managers/TransactionHandler.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/AbstractDatabaseOperation.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/Operations/AbstractTableOperation.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/Operations/Create.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/Operations/Inspect.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/DatabaseFactory.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/Schema/Manager.php';
+        require_once WP_STATISTICS_DIR . 'src/Service/Database/Managers/TableHandler.php';
+        require_once WP_STATISTICS_DIR . 'src/Core/AbstractCore.php';
+        require_once WP_STATISTICS_DIR . 'src/Core/CoreFactory.php';
 
-        // Create MySQL Table
-        self::create_table($network_wide);
+        global $wpdb;
+
+
+        if (is_multisite() && $network_wide) {
+            $blog_ids = $wpdb->get_col("SELECT `blog_id` FROM $wpdb->blogs");
+            foreach ($blog_ids as $blog_id) {
+
+                switch_to_blog($blog_id);
+                $this->checkIsFresh();
+                TableHandler::createAllTables();
+                restore_current_blog();
+            }
+        } else {
+            $this->checkIsFresh();
+            TableHandler::createAllTables();
+        }
+
+        $this->markBackgroundProcessAsInitiated();
 
         // Create Default Option in Database
         self::create_options();
@@ -44,213 +58,61 @@ class Install
     }
 
     /**
-     * Adding new MYSQL Table in Activation Plugin
+     * Checks whether the plugin is a fresh installation.
      *
-     * @param $network_wide
+     * @return void
      */
-    public static function create_table($network_wide)
+    private function checkIsFresh()
     {
-        global $wpdb;
+        $version = get_option('wp_statistics_plugin_version');
 
-        if (is_multisite() && $network_wide) {
-            $blog_ids = $wpdb->get_col("SELECT `blog_id` FROM $wpdb->blogs");
-            foreach ($blog_ids as $blog_id) {
-
-                switch_to_blog($blog_id);
-                self::table_sql();
-                restore_current_blog();
-
-            }
+        if (empty($version)) {
+            update_option('wp_statistics_is_fresh', true);
         } else {
-            self::table_sql();
+            update_option('wp_statistics_is_fresh', false);
+        }
+
+        $installationTime = get_option('wp_statistics_installation_time');
+        if (empty($installationTime)) {
+            update_option('wp_statistics_installation_time', time());
         }
     }
 
     /**
-     * Create Database Table
+     * Determines if the plugin is marked as freshly installed.
+     *
+     * @return bool.
      */
-    public static function table_sql()
+    public static function isFresh()
     {
-        // Load dbDelta WordPress
-        self::load_dbDelta();
+        $isFresh = get_option('wp_statistics_is_fresh', false);
 
-        // Charset Collate
-        $collate = DB::charset_collate();
+        if ($isFresh) {
+            return true;
+        }
 
-        // Users Online Table
-        $create_user_online_table = ("
-					CREATE TABLE " . DB::table('useronline') . " (
-						ID bigint(20) NOT NULL AUTO_INCREMENT,
-	  					ip varchar(60) NOT NULL,
-						created int(11),
-						timestamp int(10) NOT NULL,
-						date datetime NOT NULL,
-						referred text CHARACTER SET utf8 NOT NULL,
-						agent varchar(255) NOT NULL,
-						platform varchar(255),
-						version varchar(255),
-						location varchar(10),
-                        city varchar(100),
-                        region varchar(100),
-                        continent varchar(50),
-						`user_id` BIGINT(48) NOT NULL,
-						`page_id` BIGINT(48) NOT NULL,
-						`type` VARCHAR(100) NOT NULL,
-						PRIMARY KEY  (ID)
-					) {$collate}");
-        dbDelta($create_user_online_table);
-
-        // Views Table
-        $create_visit_table = ("
-					CREATE TABLE " . DB::table('visit') . " (
-						ID bigint(20) NOT NULL AUTO_INCREMENT,
-						last_visit datetime NOT NULL,
-						last_counter date NOT NULL,
-						visit int(10) NOT NULL,
-						PRIMARY KEY  (ID),
-						UNIQUE KEY unique_date (last_counter)
-					) {$collate}");
-        dbDelta($create_visit_table);
-
-        // Visitor Table
-        $create_visitor_table = ("
-					CREATE TABLE " . DB::table('visitor') . " (
-						ID bigint(20) NOT NULL AUTO_INCREMENT,
-						last_counter date NOT NULL,
-						referred text NOT NULL,
-						agent varchar(180) NOT NULL,
-						platform varchar(180),
-						version varchar(180),
-						device varchar(180),
-						model varchar(180),
-						UAString varchar(190),
-						ip varchar(60) NOT NULL,
-						location varchar(10),
-						user_id BIGINT(40) NOT NULL,
-						hits int(11),
-						honeypot int(11),
-						city varchar(100),
-                        region varchar(100),
-                        continent varchar(50),
-						PRIMARY KEY  (ID),
-						UNIQUE KEY date_ip_agent (last_counter,ip,agent(50),platform(50),version(50)),
-						KEY agent (agent),
-						KEY platform (platform),
-						KEY version (version),
-						KEY device (device),
-						KEY model (model),
-						KEY location (location)
-					) {$collate}");
-        dbDelta($create_visitor_table);
-
-        // Create Visitor and pages Relationship Table
-        self::create_visitor_relationship_table();
-
-        // Exclusion Table
-        $create_exclusion_table = ("
-					CREATE TABLE " . DB::table('exclusions') . " (
-						ID bigint(20) NOT NULL AUTO_INCREMENT,
-						date date NOT NULL,
-						reason varchar(180) DEFAULT NULL,
-						count bigint(20) NOT NULL,
-						PRIMARY KEY  (ID),
-						KEY date (date),
-						KEY reason (reason)
-					) {$collate}");
-        dbDelta($create_exclusion_table);
-
-        // Pages Table
-        $create_pages_table = ("
-					CREATE TABLE " . DB::table('pages') . " (
-					    page_id BIGINT(20) NOT NULL AUTO_INCREMENT,
-						uri varchar(190) NOT NULL,
-						type varchar(180) NOT NULL,
-						date date NOT NULL,
-						count int(11) NOT NULL,
-						id int(11) NOT NULL,
-						UNIQUE KEY date_2 (date,uri),
-						KEY url (uri),
-						KEY date (date),
-						KEY id (id),
-						KEY `uri` (`uri`,`count`,`id`),
-						PRIMARY KEY (`page_id`)
-					) {$collate}");
-        dbDelta($create_pages_table);
-
-        // Historical Table
-        $create_historical_table = ("
-					CREATE TABLE " . DB::table('historical') . " (
-						ID bigint(20) NOT NULL AUTO_INCREMENT,
-						category varchar(25) NOT NULL,
-						page_id bigint(20) NOT NULL,
-						uri varchar(190) NOT NULL,
-						value bigint(20) NOT NULL,
-						PRIMARY KEY  (ID),
-						KEY category (category),
-						UNIQUE KEY uri (uri)
-					) {$collate}");
-        dbDelta($create_historical_table);
-
-        // Search Table
-        $create_search_table = ("
-					CREATE TABLE " . DB::table('search') . " (
-						ID bigint(20) NOT NULL AUTO_INCREMENT,
-						last_counter date NOT NULL,
-						engine varchar(64) NOT NULL,
-						host varchar(190),
-						visitor bigint(20),
-						PRIMARY KEY  (ID),
-						KEY last_counter (last_counter),
-						KEY engine (engine),
-						KEY host (host)
-					) {$collate}");
-        dbDelta($create_search_table);
-
-        // Create events table
-        self::create_events_table();
+        return false;
     }
 
     /**
-     * Setup Visitor RelationShip Table
+     * Checks background processes during a fresh installation.
+     *
+     * @return void
      */
-    public static function create_visitor_relationship_table()
+    private function markBackgroundProcessAsInitiated()
     {
-        $table_name                         = DB::table('visitor_relationships');
-        $collate                            = DB::charset_collate();
-        $create_visitor_relationships_table =
-            "CREATE TABLE IF NOT EXISTS $table_name (
-				`ID` bigint(20) NOT NULL AUTO_INCREMENT,
-				`visitor_id` bigint(20) NOT NULL,
-				`page_id` bigint(20) NOT NULL,
-				`date` datetime NOT NULL,
-				PRIMARY KEY  (ID),
-				KEY visitor_id (visitor_id),
-				KEY page_id (page_id)
-			) {$collate}";
+        Option::deleteOptionGroup('data_migration_process_started', 'jobs');
 
-        dbDelta($create_visitor_relationships_table);
+        if (!self::isFresh()) {
+            return;
+        }
 
-    }
-
-    public static function create_events_table()
-    {
-        $table_name          = DB::table('events');
-        $collate             = DB::charset_collate();
-        $create_events_table =
-            "CREATE TABLE IF NOT EXISTS $table_name (
-				`ID` bigint(20) NOT NULL AUTO_INCREMENT,
-				`date` datetime NOT NULL,
-				`page_id` bigint(20) NULL,
-				`visitor_id` bigint(20) NULL,
-				`event_name` varchar(64) NOT NULL,
-				`event_data` text NOT NULL,
-				PRIMARY KEY  (ID),
-				KEY visitor_id (visitor_id),
-				KEY page_id (page_id),
-				KEY event_name (event_name)
-			) {$collate}";
-
-        dbDelta($create_events_table);
+        Option::saveOptionGroup('update_source_channel_process_initiated', true, 'jobs');
+        Option::saveOptionGroup('update_geoip_process_initiated', true, 'jobs');
+        Option::saveOptionGroup('schema_migration_process_started', true, 'jobs');
+        Option::saveOptionGroup('update_source_channel_process_initiated', true, 'jobs');
+        Option::saveOptionGroup('table_operations_process_initiated', true, 'jobs');
+        Option::saveOptionGroup('word_count_process_initiated', true, 'jobs');
     }
 
     public static function delete_duplicate_data()
@@ -310,7 +172,7 @@ class Install
         if (is_plugin_active_for_network(plugin_basename(WP_STATISTICS_MAIN_FILE))) {
             $options = get_option(Option::$opt_name);
             switch_to_blog($blog_id);
-            self::table_sql();
+            TableHandler::createAllTables();
             update_option(Option::$opt_name, $options);
             restore_current_blog();
         }
@@ -326,21 +188,6 @@ class Install
     {
         $tables[] = array_merge($tables, DB::table('all'));
         return $tables;
-    }
-
-    /**
-     * Add a settings link to the plugin list.
-     *
-     * @param string $links Links
-     * @param string $file Not Used!
-     * @return string Links
-     */
-    public function settings_links($links, $file)
-    {
-        if (User::Access('manage')) {
-            array_unshift($links, '<a href="' . Menus::admin_url('settings') . '">' . __('Settings', 'wp-statistics') . '</a>');
-        }
-        return $links;
     }
 
     /**
@@ -363,332 +210,6 @@ class Install
         return $links;
     }
 
-    /**
-     * Plugin Upgrades
-     */
-    public function plugin_upgrades()
-    {
-        global $wpdb;
-
-        // Load WordPress DBDelta
-        self::load_dbDelta();
-
-        // Check installed plugin version
-        $installed_version = get_option('wp_statistics_plugin_version');
-        if ($installed_version == WP_STATISTICS_VERSION) {
-            return;
-        }
-
-        $userOnlineTable      = DB::table('useronline');
-        $pagesTable           = DB::table('pages');
-        $visitorTable         = DB::table('visitor');
-        $historicalTable      = DB::table('historical');
-        $searchTable          = DB::table('search');
-        $eventTable           = DB::table('events');
-        $visitorRelationships = DB::table('visitor_relationships');
-
-        /**
-         * Add visitor city
-         *
-         * @version 14.5.2
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$visitorTable} LIKE 'city'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$visitorTable} ADD `city` VARCHAR(100) NULL;");
-        }
-
-        /**
-         * Add visitor region
-         *
-         * @version 14.7.0
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$visitorTable} LIKE 'region'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$visitorTable} ADD `region` VARCHAR(100) NULL;");
-        }
-
-        /**
-         * Add visitor continent
-         *
-         * @version 14.7.0
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$visitorTable} LIKE 'continent'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$visitorTable} ADD `continent` VARCHAR(50) NULL;");
-        }
-
-        /**
-         * Add online user city
-         *
-         * @version 14.5.2
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$userOnlineTable} LIKE 'city'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$userOnlineTable} ADD `city` VARCHAR(100) NULL;");
-        }
-
-        /**
-         * Add online user region
-         *
-         * @version 14.7.0
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$userOnlineTable} LIKE 'region'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$userOnlineTable} ADD `region` VARCHAR(100) NULL;");
-        }
-
-        /**
-         * Add online user continent
-         *
-         * @version 14.7.0
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$userOnlineTable} LIKE 'continent'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$userOnlineTable} ADD `continent` VARCHAR(50) NULL;");
-        }
-
-        /**
-         * Add visitor device type
-         *
-         * @version 13.2.4
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$visitorTable} LIKE 'device'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$visitorTable} ADD `device` VARCHAR(180) NULL AFTER `version`, ADD INDEX `device` (`device`);");
-        }
-
-        /**
-         * Add visitor device model
-         *
-         * @version 13.2.4
-         */
-        $result = $wpdb->query("SHOW COLUMNS FROM {$visitorTable} LIKE 'model'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE {$visitorTable} ADD `model` VARCHAR(180) NULL AFTER `device`, ADD INDEX `model` (`model`);");
-        }
-
-        /**
-         * Set to BigINT Fields (AUTO_INCREMENT)
-         *
-         * @version 13.0.0
-         */
-        /*
-         * MySQL since version 8.0.19 doesn't honot  display width specification
-         * so we have to handle accept BIGINT(20) and BIGINT.
-         *
-         * see: https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-19.html  
-         * - section Deprecation and Removal Notes
-         */
-        if (!DB::isColumnType('visitor', 'ID', 'bigint(20)') && !DB::isColumnType('visitor', 'ID', 'bigint')) {
-            $wpdb->query("ALTER TABLE {$visitorTable} CHANGE `ID` `ID` BIGINT(20) NOT NULL AUTO_INCREMENT;");
-        }
-
-        if (!DB::isColumnType('exclusions', 'ID', 'bigint(20)') && !DB::isColumnType('exclusions', 'ID', 'bigint')) {
-
-            $wpdb->query("ALTER TABLE `" . DB::table('exclusions') . "` CHANGE `ID` `ID` BIGINT(20) NOT NULL AUTO_INCREMENT;");
-        }
-
-        if (!DB::isColumnType('useronline', 'ID', 'bigint(20)') && !DB::isColumnType('useronline', 'ID', 'bigint')) {
-            $wpdb->query("ALTER TABLE {$userOnlineTable} CHANGE `ID` `ID` BIGINT(20) NOT NULL AUTO_INCREMENT;");
-        }
-
-        if (!DB::isColumnType('visit', 'ID', 'bigint(20)') && !DB::isColumnType('visit', 'ID', 'bigint')) {
-            $wpdb->query("ALTER TABLE `" . DB::table('visit') . "` CHANGE `ID` `ID` BIGINT(20) NOT NULL AUTO_INCREMENT;");
-        }
-
-        /**
-         * Create Visitor and pages relationship table if is not exist.
-         *
-         * @version 13.0.0
-         */
-        if (DB::ExistTable($visitorRelationships) === false) {
-            self::create_visitor_relationship_table();
-        }
-
-        /**
-         * Create events table if is not exist.
-         *
-         * @version 14.4
-         */
-        if (DB::ExistTable($eventTable) === false) {
-            self::create_events_table();
-        }
-
-        /**
-         * Change Charset All Table To New WordPress Collate
-         * Reset Overview Order Meta Box View
-         * Added User_id column in wp_statistics_visitor Table
-         *
-         * @see https://developer.wordpress.org/reference/classes/wpdb/has_cap/
-         * @version 13.0.0
-         */
-        $list_table = DB::table('all');
-        foreach ($list_table as $k => $name) {
-            $tbl_info = DB::getTableInformation($name);
-
-            if (!empty($tbl_info['Collation']) && !empty($wpdb->collate) && $tbl_info['Collation'] != $wpdb->collate) {
-                $wpdb->query(
-                    $wpdb->prepare("ALTER TABLE `" . $name . "` DEFAULT CHARSET=%s COLLATE %s ROW_FORMAT = COMPACT;", $wpdb->charset, $wpdb->collate)
-                );
-            }
-        }
-
-        if (isset($installed_version) and version_compare($installed_version, '13.0', '<=')) {
-            $wpdb->query("DELETE FROM `" . $wpdb->usermeta . "` WHERE `meta_key` = 'meta-box-order_toplevel_page_wps_overview_page'");
-        }
-
-        $result = $wpdb->query("SHOW COLUMNS FROM {$visitorTable} LIKE 'user_id'");
-        if ($result == 0) {
-            $wpdb->query("ALTER TABLE `" . $visitorTable . "` ADD `user_id` BIGINT(48) NOT NULL AFTER `location`");
-        }
-
-        if (DB::ExistTable($searchTable)) {
-            /**
-             * Remove words from search table
-             *
-             * @version 14.5.2
-             */
-            $result = $wpdb->query("SHOW COLUMNS FROM `" . $searchTable . "` LIKE 'words'");
-            if ($result > 0) {
-                $wpdb->query("ALTER TABLE `" . $searchTable . "` DROP `words`");
-            }
-        }
-
-        /**
-         * Added new Fields to user_online Table
-         *
-         * @version 12.6.1
-         */
-        if (DB::ExistTable($userOnlineTable)) {
-            $result = $wpdb->query("SHOW COLUMNS FROM `" . $userOnlineTable . "` LIKE 'user_id'");
-            if ($result == 0) {
-                $wpdb->query("ALTER TABLE `" . $userOnlineTable . "` ADD `user_id` BIGINT(48) NOT NULL AFTER `location`, ADD `page_id` BIGINT(48) NOT NULL AFTER `user_id`, ADD `type` VARCHAR(100) NOT NULL AFTER `page_id`;");
-            }
-
-            // Add index ip
-            $result = $wpdb->query("SHOW INDEX FROM `" . $userOnlineTable . "` WHERE Key_name = 'ip'");
-            if (!$result) {
-                $wpdb->query("ALTER TABLE `" . $userOnlineTable . "` ADD index (ip)");
-            }
-        }
-
-        /**
-         * Historical
-         *
-         * @version 14.4
-         *
-         */
-        if (DB::ExistTable($historicalTable)) {
-            $result = $wpdb->query("SHOW INDEX FROM `" . $historicalTable . "` WHERE Key_name = 'page_id'");
-
-            // Remove index
-            if ($result) {
-                $wpdb->query("DROP INDEX `page_id` ON " . $historicalTable);
-            }
-        }
-
-        /**
-         * Added page_id column in statistics_pages
-         *
-         * @version 12.5.3
-         */
-        if (DB::ExistTable($pagesTable)) {
-            $result = $wpdb->query("SHOW COLUMNS FROM `" . $pagesTable . "` LIKE 'page_id'");
-            if ($result == 0) {
-                $wpdb->query("ALTER TABLE `" . $pagesTable . "` ADD `page_id` BIGINT(20) NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`page_id`);");
-            }
-        }
-
-        /**
-         * Removed date_ip from visitor table
-         * Drop the 'AString' column from visitors if it exists.
-         *
-         * @version 6.0
-         */
-        if (DB::ExistTable($visitorTable)) {
-            $result = $wpdb->query("SHOW INDEX FROM `" . $visitorTable . "` WHERE Key_name = 'date_ip'");
-            if ($result > 1) {
-                $wpdb->query("DROP INDEX `date_ip` ON " . $visitorTable);
-            }
-
-            $result = $wpdb->query("SHOW COLUMNS FROM `" . $visitorTable . "` LIKE 'AString'");
-            if ($result > 0) {
-                $wpdb->query("ALTER TABLE `" . $visitorTable . "` DROP `AString`");
-            }
-
-            // Add index ip
-            $result = $wpdb->query("SHOW INDEX FROM `" . $visitorTable . "` WHERE Key_name = 'ip'");
-            if (!$result) {
-                $wpdb->query("ALTER TABLE `" . $visitorTable . "` ADD index (ip)");
-            }
-        }
-
-        /**
-         * Update options
-         */
-        if (Option::get('privacy_audit') === false && version_compare($installed_version, '14.7', '>=')) {
-            Option::update('privacy_audit', true);
-        }
-
-        /**
-         * Removes duplicate entries from the visitor_relationships table.
-         *
-         * @version 14.4
-         */
-        //self::delete_duplicate_data(); // todo to move in background cronjob
-
-        /**
-         * Remove old hash format assets
-         *
-         * @version 14.8.1
-         */
-        if (Option::get('bypass_ad_blockers', false) && $installed_version == '14.8' && class_exists('WP_Statistics\Components\AssetNameObfuscator')) {
-            $assetNameObfuscator = new AssetNameObfuscator();
-            $assetNameObfuscator->deleteAllHashedFiles();
-            $assetNameObfuscator->deleteDatabaseOption();
-        }
-
-        // Enable Top Metrics in Advanced Reporting Add-on By Default
-        $advancedReportingOptions = Option::getAddonOptions('advanced_reporting');
-        if ($advancedReportingOptions !== false && Option::getByAddon('email_top_metrics', 'advanced_reporting') === false) {
-            Option::saveByAddon(array_merge(['email_top_metrics' => 1], $advancedReportingOptions), 'advanced_reporting');
-        }
-
-        /**
-         * Update old DataPlus options.
-         *
-         * @version 14.10
-         */
-        if (version_compare($installed_version, '14.10', '<') && (Option::get('link_tracker') || Option::get('download_tracker'))) {
-            Option::saveByAddon([
-                'link_tracker'            => Option::get('link_tracker'),
-                'download_tracker'        => Option::get('download_tracker'),
-                'latest_visitors_metabox' => '1',
-            ], 'data_plus');
-        }
-
-        // Clear not used scheduled.
-        if (function_exists('wp_clear_scheduled_hook')) {
-            // Remove unused cron job for purging high hit count visitors daily
-            wp_clear_scheduled_hook('wp_statistics_dbmaint_visitor_hook');
-        }
-
-        // Store the new version information.
-        update_option('wp_statistics_plugin_version', WP_STATISTICS_VERSION);
-    }
-
-    /**
-     * Update WordPress Page Type for older wp-statistics Version
-     *
-     * @since 12.6
-     *
-     * -- List Methods ---
-     * init_page_type_updater        -> define WordPress Hook
-     * get_require_number_update     -> Get number of rows that require update page type
-     * is_require_update_page        -> Check Wp-statistics require update page table
-     * get_page_type_by_obj          -> Get Page Type by information
-     * @todo, this legacy functionality should move to Background Processing
-     */
     public static function init_page_type_updater()
     {
 
@@ -738,6 +259,7 @@ class Install
                                 dataType: "json",
                                 cache: false,
                                 data: {
+                                    '_wpnonce': '<?php echo esc_js(wp_create_nonce('update_post_type')); ?>',
                                     'action': 'wp_statistics_update_post_type_db',
                                     'number_all': <?php echo esc_html(self::get_require_number_update()); ?>
                                 },
@@ -805,11 +327,14 @@ class Install
         add_action('wp_ajax_wp_statistics_update_post_type_db', function () {
             global $wpdb;
 
+            # Check nonce
+            check_ajax_referer('update_post_type');
+
             # Create Default Obj
             $return = array('process_status' => 'complete', 'number_process' => 0, 'percentage' => 0);
 
             # Check is Ajax WordPress
-            if (defined('DOING_AJAX') && DOING_AJAX) {
+            if (defined('DOING_AJAX') && DOING_AJAX && User::Access('manage')) {
 
                 # Check Status Of Process
                 if (self::is_require_update_page() === true) {
@@ -968,7 +493,7 @@ class Install
                         } elseif ($taxonomy == "post_tag") {
                             $page_type = 'post_tag';
                         } else {
-                            $page_type = 'tax';
+                            $page_type = 'tax_' . $taxonomy;
                         }
                     }
 
@@ -981,3 +506,4 @@ class Install
 }
 
 new Install;
+

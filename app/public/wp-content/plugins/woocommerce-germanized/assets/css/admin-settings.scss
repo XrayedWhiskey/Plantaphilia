@@ -9,6 +9,17 @@
     }
   }
 
+  &.wc-gzd-settings-modern-nav {
+    .nav-tab-wrapper {
+      a.nav-tab[href*="tab=germanized"] {
+        border-bottom: 2px solid var(--wp-admin-theme-color, #3858e9);
+        color: #070707;
+        background: 0 0;
+        margin-bottom: 0;
+      }
+    }
+  }
+
   p.tab-description {
 
   }
@@ -142,6 +153,77 @@
     }
   }
 
+  .gzd-pro-install-steps {
+    font-size: 1.3em;
+    display: flex;
+    flex-wrap: wrap;
+
+    .gzd-pro-install-step {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      margin: 1.5em 0;
+
+      .pro-step {
+        width: 50px;
+        line-height: 50px;
+        height: 50px;
+        border-radius: 50%;
+        text-align: center;
+        background-color: var(--wp-admin-theme-color);
+        color: white;
+        margin-right: 1em;
+      }
+
+      .license-form-wrapper {
+        display: flex;
+        flex-direction: column-reverse;
+
+        input, button {
+          height: 50px;
+          font-size: 15px;
+        }
+
+        input {
+          min-width: 250px;
+          margin-right: 10px;
+        }
+
+        .submit {
+          padding: 0;
+          margin: 0;
+          border-radius: 0;
+        }
+
+        .error {
+          border: none;
+          background: transparent;
+          padding: 0;
+          margin: 0;
+          color: #a00;
+          box-shadow: none;
+
+          p {
+            font-size: 12px;
+            margin-top: 5px;
+          }
+        }
+      }
+
+      .pro-step-desc {
+        h4 {
+          margin-top: 0;
+          margin-bottom: 10px;
+        }
+
+        p {
+          margin-bottom: 0;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
   .wc-gzd-ajax-loading-btn {
     position: relative;
     display: inline-flex;
@@ -156,6 +238,7 @@
 
       .spinner {
         position: absolute;
+        opacity: 1;
         z-index: 5;
         background-size: 16px 16px;
         float: none;
@@ -262,12 +345,14 @@
     cursor: move;
   }
 
-  .forminp-radio fieldset p {
-    margin-bottom: 1em;
+  table.form-table tr {
+    th.titledesc-image {
+      padding-right: 0 !important;
+    }
   }
 
-  th.forminp-image {
-    padding-right: 0 !important;
+  .forminp-radio fieldset p {
+    margin-bottom: 1em;
   }
 
   &.wc-gzd-admin-settings-germanized-emails-attachments,
@@ -276,12 +361,12 @@
   &.wc-gzd-admin-settings-multistep_checkout,
   &.wc-gzd-admin-settings-terms_generator,
   &.wc-gzd-admin-settings-revocation_generator {
-    th.forminp-image {
+    th.titledesc-image {
       padding-top: 0;
     }
   }
 
-  .wc-gzd-premium img, .forminp-image img {
+  .wc-gzd-premium img, .titledesc-image img {
     max-width: 100%;
     height: auto;
     opacity: 0.7;
@@ -293,17 +378,9 @@
     }
   }
 
-  .woocommerce table.form-table th.forminp-image {
-    padding-right: 0;
-  }
-
   tr.single_select_page .description {
     display: block;
     margin-top: .5em;
-  }
-
-  tr.wc-gzd-setting-invisible {
-    display: none;
   }
 
   td {

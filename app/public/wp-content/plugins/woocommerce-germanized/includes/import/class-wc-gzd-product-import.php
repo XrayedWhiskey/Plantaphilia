@@ -48,9 +48,9 @@ class WC_GZD_Product_Import {
 	}
 
 	public function set_special_columns( $columns ) {
-		$columns[ __( 'Delivery Time: %s', 'woocommerce-germanized' ) ]                = 'delivery_time:';
-		$columns[ __( 'Nutrients: %s', 'woocommerce-germanized' ) ]                    = 'nutrients:';
-		$columns[ __( 'Attribute %d visible in checkout', 'woocommerce-germanized' ) ] = 'attributes:checkout_visible';
+		$columns[ __( 'Delivery Time: %s', 'woocommerce-germanized' ) ]             = 'delivery_time:';
+		$columns[ __( 'Nutrients: %s', 'woocommerce-germanized' ) ]                 = 'nutrients:';
+		$columns[ __( 'Attribute %d checkout visible', 'woocommerce-germanized' ) ] = 'attributes:checkout_visible';
 
 		return $columns;
 	}
@@ -69,40 +69,49 @@ class WC_GZD_Product_Import {
 		return apply_filters(
 			'woocommerce_gzd_product_import_formatting_callbacks',
 			array(
-				'mini_desc'                => array( $this, 'parse_html_field' ),
-				'defect_description'       => array( $this, 'parse_html_field' ),
-				'unit_price_regular'       => 'wc_format_decimal',
-				'unit_price_sale'          => 'wc_format_decimal',
-				'unit_base'                => 'wc_format_decimal',
-				'unit_product'             => 'wc_format_decimal',
-				'unit_price_auto'          => array( $this, 'parse_bool_str' ),
-				'service'                  => array( $this, 'parse_bool_str' ),
-				'used_good'                => array( $this, 'parse_bool_str' ),
-				'defective_copy'           => array( $this, 'parse_bool_str' ),
-				'photovoltaic_system'      => array( $this, 'parse_bool_str' ),
-				'differential_taxation'    => array( $this, 'parse_bool_str' ),
-				'free_shipping'            => array( $this, 'parse_bool_str' ),
-				'delivery_time'            => array( $this, 'parse_delivery_time' ),
-				'min_age'                  => array( $this, 'parse_min_age' ),
-				'sale_price_label'         => array( $this, 'parse_sale_price_label' ),
-				'sale_price_regular_label' => array( $this, 'parse_sale_price_label' ),
-				'unit'                     => array( $this, 'parse_unit' ),
-				'warranty_attachment_id'   => 'absint',
-				'gtin'                     => 'wc_clean',
-				'mpn'                      => 'wc_clean',
-				'is_food'                  => array( $this, 'parse_bool_str' ),
-				'alcohol_content'          => 'wc_format_decimal',
-				'drained_weight'           => 'wc_format_decimal',
-				'net_filling_quantity'     => 'wc_format_decimal',
-				'deposit_quantity'         => 'absint',
-				'deposit_type'             => array( $this, 'parse_deposit_type' ),
-				'allergen_ids'             => array( $this, 'parse_allergenic' ),
-				'nutri_score'              => array( $this, 'parse_nutri_score' ),
-				'ingredients'              => array( $this, 'parse_html_field' ),
-				'food_description'         => array( $this, 'parse_html_field' ),
-				'food_place_of_origin'     => array( $this, 'parse_html_field' ),
-				'food_distributor'         => array( $this, 'parse_html_field' ),
-				'nutrient_reference_value' => array( $this, 'parse_nutrient_reference_value' ),
+				'mini_desc'                       => array( $this, 'parse_html_field' ),
+				'defect_description'              => array( $this, 'parse_html_field' ),
+				'safety_instructions'             => array( $this, 'parse_html_field' ),
+				'unit_price_regular'              => 'wc_format_decimal',
+				'unit_price_sale'                 => 'wc_format_decimal',
+				'unit_base'                       => 'wc_format_decimal',
+				'unit_product'                    => 'wc_format_decimal',
+				'unit_price_auto'                 => array( $this, 'parse_bool_str' ),
+				'service'                         => array( $this, 'parse_bool_str' ),
+				'used_good'                       => array( $this, 'parse_bool_str' ),
+				'defective_copy'                  => array( $this, 'parse_bool_str' ),
+				'photovoltaic_system'             => array( $this, 'parse_bool_str' ),
+				'wireless_electronic_device'      => array( $this, 'parse_bool_str' ),
+				'device_contains_power_supply'    => array( $this, 'parse_bool_str' ),
+				'device_charging_supports_usb_pd' => array( $this, 'parse_bool_str' ),
+				'device_charging_watt_min'        => 'wc_format_decimal',
+				'device_charging_watt_max'        => 'wc_format_decimal',
+				'differential_taxation'           => array( $this, 'parse_bool_str' ),
+				'free_shipping'                   => array( $this, 'parse_bool_str' ),
+				'delivery_time'                   => array( $this, 'parse_delivery_time' ),
+				'min_age'                         => array( $this, 'parse_min_age' ),
+				'sale_price_label'                => array( $this, 'parse_sale_price_label' ),
+				'sale_price_regular_label'        => array( $this, 'parse_sale_price_label' ),
+				'unit'                            => array( $this, 'parse_unit' ),
+				'manufacturer'                    => array( $this, 'parse_manufacturer' ),
+				'safety_attachment_ids'           => array( $this, 'parse_safety_attachment_ids' ),
+				'warranty_attachment_id'          => 'absint',
+				'gtin'                            => 'wc_clean',
+				'mpn'                             => 'wc_clean',
+				'is_food'                         => array( $this, 'parse_bool_str' ),
+				'alcohol_content'                 => 'wc_format_decimal',
+				'is_non_alcoholic'                => array( $this, 'parse_bool_str' ),
+				'drained_weight'                  => 'wc_format_decimal',
+				'net_filling_quantity'            => 'wc_format_decimal',
+				'deposit_quantity'                => 'absint',
+				'deposit_type'                    => array( $this, 'parse_deposit_type' ),
+				'allergen_ids'                    => array( $this, 'parse_allergenic' ),
+				'nutri_score'                     => array( $this, 'parse_nutri_score' ),
+				'ingredients'                     => array( $this, 'parse_html_field' ),
+				'food_description'                => array( $this, 'parse_html_field' ),
+				'food_place_of_origin'            => array( $this, 'parse_html_field' ),
+				'food_distributor'                => array( $this, 'parse_html_field' ),
+				'nutrient_reference_value'        => array( $this, 'parse_nutrient_reference_value' ),
 			)
 		);
 	}
@@ -285,7 +294,6 @@ class WC_GZD_Product_Import {
 				$value = $data[ $column_name ];
 
 				if ( has_filter( "woocommerce_gzd_product_import_column_{$column_name}" ) ) {
-
 					/**
 					 * Filter that allows adjusting product import data for a certain `$column_name`.
 					 *
@@ -293,7 +301,6 @@ class WC_GZD_Product_Import {
 					 * @param mixed $value The import value.
 					 *
 					 * @since 1.8.5
-					 *
 					 */
 					$product = apply_filters( "woocommerce_gzd_product_import_column_{$column_name}", $product, $value );
 				} elseif ( is_callable( array( $this, "set_column_value_{$column_name}" ) ) ) {
@@ -366,6 +373,40 @@ class WC_GZD_Product_Import {
 		return ( $value ? 'yes' : '' );
 	}
 
+	public function parse_safety_attachment_ids( $attachment_ids ) {
+		$attachment_ids = array_filter( array_map( 'absint', $this->explode_values( $attachment_ids ) ) );
+
+		return $attachment_ids;
+	}
+
+	/**
+	 * Explode CSV cell values using commas by default, and handling escaped
+	 * separators.
+	 *
+	 * @since  3.2.0
+	 * @param  string $value     Value to explode.
+	 * @param  string $separator Separator separating each value. Defaults to comma.
+	 * @return array
+	 */
+	protected function explode_values( $value, $separator = ',' ) {
+		$value  = str_replace( '\\,', '::separator::', $value );
+		$values = explode( $separator, $value );
+		$values = array_map( array( $this, 'explode_values_formatter' ), $values );
+
+		return $values;
+	}
+
+	/**
+	 * Remove formatting and trim each value.
+	 *
+	 * @since  3.2.0
+	 * @param  string $value Value to format.
+	 * @return string
+	 */
+	protected function explode_values_formatter( $value ) {
+		return trim( str_replace( '::separator::', ',', $value ) );
+	}
+
 	public function parse_allergenic( $allergenic ) {
 		$allergenic   = array_filter( array_map( 'trim', explode( '|', $allergenic ) ) );
 		$allergen_ids = array();
@@ -409,6 +450,14 @@ class WC_GZD_Product_Import {
 		}
 
 		return $this->parse_term( $name, 'product_unit', 'slug' );
+	}
+
+	public function parse_manufacturer( $name ) {
+		if ( empty( $name ) ) {
+			return 0;
+		}
+
+		return $this->parse_term( $name, 'product_manufacturer', 'slug' );
 	}
 
 	public function parse_sale_price_label( $name ) {
@@ -490,7 +539,19 @@ class WC_GZD_Product_Import {
 	 * @param WC_Product $product
 	 * @param $value
 	 *
-	 * @return mixed
+	 * @return WC_Product
+	 */
+	public function set_column_value_manufacturer( $product, $value ) {
+		wc_gzd_get_gzd_product( $product )->set_manufacturer_slug( $value );
+
+		return $product;
+	}
+
+	/**
+	 * @param WC_Product $product
+	 * @param $value
+	 *
+	 * @return WC_Product
 	 */
 	public function set_column_value_delivery_time( $product, $value ) {
 		wc_gzd_get_gzd_product( $product )->set_default_delivery_time_slug( $value );

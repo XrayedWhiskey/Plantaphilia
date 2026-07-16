@@ -603,6 +603,10 @@ class DUP_Util
         SnapIO::dirWriteCheckOrMkdir(DUP_Settings::getSsdirTmpPath(), 'u+rwx');
         SnapIO::createSilenceIndex(DUP_Settings::getSsdirTmpPath());
 
+        // Logs directory
+        SnapIO::dirWriteCheckOrMkdir(DUP_Settings::getSsdirLogsPath(), 'u+rwx');
+        SnapIO::createSilenceIndex(DUP_Settings::getSsdirLogsPath());
+
         //--------------------------------
         //FILE CREATION & HARDEN PROCESS
         //index.php, .htaccess, robots.txt
@@ -843,11 +847,14 @@ HTACCESS;
      */
     public static function isTableExists($table)
     {
+        global $wpdb;
         // It will clear the $GLOBALS['wpdb']->last_error var
-        $GLOBALS['wpdb']->flush();
-        $sql = "SELECT 1 FROM `" . esc_sql($table) . "` LIMIT 1;";
-        $ret = $GLOBALS['wpdb']->get_var($sql);
-        if (empty($GLOBALS['wpdb']->last_error)) {
+        $wpdb->flush();
+        $table = esc_sql($table);
+        $sql   = "SELECT 1 FROM `{$table}` LIMIT 1;";
+
+        $wpdb->get_var($sql);
+        if (empty($wpdb->last_error)) {
             return true;
         }
         return false;

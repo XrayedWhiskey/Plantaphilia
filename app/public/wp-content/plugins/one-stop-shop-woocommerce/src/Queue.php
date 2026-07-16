@@ -163,39 +163,49 @@ class Queue {
 			$where_country_sql = "( {$wpdb->posts}.post_parent > 0 AND (mt1_parent.meta_value IN {$taxable_countries_in}) ) OR ( mt1.meta_value IN {$taxable_countries_in} )";
 		}
 
-		$where_date_sql = $wpdb->prepare( "DATE({$wpdb->posts}.post_date) >= %s AND DATE({$wpdb->posts}.post_date) <= %s", $args['start'], $args['end'] );
+		$start_gmt      = Package::local_time_to_gmt( $args['start'] )->date( 'Y-m-d H:i:s' );
+		$end_gmt        = Package::local_time_to_gmt( $args['end'] )->date( 'Y-m-d H:i:s' );
+		$where_date_sql = $wpdb->prepare( "{$wpdb->posts}.post_date_gmt >= %s AND {$wpdb->posts}.post_date_gmt < %s", $start_gmt, $end_gmt );
 
 		if ( 'date_paid' === $args['date_field'] ) {
 			/**
 			 * Add one day to the end date to capture timestamps (including time data) in between
 			 */
-			$end_adjusted = strtotime( $args['end'] ) + DAY_IN_SECONDS;
+			$start_gmt_timestamp = Package::local_time_to_gmt( $args['start'] )->getTimestamp();
+			$end_gmt_timestamp   = Package::local_time_to_gmt( $args['end'] )->getTimestamp();
+
+			/**
+			 * Use a min start date to make sure we are including orders that have been created earlier
+			 * than they have been paid, e.g. created at 2025-06-30, paid at 2025-07-02 should be included in Q3.
+			 */
+			$min_start = Package::local_time_to_gmt( $args['start'] );
+			$min_start->modify( '-1 month' );
 
 			/**
 			 * Use a max end date to limit potential query results in case date_paid meta field is used.
 			 * This way we will only register payments made max 2 month after the order created date.
 			 */
-			$max_end = new \WC_DateTime( $args['end'] );
+			$max_end = Package::local_time_to_gmt( $args['end'] );
 			$max_end->modify( '+2 months' );
 
 			$joins[] = "LEFT JOIN {$wpdb->postmeta} AS mt3 ON ( {$wpdb->posts}.ID = mt3.post_id AND mt3.meta_key = '_date_paid' )";
 
 			$where_date_sql = $wpdb->prepare(
-				"( DATE({$wpdb->posts}.post_date) >= %s AND DATE({$wpdb->posts}.post_date) <= %s ) 
+				"( {$wpdb->posts}.post_date_gmt >= %s AND {$wpdb->posts}.post_date_gmt < %s ) 
 					AND ( 
 						( NOT mt3.post_id IS NULL AND (
-			  		        mt3.meta_key = '_date_paid' AND mt3.meta_value >= %s AND mt3.meta_value <= %s
+			  		        mt3.meta_key = '_date_paid' AND mt3.meta_value >= %s AND mt3.meta_value < %s
 			  	        ) ) OR ( {$wpdb->posts}.post_parent > 0 AND (
-			  	            DATE({$wpdb->posts}.post_date) >= %s AND DATE({$wpdb->posts}.post_date) <= %s
+			  	            {$wpdb->posts}.post_date_gmt >= %s AND {$wpdb->posts}.post_date_gmt < %s
 	                    ) )
                     )
                 ",
-				$args['start'],
-				$max_end->format( 'Y-m-d' ),
-				strtotime( $args['start'] ),
-				$end_adjusted,
-				$args['start'],
-				$args['end']
+				$min_start->format( 'Y-m-d H:i:s' ),
+				$max_end->format( 'Y-m-d H:i:s' ),
+				$start_gmt_timestamp,
+				$end_gmt_timestamp,
+				$start_gmt,
+				$end_gmt
 			);
 		}
 
@@ -255,34 +265,43 @@ class Queue {
 			$where_country_sql = $where_country_sql . " OR ( {$orders_table_name}.parent_order_id > 0 AND ((NOT shipping_parent_address.country IS NULL AND (shipping_parent_address.country IN {$taxable_countries_in})) OR billing_parent_address.country IN {$taxable_countries_in}))";
 		}
 
-		$where_date_sql = $wpdb->prepare( "DATE({$orders_table_name}.date_created_gmt) >= %s AND DATE({$orders_table_name}.date_created_gmt) <= %s", $args['start'], $args['end'] ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$start_gmt      = Package::local_time_to_gmt( $args['start'] )->date( 'Y-m-d H:i:s' );
+		$end_gmt        = Package::local_time_to_gmt( $args['end'] )->date( 'Y-m-d H:i:s' );
+		$where_date_sql = $wpdb->prepare( "{$orders_table_name}.date_created_gmt >= %s AND {$orders_table_name}.date_created_gmt < %s", $start_gmt, $end_gmt ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( 'date_paid' === $args['date_field'] ) {
+			/**
+			 * Use a min start date to make sure we are including orders that have been created earlier
+			 * than they have been paid, e.g. created at 2025-06-30, paid at 2025-07-02 should be included in Q3.
+			 */
+			$min_start = Package::local_time_to_gmt( $args['start'] );
+			$min_start->modify( '-1 month' );
+
 			/**
 			 * Use a max end date to limit potential query results in case date_paid meta field is used.
 			 * This way we will only register payments made max 2 month after the order created date.
 			 */
-			$max_end = new \WC_DateTime( $args['end'] );
+			$max_end = Package::local_time_to_gmt( $args['end'] );
 			$max_end->modify( '+2 months' );
 
 			// @codingStandardsIgnoreStart
 			$where_date_sql = $wpdb->prepare(
-				"( DATE({$orders_table_name}.date_created_gmt) >= %s AND DATE({$orders_table_name}.date_created_gmt) <= %s ) 
+				"( {$orders_table_name}.date_created_gmt >= %s AND {$orders_table_name}.date_created_gmt < %s ) 
 				AND (
 					( NOT operational_data.date_paid_gmt IS NULL AND (
-		                DATE(operational_data.date_paid_gmt) >= %s AND DATE(operational_data.date_paid_gmt) <= %s
+		                operational_data.date_paid_gmt >= %s AND operational_data.date_paid_gmt < %s
 	                ) ) OR (
 	                    {$orders_table_name}.parent_order_id > 0 AND (
-		                    DATE({$orders_table_name}.date_created_gmt) >= %s AND DATE({$orders_table_name}.date_created_gmt) <= %s
+		                    {$orders_table_name}.date_created_gmt >= %s AND {$orders_table_name}.date_created_gmt < %s
 	                    )
                     )
 			  	)",
-				$args['start'],
-				$max_end->format( 'Y-m-d' ),
-				$args['start'],
-				$args['end'],
-				$args['start'],
-				$args['end']
+				$min_start->format( 'Y-m-d H:i:s' ),
+				$max_end->format( 'Y-m-d H:i:s' ),
+				$start_gmt,
+				$end_gmt,
+				$start_gmt,
+				$end_gmt
 			);
 			// @codingStandardsIgnoreEnd
 		}
@@ -445,7 +464,7 @@ class Queue {
 	 */
 	protected static function update_observer( $report ) {
 		$end  = $report->get_date_end();
-		$year = $end->date( 'Y' );
+		$year = $end->date_i18n( 'Y' );
 
 		if ( ! $observer_report = Package::get_observer_report( $year ) ) {
 			$observer_report = $report;
@@ -523,61 +542,102 @@ class Queue {
 		return (array) get_option( 'oss_woocommerce_reports_running', array() );
 	}
 
+	/**
+	 * PHP's +1 month only adds 31 days - we do not want that.
+	 * We want to add +X month and find the last day of this month.
+	 *
+	 * @see https://stackoverflow.com/questions/3602405/php-datetimemodify-adding-and-subtracting-months
+	 *
+	 * @param \WC_DateTime $datetime
+	 * @param integer $number_of_months
+	 *
+	 * @return \WC_DateTime
+	 */
+	protected static function add_months_to_datetime( $datetime, $number_of_months ) {
+		$datetime  = clone $datetime;
+		$month_str = 1 === $number_of_months ? 'month' : 'months';
+
+		$datetime->modify( "first day of +{$number_of_months} {$month_str} midnight" );
+		$datetime->modify( '+' . ( $datetime->format( 't' ) ) . ' days' );
+
+		return $datetime;
+	}
+
 	public static function get_timeframe( $type, $date = null, $date_end = null ) {
 		$date_start      = null;
 		$date_end        = is_null( $date_end ) ? null : $date_end;
-		$start_indicator = is_null( $date ) ? new \WC_DateTime() : $date;
+		$start_indicator = is_null( $date ) ? Package::string_to_datetime( 'now' ) : $date;
 
 		if ( ! is_a( $start_indicator, 'WC_DateTime' ) && is_numeric( $start_indicator ) ) {
-			$start_indicator = new \WC_DateTime( '@' . $start_indicator );
+			$start_indicator = Package::string_to_datetime( $start_indicator );
 		}
 
 		if ( ! is_null( $date_end ) && ! is_a( $date_end, 'WC_DateTime' ) && is_numeric( $date_end ) ) {
-			$date_end = new \WC_DateTime( '@' . $date_end );
+			$date_end = Package::string_to_datetime( $date_end );
 		}
 
 		if ( 'quarterly' === $type ) {
 			$month       = $start_indicator->date( 'n' );
 			$quarter     = (int) ceil( $month / 3 );
 			$start_month = 'Jan';
-			$end_month   = 'Mar';
 
 			if ( 2 === $quarter ) {
 				$start_month = 'Apr';
-				$end_month   = 'Jun';
 			} elseif ( 3 === $quarter ) {
 				$start_month = 'Jul';
-				$end_month   = 'Sep';
 			} elseif ( 4 === $quarter ) {
 				$start_month = 'Oct';
-				$end_month   = 'Dec';
 			}
 
-			$date_start = new \WC_DateTime( 'first day of ' . $start_month . ' ' . $start_indicator->format( 'Y' ) . ' midnight' );
-			$date_end   = new \WC_DateTime( 'last day of ' . $end_month . ' ' . $start_indicator->format( 'Y' ) . ' midnight' );
+			$date_start = Package::string_to_datetime( 'first day of ' . $start_month . ' ' . $start_indicator->date( 'Y' ) . ' midnight' );
+
+			/**
+			 * Always calculate offsets based on local time to prevent timezone issues.
+			 * Remove one day from the first day of next month (= last day of last month).
+			 */
+			$date_end_local = new \WC_DateTime( $date_start->date_i18n() );
+			$date_end_local->modify( '-1 day' );
+			$date_end_local = self::add_months_to_datetime( $date_end_local, 3 );
+
+			$date_end = Package::string_to_datetime( $date_end_local->date_i18n( 'Y-m-d H:i:s' ) );
 		} elseif ( 'monthly' === $type ) {
-			$month = $start_indicator->format( 'M' );
+			$month      = $start_indicator->date( 'M' );
+			$date_start = Package::string_to_datetime( 'first day of ' . $month . ' ' . $start_indicator->date( 'Y' ) . ' midnight' );
 
-			$date_start = new \WC_DateTime( 'first day of ' . $month . ' ' . $start_indicator->format( 'Y' ) . ' midnight' );
-			$date_end   = new \WC_DateTime( 'last day of ' . $month . ' ' . $start_indicator->format( 'Y' ) . ' midnight' );
+			/**
+			 * Always calculate offsets based on local time to prevent timezone issues.
+			 * Remove one day from the first day of next month (= last day of last month).
+			 */
+			$date_end_local = new \WC_DateTime( $date_start->date_i18n() );
+			$date_end_local->modify( '-1 day' );
+			$date_end_local = self::add_months_to_datetime( $date_end_local, 1 );
+
+			$date_end = Package::string_to_datetime( $date_end_local->date_i18n( 'Y-m-d H:i:s' ) );
 		} elseif ( 'yearly' === $type ) {
-			$date_end   = clone $start_indicator;
 			$date_start = clone $start_indicator;
+			$date_start->modify( 'first day of jan ' . $start_indicator->date( 'Y' ) . ' midnight' );
 
-			$date_end->modify( 'last day of dec ' . $start_indicator->format( 'Y' ) . ' midnight' );
-			$date_start->modify( 'first day of jan ' . $start_indicator->format( 'Y' ) . ' midnight' );
+			/**
+			 * Always calculate offsets based on local time to prevent timezone issues.
+			 * Remove one day from the first day of next month (= last day of last month).
+			 */
+			$date_end_local = new \WC_DateTime( $date_start->date_i18n() );
+			$date_end_local->modify( '-1 day' );
+			$date_end_local = self::add_months_to_datetime( $date_end_local, 12 );
+
+			$date_end = Package::string_to_datetime( $date_end_local->date_i18n( 'Y-m-d H:i:s' ) );
 		} elseif ( 'observer' === $type ) {
 			$date_start = clone $start_indicator;
-			$report     = Package::get_observer_report( $date_start->format( 'Y' ) );
+			$report     = Package::get_observer_report( $date_start->date( 'Y' ) );
 
 			if ( ! $report ) {
 				// Calculate starting with the first day of the current year until yesterday
 				$date_end   = clone $date_start;
-				$date_start = new \WC_DateTime( 'first day of jan ' . $start_indicator->format( 'Y' ) . ' midnight' );
+				$date_end   = Package::string_to_datetime( $date_end->date( 'Y-m-d' ) . ' midnight' );
+				$date_start = Package::string_to_datetime( 'first day of jan ' . $start_indicator->date( 'Y' ) . ' midnight' );
 			} else {
-				// In case a report has already been generated lets do only calculate the timeframe between the end of the last report and now
-				$date_end = clone $date_start;
-				$date_end->setTime( 0, 0 );
+				// In case a report has already been generated lets do only calculate the timeframe between the end of the last report and yesterday
+				$date_end = Package::string_to_datetime( $start_indicator->date( 'Y-m-d' ) . ' midnight' );
 
 				$date_start = clone $report->get_date_end();
 				$date_start->modify( '+1 day' );
@@ -593,17 +653,6 @@ class Queue {
 			}
 
 			$date_start = clone $start_indicator;
-		}
-
-		/**
-		 * Always set start and end time to midnight
-		 */
-		if ( $date_start ) {
-			$date_start->setTime( 0, 0 );
-		}
-
-		if ( $date_end ) {
-			$date_end->setTime( 0, 0 );
 		}
 
 		return array(

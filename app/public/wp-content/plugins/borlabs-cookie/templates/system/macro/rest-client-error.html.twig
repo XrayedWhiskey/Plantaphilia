@@ -1,0 +1,23 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        defaultErrorMessage: localized.alert.error,
+    } | merge(config)
+    %}
+    <div class="bc-hidden" data-brlbs-error>
+        <div class="bc-px-5 bc-py-5">
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error" role="alert" data-brlbs-error-message>{{ config.defaultErrorMessage | raw }}</div>
+        </div>
+        <div class="bc-hidden" data-brlbs-error-log>
+            <table class="brlbs-cmpnt-table bc-min-w-full">
+                <thead class="bc-bg-red-800 bc-text-white">
+                <tr>
+                    <th class="bc-w-48 bc-text-left" scope="col">{{ localized.table.httpStatusCode }}</th>
+                    <th class="bc-text-left" scope="col">{{ localized.table.code }}</th>
+                    <th class="bc-text-left" scope="col">{{ localized.table.message }}</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+{% endmacro %}

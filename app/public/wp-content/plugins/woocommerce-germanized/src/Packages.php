@@ -28,8 +28,7 @@ class Packages {
 	 * @var array Key is the package name/directory, value is the main package class which handles init.
 	 */
 	protected static $packages = array(
-		'woocommerce-germanized-shipments' => '\\Vendidero\\Germanized\\Shipments\\Package',
-		'woocommerce-germanized-dhl'       => '\\Vendidero\\Germanized\\DHL\\Package',
+		'eu-order-withdrawal-button-for-woocommerce' => '\\Vendidero\\OrderWithdrawalButton\\Package',
 	);
 
 	/**
@@ -86,6 +85,10 @@ class Packages {
 				do_action( "woocommerce_gzd_package_{$package_hook_name}_init" );
 			}
 		}
+	}
+
+	public static function load_shipping_package() {
+		return apply_filters( 'woocommerce_gzd_shipments_enabled', true );
 	}
 
 	/**

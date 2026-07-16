@@ -1,1 +1,126 @@
-!function(){var e,t;window.germanized=window.germanized||{},e=jQuery,(t=window.germanized).cart_voucher={params:{},vouchers:{},init:function(){this.params=wc_gzd_cart_voucher_params,this.vouchers=wc_gzd_cart_voucher_params.vouchers,e(".woocommerce-checkout").length&&this.manipulate_checkout_totals(),e(".woocommerce-cart-form").length&&this.manipulate_cart_totals(),e(document.body).on("updated_cart_totals",this.manipulate_cart_totals),e(document.body).on("updated_checkout",this.manipulate_checkout_totals),e(document.body).on("applied_coupon",this.refresh_cart_vouchers),e(document.body).on("removed_coupon",this.refresh_cart_vouchers)},refresh_cart_vouchers:function(){var o=t.cart_voucher;setTimeout((function(){e.ajax({type:"POST",url:o.params.wc_ajax_url.toString().replace("%%endpoint%%","gzd_refresh_cart_vouchers"),data:{security:o.params.refresh_cart_vouchers_nonce},success:function(e){o.vouchers=e.vouchers,o.manipulate_cart_totals()},dataType:"json"})}),75)},manipulate_checkout_totals:function(o,r){var c=t.cart_voucher,a=e(".woocommerce-checkout #order_review table");(r=void 0===r?{}:r).hasOwnProperty("fragments")&&r.fragments.hasOwnProperty(".gzd-vouchers")&&(c.vouchers=r.fragments[".gzd-vouchers"]),c.params.display_prices_including_tax||c.move_vouchers_before_total_checkout(),c.manipulate_coupons(a)},manipulate_cart_totals:function(){var o=e(".cart_totals table"),r=o.find("tr.order-total"),c=t.cart_voucher;c.params.display_prices_including_tax||(c.move_vouchers_before_total(o,r),e(".woocommerce-checkout").length&&c.move_vouchers_before_total_checkout()),c.manipulate_coupons(o)},manipulate_coupons:function(o){var r=t.cart_voucher;e.each(r.vouchers,(function(e,t){var c=r.get_voucher_coupon(t,o),a=r.get_voucher_fee(t,o);if(c.hide(),a.length>0&&c.length>0){var n=c.find("a.woocommerce-remove-coupon");n.length>0&&(a.find("td:last").append(" "),a.find("td:last").append(n))}}))},move_vouchers_before_total_checkout:function(){var o=e(".woocommerce-checkout #order_review table"),r=o.find("tr.order-total");t.cart_voucher.move_vouchers_before_total(o,r)},get_voucher_fee:function(t,o){var r=!1;return o.find("tr.fee").each((function(){$tr=e(this);var o=$tr.find("th").text();o.substr(o.length-t.code.length)===t.code&&(r=$tr)})),r||(r=o.find('tr.fee th:contains("'+t.name+'")').parents("tr")),r},get_voucher_coupon:function(e,t){return t.find("tr."+e.coupon_class)},move_vouchers_before_total:function(o,r){var c=t.cart_voucher;e.each(c.vouchers,(function(e,t){var a=c.get_voucher_fee(t,o);a.length>0&&a.insertBefore(r)}))}},e(document).ready((function(){t.cart_voucher.init()})),((window.germanized=window.germanized||{}).static=window.germanized.static||{})["cart-voucher"]={}}();
+/******/ (function() { // webpackBootstrap
+var __webpack_exports__ = {};
+/*global woocommerce_admin_meta_boxes, woocommerce_admin, accounting, woocommerce_admin_meta_boxes_order */
+window.germanized = window.germanized || {};
+(function ($, germanized) {
+  /**
+   * Order Data Panel
+   */
+  germanized.cart_voucher = {
+    params: {},
+    vouchers: {},
+    init: function () {
+      this.params = wc_gzd_cart_voucher_params;
+      this.vouchers = wc_gzd_cart_voucher_params.vouchers;
+      if ($('.woocommerce-checkout').length) {
+        this.manipulate_checkout_totals();
+      }
+      if ($('.woocommerce-cart-form').length) {
+        this.manipulate_cart_totals();
+      }
+      $(document.body).on('updated_cart_totals', this.manipulate_cart_totals);
+      $(document.body).on('updated_checkout', this.manipulate_checkout_totals);
+      $(document.body).on('applied_coupon', this.refresh_cart_vouchers);
+      $(document.body).on('removed_coupon', this.refresh_cart_vouchers);
+    },
+    refresh_cart_vouchers: function () {
+      var self = germanized.cart_voucher;
+      setTimeout(function () {
+        $.ajax({
+          type: 'POST',
+          url: self.params.wc_ajax_url.toString().replace('%%endpoint%%', 'gzd_refresh_cart_vouchers'),
+          data: {
+            security: self.params.refresh_cart_vouchers_nonce
+          },
+          success: function (data) {
+            self.vouchers = data.vouchers;
+            self.manipulate_cart_totals();
+          },
+          dataType: 'json'
+        });
+      }, 75);
+    },
+    manipulate_checkout_totals: function (e, ajaxData) {
+      var self = germanized.cart_voucher,
+        $table = $('.woocommerce-checkout #order_review table');
+      ajaxData = typeof ajaxData === 'undefined' ? {} : ajaxData;
+
+      /**
+       * Refresh new voucher data by fragments
+       */
+      if (ajaxData.hasOwnProperty('fragments') && ajaxData.fragments.hasOwnProperty('.gzd-vouchers')) {
+        self.vouchers = ajaxData.fragments['.gzd-vouchers'];
+      }
+      if (!self.params.display_prices_including_tax) {
+        self.move_vouchers_before_total_checkout();
+      }
+      self.manipulate_coupons($table);
+    },
+    manipulate_cart_totals: function () {
+      var $table = $('.cart_totals table'),
+        $total = $table.find('tr.order-total'),
+        self = germanized.cart_voucher;
+      if (!self.params.display_prices_including_tax) {
+        self.move_vouchers_before_total($table, $total);
+        if ($('.woocommerce-checkout').length) {
+          self.move_vouchers_before_total_checkout();
+        }
+      }
+      self.manipulate_coupons($table);
+    },
+    manipulate_coupons: function ($table) {
+      var self = germanized.cart_voucher;
+      $.each(self.vouchers, function (voucherId, voucher) {
+        var $coupon = self.get_voucher_coupon(voucher, $table),
+          $fee = self.get_voucher_fee(voucher, $table);
+        $coupon.hide();
+        if ($fee.length > 0 && $coupon.length > 0) {
+          var $remove_link = $coupon.find('a.woocommerce-remove-coupon');
+          if ($remove_link.length > 0) {
+            $fee.find('td:last').append(" ");
+            $fee.find('td:last').append($remove_link);
+          }
+        }
+      });
+    },
+    move_vouchers_before_total_checkout: function () {
+      var $table = $('.woocommerce-checkout #order_review table'),
+        $total = $table.find('tr.order-total'),
+        self = germanized.cart_voucher;
+      self.move_vouchers_before_total($table, $total);
+    },
+    get_voucher_fee: function (voucher, $table) {
+      var $fee = false;
+      $table.find('tr.fee').each(function () {
+        $tr = $(this);
+        var title = $tr.find('th').text();
+        var maybeVoucherTitle = title.substr(title.length - voucher.code.length);
+        if (maybeVoucherTitle === voucher.code) {
+          $fee = $tr;
+        }
+      });
+      if (!$fee) {
+        $fee = $table.find('tr.fee th:contains("' + voucher.name + '")').parents('tr');
+      }
+      return $fee;
+    },
+    get_voucher_coupon: function (voucher, $table) {
+      return $table.find('tr.' + voucher.coupon_class);
+    },
+    move_vouchers_before_total: function ($table, $total) {
+      var self = germanized.cart_voucher;
+      $.each(self.vouchers, function (voucherId, voucher) {
+        var $fee = self.get_voucher_fee(voucher, $table);
+        if ($fee.length > 0) {
+          $fee.insertBefore($total);
+        }
+      });
+    }
+  };
+  $(document).ready(function () {
+    germanized.cart_voucher.init();
+  });
+})(jQuery, window.germanized);
+((window.germanized = window.germanized || {})["static"] = window.germanized["static"] || {})["cart-voucher"] = __webpack_exports__;
+/******/ })()
+;

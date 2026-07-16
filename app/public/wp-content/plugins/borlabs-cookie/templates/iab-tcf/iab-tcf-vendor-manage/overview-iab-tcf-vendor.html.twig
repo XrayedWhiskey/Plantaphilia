@@ -1,0 +1,79 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+{% import "system/macro/row/save.html.twig" as row_save %}
+{% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [localized.breadcrumb.module]}, localized)
+    }}
+
+    {{ messages() | raw }}
+
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+        {% import "iab-tcf/iab-tcf-vendor-manage/macro/vendor-table.html.twig" as vendor_table %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/navigation/pagination.html.twig" as pagination %}
+
+        {% block mainHeader %}
+            <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+                {{ card_heading.component({
+                    title: localized.headline.iabTcfVendors,
+                    buttonText: localized.button.configureVendors,
+                    buttonLink: wpNonceUrl("?page=#{controllerId}&action=configure", "#{controllerId}-configure"),
+                    searchNonce: wpNonceField("#{controllerId}-search"),
+                    searchPlaceholder: localized.placeholder.search,
+                    searchTerm: data.searchTerm ? data.searchTerm : '',
+                    showSearch: true,
+                }, localized) }}
+            </form>
+        {% endblock %}
+
+        {% block mainContent %}
+            {{ vendor_table.component({
+                controllerId: controllerId,
+                vendors: data.vendors,
+            }, localized) }}
+            {{ pagination.component({
+                controllerId: controllerId,
+                pagination: data.vendors,
+            }, localized) }}
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with { id: 'languageIndependent', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.languageIndependent }}
+                        {% endblock %}
+                        {% block content %}
+                            {{ localized.thingsToKnow.languageIndependentExplained | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/accordion/accordion.html.twig" with { id: 'symbolsExplained' } %}
+                        {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                        {% import "system/macro/icons/switch-off.html.twig" as switch_off_icon %}
+                        {% import "system/macro/icons/switch-on.html.twig" as switch_on_icon %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.symbolsExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <ul class="bc-space-y-2 bc-text-left">
+                                <li>{{ switch_on_icon.component({ color: 'bc-text-white', invertSlider: true }) }} {{ localized.thingsToKnow.statusOn | raw }}</li>
+                                <li>{{ switch_off_icon.component({ color: 'bc-text-white' }) }} {{ localized.thingsToKnow.statusOff | raw }}</li>
+                                <li>{{ identification_icon.component({}) }} {{ localized.thingsToKnow.vendorDetails | raw }}</li>
+                            </ul>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+{% endif %}

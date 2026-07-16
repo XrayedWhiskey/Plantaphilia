@@ -1,0 +1,146 @@
+{% embed "system/embed/card/card-with-title.html.twig" with { contentSpacing: false, hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.serviceDetailsTable,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableName,
+            id: 'serviceDetailsTableName',
+            label: localized.field.serviceDetailsTableName,
+            value: data.serviceDetailsTableName,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableDescription,
+            id: 'serviceDetailsTableDescription',
+            label: localized.field.serviceDetailsTableDescription,
+            value: data.serviceDetailsTableDescription,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookies,
+            id: 'serviceDetailsTableCookies',
+            label: localized.field.serviceDetailsTableCookies,
+            value: data.serviceDetailsTableCookies,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookieLifetime,
+            id: 'serviceDetailsTableCookieLifetime',
+            label: localized.field.serviceDetailsTableCookieLifetime,
+            value: data.serviceDetailsTableCookieLifetime,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookiePurpose,
+            id: 'serviceDetailsTableCookiePurpose',
+            label: localized.field.serviceDetailsTableCookiePurpose,
+            value: data.serviceDetailsTableCookiePurpose,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookiePurposeFunctional,
+            id: 'serviceDetailsTableCookiePurposeFunctional',
+            label: localized.field.serviceDetailsTableCookiePurposeFunctional,
+            value: data.serviceDetailsTableCookiePurposeFunctional,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookiePurposeTracking,
+            id: 'serviceDetailsTableCookiePurposeTracking',
+            label: localized.field.serviceDetailsTableCookiePurposeTracking,
+            value: data.serviceDetailsTableCookiePurposeTracking,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookieType,
+            id: 'serviceDetailsTableCookieType',
+            label: localized.field.serviceDetailsTableCookieType,
+            value: data.serviceDetailsTableCookieType,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookieTypeHttp,
+            id: 'serviceDetailsTableCookieTypeHttp',
+            label: localized.field.serviceDetailsTableCookieTypeHttp,
+            value: data.serviceDetailsTableCookieTypeHttp,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookieTypeLocalStorage,
+            id: 'serviceDetailsTableCookieTypeLocalStorage',
+            label: localized.field.serviceDetailsTableCookieTypeLocalStorage,
+            value: data.serviceDetailsTableCookieTypeLocalStorage,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableCookieTypeSessionStorage,
+            id: 'serviceDetailsTableCookieTypeSessionStorage',
+            label: localized.field.serviceDetailsTableCookieTypeSessionStorage,
+            value: data.serviceDetailsTableCookieTypeSessionStorage,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableHosts,
+            id: 'serviceDetailsTableHosts',
+            label: localized.field.serviceDetailsTableHosts,
+            value: data.serviceDetailsTableHosts,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptions,
+            id: 'serviceDetailsTableServiceOptions',
+            label: localized.field.serviceDetailsTableServiceOptions,
+            value: data.serviceDetailsTableServiceOptions,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptionDataCollection,
+            id: 'serviceDetailsTableServiceOptionDataCollection',
+            label: localized.field.serviceDetailsTableServiceOptionDataCollection,
+            value: data.serviceDetailsTableServiceOptionDataCollection,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptionDataPurpose,
+            id: 'serviceDetailsTableServiceOptionDataPurpose',
+            label: localized.field.serviceDetailsTableServiceOptionDataPurpose,
+            value: data.serviceDetailsTableServiceOptionDataPurpose,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptionDistribution,
+            id: 'serviceDetailsTableServiceOptionDistribution',
+            label: localized.field.serviceDetailsTableServiceOptionDistribution,
+            value: data.serviceDetailsTableServiceOptionDistribution,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptionLegalBasis,
+            id: 'serviceDetailsTableServiceOptionLegalBasis',
+            label: localized.field.serviceDetailsTableServiceOptionLegalBasis,
+            value: data.serviceDetailsTableServiceOptionLegalBasis,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptionProcessingLocation,
+            id: 'serviceDetailsTableServiceOptionProcessingLocation',
+            label: localized.field.serviceDetailsTableServiceOptionProcessingLocation,
+            value: data.serviceDetailsTableServiceOptionProcessingLocation,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.serviceDetailsTableServiceOptionTechnology,
+            id: 'serviceDetailsTableServiceOptionTechnology',
+            label: localized.field.serviceDetailsTableServiceOptionTechnology,
+            value: data.serviceDetailsTableServiceOptionTechnology,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,15 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{{ breadcrumb.component({
+    items: [
+        [localized.breadcrumb.module, "?page=#{controllerId}"],
+        localized.breadcrumb.details
+    ]
+}, localized) }}
+
+{{ messages() | raw }}
+
+{% import "job/macro/job-card.html.twig" as job_card %}
+{{ job_card.component({
+    job: data.job,
+}, localized) }}

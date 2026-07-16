@@ -1,0 +1,7 @@
+{% macro component(config, localized) %}
+    {% import "cloud-scan/macro/cookie-details-table.html.twig" as cookie_details_table %}
+
+    {{ cookie_details_table.component({
+        examples: config.examples,
+    }, localized) }}
+{% endmacro %}

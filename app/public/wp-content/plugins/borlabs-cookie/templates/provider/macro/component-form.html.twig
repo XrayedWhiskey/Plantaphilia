@@ -1,0 +1,101 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/language-name.html.twig" as row_language_name %}
+    {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+    {{ row_input.component({
+        errorMessage: localized.validation.key,
+        hint: localized.hint.key,
+        id: generateFormFieldId('key', config.collectionName),
+        isDisabled: config.isCreateAction ? false : true,
+        isRequired: config.isCreateAction ? true : false,
+        label: localized.field.key,
+        name: generateFormFieldName('key', config.collectionName),
+        value: config.data.key,
+    }) }}
+
+    {{ row_input.component({
+        hint: localized.hint.iabVendorId,
+        id: generateFormFieldId('iabVendorId', config.collectionName),
+        isRequired: false,
+        label: localized.field.iabVendorId,
+        name: generateFormFieldName('iabVendorId', config.collectionName),
+        type: 'number',
+        value: config.data.iabVendorId,
+    }) }}
+
+    {{ row_input.component({
+        errorMessage: localized.validation.name,
+        id: generateFormFieldId('name', config.collectionName),
+        label: localized.field.name,
+        name: generateFormFieldName('name', config.collectionName),
+        value: config.data.name,
+    }) }}
+
+    {{ row_input.component({
+        errorMessage: localized.validation.address,
+        id: generateFormFieldId('address', config.collectionName),
+        label: localized.field.address,
+        name: generateFormFieldName('address', config.collectionName),
+        value: config.data.address,
+    }) }}
+
+    {{ row_textarea.component({
+        errorMessage: localized.validation.description,
+        id: generateFormFieldId('description', config.collectionName),
+        label: localized.field.description,
+        name: generateFormFieldName('description', config.collectionName),
+        value: config.data.description,
+    }) }}
+
+    {{ row_input.component({
+        errorMessage: localized.validation.cookieUrl,
+        id: generateFormFieldId('cookieUrl', config.collectionName),
+        isRequired: false,
+        label: localized.field.cookieUrl,
+        name: generateFormFieldName('cookieUrl', config.collectionName),
+        type: 'url',
+        value: config.data.cookieUrl,
+    }) }}
+
+    {{ row_input.component({
+        errorMessage: localized.validation.optOutUrl,
+        id: generateFormFieldId('optOutUrl', config.collectionName),
+        isRequired: false,
+        label: localized.field.optOutUrl,
+        name: generateFormFieldName('optOutUrl', config.collectionName),
+        type: 'url',
+        value: config.data.optOutUrl,
+    }) }}
+
+    {{ row_input.component({
+        errorMessage: localized.validation.privacyUrl,
+        id: generateFormFieldId('privacyUrl', config.collectionName),
+        label: localized.field.privacyUrl,
+        name: generateFormFieldName('privacyUrl', config.collectionName),
+        type: 'url',
+        value: config.data.privacyUrl,
+    }) }}
+
+    {{ row_textarea.component({
+        id: generateFormFieldId('partners', config.collectionName),
+        isRequired: false,
+        label: localized.field.partners,
+        name: generateFormFieldName('partners', config.collectionName),
+        value: config.data.partners | join('\n'),
+    }) }}
+
+    {{ row_language_name.component({
+        language: config.data.language,
+    }, localized) }}
+
+    <!-- Synchronization Settings -->
+    {{ synchronizationSettingsFields(
+        config.languages,
+        {
+            collectionName: config.collectionName ? "#{config.collectionName}[languages]" : 'languages',
+            hasRepository: true,
+            isCreateAction: config.isCreateAction,
+        }
+    ) | raw }}
+{% endmacro %}

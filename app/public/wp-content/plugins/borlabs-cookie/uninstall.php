@@ -1,46 +1,26 @@
 <?php
 /*
- * ----------------------------------------------------------------------
+ *  Copyright (c) 2026 Borlabs GmbH. All rights reserved.
+ *  This file may not be redistributed in whole or significant part.
+ *  Content of this file is protected by international copyright laws.
  *
- *                          Borlabs Cookie
- *                    developed by Borlabs GmbH
+ *  ----------------- Borlabs Cookie IS NOT FREE SOFTWARE -----------------
  *
- * ----------------------------------------------------------------------
- *
- * Copyright 2018-2022 Borlabs GmbH. All rights reserved.
- * This file may not be redistributed in whole or significant part.
- * Content of this file is protected by international copyright laws.
- *
- * ----------------- Borlabs Cookie IS NOT FREE SOFTWARE -----------------
- *
- * @copyright Borlabs GmbH, https://borlabs.io
- * @author Benjamin A. Bornschein
- *
+ *  @copyright Borlabs GmbH, https://borlabs.io
  */
 
-if (! defined('WP_UNINSTALL_PLUGIN')) {
+declare(strict_types=1);
+
+if (!defined('WP_UNINSTALL_PLUGIN')) {
     die;
 }
 
-if (version_compare(phpversion(), '7.2', '>=')) {
-    $borlabsCookieWPLANG = get_option('WPLANG', 'en_US');
+define('BORLABS_COOKIE_SLUG', 'borlabs-cookie');
 
-    if (empty($borlabsCookieWPLANG) || strlen($borlabsCookieWPLANG) <= 1) {
-        $borlabsCookieWPLANG = 'en';
-    }
+if (version_compare(phpversion(), '7.4', '>=')) {
+    require_once plugin_dir_path(__FILE__) . '/vendor/autoload.php';
 
-    if (defined('BORLABS_COOKIE_IGNORE_ISO_639_1') === false) {
-        define('BORLABS_COOKIE_DEFAULT_LANGUAGE', substr($borlabsCookieWPLANG, 0, 2));
-    } else {
-        define('BORLABS_COOKIE_DEFAULT_LANGUAGE', $borlabsCookieWPLANG);
-    }
-
-    include_once plugin_dir_path(__FILE__) . 'classes/Autoloader.php';
-
-    $Autoloader = new \BorlabsCookie\Autoloader();
-    $Autoloader->register();
-    $Autoloader->addNamespace('BorlabsCookie', realpath(plugin_dir_path(__FILE__) . '/classes'));
-
-    \BorlabsCookie\Cookie\Uninstall::getInstance()->uninstallPlugin();
+    $container = new \Borlabs\Cookie\Container\Container;
+    \Borlabs\Cookie\Container\ApplicationContainer::init($container);
+    $container->get(\Borlabs\Cookie\System\Uninstaller\Uninstaller::class)->run();
 }
-?>

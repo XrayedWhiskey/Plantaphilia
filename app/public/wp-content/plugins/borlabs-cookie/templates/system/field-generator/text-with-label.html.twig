@@ -1,0 +1,22 @@
+{% import "system/macro/row/input.html.twig" as row_input %}
+{% set inputType = 'text' %}
+
+{% if validator.key == 'EMAIL' %}
+    {% set inputType = 'email' %}
+{% elseif validator.key == 'URL' %}
+    {% set inputType = 'url' %}
+{% endif %}
+
+{{ row_input.component({
+    errorMessage: translation.errorMessage,
+    hint: translation.hint,
+    id: id,
+    infoMessage: translation.infoMessage,
+    isDisabled: false,
+    isRequired: isRequired,
+    label: translation.label,
+    name: name,
+    type: inputType,
+    validationRegex: validator.key == 'VALIDATION_REGEX' ?  validationRegex : null,
+    value: value,
+}) }}

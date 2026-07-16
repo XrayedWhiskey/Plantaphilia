@@ -7,6 +7,7 @@
  */
 
 use Duplicator\Installer\Utils\InstallerUpsell;
+use Duplicator\Installer\Utils\InstallerLinkManager;
 
 defined('ABSPATH') || defined('DUPXABSPATH') || exit;
 
@@ -46,7 +47,7 @@ defined('ABSPATH') || defined('DUPXABSPATH') || exit;
         ?>
     </ul>
     <p>
-        <a href="<?php echo DUPX_U::esc_url(InstallerUpsell::getCampaignUrl('installer-footer-callout')); ?>" target="_blank" rel="noopener noreferrer">
+        <a href="<?php echo DUPX_U::esc_url(InstallerLinkManager::getCampaignUrl('installer-footer-callout')); ?>" target="_blank" rel="noopener noreferrer">
             Get Duplicator Pro Today and Unlock all the Powerful Features »
         </a>
     </p>

@@ -26,6 +26,7 @@ span.woocommerce-gzd-input-toggle {
   position: relative;
   margin-top: -1px;
   vertical-align: text-top;
+  box-sizing: content-box;
 
   &::before {
     content: "";
@@ -151,6 +152,25 @@ span.woocommerce-gzd-input-toggle {
   margin-right: 1em;
 }
 
+.product_data .form-field-wc-gzd-wp-editor {
+  display: flex;
+  flex-wrap: wrap;
+  padding-bottom: 1em;
+
+  label {
+    float: none;
+    width: 150px;
+    margin: 0;
+    padding: 12px;
+    padding-right: 0;
+  }
+
+  .wc-gzd-product-editor-wrap {
+    flex-grow: 1;
+    padding-right: 20px;
+  }
+}
+
 .wc-gzd-pro, .product_tab_gzd_pro a::after, .product_type_gzd_pro::after {
   font-size: 9px;
   border-radius: 3px;
@@ -219,30 +239,30 @@ a.wc-gzd-pro:not(.wc-gzd-pro-outlined) {
 a {
   .wc-gzd-pro-outlined {
     text-decoration: none;
-    border: 1px solid #0073aa;
-    color: #0073aa;
+    border: 1px solid var(--wp-admin-theme-color, #0073aa );
+    color: var(--wp-admin-theme-color, #0073aa );
 
     &:hover {
-      color: #135e96;
+      color: var(--wp-admin-theme-color-darker-10, #0073aa );
     }
   }
 }
 
 a.wc-gzd-pro-outlined {
   text-decoration: none;
-  border: 1px solid #0073aa;
+  border: 1px solid var(--wp-admin-theme-color, #0073aa );
   font-weight: bold;
-  color: #0073aa !important;
+  color: var(--wp-admin-theme-color, #0073aa ) !important;
   margin: 0 2px;
 
   &:hover {
-    color: #135e96 !important;
+    color: var(--wp-admin-theme-color-darker-10, #0073aa ) !important;
   }
 }
 
 a.page-title-action {
   .wc-gzd-pro {
-    background: #0073aa;
+    background: var(--wp-admin-theme-color, #0073aa );
   }
 
   &.invalid {
@@ -255,9 +275,19 @@ a.page-title-action {
     }
   }
 
+  &.warning {
+    border-color: #dba617;
+    color: #ad8313;
+
+    &:hover {
+      border-color: #98730f;
+      color: #ad8313;
+    }
+  }
+
   &:hover {
     .wc-gzd-pro:not(.wc-gzd-pro-outlined) {
-      background: #0a4b78;
+      background: var(--wp-admin-theme-color-darker-10, #0a4b78 );
     }
   }
 }
@@ -273,14 +303,16 @@ a.page-title-action {
   top: -3px;
 }
 
-p._variable_unit_price_auto_field {
+p._variable_unit_price_auto_field,
+p.variable-is-non-alcoholic {
   input.checkbox {
     float: none !important;
     margin-right: 5px !important;
   }
 }
 
-p._unit_price_auto_field {
+p._unit_price_auto_field,
+p.variable-is-non-alcoholic {
   label {
     display: block !important;
     margin-bottom: 5px;
@@ -557,17 +589,39 @@ table.wc-gzd-tax-example tr th:first-child, table.wc-gzd-tax-example tr td:first
   }
 }
 
-.wc-gzd-warranty-upload-wrapper {
-  .upload_warranty_button {
-    margin-right: .5em;
+.wc-gzd-product-upload-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+
+  &.wc-gzd-product-upload-wrapper-single {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+
+    .wc-gzd-product-upload-remove {
+      margin-left: .25em;
+    }
   }
 
-  .wc-gzd-warranty-delete {
-    color: #b32d2e;
+  .wc-gzd-product-single-attachment {
+    display: block;
+  }
 
-    &.file-missing {
-      display: none;
+  .wc-gzd-product-upload-remove {
+    text-indent: 0;
+    overflow: hidden;
+    color: #b32d2e;
+    text-decoration: none;
+    vertical-align: middle;
+    margin-right: 1em;
+
+    &::before {
+      content: "\f335";
     }
+  }
+
+  .wc-gzd-product-upload {
+    display: inline-flex;
+    align-self: flex-start;
   }
 }
 
@@ -686,5 +740,19 @@ table.wc-gzd-tax-example tr th:first-child, table.wc-gzd-tax-example tr td:first
     &:last-child {
       margin-bottom: 0;
     }
+  }
+}
+
+.taxonomy-product_manufacturer {
+  .term-name-wrap {
+    .description, #name-description {
+      display: none !important;
+    }
+  }
+}
+
+.wc-gzd-admin-settings {
+  tr.wc-gzd-setting-invisible, .wc-gzd-setting-invisible {
+    display: none;
   }
 }

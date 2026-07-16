@@ -1,0 +1,19 @@
+<div class="bc-flex bc-flex-col">
+    <div class="bc-overflow-x-auto">
+        <div class="bc-inline-block bc-min-w-full bc-align-middle">
+            <div class="bc-overflow-hidden bc-ring-1 bc-ring-black bc-ring-opacity-5">
+                <table class="bc-min-w-full bc-divide-y bc-divide-gray-300" {% if dataAttribute is not empty %}{{ dataAttribute | raw }}{% endif %}>
+                    <thead class="bc-bg-gray-800">
+                    <tr class="bc-text-left bc-text-sm bc-font-semibold bc-text-white">
+                        {% block heading %}{% endblock %}
+                    </tr>
+                    </thead>
+                    <tbody class="bc-bg-white bc-rounded-b-md">
+                    {% block body %}{% endblock %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -25,9 +25,8 @@ class TablePress_List_View extends TablePress_View {
 	 * Object for the All Tables List Table.
 	 *
 	 * @since 1.0.0
-	 * @var TablePress_All_Tables_List_Table
 	 */
-	protected $wp_list_table;
+	protected \TablePress_All_Tables_List_Table $wp_list_table;
 
 	/**
 	 * Set up the view with data and do things that are specific for this view.
@@ -43,8 +42,7 @@ class TablePress_List_View extends TablePress_View {
 
 		parent::setup( $action, $data );
 
-		add_thickbox(); // For the table preview.
-		$this->admin_page->enqueue_script( 'list' );
+		TablePress::enqueue_script( 'list' );
 
 		if ( $data['messages']['superseded_extensions'] ) {
 			$superseded_extensions = array(
@@ -87,6 +85,10 @@ class TablePress_List_View extends TablePress_View {
 				'tablepress-datatables-fixedheader/tablepress-datatables-fixedheader.php' => array(
 					'name'       => 'TablePress Extension: DataTables FixedHeader',
 					'compatible' => true,
+				),
+				'tablepress-datatables-inverted-filter/tablepress-datatables-inverted-filter.php' => array(
+					'name'       => 'TablePress Extension: DataTables Inverted Filter',
+					'compatible' => false,
 				),
 				'tablepress-datatables-row-details/tablepress-datatables-row-details.php' => array(
 					'name'       => 'TablePress Extension: DataTables Row Details',
@@ -143,9 +145,9 @@ class TablePress_List_View extends TablePress_View {
 			$notice_css_classes = 'not-dismissible';
 
 			if ( ! empty( $active_incompatible_superseded_extensions ) ) {
-				$notice_css_classes .= ' notice-error notice-large';
+				$notice_css_classes .= ' is-error';
 
-				$message .= '<p style="font-size:16px;">' . __( 'You are using <strong>TablePress Extension plugins</strong> on this website that have been retired more than 2 years ago.', 'tablepress' ) . '<br>' . __( 'For technical reasons, some or all features of these outdated plugins <strong>will stop working with TablePress 3</strong> later this year:', 'tablepress' ) . '</p>';
+				$message .= '<p style="font-size:16px;">' . __( 'You are using <strong>TablePress Extension plugins</strong> on this website that have been retired many years ago.', 'tablepress' ) . '<br>' . __( 'For technical reasons, some or all features of these outdated plugins <strong>do no longer work</strong>:', 'tablepress' ) . '</p>';
 				$message .= '<ul style="list-style:disc;margin:0.5em 1em;font-size:16px;">';
 				foreach ( $active_incompatible_superseded_extensions as $extension ) {
 					$message .= '<li>' . esc_html( $extension ) . '</li>';
@@ -167,7 +169,7 @@ class TablePress_List_View extends TablePress_View {
 					$message .= '</ul>';
 				}
 			} elseif ( ! empty( $active_compatible_superseded_extensions ) && tb_tp_fs()->is_free_plan() ) {
-				$notice_css_classes .= ' notice-warning notice-alt';
+				$notice_css_classes .= ' is-warning';
 
 				$message .= '<p style="font-size:14px;"><strong>' . __( 'You are using TablePress Extension plugins on this website that have been retired and will no longer receive updates or support:', 'tablepress' ) . '</strong></p>';
 				$message .= '<ul style="list-style:disc;margin:0.5em 1em;">';
@@ -188,8 +190,8 @@ class TablePress_List_View extends TablePress_View {
 					$message .= '<li>' . __( 'Regular updates that ensure compatibility with WordPress!', 'tablepress' ) . '</li>';
 					$message .= '<li>' . __( 'Priority email support!', 'tablepress' ) . '</li>';
 					$message .= '</ul>';
-					$message .= '<p style="font-size:16px;"><strong>' . sprintf( __( 'And the best: %s', 'tablepress' ), sprintf( __( 'Use the promo code %1$s during the checkout process and save %2$s now!', 'tablepress' ), '<code>THANKYOU30</code>', '30%' ) ) . '</strong></p>';
-					$message .= '<p style="margin-top:2em;">' . sprintf( '<a href="%s" class="button button-primary" style="font-size:14px;margin-right:3em;background:linear-gradient(135deg,#00d184 0%%,#0791e3 100%%);border:none;font-weight:bold;">%s<span class="dashicons dashicons-arrow-right-alt" style="vertical-align:middle;margin:0 0 4px 4px"></span></a>', 'https://tablepress.org/upgrade-extensions/?utm_source=plugin&utm_medium=button&utm_content=superseded-extensions-message', __( 'Upgrade to a TablePress Premium version now!', 'tablepress' ) );
+					$message .= '<p style="font-size:16px;"><strong>' . sprintf( __( 'And the best: %s', 'tablepress' ), sprintf( __( 'Use the promo code %1$s during the checkout process for a special offer!', 'tablepress' ), '<code>UPGRADE</code>' ) ) . '</strong></p>';
+					$message .= '<p style="margin-top:2em;">' . sprintf( '<a href="%s" class="components-button is-primary" style="font-size:14px;margin-right:3em;background:linear-gradient(135deg,#00d184 0%%,#0791e3 100%%);border:none;font-weight:bold;">%s<span class="dashicons dashicons-arrow-right-alt" style="vertical-align:middle;margin:0 0 4px 4px"></span></a>', 'https://tablepress.org/upgrade-extensions/?utm_source=plugin&utm_medium=button&utm_content=superseded-extensions-message', __( 'Upgrade to a TablePress Premium version now!', 'tablepress' ) );
 				}
 				$message .= $this->ajax_link( array( 'action' => 'hide_message', 'item' => 'superseded_extensions', 'return' => 'list' ), __( 'Hide this message', 'tablepress' ) ) . '</p>';
 
@@ -201,6 +203,7 @@ class TablePress_List_View extends TablePress_View {
 
 		if ( $data['messages']['first_visit'] ) {
 			$message = '<p style="font-size:14px;"><strong>' . __( 'Thank you for choosing TablePress, the most popular table plugin for WordPress!', 'tablepress' ) . '</strong></p>';
+			/* translators: %1$s: URL to FAQ, %2$s: URL to Documentation, %3$s: URL to Support, %4$s: URL to plugin website */
 			$message .= '<p>' . sprintf( __( 'If you encounter any questions or problems, please visit the <a href="%1$s">FAQ</a>, the <a href="%2$s">Documentation</a>, and the <a href="%3$s">Support</a> section on the <a href="%4$s">plugin website</a>.', 'tablepress' ), 'https://tablepress.org/faq/', 'https://tablepress.org/documentation/', 'https://tablepress.org/support/', 'https://tablepress.org/' ) . '</p>';
 
 			if ( tb_tp_fs()->is_free_plan() ) {
@@ -211,7 +214,7 @@ class TablePress_List_View extends TablePress_View {
 
 			$title = '<em>' . __( 'Welcome!', 'tablepress' ) . '</em>';
 
-			$this->add_header_message( $message, 'notice-info not-dismissible', $title );
+			$this->add_header_message( $message, 'is-info not-dismissible', $title );
 		}
 
 		if ( $data['messages']['donation_nag'] ) {
@@ -219,20 +222,22 @@ class TablePress_List_View extends TablePress_View {
 				. __( 'Hi, my name is Tobias, I&#8217;m the developer of the TablePress plugin.', 'tablepress' ) . '</p>';
 			$message .= '<p style="font-size:14px;">' . __( 'Thank you for using it!', 'tablepress' ) . ' ';
 			if ( $data['table_count'] > 0 ) {
+				/* translators: %s: Number of tables */
 				$message .= sprintf( _n( 'I hope that everything works and that you are satisfied with the results of managing your %s table.', 'I hope that everything works and that you are satisfied with the results of managing your %s tables.', $data['table_count'], 'tablepress' ), $data['table_count'] );
 			} else {
+				/* translators: %s: URL to TablePress website */
 				$message .= sprintf( __( 'It looks like you haven’t added a table yet. If you need help to get started, please find more information in the FAQ and Documentation on the <a href="%s">TablePress website</a>.', 'tablepress' ), 'https://tablepress.org/' );
 			}
 			$message .= '</p>';
 			$message .= '<p style="font-size:14px;"><strong>' . sprintf( __( 'I would like to invite you to check out the <a href="%s">Premium versions of TablePress</a>.', 'tablepress' ), 'https://tablepress.org/premium/?utm_source=plugin&utm_medium=textlink&utm_content=upgrade-message' ) . '<br>'
 				. __( 'The available Pro and Max plans offer user support and many exciting and helpful features for your tables.', 'tablepress' ) . '</strong></p>';
 			$message .= '<p style="font-size:14px;">' . __( 'Sincerely, Tobias', 'tablepress' ) . '</p>';
-			$message .= '<p style="margin-top:1em;">' . sprintf( '<a href="%s" class="button button-primary" style="font-size:14px;margin-right:3em;">%s<span class="dashicons dashicons-arrow-right-alt" style="vertical-align:middle;margin:0 0 4px 4px"></span></a>', 'https://tablepress.org/premium/?utm_source=plugin&utm_medium=button&utm_content=upgrade-message', __( 'Tell me more about the Premium features', 'tablepress' ) )
+			$message .= '<p style="margin-top:1em;">' . sprintf( '<a href="%s" class="components-button is-primary" style="font-size:14px;margin-right:3em;">%s<span class="dashicons dashicons-arrow-right-alt" style="vertical-align:middle;margin:0 0 4px 4px"></span></a>', 'https://tablepress.org/premium/?utm_source=plugin&utm_medium=button&utm_content=upgrade-message', __( 'Tell me more about the Premium features', 'tablepress' ) )
 				. $this->ajax_link( array( 'action' => 'hide_message', 'item' => 'donation_nag', 'return' => 'list' ), __( 'Hide this message', 'tablepress' ) ) . '</p>';
 
 			$title = '<em>' . __( 'TablePress has more to offer!', 'tablepress' ) . '</em>';
 
-			$this->add_header_message( $message, 'notice-success not-dismissible', $title );
+			$this->add_header_message( $message, 'is-success not-dismissible', $title );
 		}
 
 		if ( $data['messages']['plugin_update'] ) {
@@ -246,14 +251,20 @@ class TablePress_List_View extends TablePress_View {
 
 			$title = '<em>' . sprintf( __( 'Thank you for updating to TablePress %s!', 'tablepress' ), TablePress::version ) . '</em>';
 
-			$this->add_header_message( $message, 'notice-info not-dismissible', $title );
+			$this->add_header_message( $message, 'is-info not-dismissible', $title );
 		}
 
 		$this->process_action_messages( array(
 			'success_delete'              => _n( 'The table was deleted successfully.', 'The tables were deleted successfully.', 1, 'tablepress' ),
 			'success_delete_plural'       => _n( 'The table was deleted successfully.', 'The tables were deleted successfully.', 2, 'tablepress' ),
 			'error_delete'                => __( 'Error: The table could not be deleted.', 'tablepress' ),
-			'success_copy'                => _n( 'The table was copied successfully.', 'The tables were copied successfully.', 1, 'tablepress' ) . ( ( false !== $data['table_id'] ) ? ' ' . sprintf( __( 'The copied table has the table ID &#8220;%s&#8221;.', 'tablepress' ), esc_html( $data['table_id'] ) ) : '' ),
+			'success_copy'                => _n( 'The table was copied successfully.', 'The tables were copied successfully.', 1, 'tablepress' )
+				. ( ( false !== $data['table_id'] )
+					? ' ' . ( current_user_can( 'tablepress_edit_table', $data['table_id'] )
+						? sprintf( __( 'You can now <a href="%1$s">edit the copied table</a>, which has the table ID “%2$s”.', 'tablepress' ), esc_url( TablePress::url( array( 'action' => 'edit', 'table_id' => $data['table_id'] ) ) ), $data['table_id'] )
+						: sprintf( __( 'The copied table has the table ID &#8220;%s&#8221;.', 'tablepress' ), esc_html( $data['table_id'] ) ) )
+					: ''
+				),
 			'success_copy_plural'         => _n( 'The table was copied successfully.', 'The tables were copied successfully.', 2, 'tablepress' ),
 			'error_copy'                  => __( 'Error: The table could not be copied.', 'tablepress' ),
 			'error_no_table'              => __( 'Error: You did not specify a valid table ID.', 'tablepress' ),
@@ -342,8 +353,10 @@ class TablePress_List_View extends TablePress_View {
 		_e( 'This is a list of your tables.', 'tablepress' );
 		echo ' ';
 		// Show the instructions string depending on whether the Block Editor is used on the site or not.
-		if ( $data['site_uses_block_editor'] ) {
+		if ( 'block' === $data['site_used_editor'] ) {
 			printf( __( 'To insert a table into a post or page, add a “%1$s” block in the block editor and select the desired table.', 'tablepress' ), __( 'TablePress table', 'tablepress' ) );
+		} elseif ( 'elementor' === $data['site_used_editor'] ) {
+			printf( __( 'To insert a table into a post or page, add a “%1$s” widget in the Elementor editor and select the desired table.', 'tablepress' ), __( 'TablePress table', 'tablepress' ) );
 		} else {
 			_e( 'To insert a table into a post or page, paste its Shortcode at the desired place in the editor.', 'tablepress' );
 			echo ' ';
@@ -380,6 +393,7 @@ class TablePress_List_View extends TablePress_View {
 		$this->wp_list_table->display();
 		?>
 </form>
+<div id="tablepress-list-screen"></div>
 		<?php
 	}
 

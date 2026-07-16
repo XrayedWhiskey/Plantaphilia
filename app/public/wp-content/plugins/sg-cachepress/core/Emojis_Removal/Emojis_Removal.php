@@ -35,20 +35,28 @@ class Emojis_Removal {
 	public function disable_emojis_remove_dns_prefetch( $urls, $relation_type ) {
 
 		if ( 'dns-prefetch' == $relation_type ) {
-			// Strip out any URLs referencing the WordPress.org emoji location.
-			foreach ( $urls as $key => $url ) {
-				// Continue with other urls if the url doens't match.
-				if ( @strpos( $url, 'https://s.w.org/images/core/emoji/' ) === false ) {
-					continue;
-				}
-
-				// Remove the url.
-				unset( $urls[ $key ] );
+		  foreach ( $urls as $key => $url ) {
+			// Check if the current item is an array of attributes.
+			if ( is_array( $url ) && isset( $url['href'] ) ) {
+			  // Continue with other urls if the href doesn't match.
+			  if ( @strpos( $url['href'], 'https://s.w.org/images/core/emoji/' ) === false ) {
+				continue;
+			  }
+			  // Remove the url.
+			  unset( $urls[ $key ] );
+			} elseif ( is_string( $url ) ) {
+			  // Continue with other urls if the url doesn't match.
+			  if ( @strpos( $url, 'https://s.w.org/images/core/emoji/' ) === false ) {
+				continue;
+			  }
+			  // Remove the url.
+			  unset( $urls[ $key ] );
 			}
+		  }
 		}
-
+	  
 		// Finally return the urls.
 		return $urls;
-	}
+	  }
 
 }

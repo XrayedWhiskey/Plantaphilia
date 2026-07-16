@@ -152,7 +152,7 @@ class Minifier {
 				stripos( $wp_scripts->registered[ $handle ]->src, '.min.js' ) !== false || // If the file is minified already.
 				false === $wp_scripts->registered[ $handle ]->src || // If the source is empty.
 				in_array( $handle, $excluded_scripts ) || // If the file is ignored.
-				@strpos( Helper_Service::get_home_url(), parse_url( $wp_scripts->registered[ $handle ]->src, PHP_URL_HOST ) ) === false // Skip all external sources.
+				@strpos( Helper_Service::get_home_url(), wp_parse_url( $wp_scripts->registered[ $handle ]->src, PHP_URL_HOST ) ) === false // Skip all external sources.
 			) {
 				continue;
 			}
@@ -306,14 +306,14 @@ class Minifier {
 				stripos( $wp_styles->registered[ $handle ]->src, '.min.css' ) !== false || // If the file is minified already.
 				false === $wp_styles->registered[ $handle ]->src || // If the source is empty.
 				in_array( $handle, $excluded_styles ) || // If the file is ignored.
-				@strpos( Helper_Service::get_home_url(), parse_url( $wp_styles->registered[ $handle ]->src, PHP_URL_HOST ) ) === false // Skip all external sources.
+				@strpos( Helper_Service::get_home_url(), wp_parse_url( $wp_styles->registered[ $handle ]->src, PHP_URL_HOST ) ) === false // Skip all external sources.
 			) {
 				continue;
 			}
 
 			$original_filepath = Front_End_Optimization::get_original_filepath( $wp_styles->registered[ $handle ]->src );
 
-			$parsed_url = parse_url( $wp_styles->registered[ $handle ]->src );
+			$parsed_url = wp_parse_url( $wp_styles->registered[ $handle ]->src );
 
 			// Build the minified version filename.
 			$filename = dirname( $original_filepath ) . '/' . $wp_styles->registered[ $handle ]->handle . '.min.css';
@@ -406,7 +406,7 @@ class Minifier {
 		}
 
 		// If there are no params we don't need to check the query params.
-		if ( ! isset( $_REQUEST ) ) {
+		if ( ! isset( $_REQUEST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return false;
 		}
 
@@ -427,7 +427,7 @@ class Minifier {
 	 */
 	public function has_exclude_param( $params = array() ) {
 		// If there are no params we don't need to check the query params.
-		if ( ! isset( $_REQUEST ) ) {
+		if ( ! isset( $_REQUEST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return false;
 		}
 
@@ -437,7 +437,7 @@ class Minifier {
 
 		// Check if any of the excluded params exists in the request.
 		foreach ( $params as $param ) {
-			if ( array_key_exists( $param, $_REQUEST ) ) {
+			if ( array_key_exists( $param, $_REQUEST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				return true;
 			}
 		}

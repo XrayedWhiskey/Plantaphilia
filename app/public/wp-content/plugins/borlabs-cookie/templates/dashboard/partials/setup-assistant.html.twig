@@ -1,0 +1,14 @@
+{% import "system/macro/anchor-button.html.twig" as anchor_button %}
+{% import "system/macro/icons/sparkles.html.twig" as sparkles_icon %}
+
+<div class="brlbs-cmpnt-setup-assistant bc-flex bc-justify-between bc-items-center bc-space-x-2 bc-rounded-md bc-shadow bc-mb-6 bc-px-5 bc-py-5">
+    <div class="bc-text-xl bc-text-white">
+        {{ localized.text.getBorlabsCookieReady | raw }}
+    </div>
+    <div>
+        {{ anchor_button.component({
+            href: '?page=borlabs-cookie-setup-assistant',
+            linkText: "#{sparkles_icon.component({ cssClasses: ['bc-relative', 'bc--top-0.5'], height: 'bc-h-4', width: 'bc-w-4', })}#{localized.button.goToSetupAssistant}"
+        }) }}
+    </div>
+</div>

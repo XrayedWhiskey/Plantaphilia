@@ -1,0 +1,20 @@
+<div class="brlbs-cmpnt-container" id="BorlabsCookie" data-brlbs-display-mode-settings="{{ displayModeSettings.value }}" lang="{{ language }}">
+    <div class="bc-hidden" style="
+        position: relative;
+        padding: .75rem 1.25rem;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        border: 3px dotted #dc3545;
+        border-radius: .25rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold">
+        {{ localized.global.alert.adBlockerDetected | raw }}
+    </div>
+
+    <div class="bc-full bc-mt-6 bc-mr-6 bc-px-2">
+        <!-- HEAD -->
+        <div
+            class="bc-flex bc-items-stretch bc-rounded-t-md bc-bg-white bc-bg-gradient-to-r bc-px-6 bc-py-6 bc-mt-4 bc-from-[#6a11cb] bc-to-[#2575fc]">
+            <img class="bc-w-[256px] bc-min-h-[100px]" src="{{ imageUrl('borlabs-cookie.svg') }}" alt="">
+        </div><!-- HEAD END -->

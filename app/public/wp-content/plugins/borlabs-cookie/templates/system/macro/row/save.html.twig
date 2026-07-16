@@ -1,0 +1,41 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+    <div>
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+
+            {% endblock %}
+            {% block input %}
+                {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+                {# Merge overwrite default config with given config. #}
+                {% set config = {action:'save'} | merge(config) %}
+
+                {% if config.nonce is not empty %}
+                    {{ config.nonce | raw }}
+                {% endif %}
+                {% if config.value is not empty %}
+                    <input type="hidden" name="id" value="{{ config.value }}">
+                {% endif %}
+                <div>
+                    {% if config.backLink is not empty %}
+                        {{ anchor_button.component({
+                            backgroundColor:'bc-bg-gray-600',
+                            backgroundColorHover:'hover:bc-bg-gray-700',
+                            href: config.backLink,
+                            linkText: config.backButton ? config.backButton : localized.global.button.goBackWithoutSaving,
+                            margin: 'bc-mr-2'
+                        }) }}
+                    {% endif %}
+                    {{ button.component({
+                        id: config.buttonId,
+                        isDisabled: config.isDisabled,
+                        name: 'action',
+                        value: config.action,
+                        button: config.button ? config.button : localized.global.button.saveAllSettings
+                    }) }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+    </div>
+{% endmacro %}

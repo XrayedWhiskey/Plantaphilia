@@ -3,6 +3,8 @@
 namespace DgoraWcas\Integrations\Plugins\Brizy;
 
 // Exit if accessed directly
+use DgoraWcas\Integrations\Plugins\AbstractPluginIntegration;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -13,15 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin URL: https://brizy.io/
  * Author: Brizy.io
  */
-class Brizy {
+class Brizy extends AbstractPluginIntegration {
+	protected const LABEL         = 'Brizy - Page Builder';
+	protected const VERSION_CONST = 'BRIZY_PRO_VERSION';
 
-	public function init() {
-		if ( ! defined( 'BRIZY_PRO_VERSION' ) ) {
-			return;
-		}
-
-		add_filter( 'brizy_post_loop_args', array( $this, 'overwriteSearchResults' ), 1000 );
-		add_filter( 'dgwt/wcas/helpers/is_search_query', array( $this, 'markQueryToProcess' ), 10, 2 );
+	public function init(): void {
+		add_filter( 'brizy_post_loop_args', [ $this, 'overwriteSearchResults' ], 1000 );
+		add_filter( 'dgwt/wcas/helpers/is_search_query', [ $this, 'markQueryToProcess' ], 10, 2 );
 
 		/**
 		 * Brizy creates several WP_Query objects, and we need to remove the restriction that only one is hooked.
@@ -30,6 +30,7 @@ class Brizy {
 	}
 
 	public function overwriteSearchResults( $params ) {
+		//phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$phrase = '';
 		if ( ! empty( $_GET['dgwt_wcas_s'] ) ) {
 			$phrase = $_GET['dgwt_wcas_s'];
@@ -50,6 +51,7 @@ class Brizy {
 			$params['s']                = $phrase;
 			$params['brizy_fibosearch'] = true;
 		}
+		//phpcs:enable
 
 		return $params;
 	}

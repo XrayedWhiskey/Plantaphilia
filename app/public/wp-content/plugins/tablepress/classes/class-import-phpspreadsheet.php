@@ -30,7 +30,7 @@ class TablePress_Import_PHPSpreadsheet extends TablePress_Import_Base {
 	 */
 	public function __construct() {
 		// Load PHPSpreadsheet via its autoloading mechanism.
-		TablePress::load_file( 'autoload.php', 'libraries' );
+		TablePress::load_file( 'autoload.php', 'libraries/vendor' );
 	}
 
 	/**
@@ -177,7 +177,7 @@ class TablePress_Import_PHPSpreadsheet extends TablePress_Import_Base {
 		try {
 			// Treat all cell values as strings, except for formulas (due to recognition of quoted/escaped formulas like `'=A2`).
 			\TablePress\PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder( new \TablePress\PhpOffice\PhpSpreadsheet\Cell\StringValueBinder() );
-			\TablePress\PhpOffice\PhpSpreadsheet\Cell\Cell::getValueBinder()->setFormulaConversion( false ); // @phpstan-ignore-line
+			\TablePress\PhpOffice\PhpSpreadsheet\Cell\Cell::getValueBinder()->setFormulaConversion( false ); // @phpstan-ignore method.notFound
 
 			/*
 			 * Try to detect a reader from the file extension and MIME type.
@@ -208,8 +208,8 @@ class TablePress_Import_PHPSpreadsheet extends TablePress_Import_Base {
 			$detected_format = strtolower( array_pop( $class_type ) );
 
 			if ( 'csv' === $detected_format ) {
-				$reader->setInputEncoding( \TablePress\PhpOffice\PhpSpreadsheet\Reader\Csv::GUESS_ENCODING ); // @phpstan-ignore-line
-				// @phpstan-ignore-next-line
+				$reader->setInputEncoding( \TablePress\PhpOffice\PhpSpreadsheet\Reader\Csv::GUESS_ENCODING ); // @phpstan-ignore method.notFound
+				// @phpstan-ignore method.notFound, smaller.alwaysFalse (PHPStan thinks that the Composer minimum version will always be fulfilled.)
 				$reader->setEscapeCharacter( ( PHP_VERSION_ID < 70400 ) ? "\x0" : '' ); // Disable the proprietary escape mechanism of PHP's fgetcsv() in PHP >= 7.4.
 			}
 
@@ -223,7 +223,7 @@ class TablePress_Import_PHPSpreadsheet extends TablePress_Import_Base {
 
 			// For formats where it's supported, import only the first sheet.
 			if ( in_array( $detected_format, array( 'csv', 'html', 'slk' ), true ) ) {
-				$reader->setSheetIndex( 0 ); // @phpstan-ignore-line
+				$reader->setSheetIndex( 0 ); // @phpstan-ignore method.notFound
 			}
 
 			$spreadsheet = $reader->load( $file->location );
@@ -241,10 +241,10 @@ class TablePress_Import_PHPSpreadsheet extends TablePress_Import_Base {
 			$max_row = $worksheet->getHighestRow();
 
 			// Adapted from \TablePress\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::rangeToArray().
-			++$max_col; // Due to for-loop with characters for columns.
+			\TablePress\PhpOffice\PhpSpreadsheet\Shared\StringHelper::stringIncrement( $max_col ); // Due to for-loop with characters for columns.
 			for ( $row = $min_row; $row <= $max_row; $row++ ) {
 				$row_data = array();
-				for ( $col = $min_col; $col !== $max_col; $col++ ) {
+				for ( $col = $min_col; $col !== $max_col; \TablePress\PhpOffice\PhpSpreadsheet\Shared\StringHelper::stringIncrement( $col ) ) {
 					$cell_reference = $col . $row;
 					if ( ! $cell_collection->has( $cell_reference ) ) {
 						$row_data[] = '';
@@ -286,11 +286,11 @@ class TablePress_Import_PHPSpreadsheet extends TablePress_Import_Base {
 					$cell_data = \TablePress\PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString(
 						$cell_data,
 						$format,
-						array( $this, 'format_color' )
+						array( $this, 'format_color' ),
 					);
 
 					if ( strlen( $cell_data ) > 1 && '=' === $cell_data[0] ) {
-						if ( $style->getQuotePrefix() ) {
+						if ( 'xlsx' === $detected_format && $style->getQuotePrefix() ) {
 							// Prepend a ' to quoted/escaped formulas (so that they are shown as text). This is currently not supported (at least) for the XLS format.
 							$cell_data = "'{$cell_data}";
 						} else {

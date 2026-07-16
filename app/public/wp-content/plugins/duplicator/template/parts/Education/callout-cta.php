@@ -6,6 +6,7 @@
  * @copyright (c) 2023, Snap Creek LLC
  */
 
+use Duplicator\Utils\LinkManager;
 use Duplicator\Utils\Upsell;
 
 defined("ABSPATH") || exit;
@@ -62,7 +63,7 @@ defined("ABSPATH") || exit;
         ?>
     </ul>
     <p>
-        <a href="<?php echo esc_url(Upsell::getCampaignUrl('settings-upgrade')); ?>" target="_blank" rel="noopener noreferrer">
+        <a href="<?php echo esc_url(LinkManager::getCampaignUrl('settings-upgrade')); ?>" target="_blank" rel="noopener noreferrer">
             <?php esc_html_e('Get Duplicator Pro Today and Unlock all the Powerful Features »', 'duplicator'); ?>
         </a>
     </p>

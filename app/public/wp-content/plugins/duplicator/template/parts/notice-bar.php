@@ -6,7 +6,7 @@
  * @package Duplicator
  */
 
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -55,10 +55,10 @@ defined("ABSPATH") || exit;
                     'strong' => array(),
                 )
             ),
-            esc_url(Upsell::getCampaignUrl('lite-upgrade-bar', $tplData['utm_content']))
+            esc_url(LinkManager::getCampaignUrl('lite-upgrade-bar', $tplData['utm_content']))
         );
         ?>
-        <a href="<?php echo esc_url(Upsell::getCampaignUrl('lite-upgrade-bar', $tplData['utm_content'])); ?>"
+        <a href="<?php echo esc_url(LinkManager::getCampaignUrl('lite-upgrade-bar', $tplData['utm_content'])); ?>"
            class="dup-upgrade-arrow" target="_blank" rel="noopener noreferrer">→</a>
     </span>
     <button type="button" class="dup-dismiss-button"

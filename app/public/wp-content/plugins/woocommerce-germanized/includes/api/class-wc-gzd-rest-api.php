@@ -34,25 +34,26 @@ class WC_GZD_REST_API {
 
 	public function rest_api_includes() {
 		// REST API v1 controllers.
-		include_once dirname( __FILE__ ) . '/v1/class-wc-gzd-rest-product-delivery-times-v1-controller.php';
-		include_once dirname( __FILE__ ) . '/v1/class-wc-gzd-rest-product-price-labels-v1-controller.php';
-		include_once dirname( __FILE__ ) . '/v1/class-wc-gzd-rest-product-units-v1-controller.php';
+		include_once __DIR__ . '/v1/class-wc-gzd-rest-product-delivery-times-v1-controller.php';
+		include_once __DIR__ . '/v1/class-wc-gzd-rest-product-price-labels-v1-controller.php';
+		include_once __DIR__ . '/v1/class-wc-gzd-rest-product-units-v1-controller.php';
 
 		// REST API v1 controllers.
-		include_once dirname( __FILE__ ) . '/v2/class-wc-gzd-rest-product-delivery-times-v2-controller.php';
-		include_once dirname( __FILE__ ) . '/v2/class-wc-gzd-rest-product-price-labels-v2-controller.php';
-		include_once dirname( __FILE__ ) . '/v2/class-wc-gzd-rest-product-units-v2-controller.php';
+		include_once __DIR__ . '/v2/class-wc-gzd-rest-product-delivery-times-v2-controller.php';
+		include_once __DIR__ . '/v2/class-wc-gzd-rest-product-price-labels-v2-controller.php';
+		include_once __DIR__ . '/v2/class-wc-gzd-rest-product-units-v2-controller.php';
 
 		// REST API controllers.
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-customers-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-orders-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-product-delivery-times-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-product-price-labels-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-product-units-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-products-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-nutrients-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-allergenic-controller.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-rest-product-deposit-types-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-customers-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-orders-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-product-delivery-times-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-product-price-labels-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-product-units-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-products-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-nutrients-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-allergenic-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-product-deposit-types-controller.php';
+		include_once __DIR__ . '/class-wc-gzd-rest-product-manufacturers-controller.php';
 	}
 
 	public function register_rest_routes() {
@@ -74,6 +75,7 @@ class WC_GZD_REST_API {
 				'WC_GZD_REST_Product_Deposit_Types_Controller',
 				'WC_GZD_REST_Product_Units_V1_Controller',
 				'WC_GZD_REST_Product_Units_Controller',
+				'WC_GZD_REST_Product_Manufacturers_Controller',
 				'WC_GZD_REST_Customers_Controller',
 				'WC_GZD_REST_Orders_Controller',
 				'WC_GZD_REST_Products_Controller',

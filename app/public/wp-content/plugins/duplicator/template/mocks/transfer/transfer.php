@@ -1,7 +1,7 @@
 <?php
 
 use Duplicator\Core\Views\TplMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -165,7 +165,7 @@ defined("ABSPATH") || exit;
             <div style="display:none; font-size:20px; font-weight:bold" id="dpro-progress-bar-percent"></div>
             <div style="font-size:14px" id="dpro-progress-bar-text">Processing</div>
             <div id="dpro-progress-bar-percent-help">
-                <small>Full package percentage shown on packages screen</small>
+                <small>Full Backup percentage shown on Backups screen</small>
             </div>
         </div>
 
@@ -213,7 +213,7 @@ defined("ABSPATH") || exit;
                     <td>Sun, 01 Jan 00:01:00</td>
                     <td>Succeeded</td>
                     <td>Dropbox</td>
-                    <td>Transferred package to Dropbox folder duplicator.com</td>
+                    <td>Transferred Backup to Dropbox folder duplicator.com</td>
                 </tr></tbody>
                 <tfoot>
                 <tr>
@@ -230,7 +230,7 @@ defined("ABSPATH") || exit;
     'title'        => __('Manually transfer backups to remote storages!', 'duplicator'),
     'warning-text' => __('Remote storages are not available in Duplicator Lite!', 'duplicator'),
     'content-tpl'  => 'mocks/transfer/content-popup',
-    'upsell-url'   => Upsell::getCampaignUrl('blurred-mocks', 'Details Transfer')
+    'upsell-url'   => LinkManager::getCampaignUrl('blurred-mocks', 'Details Transfer')
     ),
     true
 ); ?>

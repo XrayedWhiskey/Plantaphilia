@@ -1,0 +1,159 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.dialogSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/orderable-list.html.twig" as row_orderable_list %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {{ row_select.component({
+            dataAttribute: 'data-brlbs-display-target="layout-alert" data-brlbs-display-target-trigger-values="bar,bar-slim,box,box-slim"',
+            hint: localized.hint.layout,
+            id: 'layout',
+            label: localized.field.layout,
+            options: [
+                {key: 'bar', value: localized.option.layoutBar},
+                {key: 'bar-advanced', value: localized.option.layoutBarAdvanced},
+                {key: 'bar-slim', value: localized.option.layoutBarSlim},
+                {key: 'box', value: localized.option.layoutBox},
+                {key: 'box-advanced', value: localized.option.layoutBoxAdvanced},
+                {key: 'box-compact', value: localized.option.layoutBoxCompact},
+                {key: 'box-plus', value: localized.option.layoutBoxPlus},
+                {key: 'box-slim', value: localized.option.layoutBoxSlim},
+            ],
+            value: data.layout,
+            warningMessage: data.iabTcf.iabTcfStatus ? localized.alert.settingNotAvailableBecauseIabTcfIsEnabled : data.layout != 'bar-advanced' and data.layout != 'box-advanced' and data.layout != 'box-compact' and data.layout != 'box-plus' ? localized.alert.possibleLawViolationLayout : null,
+        }) }}
+
+        {{ row_select.component({
+            hint: localized.hint.position,
+            id: 'position',
+            label: localized.field.position,
+            options: [
+                {key: 'top-left', value: localized.option.positionTopLeft},
+                {key: 'top-center', value: localized.option.positionTopCenter},
+                {key: 'top-right', value: localized.option.positionTopRight},
+                {key: 'middle-left', value: localized.option.positionMiddleLeft},
+                {key: 'middle-center', value: localized.option.positionMiddleCenter},
+                {key: 'middle-right', value: localized.option.positionMiddleRight},
+                {key: 'bottom-left', value: localized.option.positionBottomLeft},
+                {key: 'bottom-center', value: localized.option.positionBottomCenter},
+                {key: 'bottom-right', value: localized.option.positionBottomRight},
+            ],
+            value: data.position,
+        }) }}
+
+        {{ row_select.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.serviceGroupJustification,
+            id: 'serviceGroupJustification',
+            label: localized.field.serviceGroupJustification,
+            options: [
+                {key: 'left', value: localized.option.serviceGroupJustificationLeft},
+                {key: 'center', value: localized.option.serviceGroupJustificationCenter},
+                {key: 'right', value: localized.option.serviceGroupJustificationRight},
+                {key: 'between', value: localized.option.serviceGroupJustificationBetween},
+                {key: 'around', value: localized.option.serviceGroupJustificationAround},
+            ],
+            value: data.serviceGroupJustification,
+            warningMessage: data.iabTcf.iabTcfStatus ? localized.alert.settingNotAvailableBecauseIabTcfIsEnabled : null,
+        }) }}
+
+        {{ row_orderable_list.component({
+            id: 'buttonEntranceOrder',
+            hideInSimplifiedMode: true,
+            items: options.buttonEntrance.list,
+            label: localized.field.buttonEntranceOrder,
+            order: data.buttonEntranceOrder,
+        }) }}
+
+        {{ row_orderable_list.component({
+            id: 'buttonDetailsOrder',
+            hideInSimplifiedMode: true,
+            items: options.buttonDetails.list,
+            label: localized.field.buttonDetailsOrder,
+            order: data.buttonDetailsOrder,
+        }) }}
+
+        {{ row_switch_button.component({
+            hint: localized.hint.showAcceptAllButton,
+            id: 'showAcceptAllButton',
+            label: localized.field.showAcceptAllButton,
+            value: data.showAcceptAllButton,
+        }) }}
+
+        {{ row_switch_button.component({
+            alertMessage: data.showAcceptOnlyEssentialButton == false ? localized.alert.possibleLawViolationSettingOn : null,
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showAcceptOnlyEssentialButton,
+            id: 'showAcceptOnlyEssentialButton',
+            label: localized.field.showAcceptOnlyEssentialButton,
+            value: data.showAcceptOnlyEssentialButton,
+            warningMessage: data.iabTcf.iabTcfStatus ? localized.alert.settingNotAvailableBecauseIabTcfIsEnabled : null,
+        }) }}
+
+        {{ row_switch_button.component({
+            alertMessage: data.showSaveButton == false ? localized.alert.possibleLawViolationSettingOff : null,
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showSaveButton,
+            id: 'showSaveButton',
+            label: localized.field.showSaveButton,
+            value: data.showSaveButton,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showCloseButton,
+            id: 'showCloseButton',
+            label: localized.field.showCloseButton,
+            value: data.showCloseButton,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showHeadlineSeparator,
+            id: 'showHeadlineSeparator',
+            label: localized.field.showHeadlineSeparator,
+            value: data.showHeadlineSeparator,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.buttonSwitchRound,
+            id: 'buttonSwitchRound',
+            label: localized.field.buttonSwitchRound,
+            value: data.buttonSwitchRound,
+        }) }}
+
+        {{ row_save.component({
+            action: 'save',
+            nonce: wpNonceField("#{controllerId}-save"),
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionBasicDialogSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineServiceGroupJustification | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.serviceGroupJustificationAround | raw }}</p>
+                        <p>{{ localized.thingsToKnow.serviceGroupJustificationBetween | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

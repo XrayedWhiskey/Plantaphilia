@@ -1,0 +1,93 @@
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+        {% import "system/macro/row/media-selection.html.twig" as row_media_selection %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.previewBlockedContent,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {{ row_media_selection.component({
+                hint: localized.hint.previewImage,
+                button: localized.button.useThisMedia,
+                id: 'previewImage',
+                isRequired: false,
+                label: localized.field.previewImage,
+                title: localized.button.selectOrUploadImage,
+                value: data.previewImage,
+            }) }}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% block label %}
+                    <label for="preset">{{ localized.field.preset | raw }}</label>
+                {% endblock %}
+                {% block input %}
+                    {% import "system/macro/form-component/select.html.twig" as select %}
+                    {% import "system/macro/form-component/button-sparkle.html.twig" as button_sparkle %}
+
+                    <div class="md:bc-flex bc-items-center md:bc-space-x-4">
+                        <div data-brlbs-preset-preview>
+                        </div>
+                        <div class="bc-w-full">
+                            {{ select.component({
+                                dataAttribute: 'data-brlbs-preset-select ' ~
+                                'data-brlbs-icon="' ~ imageUrl('borlabs-cookie-external-content-blocked-icon.svg') ~ '" ' ~
+                                'data-brlbs-preview-image="' ~ imageUrl('borlabs-cookie-cb-player.png') ~ '" ' ~
+                                'data-brlbs-a11y-show-content-blocker-modal-icon-explained="' ~ localized.default.contentBlocker.a11yShowContentBlockerModalIconExplained ~ '" ' ~
+                                'data-brlbs-accept-service-unblock-content="' ~ localized.default.contentBlocker.acceptServiceUnblockContent ~ '" ' ~
+                                'data-brlbs-description="' ~ localized.default.contentBlocker.description ~ '" ' ~
+                                'data-brlbs-more-information="' ~ localized.default.contentBlocker.moreInformation ~ '" ' ~
+                                'data-brlbs-unblock-button="' ~ localized.default.contentBlocker.unblockButton ~'"',
+                                id: 'preset',
+                                width: 'bc-w-full',
+                                label: localized.field.preset,
+                                options: [
+                                    {key: 'preset-a', value: localized.option.presetA},
+                                    {key: 'preset-b', value: localized.option.presetB},
+                                    {key: 'preset-c', value: localized.option.presetC},
+                                    {key: 'preset-d', value: localized.option.presetD},
+                                ],
+                                value: data.layout,
+                            }) }}
+                            <div class="bc-pt-1">
+                                {{ button_sparkle.component({
+                                    button: localized.button.applyPreset,
+                                    buttonDataAttribute: 'data-brlbs-update-vendor-preview',
+                                    dataAttribute: 'data-brlbs-preset-apply',
+                                }, localized) }}
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'html',
+                hint: localized.hint.previewHtml,
+                id: 'previewHtml',
+                label: localized.field.previewHtml,
+                value: data.previewHtml,
+            }) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'css',
+                hint: localized.hint.previewCss,
+                id: 'previewCss',
+                label: localized.field.previewCss,
+                value: data.previewCss,
+            }) }}
+
+            {{ row_save.component({
+                backLink: "?page=#{controllerId}",
+            }, localized) }}
+        {% endblock %}
+    {% endembed %}
+</div>

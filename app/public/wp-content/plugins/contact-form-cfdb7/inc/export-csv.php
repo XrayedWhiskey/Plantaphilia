@@ -19,13 +19,8 @@ class CFDB7_Export_CSV{
         header("Cache-Control: max-age=0, no-cache, must-revalidate, proxy-revalidate");
         header("Last-Modified: {$now} GMT");
 		
-        // force download
-		header("Content-Description: File Transfer");
-		header("Content-Encoding: UTF-8");
-		header("Content-Type: text/csv; charset=UTF-8");
-        header("Content-Type: application/force-download");
-        header("Content-Type: application/octet-stream");
-        header("Content-Type: application/download");
+        header("Content-Type: text/csv; charset=UTF-8");
+        header("Content-Disposition: attachment;filename={$filename}");
 
         // disposition / encoding on response body
 		header("Content-Disposition: attachment;filename={$filename}");
@@ -46,6 +41,7 @@ class CFDB7_Export_CSV{
         $array_keys = array_keys($array);
         $heading    = array();
         $unwanted   = array('cfdb7_file', 'cfdb7_', 'your-');
+        $delimiter  = apply_filters('cfdb7_csv_delimiter', ',');
 
         foreach ( $array_keys as $aKeys ) {
             if( $aKeys == 'form_date' ) $aKeys = 'Date';
@@ -56,7 +52,7 @@ class CFDB7_Export_CSV{
         }
 
         fputs( $df, ( chr(0xEF) . chr(0xBB) . chr(0xBF) ) ); 
-        fputcsv( $df, $heading );
+        fputcsv( $df, $heading, $delimiter);
 
         foreach ( $array['form_id'] as $line => $form_id ) {
             $line_values = array();
@@ -64,7 +60,7 @@ class CFDB7_Export_CSV{
                 $val = isset( $array[ $array_key ][ $line ] ) ? $array[ $array_key ][ $line ] : '';
                 $line_values[ $array_key ] = $val;
             }
-            fputcsv($df, $line_values);
+            fputcsv($df, $line_values, $delimiter);
         }
     }
     /**
@@ -89,7 +85,7 @@ class CFDB7_Export_CSV{
                 WHERE form_post_id = '$fid' ORDER BY form_id DESC LIMIT 1",OBJECT);
 
             $heading_row    = reset( $heading_row );
-            $heading_row    = unserialize( $heading_row->form_value );
+            $heading_row    = unserialize( $heading_row->form_value, ['allowed_classes' => false] );
             $heading_key    = array_keys( $heading_row );
             $rm_underscore  = apply_filters('cfdb7_remove_underscore_data', true); 
 
@@ -115,7 +111,7 @@ class CFDB7_Export_CSV{
                     $i++;
                     $data['form_id'][$i]    = $result->form_id;
                     $data['form_date'][$i]  = $result->form_date;
-                    $resultTmp              = unserialize( $result->form_value );
+                    $resultTmp              = unserialize( $result->form_value, ['allowed_classes' => false] );
                     $upload_dir             = wp_upload_dir();
                     $cfdb7_dir_url          = $upload_dir['baseurl'].'/cfdb7_uploads';
 

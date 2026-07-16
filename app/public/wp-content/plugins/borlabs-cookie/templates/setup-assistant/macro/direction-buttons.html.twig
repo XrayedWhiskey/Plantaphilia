@@ -1,0 +1,62 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        currentStep: 1,
+        steps: 1,
+    } | merge(config)
+    %}
+
+    {% import "system/macro/form-component/button.html.twig" as button %}
+
+    <div class="bc-flex bc-flex-col md:bc-flex-row bc-items-center bc-justify-between bc-bg-white bc-px-4 bc-py-3 sm:bc-px-6 bc-space-y-2 sm:bc-space-y-0 bc-rounded-md bc-shadow bc-mb-6">
+        <div>
+            {{ button.component({
+                backgroundColor: 'bc-bg-slate-950',
+                backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                button: localized.global.pagination.previous,
+                dataAttribute: 'data-brlbs-setup-flow-step-direction="previous"',
+                focusColor: 'focus:bc-ring-slate-950',
+            }, localized) }}
+        </div>
+
+        <div>
+            <nav class="bc-flex bc-items-center bc-justify-center">
+                <ol role="list" class="bc-flex bc-flex-col md:bc-flex-row bc-items-center sm:bc-space-x-5 bc-space-y-2 sm:bc-space-y-0">
+                    {% for step in 1..config.steps %}
+                        <li>
+                            {% if step < config.currentStep %}
+                                <!-- Completed Step -->
+                                <span class="bc-block bc-size-2.5 bc-rounded-full bc-bg-blue-600">
+                                    <span class="bc-sr-only">{{ localized.global.pagination.step }} {{ step }}</span>
+                                </span>
+                            {% elseif step == config.currentStep %}
+                                <!-- Current Step -->
+                                <span aria-current="step" class="bc-relative bc-flex bc-items-center bc-justify-center">
+                                    <span aria-hidden="true" class="bc-absolute bc-flex bc-size-5 bc-p-px">
+                                      <span class="bc-size-full bc-rounded-full bc-bg-blue-200"></span>
+                                    </span>
+                                    <span aria-hidden="true" class="bc-relative bc-block bc-size-2.5 bc-rounded-full bc-bg-blue-600"></span>
+                                    <span class="bc-sr-only">{{ localized.global.pagination.step }} {{ step }}</span>
+                                </span>
+                            {% else %}
+                                <!-- Upcoming Step -->
+                                <span class="bc-block bc-size-2.5 bc-rounded-full bc-bg-gray-300">
+                                    <span class="bc-sr-only">{{ localized.global.pagination.step }} {{ step }}</span>
+                                </span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            </nav>
+        </div>
+
+        <div>
+            {{ button.component({
+                backgroundColor: 'bc-bg-slate-950',
+                backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                button: localized.global.pagination.next,
+                dataAttribute: 'data-brlbs-setup-flow-step-direction="next"',
+                focusColor: 'focus:bc-ring-slate-950',
+            }, localized) }}
+        </div>
+    </div>
+{% endmacro %}

@@ -1,0 +1,73 @@
+{% macro component(config, localized) %}
+    {% set updateAvailable = false %}
+
+    {% if config.package.installedAt is not empty and isVersionGreater(config.package.borlabsServicePackageVersion, config.package.version) %}
+        {% set updateAvailable = true %}
+    {% endif %}
+
+    {% set targetUrl = wpNonceUrl("?page=borlabs-cookie-library&action=details&id=#{config.package.id}"  ~ (config.additionalQueryParameters ? "&#{config.additionalQueryParameters}" : ""), "#{config.controllerId}-#{config.package.id}-details") %}
+
+    {% if config.targetUrl is not empty %}
+        {% set targetUrl = config.targetUrl %}
+    {% endif %}
+
+    {% import "system/macro/form-component/button-link.html.twig" as button_link %}
+    {% import "system/macro/icons/cpu-chip.html.twig" as cpu_chip_icon %}
+
+    <div class="bc-shadow-md bc-bg-white bc-rounded-md">
+        <div class="bc-relative">
+            <a id="package-{{ config.package.borlabsServicePackageKey }}"></a>
+            {% if config.package.autoUpdateEnabled %}
+                <span class="bc-absolute bc-top-2 bc-right-2 bc-p-1.5 bc-leading-none bc-rounded-md brlbs-cmpnt-auto-update-enabled"
+                >{{ cpu_chip_icon.component({
+                        cssClasses: ['bc-text-white'],
+                        width: 'bc-w-4',
+                        height: 'bc-h-4',
+                    }) }}</span>
+            {% endif %}
+            {% if config.package.isFeatured %}
+                <span class="bc-absolute bc-top-2 bc-left-2 bc-px-3 bc-py-1.5 bc-rounded-md bc-bg-amber-500 bc-text-white bc-text-xxs bc-font-semibold bc-uppercase"
+                    >{{ localized.text.recommended }}</span>
+            {% endif %}
+            {% if config.package.thumbnail is not empty %}
+                <img class="bc-w-full bc-rounded-t-md" src="{{ config.package.thumbnail | raw }}" alt="{{ config.package.name | raw }}">
+            {% else %}
+                <img class="bc-w-full bc-rounded-t-md" src="{{ imageUrl('borlabs-default-package.png') | raw }}" alt="{{ config.package.name | raw }}">
+            {% endif %}
+            <div class="bc-p-3">
+                <h2 class="bc-text-base bc-font-medium">{{ config.package.name | raw }}</h2>
+                <p class="bc-text-xs">{{ config.package.translations.list.de.description | raw }}</p>
+            </div>
+            <div class="bc-border-t bc-border-solid bc-border-gray-200 bc-text-center">
+                <dl class="bc-grid bc-grid-cols-2 bc-m-0 bc-text-xxs">
+                    <div class="bc-col-span-1 bc-p-3">
+                        <dt class="bc-m-0 bc-mb-1 bc-font-semibold">{{ localized.descriptionList.type }}</dt>
+                        <dd class="bc-m-0">{{ config.componentTypes[config.package.type.value] | raw }}</dd>
+                    </div>
+                    <div class="bc-col-span-1 bc-p-3">
+                        {% if updateAvailable == true %}
+                            <dt class="bc-m-0 bc-mb-1 bc-font-semibold bc-text-purple-600">{{ localized.descriptionList.updateAvailable }}</dt>
+                            <dd class="bc-m-0 bc-text-purple-600">{{ versionNumber(config.package.borlabsServicePackageVersion) | raw }}</dd>
+                        {% elseif config.package.installedAt is not empty %}
+                            <dt class="bc-m-0 bc-mb-1 bc-font-semibold bc-text-blue-600">{{ localized.descriptionList.installedVersion }}</dt>
+                            <dd class="bc-m-0 bc-text-blue-600">{{ versionNumber(config.package.version) | raw }}</dd>
+                        {% else %}
+                            <dt class="bc-m-0 bc-mb-1 bc-font-semibold">{{ localized.descriptionList.version }}</dt>
+                            <dd class="bc-m-0">{{ versionNumber(config.package.version) | raw }}</dd>
+                        {% endif %}
+                    </div>
+                </dl>
+            </div>
+        </div>
+        <div class="bc-flex bc-justify-between">
+            {{ button_link.component({
+                backgroundColor: updateAvailable == true ? 'bc-bg-purple-600' : 'bc-bg-blue-600',
+                backgroundColorHover: updateAvailable == true ? 'enabled:hover:bc-bg-purple-700' : 'enabled:hover:bc-bg-blue-700',
+                button: localized.button.details,
+                href: targetUrl,
+                radius: 'bc-rounded-b-md',
+                width: 'bc-w-full'
+            }, localized) }}
+        </div>
+    </div>
+{% endmacro %}

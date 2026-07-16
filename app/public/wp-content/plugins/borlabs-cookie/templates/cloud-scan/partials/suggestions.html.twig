@@ -1,0 +1,109 @@
+{% import "library/library-manage/macro/package-card.html.twig" as package_card %}
+{% import "system/macro/form-component/button-link.html.twig" as button_link %}
+
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.suggestions,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            <div class="bc-flex bc-items-center bc-py-2.5 odd:bc-bg-white even:bc-bg-gray-50 bc-px-5 last:bc-rounded-b-md">
+                <div class="brlbs-cmpnt-text bc-text-xs">
+                    <p>{{ localized.text.suggestionsA | raw }}</p>
+                    <p class="bc-mt-4">{{ localized.text.suggestionsB | raw }}</p>
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+</div>
+
+<div class="bc-bg-neutral-200 bc-shadow-inner bc-p-6 bc-rounded-md bc-mb-6">
+    {% if data.suggestions is not empty %}
+        {% set showSuggestedPackagesToInstall = false %}
+        {% for suggestion in data.suggestions %}
+            {% set package = findObject(data.packages, 'borlabsServicePackageKey', suggestion.borlabsServicePackageKey) %}
+            {% if package is not empty %}
+                {% if package.installedAt is empty %}
+                    {% set showSuggestedPackagesToInstall = true %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="bc-flex bc-items-center bc-justify-between bc-mb-6">
+            <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-0">{{ localized.headline.suggestedPackagesToInstall }}</h3>
+            {% if showSuggestedPackagesToInstall != false %}
+                {% set targetUrl = wpNonceUrl("?page=borlabs-cookie-library&action=bulk-install&cloud-scan-id=#{data.scan.id}", "borlabs-cookie-library-#{data.scan.id}-bulk-install") %}
+                <div class="bc-flex bc-items-center">
+                    {{ button_link.component({
+                        button: localized.button.installSuggestedPackages,
+                        href: targetUrl,
+                    }, localized) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <ul class="bc-grid bc-grid-cols-1 bc-gap-6 sm:bc-grid-cols-2 lg:bc-grid-cols-4">
+            {% if showSuggestedPackagesToInstall == false %}
+                <span class="bc-rounded-md bc-py-3 bc-px-4 bc-bg-blue-100 bc-text-blue-800 bc-border-blue-800/20 bc-border bc-border-solid">{{ localized.alert.noAdditionalSuggestionsFound | raw }}</span>
+            {% else %}
+                {% for package in data.packages %}
+                    {% if package.installedAt is empty %}
+                        {% set suggestion = findObject(data.suggestions, 'borlabsServicePackageKey', package.borlabsServicePackageKey) %}
+                        {% if suggestion is not empty %}
+                            <li>
+                                {{ package_card.component({
+                                    componentTypes: data.componentTypes,
+                                    controllerId: controllerId,
+                                    targetUrl: wpNonceUrl("?page=borlabs-cookie-library&action=details&id=#{package.id}&suggestionId=#{suggestion.id}", "borlabs-cookie-library-#{package.id}-details"),
+                                    package: package,
+                                }, localized.library) }}
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </ul>
+
+        {% set showSuggestedPackagesAlreadyInstalled = false %}
+
+        {% for suggestion in data.suggestions %}
+            {% set package = findObject(data.packages, 'borlabsServicePackageKey', suggestion.borlabsServicePackageKey) %}
+
+            {% if package is not empty %}
+                {% if package.installedAt is not empty %}
+                    {% set showSuggestedPackagesAlreadyInstalled = true %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {% if showSuggestedPackagesAlreadyInstalled == true %}
+        <div class="bc-mt-6">
+            <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-6">{{ localized.headline.suggestedPackagesAlreadyInstalled }}</h3>
+            <ul class="bc-grid bc-grid-cols-1 bc-gap-6 sm:bc-grid-cols-2 lg:bc-grid-cols-4">
+                {% for package in data.packages %}
+                    {% if package.installedAt is not empty %}
+                        {% set suggestion = findObject(data.suggestions, 'borlabsServicePackageKey', package.borlabsServicePackageKey) %}
+                        {% if suggestion is not empty %}
+                            <li>
+                                {{ package_card.component({
+                                    componentTypes: data.componentTypes,
+                                    controllerId: controllerId,
+                                    targetUrl: wpNonceUrl("?page=borlabs-cookie-library&action=details&id=#{package.id}&suggestionId=#{suggestion.id}", "borlabs-cookie-library-#{package.id}-details"),
+                                    package: package,
+                                }, localized.library) }}
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    {% else %}
+        <span class="bc-rounded-md bc-py-3 bc-px-4 bc-bg-blue-100 bc-text-blue-800 bc-border-blue-800/20 bc-border bc-border-solid">{{ localized.alert.noSuggestionsFound | raw }}</span>
+    {% endif %}
+</div>

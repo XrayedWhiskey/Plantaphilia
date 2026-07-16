@@ -2,15 +2,19 @@ jQuery( function ( $ ) {
     var wc_gzd_product = {
 
         warranty_upload_file_frame: false,
+        upload_file_frame: false,
+        params: {},
 
         init: function() {
             var self = wc_gzd_product;
 
+            self.params = wc_gzd_admin_product_params;
+
             $( document )
                 .on( 'click', 'a.wc-gzd-add-new-country-specific-delivery-time', self.onAddNewDeliveryTime )
                 .on( 'click', 'a.wc-gzd-remove-country-specific-delivery-time', self.onRemoveDeliveryTime )
-                .on( 'click', '.upload_warranty_button', self.onUploadWarranty )
-                .on( 'click', 'a.wc-gzd-warranty-delete', self.onRemoveWarranty )
+                .on( 'click', '.wc-gzd-product-upload', self.onUpload )
+                .on( 'click', '.wc-gzd-product-upload-remove', self.onRemoveUpload )
                 .on( 'woocommerce-product-type-change wc-gzd-product-type-change', self.onProductTypeChange )
                 .on( 'wc-gzd-refresh-unit-placeholder', self.onRefreshProductUnitPlaceholder )
                 .on( 'change', ':input#_unit', self.onChangeUnit )
@@ -23,7 +27,7 @@ jQuery( function ( $ ) {
                 window.console.log( err );
             }
 
-            $( 'input#_is_food, input#_defective_copy' ).on( 'change', function() {
+            $( 'input#_is_food, input#_defective_copy, input#_wireless_electronic_device' ).on( 'change', function() {
                 self.showHidePanels();
             });
 
@@ -82,10 +86,11 @@ jQuery( function ( $ ) {
 
         showHidePanels: function() {
             var is_food           = $( 'input#_is_food:checked' ).length,
-                is_defective_copy = $( 'input#_defective_copy:checked' ).length;
+                is_defective_copy = $( 'input#_defective_copy:checked' ).length,
+                is_wireless_electronic_device = $( 'input#_wireless_electronic_device:checked' ).length;
 
-            var hide_classes = '.hide_if_is_food, .hide_if_defective_copy';
-            var show_classes = '.show_if_is_food, .show_if_defective_copy';
+            var hide_classes = '.hide_if_is_food, .hide_if_defective_copy, .hide_if_wireless_electronic_device';
+            var show_classes = '.show_if_is_food, .show_if_defective_copy, .show_if_wireless_electronic_device';
 
             $( hide_classes ).show();
             $( show_classes ).hide();
@@ -105,6 +110,10 @@ jQuery( function ( $ ) {
             } else {
                 $( '#wc-gzd-product-defect-description' ).hide();
             }
+
+            if ( is_wireless_electronic_device ) {
+                $( '.show_if_wireless_electronic_device' ).show();
+            }
         },
 
         onQuickEdit: function() {
@@ -116,22 +125,29 @@ jQuery( function ( $ ) {
             if ( $inline_data.find( '.gzd_delivery_time_slug' ).length > 0 ) {
                 var delivery_time      = $inline_data.find( '.gzd_delivery_time_slug' ).text(),
                     delivery_time_name = $inline_data.find( '.gzd_delivery_time_name' ).text(),
+                    manufacturer       = $inline_data.find( '.gzd_manufacturer_slug' ).text(),
+                    manufacturer_name  = $inline_data.find( '.gzd_manufacturer_name' ).text(),
                     unit               = $inline_data.find( '.gzd_unit_slug' ).text();
 
                 $( 'select[name="_unit"] option:selected', '.inline-edit-row' ).attr( 'selected', false ).trigger( 'change' );
                 $( 'select[name="_unit"] option[value="' + unit + '"]' ).attr( 'selected', 'selected' ).trigger( 'change' );
 
                 $( 'select[name="_delivery_time"] option' ).remove().trigger( 'change' );
+                $( 'select[name="_manufacturer"] option' ).remove().trigger( 'change' );
 
                 if ( delivery_time ) {
                     $( 'select[name="_delivery_time"]' ).append( '<option value="' + delivery_time + '" selected="selected">' + delivery_time_name + '</option>' );
+                }
+
+                if ( manufacturer ) {
+                    $( 'select[name="_manufacturer"]' ).append( '<option value="' + manufacturer + '" selected="selected">' + manufacturer_name + '</option>' );
                 }
 
                 /**
                  * Ugly hack to make sure select2 initialization happens after WP cloned the data to the new div
                  */
                 setTimeout( function() {
-                    var $select2 = $( 'tr#edit-' + post_id + ' .wc-gzd-delivery-time-search.enhanced' );
+                    var $select2 = $( 'tr#edit-' + post_id + ' .wc-gzd-term-search-quick-edit.enhanced' );
 
                     /**
                      * Destroy the select2 element from template in case it still exists and has been initialized
@@ -142,74 +158,98 @@ jQuery( function ( $ ) {
                     }
 
                     $( 'tr#edit-' + post_id + ' .wc-gzd-delivery-time-select-placeholder' ).addClass( 'wc-product-search', 'wc-gzd-delivery-time-search' ).removeClass( 'wc-gzd-delivery-time-select-placeholder' );
+                    $( 'tr#edit-' + post_id + ' .wc-gzd-manufacturer-select-placeholder' ).addClass( 'wc-product-search', 'wc-gzd-manufacturer-search' ).removeClass( 'wc-gzd-manufacturer-select-placeholder' );
 
                     $( document.body ).trigger( 'wc-enhanced-select-init' );
                 }, 100 );
             }
         },
 
-        onUploadWarranty: function( e ) {
-            var self            = wc_gzd_product,
+        onUpload: function( e ) {
+            var self      = wc_gzd_product,
                 $el             = $( this ),
-                $delete_btn     = $el.closest( 'p.form-field, p.form-row' ).find( 'a.wc-gzd-warranty-delete' ),
-                $attach_field   = $el.closest( 'p.form-field, p.form-row' ).find( '.wc-gzd-warranty-attachment' );
+                $wrapper     = $el.parents( '.wc-gzd-product-upload-wrapper' ),
+                multiple = $el.data( 'multiple' ),
+                $attachmentHolder = $wrapper.find( '.wc-gzd-product-upload-attachments' ),
+                attachmentInputName = $el.data( 'input_name' ),
+                attachments = [];
+
+            $wrapper.find( 'input[name="' + attachmentInputName + '"]' ).each(function() {
+                attachments.push( wp.media.attachment( parseInt( $( this ).val() ) ) );
+            });
 
             e.preventDefault();
 
             // Create the media frame.
-            self.warranty_upload_file_frame = wp.media.frames.customHeader = wp.media({
+            self.upload_file_frame = wp.media.frames.customHeader = wp.media({
                 // Set the title of the modal.
                 title: $el.data( 'choose' ),
                 library: {
-                    type: 'application/pdf'
+                    type: $el.data( 'types' ).split(',')
                 },
                 button: {
                     text: $el.data( 'update' )
                 },
-                multiple: false,
+                multiple: $el.data( 'multiple' ),
             });
 
             // When an image is selected, run a callback.
-            self.warranty_upload_file_frame.on( 'select', function() {
-                var selection = self.warranty_upload_file_frame.state().get( 'selection' );
+            self.upload_file_frame.on( 'select', function() {
+                var selection = self.upload_file_frame.state().get( 'selection' );
 
                 selection.map( function( attachment ) {
                     attachment = attachment.toJSON();
 
-                    if ( attachment.filename ) {
+                    if ( ! multiple ) {
+                        $attachmentHolder.find( '.wc-gzd-product-single-attachment' ).remove();
+
                         $el.text( attachment.filename );
-                        $delete_btn.removeClass( 'file-missing' ).show();
-                        $attach_field.val( attachment.id );
+                    } else {
+                        $el.text( $el.data( 'update' ) );
+                    }
+
+                    if ( $.inArray( parseInt( attachment.id ), attachments ) === -1 ) {
+                        attachments.push( attachment.id );
+
+                        if ( attachment.filename ) {
+                            $attachmentHolder.append( '<span class="wc-gzd-product-single-attachment" data-attachment_id="' + attachment.id + '">' + ( multiple ? attachment.filename : '' ) + ' <a href="#" class="wc-gzd-product-upload-remove dashicons dashicons-no-alt">' + self.params.i18n_remove_attachment + '</a><input class="wc-gzd-product-attachments" type="hidden" name="' + attachmentInputName + '" value="' + attachment.id + '" /></span>' );
+                        }
                     }
                 });
             });
 
-            self.warranty_upload_file_frame.on( 'open', function() {
-                var selection = self.warranty_upload_file_frame.state().get( 'selection' );
-                var id        = $attach_field.val();
+            self.upload_file_frame.on( 'open', function() {
+                var selection = self.upload_file_frame.state().get( 'selection' );
 
-                if ( id.length > 0 ) {
-                    var attachment = wp.media.attachment( id );
-                    selection.add( attachment ? [attachment] : [] );
-
-                    self.warranty_upload_file_frame.content.mode( 'browse' );
+                if ( ! multiple && attachments.length > 0 ) {
+                    selection.add( attachments );
+                    self.upload_file_frame.content.mode( 'browse' );
                 } else {
                     selection.remove();
-
-                    self.warranty_upload_file_frame.content.mode( 'upload' );
+                    self.upload_file_frame.content.mode( 'upload' );
                 }
             });
 
             // Finally, open the modal.
-            self.warranty_upload_file_frame.open();
+            self.upload_file_frame.open();
         },
 
-        onRemoveWarranty: function() {
-            var $field = $( this ).closest( 'p.form-field, p.form-row' );
+        onRemoveUpload: function() {
+            var $field = $( this ).closest( '.wc-gzd-product-single-attachment' ),
+                $wrapper = $( this ).parents( '.wc-gzd-product-upload-wrapper' ),
+                $button = $wrapper.find( '.wc-gzd-product-upload' ),
+                multiple = $button.data( 'multiple' );
 
-            $field.find( '.wc-gzd-warranty-attachment' ).val( '' );
-            $field.find( 'a.upload_warranty_button' ).text( $field.find( 'a.upload_warranty_button' ).data( 'default-label' ) );
-            $field.find( 'a.wc-gzd-warranty-delete' ).addClass( 'file-missing' ).hide();
+            $field.remove();
+
+            var hasAttachments = $wrapper.find( '.wc-gzd-product-single-attachment' ).length > 0;
+
+            console.log($button);
+            console.log(hasAttachments);
+
+            if ( ! hasAttachments ) {
+                $button.text( $button.data( 'default_label' ) );
+            }
 
             return false;
         },

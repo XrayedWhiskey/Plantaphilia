@@ -1,0 +1,24 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{{ breadcrumb.component({
+    items: [
+        [localized.breadcrumb.module, "?page=#{controllerId}"]
+    ]
+}, localized) }}
+
+{{ messages() | raw }}
+
+<!-- License Information -->
+{% if data.licenseKey is not empty %}
+    {% include "license/partials/license-information.html.twig" %}
+    <hr>
+{% endif %}
+
+<!-- Register License -->
+{% include "license/partials/register-license.html.twig" %}
+
+<!-- Remove License -->
+{% if data.licenseKey is not empty %}
+    <hr>
+    {% include "license/partials/remove-license.html.twig" %}
+{% endif %}

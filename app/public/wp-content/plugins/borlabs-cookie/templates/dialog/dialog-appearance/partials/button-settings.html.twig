@@ -1,0 +1,304 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.buttonSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonSaveConsentColor',
+                label: localized.field.default,
+                value: data.dialogButtonSaveConsentColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonSaveConsentColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonSaveConsentColorHover,
+            },
+            title: localized.field.dialogButtonSaveConsentColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonSaveConsentTextColor',
+                label: localized.field.default,
+                value: data.dialogButtonSaveConsentTextColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonSaveConsentTextColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonSaveConsentTextColorHover,
+            },
+            title: localized.field.dialogButtonSaveConsentTextColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonAcceptOnlyEssentialColor',
+                label: localized.field.default,
+                value: data.dialogButtonAcceptOnlyEssentialColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonAcceptOnlyEssentialColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonAcceptOnlyEssentialColorHover,
+            },
+            title: localized.field.dialogButtonAcceptOnlyEssentialColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonAcceptOnlyEssentialTextColor',
+                label: localized.field.default,
+                value: data.dialogButtonAcceptOnlyEssentialTextColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonAcceptOnlyEssentialTextColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonAcceptOnlyEssentialTextColorHover,
+            },
+            title: localized.field.dialogButtonAcceptOnlyEssentialTextColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonAcceptAllColor',
+                label: localized.field.default,
+                value: data.dialogButtonAcceptAllColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonAcceptAllColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonAcceptAllColorHover,
+            },
+            title: localized.field.dialogButtonAcceptAllColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonAcceptAllTextColor',
+                label: localized.field.default,
+                value: data.dialogButtonAcceptAllTextColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonAcceptAllTextColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonAcceptAllTextColorHover,
+            },
+            title: localized.field.dialogButtonAcceptAllTextColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonPreferencesColor',
+                label: localized.field.default,
+                value: data.dialogButtonPreferencesColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonPreferencesColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonPreferencesColorHover,
+            },
+            title: localized.field.dialogButtonPreferencesColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonPreferencesTextColor',
+                label: localized.field.default,
+                value: data.dialogButtonPreferencesTextColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonPreferencesTextColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonPreferencesTextColorHover,
+            },
+            title: localized.field.dialogButtonPreferencesTextColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonCloseColor',
+                label: localized.field.default,
+                value: data.dialogButtonCloseColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonCloseColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonCloseColorHover,
+            },
+            hint: localized.hint.dialogButtonCloseColor,
+            title: localized.field.dialogButtonCloseColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonCloseTextColor',
+                label: localized.field.default,
+                value: data.dialogButtonCloseTextColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonCloseTextColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonCloseTextColorHover,
+            },
+            hint: localized.hint.dialogButtonCloseColor,
+            title: localized.field.dialogButtonCloseTextColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonSelectionColor',
+                label: localized.field.default,
+                value: data.dialogButtonSelectionColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonSelectionColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonSelectionColorHover,
+            },
+            hint: localized.hint.dialogButtonSelectionColor,
+            title: localized.field.dialogButtonSelectionColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogButtonSelectionTextColor',
+                label: localized.field.default,
+                value: data.dialogButtonSelectionTextColor,
+            },
+            colorB:
+            {
+                id: 'dialogButtonSelectionTextColorHover',
+                label: localized.field.hover,
+                value: data.dialogButtonSelectionTextColorHover,
+            },
+            hint: localized.hint.dialogButtonSelectionColor,
+            title: localized.field.dialogButtonSelectionTextColor,
+        }) }}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+            {% block label %}
+                <label>{{ localized.field.dialogButtonBorderRadius | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <div class="bc-relative bc-flex bc-gap-x-4">
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogButtonBorderRadiusTopLeft',
+                            min: 0,
+                            value: data.dialogButtonBorderRadiusTopLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogButtonBorderRadiusTopLeft">{{ localized.field.topLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogButtonBorderRadiusTopRight',
+                            min: 0,
+                            value: data.dialogButtonBorderRadiusTopRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogButtonBorderRadiusTopRight">{{ localized.field.topRight | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogButtonBorderRadiusBottomLeft',
+                            min: 0,
+                            value: data.dialogButtonBorderRadiusBottomLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogButtonBorderRadiusBottomLeft">{{ localized.field.bottomLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogButtonBorderRadiusBottomRight',
+                            min: 0,
+                            value: data.dialogButtonBorderRadiusBottomRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogButtonBorderRadiusBottomRight">{{ localized.field.bottomRight | raw }}</label>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionButtonSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineOnWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.onWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}</p>
+                        <p>
+                            <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalButtonSettings" href="#" role="button">
+                                <img class="bc-w-48 bc-h-48 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-dialog-appearance-button-settings.png') }}" alt="">
+                            </a>
+                        </p>
+                        {% embed "system/embed/modal/modal.html.twig" with {
+                            id: 'borlabsModalButtonSettings',
+                            maxWidth: 'bc-max-w-2xl',
+                            title: localized.headline.buttonSettings,
+                        } %}
+                            {% block icon %}
+                                {% import "system/macro/icons/paint-brush.html.twig" as pain_brush_icon %}
+                                <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                    {{ pain_brush_icon.component({}) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block description %}
+                                <img src="{{ imageUrl('ttk-dialog-appearance-button-settings.png') }}" alt="">
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

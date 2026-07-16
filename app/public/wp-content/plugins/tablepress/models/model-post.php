@@ -25,12 +25,12 @@ class TablePress_Post_Model extends TablePress_Model {
 	 * Name of the "Custom Post Type" for the tables.
 	 *
 	 * @since 1.0.0
-	 * @var string
+	 * @var lowercase-string&non-empty-string
 	 */
-	protected $post_type = 'tablepress_table';
+	protected string $post_type = 'tablepress_table';
 
 	/**
-	 * Init the model by registering the Custom Post Type.
+	 * Inits the model by registering the Custom Post Type.
 	 *
 	 * @since 1.0.0
 	 */
@@ -40,7 +40,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Register the Custom Post Type which the tables use.
+	 * Registers the Custom Post Type which the tables use.
 	 *
 	 * @since 1.0.0
 	 */
@@ -50,7 +50,7 @@ class TablePress_Post_Model extends TablePress_Model {
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param string $post_type The "Custom Post Type" that TablePress uses.
+		 * @param lowercase-string&non-empty-string $post_type The "Custom Post Type" that TablePress uses.
 		 */
 		$this->post_type = apply_filters( 'tablepress_post_type', $this->post_type );
 		$post_type_args = array(
@@ -78,7 +78,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Insert a post with the correct Custom Post Type and default values in the the wp_posts table in the database.
+	 * Inserts a post with the correct Custom Post Type and default values in the the wp_posts table in the database.
 	 *
 	 * @since 1.0.0
 	 *
@@ -118,12 +118,6 @@ class TablePress_Post_Model extends TablePress_Model {
 			kses_remove_filters();
 		}
 
-		// Remove filter that adds `rel="noopener" to <a> HTML tags, but destroys JSON code. See https://core.trac.wordpress.org/ticket/46316.
-		$has_targeted_link_rel_filters = ( false !== has_filter( 'content_save_pre', 'wp_targeted_link_rel' ) );
-		if ( $has_targeted_link_rel_filters ) {
-			wp_remove_targeted_link_rel_filters();
-		}
-
 		$post_id = wp_insert_post( $post, true );
 
 		// Restore removed content filters.
@@ -132,12 +126,9 @@ class TablePress_Post_Model extends TablePress_Model {
 		if ( $has_kses ) {
 			kses_init_filters();
 		}
-		if ( $has_targeted_link_rel_filters ) {
-			wp_init_targeted_link_rel_filters();
-		}
 
 		// In rare cases, `wp_insert_post()` returns 0 as the post ID, when an error happens, so it's converted to a WP_Error here.
-		if ( 0 === $post_id ) { // @phpstan-ignore-line (False-positive in the PHPStan WordPress stubs.)
+		if ( 0 === $post_id ) { // @phpstan-ignore identical.alwaysFalse (False-positive in the PHPStan WordPress stubs.)
 			return new WP_Error( 'post_insert', '' );
 		}
 
@@ -145,7 +136,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Update an existing post with the correct Custom Post Type and default values in the the wp_posts table in the database.
+	 * Updates an existing post with the correct Custom Post Type and default values in the the wp_posts table in the database.
 	 *
 	 * @since 1.0.0
 	 *
@@ -185,12 +176,6 @@ class TablePress_Post_Model extends TablePress_Model {
 			kses_remove_filters();
 		}
 
-		// Remove filter that adds `rel="noopener" to <a> HTML tags, but destroys JSON code. See https://core.trac.wordpress.org/ticket/46316.
-		$has_targeted_link_rel_filters = ( false !== has_filter( 'content_save_pre', 'wp_targeted_link_rel' ) );
-		if ( $has_targeted_link_rel_filters ) {
-			wp_remove_targeted_link_rel_filters();
-		}
-
 		$post_id = wp_update_post( $post, true );
 
 		// Restore removed content filters.
@@ -199,15 +184,12 @@ class TablePress_Post_Model extends TablePress_Model {
 		if ( $has_kses ) {
 			kses_init_filters();
 		}
-		if ( $has_targeted_link_rel_filters ) {
-			wp_init_targeted_link_rel_filters();
-		}
 
 		return $post_id;
 	}
 
 	/**
-	 * Get a post from the wp_posts table in the database.
+	 * Gets a post from the wp_posts table in the database.
 	 *
 	 * @since 1.0.0
 	 *
@@ -223,7 +205,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Delete a post (and all revisions) from the wp_posts table in the database.
+	 * Deletes a post (and all revisions) from the wp_posts table in the database.
 	 *
 	 * @since 1.0.0
 	 *
@@ -235,7 +217,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Move a post to the trash (if trash is globally enabled), instead of directly deleting the post.
+	 * Moves a post to the trash (if trash is globally enabled), instead of directly deleting the post.
 	 * (yet unused)
 	 *
 	 * @since 1.0.0
@@ -248,7 +230,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Restore a post from the trash.
+	 * Restores a post from the trash.
 	 * (yet unused)
 	 *
 	 * @since 1.0.0
@@ -261,7 +243,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Load all posts with one query, to prime the cache.
+	 * Loads all posts with one query, to prime the cache.
 	 *
 	 * @since 1.0.0
 	 *
@@ -275,11 +257,8 @@ class TablePress_Post_Model extends TablePress_Model {
 		global $wpdb;
 
 		// Split post loading, to save memory.
-		$offset = 0;
-		$length = 100; // 100 posts at a time
-		$number_of_posts = count( $all_post_ids );
-		while ( $offset < $number_of_posts ) {
-			$post_ids = array_slice( $all_post_ids, $offset, $length );
+		while ( ! empty( $all_post_ids ) ) {
+			$post_ids = array_splice( $all_post_ids, 0, 100 ); // Extract 100 posts at a time.
 			// Don't load posts that are in the cache already.
 			$post_ids = _get_non_cached_ids( $post_ids, 'posts' );
 			if ( ! empty( $post_ids ) ) {
@@ -292,12 +271,11 @@ class TablePress_Post_Model extends TablePress_Model {
 					update_meta_cache( 'post', $post_ids );
 				}
 			}
-			$offset += $length; // next array_slice() $offset.
 		}
 	}
 
 	/**
-	 * Count the number of posts with the model's CPT in the wp_posts table in the database.
+	 * Counts the number of posts with the model's CPT in the wp_posts table in the database.
 	 * (currently for debug only)
 	 *
 	 * @since 1.0.0
@@ -309,7 +287,7 @@ class TablePress_Post_Model extends TablePress_Model {
 	}
 
 	/**
-	 * Add a post meta field to a post.
+	 * Adds a post meta field to a post.
 	 *
 	 * @since 1.0.0
 	 *
@@ -319,16 +297,14 @@ class TablePress_Post_Model extends TablePress_Model {
 	 * @return bool True on success, false on error.
 	 */
 	public function add_meta_field( int $post_id, string $field, string $value ): bool {
-		// WP expects a slashed value.
-		$value = wp_slash( $value );
-		$success = add_post_meta( $post_id, $field, $value, true ); // true means unique.
+		$success = add_post_meta( $post_id, wp_slash( $field ), wp_slash( $value ), true ); // WP expects slashed values, `true` means unique.
 		// Make sure that $success is a boolean, as add_post_meta() returns an ID or false.
 		$success = ( false === $success ) ? false : true;
 		return $success;
 	}
 
 	/**
-	 * Update the value of a post meta field of a post.
+	 * Updatse the value of a post meta field of a post.
 	 *
 	 * If the field does not yet exist, it is added.
 	 *
@@ -346,13 +322,11 @@ class TablePress_Post_Model extends TablePress_Model {
 			return true;
 		}
 
-		// WP expects a slashed value.
-		$value = wp_slash( $value );
-		return (bool) update_post_meta( $post_id, $field, $value, $prev_value );
+		return (bool) update_post_meta( $post_id, wp_slash( $field ), wp_slash( $value ), $prev_value ); // WP expects slashed values.
 	}
 
 	/**
-	 * Get the value of a post meta field of a post.
+	 * Gets the value of a post meta field of a post.
 	 *
 	 * @since 1.0.0
 	 *
@@ -361,11 +335,11 @@ class TablePress_Post_Model extends TablePress_Model {
 	 * @return string Value of the meta field.
 	 */
 	public function get_meta_field( int $post_id, string $field ): string {
-		return get_post_meta( $post_id, $field, true ); // true means single value.
+		return get_post_meta( $post_id, $field, true ); // `true` means single value.
 	}
 
 	/**
-	 * Delete a post meta field of a post.
+	 * Deletes a post meta field of a post.
 	 * (yet unused)
 	 *
 	 * @since 1.0.0
@@ -375,11 +349,11 @@ class TablePress_Post_Model extends TablePress_Model {
 	 * @return bool True on success, false on error.
 	 */
 	public function delete_meta_field( int $post_id, string $field ): bool {
-		return delete_post_meta( $post_id, $field, true ); // true means single value.
+		return delete_post_meta( $post_id, wp_slash( $field ) ); // WP expects a slashed value.
 	}
 
 	/**
-	 * Return the Custom Post Type that TablePress uses.
+	 * Returns the Custom Post Type that TablePress uses.
 	 *
 	 * @since 1.5.0
 	 *

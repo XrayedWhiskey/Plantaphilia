@@ -73,6 +73,7 @@ class WC_GZD_Order_Helper {
 		add_action( 'woocommerce_checkout_create_order_fee_item', array( $this, 'set_fee_split_tax_meta' ), 10, 4 );
 
 		add_action( 'woocommerce_before_order_object_save', array( $this, 'set_order_version' ), 10 );
+		add_action( 'woocommerce_before_order_object_save', array( $this, 'maybe_patch_prices_including_tax_bug' ), 10 );
 
 		// The woocommerce_before_order_object_save hook might fail in case an order has been created manually
 		add_action( 'woocommerce_new_order', array( $this, 'on_create_order' ), 10 );
@@ -119,7 +120,7 @@ class WC_GZD_Order_Helper {
 			add_action( 'woocommerce_order_before_calculate_totals', array( $this, 'tmp_store_order_item_copy_before_calculate_totals' ), 500, 2 );
 			add_action(
 				'woocommerce_order_after_calculate_totals',
-				function( $and_taxes, $order ) {
+				function ( $and_taxes, $order ) {
 					if ( $and_taxes ) {
 						$this->order_item_map = null;
 
@@ -132,12 +133,31 @@ class WC_GZD_Order_Helper {
 				2
 			);
 
+			/**
+			 * In checkout-block context Woo does only create a draft order which is
+			 * not stored after tax calculation. The issue is that the tax (re-)calculation logic
+			 * does only work if a valid order already exists, e.g. WC_Order_Item_Shipping::get_order() works.
+			 * Use this tweak to make sure the order exists before actually calculating taxes.
+			 *
+			 * @see \Automattic\WooCommerce\StoreApi\Utilities\OrderController::update_order_from_cart()
+			 */
+			add_action(
+				'woocommerce_order_before_calculate_taxes',
+				function ( $args, $order ) {
+					if ( 'checkout-draft' === $order->get_status() && ! $order->get_id() ) {
+						$order->save();
+					}
+				},
+				10,
+				2
+			);
+
 			add_action( 'woocommerce_order_item_shipping_after_calculate_taxes', array( $this, 'adjust_additional_costs_item_taxes' ), 10, 2 );
 			add_action( 'woocommerce_order_item_fee_after_calculate_taxes', array( $this, 'adjust_additional_costs_item_taxes' ), 10, 2 );
 			add_action( 'woocommerce_order_item_after_calculate_taxes', array( $this, 'adjust_additional_costs_item_taxes' ), 10, 2 );
 			add_action(
 				'woocommerce_order_before_calculate_totals',
-				function() {
+				function () {
 					add_filter( 'woocommerce_order_get_shipping_total', array( $this, 'force_shipping_total_exact' ), 10, 2 );
 				},
 				500,
@@ -145,7 +165,7 @@ class WC_GZD_Order_Helper {
 			);
 			add_action(
 				'woocommerce_order_after_calculate_totals',
-				function() {
+				function () {
 					remove_filter( 'woocommerce_order_get_shipping_total', array( $this, 'force_shipping_total_exact' ), 10 );
 				},
 				500
@@ -166,10 +186,24 @@ class WC_GZD_Order_Helper {
 	protected function get_item_total( $item, $old_item = false ) {
 		// Let's grab a fresh copy (loaded from DB) to make sure we are not dependent on Woo's calculated taxes in $item.
 		if ( $old_item ) {
-			$item_total = wc_format_decimal( floatval( $old_item->get_total() ) );
+			$item_total         = wc_format_decimal( floatval( $old_item->get_total() ) );
+			$new_item_total     = wc_format_decimal( floatval( $item->get_total() ) );
+			$item_tax_total     = floatval( $old_item->get_total_tax() );
+			$new_item_tax_total = floatval( $item->get_total_tax() );
+			$order              = $item->get_order();
 
 			if ( wc_gzd_additional_costs_include_tax() ) {
-				$item_total += wc_format_decimal( floatval( $old_item->get_total_tax() ) );
+				/**
+				 * Orders created via rest-api may be transmitted without actual tax data for the shipping line
+				 * items and should be interpreted as net based. Add the tax calculated by Woo on top.
+				 */
+				$is_fresh_rest_api_item = 'rest-api' === $order->get_created_via() && 0.0 === $item_tax_total && $item_total === $new_item_total;
+
+				if ( apply_filters( 'woocommerce_gzd_order_item_additional_cost_is_net', $is_fresh_rest_api_item, $old_item, $item ) ) {
+					$item_total += wc_format_decimal( $new_item_tax_total );
+				} else {
+					$item_total += wc_format_decimal( $item_tax_total );
+				}
 			}
 		} else {
 			$item_total     = wc_format_decimal( floatval( $item->get_total() ) );
@@ -338,15 +372,25 @@ class WC_GZD_Order_Helper {
 
 			$fee_props->name      = $item->get_name();
 			$fee_props->tax_class = $item->get_tax_class();
-			$fee_props->taxable   = 'taxable' === $item->get_tax_status();
+			$fee_props->taxable   = ( 'taxable' === $item->get_tax_status() && '0' !== $item->get_tax_class() );
 			$fee_props->amount    = $item->get_amount();
-			$fee_props->id        = sanitize_title( $fee_props->name );
+			$fee_props->id        = $item->get_meta( '_voucher_id' ) ? sanitize_title( $item->get_meta( '_voucher_id' ) ) : sanitize_title( $fee_props->name );
 			$fee_props->object    = $fee_props;
+
+			/**
+			 * Older voucher fees may be missing the _voucher_id meta.
+			 * Make sure that our voucher helper is able to detect the fee as a voucher.
+			 */
+			if ( 'yes' === $item->get_meta( '_is_voucher' ) ) {
+				$fee_props->id = 'voucher_' . $item->get_meta( '_code' );
+			}
 
 			if ( ! apply_filters( 'woocommerce_gzd_force_fee_tax_calculation', true, $fee_props ) ) {
 				return;
 			}
 		}
+
+		$item_has_taxes = apply_filters( 'woocommerce_gzd_order_item_supports_tax_adjustments', (float) $item->get_total_tax() !== 0.0, $item );
 
 		if ( $order = $item->get_order() ) {
 			$item->delete_meta_data( '_split_taxes' );
@@ -382,31 +426,42 @@ class WC_GZD_Order_Helper {
 						$tax_class_taxes = WC_Tax::calc_tax( $taxable_amount, $tax_rates, wc_gzd_additional_costs_include_tax() );
 						$net_base        = wc_gzd_additional_costs_include_tax() ? ( $taxable_amount - array_sum( $tax_class_taxes ) ) : $taxable_amount;
 
+						if ( ! $item_has_taxes ) {
+							$net_base = $taxable_amount;
+						}
+
 						$taxable_amounts[ $tax_class ] = array(
-							'taxable_amount' => $taxable_amount,
+							'taxable_amount' => wc_format_decimal( $taxable_amount ),
 							'tax_share'      => $class['share'],
 							'tax_rates'      => array_keys( $tax_rates ),
-							'net_amount'     => $net_base,
+							'net_amount'     => wc_format_decimal( $net_base ),
 							'includes_tax'   => wc_gzd_additional_costs_include_tax(),
 						);
 
 						$taxes = $taxes + $tax_class_taxes;
 					}
 
+					if ( ! $item_has_taxes ) {
+						foreach ( $taxes as $rate_id => $total ) {
+							$taxes[ $rate_id ] = 0.0;
+						}
+					}
+
 					$item->set_taxes( array( 'total' => $taxes ) );
-					$item->update_meta_data( '_split_taxes', $taxable_amounts );
-					$item->update_meta_data( '_tax_shares', $tax_share );
+
+					if ( $item_has_taxes ) {
+						$item->update_meta_data( '_split_taxes', $taxable_amounts );
+						$item->update_meta_data( '_tax_shares', $tax_share );
+						$order->update_meta_data( '_has_split_tax', 'yes' );
+					}
 
 					// The new net total equals old gross total minus new tax totals
 					if ( wc_gzd_additional_costs_include_tax() ) {
 						$item->set_total( $item_total - $item->get_total_tax() );
 					}
-
-					$order->update_meta_data( '_has_split_tax', 'yes' );
 				} else {
 					$item->delete_meta_data( '_split_taxes' );
 					$item->delete_meta_data( '_tax_shares' );
-
 					$order->delete_meta_data( '_has_split_tax' );
 				}
 			} elseif ( wc_gzd_calculate_additional_costs_taxes_based_on_main_service() ) {
@@ -427,6 +482,12 @@ class WC_GZD_Order_Helper {
 					$tax_class_taxes = WC_Tax::calc_tax( $taxable_amount, $tax_rates, wc_gzd_additional_costs_include_tax() );
 					$taxes           = $taxes + $tax_class_taxes;
 
+					if ( ! $item_has_taxes ) {
+						foreach ( $taxes as $rate_id => $total ) {
+							$taxes[ $rate_id ] = 0.0;
+						}
+					}
+
 					$item->set_taxes( array( 'total' => $taxes ) );
 
 					if ( is_callable( array( $item, 'set_tax_class' ) ) ) {
@@ -438,9 +499,11 @@ class WC_GZD_Order_Helper {
 						$item->set_total( $item_total - $item->get_total_tax() );
 					}
 
-					$order->update_meta_data( '_additional_costs_taxed_based_on_main_service', 'yes' );
-					$order->update_meta_data( '_additional_costs_taxed_based_on_main_service_by', wc_gzd_additional_costs_taxes_detect_main_service_by() );
-					$order->update_meta_data( '_additional_costs_taxed_based_on_main_service_tax_class', $main_tax_class );
+					if ( $item_has_taxes ) {
+						$order->update_meta_data( '_additional_costs_taxed_based_on_main_service', 'yes' );
+						$order->update_meta_data( '_additional_costs_taxed_based_on_main_service_by', wc_gzd_additional_costs_taxes_detect_main_service_by() );
+						$order->update_meta_data( '_additional_costs_taxed_based_on_main_service_tax_class', $main_tax_class );
+					}
 				}
 			}
 
@@ -514,7 +577,7 @@ class WC_GZD_Order_Helper {
 			}
 		}
 
-		return apply_filters( 'woocommerce_gzd_order_main_service_tax_class', $main_tax_class );
+		return apply_filters( 'woocommerce_gzd_order_main_service_tax_class', $main_tax_class, $type );
 	}
 
 	public function create_refund_with_items( $order_id ) {
@@ -585,6 +648,19 @@ class WC_GZD_Order_Helper {
 				$order->update_meta_data( '_gzd_version', WC_germanized()->version );
 				$order->save();
 			}
+		}
+	}
+
+	/**
+	 * @param WC_Order $order
+	 *
+	 * @see https://github.com/woocommerce/woocommerce/issues/51426
+	 *
+	 * @return void
+	 */
+	public function maybe_patch_prices_including_tax_bug( $order ) {
+		if ( 'admin' === $order->get_created_via() && 'auto-draft' === $order->get_status() ) {
+			$order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
 		}
 	}
 
@@ -719,7 +795,11 @@ class WC_GZD_Order_Helper {
 		array_push( $metas, '_deposit_quantity' );
 		array_push( $metas, '_deposit_amount_per_unit' );
 		array_push( $metas, '_deposit_net_amount_per_unit' );
+		array_push( $metas, '_deposit_tax_status' );
 		array_push( $metas, '_deposit_packaging_type' );
+		array_push( $metas, '_deposit_packaging_amount' );
+		array_push( $metas, '_deposit_packaging_net_amount' );
+		array_push( $metas, '_deposit_packaging_number_contents' );
 
 		return $metas;
 	}
@@ -759,10 +839,14 @@ class WC_GZD_Order_Helper {
 					$gzd_item->set_deposit_net_amount_per_unit( $gzd_product->get_deposit_amount_per_unit( 'view', 'excl' ) );
 
 					$gzd_item->set_deposit_quantity( $gzd_product->get_deposit_quantity() );
-					$gzd_item->set_deposit_amount( $gzd_product->get_deposit_amount( 'view', 'incl' ) );
-					$gzd_item->set_deposit_net_amount( $gzd_product->get_deposit_amount( 'view', 'excl' ) );
+					$gzd_item->set_deposit_amount( $gzd_product->get_deposit_amount( 'view_exclude_packaging', 'incl' ) );
+					$gzd_item->set_deposit_net_amount( $gzd_product->get_deposit_amount( 'view_exclude_packaging', 'excl' ) );
+					$gzd_item->set_deposit_packaging_amount( $gzd_product->get_deposit_packaging_amount( 'view', 'incl' ) );
+					$gzd_item->set_deposit_packaging_net_amount( $gzd_product->get_deposit_packaging_amount( 'view', 'excl' ) );
+					$gzd_item->set_deposit_packaging_number_of_contents( $gzd_product->get_deposit_packaging_number_of_contents() );
 
 					$gzd_item->set_deposit_packaging_type( $gzd_product->get_deposit_packaging_type() );
+					$gzd_item->set_deposit_tax_status( $gzd_product->get_deposit_tax_status() );
 				}
 
 				/**
@@ -894,20 +978,20 @@ class WC_GZD_Order_Helper {
 			if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) {
 				foreach ( $order->get_tax_totals() as $code => $tax ) {
 					$tax->rate = wc_gzd_get_order_tax_rate_percentage( $tax->rate_id, $order );
+					$rate_key  = (string) $tax->rate;
 
-					if ( ! isset( $tax_array[ $tax->rate ] ) ) {
-						$tax_array[ $tax->rate ] = array(
+					if ( ! isset( $tax_array[ $rate_key ] ) ) {
+						$tax_array[ $rate_key ] = array(
 							'tax'      => $tax,
 							'amount'   => $tax->amount,
 							'contains' => array( $tax ),
 						);
 					} else {
-						array_push( $tax_array[ $tax->rate ]['contains'], $tax );
-						$tax_array[ $tax->rate ]['amount'] += $tax->amount;
+						array_push( $tax_array[ $rate_key ]['contains'], $tax );
+						$tax_array[ $rate_key ]['amount'] += $tax->amount;
 					}
 				}
 			} else {
-
 				$base_rate = WC_Tax::get_base_tax_rates();
 				$rate      = reset( $base_rate );
 				$rate_id   = key( $base_rate );

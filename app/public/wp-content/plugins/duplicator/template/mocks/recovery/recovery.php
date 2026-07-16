@@ -1,7 +1,7 @@
 <?php
 
 use Duplicator\Core\Views\TplMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -66,7 +66,7 @@ defined("ABSPATH") || exit;
                         <label>
                             <i class="fas fa-question-circle fa-sm">
                             </i>
-                            <b>Step 1 :</b> <i>Choose Recovery Point Archive</i>
+                            <b>Step 1 :</b> <i>Choose Recovery Point Backup</i>
                         </label>
                         <div class="dup-pro-recovery-point-selector-area">
                             <select class="recovery-select" name="recovery_package">
@@ -117,7 +117,7 @@ defined("ABSPATH") || exit;
         'title'        => __('Rollback your sites with Recovery Points!', 'duplicator'),
         'warning-text' => __('Recovery Points are not supported in Duplicator Lite!', 'duplicator'),
         'content-tpl'  => 'mocks/recovery/content-popup',
-        'upsell-url'   => Upsell::getCampaignUrl('blurred-mocks', 'Recovery')
+        'upsell-url'   => LinkManager::getCampaignUrl('blurred-mocks', 'Recovery')
     ),
     true
 ); ?>

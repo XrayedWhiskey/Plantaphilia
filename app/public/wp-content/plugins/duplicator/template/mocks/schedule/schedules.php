@@ -1,7 +1,7 @@
 <?php
 
 use Duplicator\Core\Views\TplMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -279,7 +279,7 @@ TplMng::getInstance()->render(
         'title'        => __('Automate your workflow with scheduled backups!', 'duplicator'),
         'warning-text' => __('Duplicator Lite does not support scheduled backups!', 'duplicator'),
         'content-tpl'  => 'mocks/schedule/content-popup',
-        'upsell-url'   => Upsell::getCampaignUrl('blurred-mocks', 'Schedules')
+        'upsell-url'   => LinkManager::getCampaignUrl('blurred-mocks', 'Schedules')
     )
 );
 ?>

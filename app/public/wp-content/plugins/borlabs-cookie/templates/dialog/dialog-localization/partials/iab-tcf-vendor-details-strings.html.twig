@@ -1,0 +1,174 @@
+{% embed "system/embed/card/card-with-title.html.twig" with { contentSpacing: false, hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.dialogIabTcfVendorDetailsTable,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineDataCategories,
+            id: 'iabTcfHeadlineDataCategories',
+            label: localized.field.iabTcfHeadlineDataCategories,
+            value: data.iabTcfHeadlineDataCategories,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineStandardDataRetention,
+            id: 'iabTcfHeadlineStandardDataRetention',
+            label: localized.field.iabTcfHeadlineStandardDataRetention,
+            value: data.iabTcfHeadlineStandardDataRetention,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineFeatures,
+            id: 'iabTcfHeadlineFeatures',
+            label: localized.field.iabTcfHeadlineFeatures,
+            value: data.iabTcfHeadlineFeatures,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineLegitimateInterests,
+            id: 'iabTcfHeadlineLegitimateInterests',
+            label: localized.field.iabTcfHeadlineLegitimateInterests,
+            value: data.iabTcfHeadlineLegitimateInterests,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlinePurposes,
+            id: 'iabTcfHeadlinePurposes',
+            label: localized.field.iabTcfHeadlinePurposes,
+            value: data.iabTcfHeadlinePurposes,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineSpecialFeatures,
+            id: 'iabTcfHeadlineSpecialFeatures',
+            label: localized.field.iabTcfHeadlineSpecialFeatures,
+            value: data.iabTcfHeadlineSpecialFeatures,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineSpecialPurposes,
+            id: 'iabTcfHeadlineSpecialPurposes',
+            label: localized.field.iabTcfHeadlineSpecialPurposes,
+            value: data.iabTcfHeadlineSpecialPurposes,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineVendorAdditionalInformation,
+            id: 'iabTcfHeadlineVendorAdditionalInformation',
+            label: localized.field.iabTcfHeadlineVendorAdditionalInformation,
+            value: data.iabTcfHeadlineVendorAdditionalInformation,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineVendorConsentHistory,
+            id: 'iabTcfHeadlineVendorConsentHistory',
+            label: localized.field.iabTcfHeadlineVendorConsentHistory,
+            value: data.iabTcfHeadlineVendorConsentHistory,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfVendorPrivacyPolicy,
+            id: 'iabTcfVendorPrivacyPolicy',
+            label: localized.field.iabTcfVendorPrivacyPolicy,
+            value: data.iabTcfVendorPrivacyPolicy,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfVendorLegitimateInterestClaim,
+            id: 'iabTcfVendorLegitimateInterestClaim',
+            label: localized.field.iabTcfVendorLegitimateInterestClaim,
+            value: data.iabTcfVendorLegitimateInterestClaim,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineStorageInformation,
+            id: 'iabTcfHeadlineStorageInformation',
+            label: localized.field.iabTcfHeadlineStorageInformation,
+            value: data.iabTcfHeadlineStorageInformation,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationUsesCookies,
+            id: 'iabTcfStorageInformationUsesCookies',
+            label: localized.field.iabTcfStorageInformationUsesCookies,
+            value: data.iabTcfStorageInformationUsesCookies,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationCookieRefresh,
+            id: 'iabTcfStorageInformationCookieRefresh',
+            label: localized.field.iabTcfStorageInformationCookieRefresh,
+            value: data.iabTcfStorageInformationCookieRefresh,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationMaxAgeSeconds,
+            id: 'iabTcfStorageInformationMaxAgeSeconds',
+            label: localized.field.iabTcfStorageInformationMaxAgeSeconds,
+            value: data.iabTcfStorageInformationMaxAgeSeconds,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationUsesNonCookieAccess,
+            id: 'iabTcfStorageInformationUsesNonCookieAccess',
+            label: localized.field.iabTcfStorageInformationUsesNonCookieAccess,
+            value: data.iabTcfStorageInformationUsesNonCookieAccess,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationDateLessThanADay,
+            id: 'iabTcfStorageInformationDateLessThanADay',
+            label: localized.field.iabTcfStorageInformationDateLessThanADay,
+            value: data.iabTcfStorageInformationDateLessThanADay,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationDateDay,
+            id: 'iabTcfStorageInformationDateDay',
+            label: localized.field.iabTcfStorageInformationDateDay,
+            value: data.iabTcfStorageInformationDateDay,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationDateDays,
+            id: 'iabTcfStorageInformationDateDays',
+            label: localized.field.iabTcfStorageInformationDateDays,
+            value: data.iabTcfStorageInformationDateDays,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationDateMonth,
+            id: 'iabTcfStorageInformationDateMonth',
+            label: localized.field.iabTcfStorageInformationDateMonth,
+            value: data.iabTcfStorageInformationDateMonth,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationDateMonths,
+            id: 'iabTcfStorageInformationDateMonths',
+            label: localized.field.iabTcfStorageInformationDateMonths,
+            value: data.iabTcfStorageInformationDateMonths,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationStatusYes,
+            id: 'iabTcfStorageInformationStatusYes',
+            label: localized.field.iabTcfStorageInformationStatusYes,
+            value: data.iabTcfStorageInformationStatusYes,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfStorageInformationStatusNo,
+            id: 'iabTcfStorageInformationStatusNo',
+            label: localized.field.iabTcfStorageInformationStatusNo,
+            value: data.iabTcfStorageInformationStatusNo,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+{% endembed %}

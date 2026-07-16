@@ -7,9 +7,8 @@
  * @copyright (c) 2022, Snap Creek LLC
  */
 
-use Duplicator\Installer\Utils\LinkManager;
+use Duplicator\Utils\LinkManager;
 use Duplicator\Libs\Snap\SnapIO;
-use Duplicator\Utils\Upsell;
 
 defined("ABSPATH") or die("");
 
@@ -24,22 +23,19 @@ defined("ABSPATH") or die("");
 $archiveFilterPaths       = trim($tplData['package']->Archive->FilterDirs . ";" . $tplData['package']->Archive->FilterFiles, ";");
 $archiveFilterPaths       = str_replace(';', ";\n", $archiveFilterPaths);
 $archiveFilterExtensions  = $tplData['package']->Archive->FilterExts;
-$packageComponentsTooltip = wp_kses(
-    __("Package components allow you to include/exclude differents part of your WordPress installation in the package.</br></br>" .
-    "<b>Database</b>: Include the database in the package.</br>" .
-    "<b>Plugins</b>: Include the plugins in the package. With the 'active only' option enabled, only active plugins will be included in the package.</br>" .
-    "<b>Themes</b>: Include the themes in the package. With the 'active only' option enabled, only active themes will be included in the package.</br>" .
+$packageComponentsTooltip = __(
+    "Backup components allow you to include/exclude differents part of your WordPress installation in the Backup.</br></br>" .
+    "<b>Database</b>: Include the database in the Backup.</br>" .
+    "<b>Plugins</b>: Include the plugins in the Backup. With the 'active only' option enabled, only active plugins will be included in the Backup.</br>" .
+    "<b>Themes</b>: Include the themes in the Backup. With the 'active only' option enabled, only active themes will be included in the Backup.</br>" .
     "<b>Media</b>: Include the 'uploads' folder.</br>" .
-    "<b>Other</b>: Include non-WordPress files and folders in the root directory.</br>", 'duplicator'),
-    array(
-        'br' => array(),
-        'b'  => array(),
-    )
+    "<b>Other</b>: Include non-WordPress files and folders in the root directory.</br>",
+    'duplicator'
 );
-$pathFiltersTooltip       = __("File filters allow you to exclude files and folders from the package. To enable path and extension filters check the " .
-    "checkbox. Enter the full path of the files and folders you want to exclude from the package as a semicolon (;) seperated list.", "duplicator");
-$extensionFilterTooltip   = __("File extension filters allow you to exclude files with certain file extensions from the package e.g. zip;rar;pdf etc. " .
-    "Enter the file extensions you want to exclude from the package as a semicolon (;) seperated list.", "duplicator");
+$pathFiltersTooltip       = __("File filters allow you to exclude files and folders from the Backup. To enable path and extension filters check the " .
+    "checkbox. Enter the full path of the files and folders you want to exclude from the Backup as a semicolon (;) seperated list.", "duplicator");
+$extensionFilterTooltip   = __("File extension filters allow you to exclude files with certain file extensions from the Backup e.g. zip;rar;pdf etc. " .
+    "Enter the file extensions you want to exclude from the Backup as a semicolon (;) seperated list.", "duplicator");
 ?>
 
 <div class="dup-package-components">
@@ -48,8 +44,8 @@ $extensionFilterTooltip   = __("File extension filters allow you to exclude file
             <span id="component-section-title">
                 <?php _e('Components', 'duplicator'); ?>
                 <i class="fas fa-question-circle fa-sm" 
-                    data-tooltip-title="<?php _e('Package Components (Pro feature)', 'duplicator'); ?>" 
-                    data-tooltip="<?php echo $packageComponentsTooltip;?>" 
+                    data-tooltip-title="<?php esc_attr_e('Backup Components (Pro feature)', 'duplicator'); ?>" 
+                    data-tooltip="<?php echo esc_attr($packageComponentsTooltip);?>" 
                     aria-expanded="false"></i>
             </span>
         </div>
@@ -135,8 +131,8 @@ $extensionFilterTooltip   = __("File extension filters allow you to exclude file
                                name="filter-on"
                                type="checkbox" <?php checked($tplData['package']->Archive->FilterOn); ?>> <?php esc_html_e('Enable', 'duplicator') ?></label>)
                     <i class="fas fa-question-circle fa-sm" 
-                        data-tooltip-title="<?php _e('Path Filters', 'duplicator'); ?>" 
-                        data-tooltip="<?php echo $pathFiltersTooltip;?>" 
+                        data-tooltip-title="<?php esc_attr_e('Path Filters', 'duplicator'); ?>" 
+                        data-tooltip="<?php echo esc_attr($pathFiltersTooltip);?>" 
                         aria-expanded="false"></i>
                 </span>
                 <div class="filter-links">
@@ -160,13 +156,13 @@ $extensionFilterTooltip   = __("File extension filters allow you to exclude file
             <span>
                 <?php _e('File Extensions', 'duplicator'); ?>
                 <i class="fas fa-question-circle fa-sm" 
-                    data-tooltip-title="<?php _e('File Extensions', 'duplicator'); ?>" 
-                    data-tooltip="<?php echo $extensionFilterTooltip;?>" 
+                    data-tooltip-title="<?php esc_attr_e('File Extensions', 'duplicator'); ?>" 
+                    data-tooltip="<?php echo esc_attr($extensionFilterTooltip);?>" 
                     aria-expanded="false"></i>
             </span>
                 <div class="filter-links">
                     <a href="#" data-filter-exts="avi;mov;mp4;mpeg;mpg;swf;wmv;aac;m3u;mp3;mpa;wav;wma">[<?php esc_html_e('media', 'duplicator') ?>]</a>
-                    <a href="#" data-filter-exts="zip;rar;tar;gz;bz2;7z">[<?php esc_html_e('archive', 'duplicator') ?>]</a>
+                    <a href="#" data-filter-exts="zip;rar;tar;gz;bz2;7z">[<?php esc_html_e('Backup', 'duplicator') ?>]</a>
                     <a href="#" id="clear-extension-filters">(<?php esc_html_e('clear', 'duplicator') ?>)</a>
                 </div>
             </div>
@@ -176,7 +172,7 @@ $extensionFilterTooltip   = __("File extension filters allow you to exclude file
             <?php
             echo wp_kses(
                 __(
-                    "<b>Overview:</b><br> This advanced option excludes all files from the archive.  Only the database and a copy of the installer.php "
+                    "<b>Overview:</b><br> This advanced option excludes all files from the Backup.  Only the database and a copy of the installer.php "
                     . "will be included in the archive.zip file. The option can be used for backing up and moving only the database.",
                     'duplicator'
                 ),
@@ -213,7 +209,7 @@ $extensionFilterTooltip   = __("File extension filters allow you to exclude file
             echo '<br/><br/>';
 
             echo wp_kses(
-                __("<b>Install Time:</b><br> When installing a database only package please visit the ", 'duplicator'),
+                __("<b>Install Time:</b><br> When installing a database only Backup please visit the ", 'duplicator'),
                 array(
                     'b' => array(),
                     'br' => array(),
@@ -239,7 +235,7 @@ $extensionFilterTooltip   = __("File extension filters allow you to exclude file
                 '%1$s and %2$s represents the opening and closing HTML tags for an anchor or link.',
                 'duplicator'
             ),
-            '<a href="' . Upsell::getCampaignUrl('package-components-lite', 'upgrade to Pro') . '" target="_blank">',
+            '<a href="' . LinkManager::getCampaignUrl('package-components-lite', 'upgrade to Pro') . '" target="_blank">',
             '</a>'
         );
         ?>

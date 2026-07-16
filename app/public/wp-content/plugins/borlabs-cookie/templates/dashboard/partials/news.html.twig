@@ -1,0 +1,21 @@
+{% if data.news.list is not empty %}
+    {% embed "system/embed/card/card-with-title.html.twig" %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.news,
+            }) }}
+        {% endblock %}
+        {% block content %}
+            {% for newsItem in data.news.list %}
+                <div class="bc-py-2.5 odd:bc-bg-white even:bc-bg-gray-50 bc-px-5 last:bc-rounded-b-md">
+                    <h4 class="bc-flex bc-mb-2 bc-justify-between">
+                        <span class="bc-text-sm bc-font-bold">{{ newsItem.title }}</span>
+                        <small class="bc-text-gray-500">{{ adjustTimezone(newsItem.stamp).format('Y-m-d') }}</small>
+                    </h4>
+                    {{ newsItem.message | raw }}
+                </div>
+            {% endfor %}
+        {% endblock %}
+    {% endembed %}
+{% endif %}

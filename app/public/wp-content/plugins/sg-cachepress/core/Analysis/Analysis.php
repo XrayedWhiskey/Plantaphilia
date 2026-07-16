@@ -16,6 +16,11 @@ class Analysis {
 	private $speed_test_count = 10;
 
 	/**
+	 * The Database placeholder.
+	 */
+	public $wpdb;
+
+	/**
 	 * The group keys, added to the audit array for purposes of the react app.
 	 *
 	 * @var array
@@ -298,11 +303,16 @@ class Analysis {
 	 * @return array An Array containing all of the test's data.
 	 */
 	public function get_test_results() {
+		// Initialize the db.
 		global $wpdb;
+		$this->wpdb = $wpdb;
 
 		// Get the tests result stored in the db.
-		$result = $wpdb->get_results(
-			'SELECT * FROM ' . $wpdb->options . " WHERE option_name LIKE 'sgo_speed_test_%' ORDER BY option_name DESC",
+		$result = $this->wpdb->get_results(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT * FROM ' . esc_sql( $this->wpdb->options ) . ' WHERE option_name LIKE %s ORDER BY option_name DESC',
+				'sgo_speed_test_%'
+			),
 			ARRAY_A
 		);
 

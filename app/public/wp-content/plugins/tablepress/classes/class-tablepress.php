@@ -27,7 +27,7 @@ abstract class TablePress {
 	 * @since 1.0.0
 	 * @const string
 	 */
-	public const version = '2.4.2'; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+	public const version = '3.3'; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
 	/**
 	 * TablePress internal plugin version ("options scheme" version).
@@ -37,7 +37,7 @@ abstract class TablePress {
 	 * @since 1.0.0
 	 * @const int
 	 */
-	public const db_version = 87; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+	public const db_version = 127; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
 	/**
 	 * TablePress "table scheme" (data format structure) version.
@@ -54,25 +54,22 @@ abstract class TablePress {
 	 * Instance of the Options Model.
 	 *
 	 * @since 1.3.0
-	 * @var TablePress_Options_Model
 	 */
-	public static $model_options;
+	public static \TablePress_Options_Model $model_options;
 
 	/**
 	 * Instance of the Table Model.
 	 *
 	 * @since 1.3.0
-	 * @var TablePress_Table_Model
 	 */
-	public static $model_table;
+	public static \TablePress_Table_Model $model_table;
 
 	/**
 	 * Instance of the controller.
 	 *
 	 * @since 1.0.0
-	 * @var TablePress_Frontend_Controller
 	 */
-	public static $controller;
+	public static \TablePress_Frontend_Controller $controller;
 
 	/**
 	 * Name of the Shortcode to show a TablePress table.
@@ -80,9 +77,9 @@ abstract class TablePress {
 	 * Should only be modified through the filter hook 'tablepress_table_shortcode'.
 	 *
 	 * @since 1.0.0
-	 * @var string
+	 * @var non-empty-string
 	 */
-	public static $shortcode = 'table';
+	public static string $shortcode = 'table';
 
 	/**
 	 * Name of the Shortcode to show extra information of a TablePress table.
@@ -90,17 +87,17 @@ abstract class TablePress {
 	 * Should only be modified through the filter hook 'tablepress_table_info_shortcode'.
 	 *
 	 * @since 1.0.0
-	 * @var string
+	 * @var non-empty-string
 	 */
-	public static $shortcode_info = 'table-info';
+	public static string $shortcode_info = 'table-info';
 
 	/**
 	 * List of TablePress premium modules.
 	 *
 	 * @since 2.1.0
-	 * @var array<string, array{name: string, description: string, category: string, class: string, incompatible_classes: string[], minimum_plan: string, default_active: bool}>
+	 * @var array<string, array<string, mixed>> $modules Array with module slugs as keys and module data as values.
 	 */
-	public static $modules = array();
+	public static array $modules = array();
 
 	/**
 	 * Start-up TablePress (run on WordPress "init") and load the controller for the current state.
@@ -122,7 +119,7 @@ abstract class TablePress {
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param string $shortcode The [table] Shortcode string.
+		 * @param non-empty-string $shortcode The [table] Shortcode string.
 		 */
 		self::$shortcode = apply_filters( 'tablepress_table_shortcode', self::$shortcode );
 		/**
@@ -130,7 +127,7 @@ abstract class TablePress {
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param string $shortcode_info The [table-info] Shortcode string.
+		 * @param non-empty-string $shortcode_info The [table-info] Shortcode string.
 		 */
 		self::$shortcode_info = apply_filters( 'tablepress_table_info_shortcode', self::$shortcode_info );
 
@@ -165,6 +162,11 @@ abstract class TablePress {
 		}
 		// Load the frontend controller in all scenarios, so that Shortcode render functions are always available.
 		self::$controller = self::load_controller( 'frontend' );
+
+		// Add filters and actions for the integration into the WP WXR exporter and importer.
+		add_action( 'wp_import_insert_post', array( TablePress::$model_table, 'add_table_id_on_wp_import' ), 10, 4 ); // phpcs:ignore Squiz.Classes.SelfMemberReference.NotUsed
+		add_filter( 'wp_import_post_meta', array( TablePress::$model_table, 'prevent_table_id_post_meta_import_on_wp_import' ), 10, 3 ); // phpcs:ignore Squiz.Classes.SelfMemberReference.NotUsed
+		add_filter( 'wxr_export_skip_postmeta', array( TablePress::$model_table, 'add_table_id_to_wp_export' ), 10, 3 ); // phpcs:ignore Squiz.Classes.SelfMemberReference.NotUsed
 
 		/**
 		 * Fires after TablePress is loaded.
@@ -334,7 +336,7 @@ abstract class TablePress {
 		$count = strlen( $column );
 		$number = 0;
 		for ( $i = 0; $i < $count; $i++ ) {
-			$number += ( ord( $column[ $count - 1 - $i ] ) - 64 ) * pow( 26, $i );
+			$number += ( ord( $column[ $count - 1 - $i ] ) - 64 ) * 26 ** $i;
 		}
 		return $number;
 	}
@@ -402,7 +404,8 @@ abstract class TablePress {
 	 */
 	public static function get_user_display_name( int $user_id ): string {
 		$user = get_userdata( $user_id );
-		return ( isset( $user->display_name ) ) ? $user->display_name : sprintf( '<em>%s</em>', __( 'unknown', 'tablepress' ) );
+		/* translators: %s: Label for unknown user */
+		return $user->display_name ?? sprintf( '<em>%s</em>', __( 'unknown', 'tablepress' ) );
 	}
 
 	/**
@@ -422,6 +425,254 @@ abstract class TablePress {
 		// Limit to A-Z, a-z, 0-9, ':', '_', and '-'.
 		$sanitized_css_class = (string) preg_replace( '/[^A-Za-z0-9:_-]/', '', $sanitized_css_class );
 		return $sanitized_css_class;
+	}
+
+	/**
+	 * Extracts the top-level keys from a JavaScript object string.
+	 *
+	 * This function is used to extract the keys of the "Custom Commands" JavaScript object string, to check for overrides.
+	 * It covers most cases, like normal object properties with and without quotes, shorthand properties, and shorthand methods,
+	 * and also ignores single-line and multi-line comments.
+	 * It does not cover all possible JavaScript syntax (like template literals, special characters, ...),
+	 * but should be sufficient for the use case.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param string $js_object_string A JavaScript object as a string.
+	 * @return string[] Array of top-level keys of the object.
+	 */
+	public static function extract_keys_from_js_object_string( string $js_object_string ): array {
+		$object_keys = array();
+		$length = strlen( $js_object_string );
+		$depth = 0;
+		$key_expected = true;
+		$in_quotes = false;
+		$quote_char = '';
+		$in_function_declaration = false;
+		$in_single_line_comment = false;
+		$in_multi_line_comment = false;
+		$object_key = '';
+
+		for ( $i = 0; $i < $length; $i++ ) {
+			$char = $js_object_string[ $i ];
+
+			// Skip parsing single-line comments.
+			if ( $in_single_line_comment ) {
+				if ( "\n" === $char ) {
+					$in_single_line_comment = false;
+				}
+				continue;
+			} else { // phpcs:ignore Universal.ControlStructures.DisallowLonelyIf.Found
+				if ( '/' === $char && $i + 1 < $length && '/' === $js_object_string[ $i + 1 ] ) {
+					$in_single_line_comment = true;
+					++$i; // Skip the second '/'.
+					continue;
+				}
+			}
+
+			// Skip parsing multi-line comments.
+			if ( $in_multi_line_comment ) {
+				if ( '*' === $char && $i + 1 < $length && '/' === $js_object_string[ $i + 1 ] ) {
+					$in_multi_line_comment = false;
+					++$i; // Skip the '/' that ends the multi-line comment.
+				}
+				continue;
+			} else { // phpcs:ignore Universal.ControlStructures.DisallowLonelyIf.Found
+				if ( '/' === $char && $i + 1 < $length && '*' === $js_object_string[ $i + 1 ] ) {
+					$in_multi_line_comment = true;
+					++$i; // Skip the '*'.
+					continue;
+				}
+			}
+
+			// Skip parsing while inside a quoted string.
+			if ( $in_quotes ) {
+				if ( $quote_char === $char ) {
+					$in_quotes = false;
+				}
+				continue;
+			} else { // phpcs:ignore Universal.ControlStructures.DisallowLonelyIf.Found
+				if ( '"' === $char || "'" === $char ) {
+					$in_quotes = true;
+					$quote_char = $char;
+					continue;
+				}
+			}
+
+			/*
+			 * Skip parsing while inside a `function abc( ... )` declaration string.
+			 * The `$key_expected` check limits search the "function" string to object values.
+			 * The check for the plain `f` reduces expensive `substr()` calls.
+			 */
+			if ( ! $key_expected ) {
+				if ( $in_function_declaration ) {
+					if ( ')' === $char ) {
+						$in_function_declaration = false;
+					}
+					continue;
+				} else { // phpcs:ignore Universal.ControlStructures.DisallowLonelyIf.Found
+					if ( 'f' === $char && 'function' === substr( $js_object_string, $i, 8 ) ) {
+						$in_function_declaration = true;
+						$i += 7; // Skip the rest of the "function" string.
+						continue;
+					}
+				}
+			}
+
+			// Handle object depth, so that most parsing can be limited to the top level.
+			if ( '{' === $char || '[' === $char ) {
+				++$depth;
+			}
+
+			// Extract only keys at the top level.
+			if ( 1 === $depth ) {
+				if ( $key_expected ) {
+					if ( ':' === $char ) {
+						// Check for normal keys, with value after :.
+
+						// Go backwards to find the start of the key.
+						$j = $i - 1;
+						while ( $j >= 0 && preg_match( '/\s/', $js_object_string[ $j ] ) ) {
+							--$j;
+						}
+						$key_end = $j; // Position of the last character of the key (potentially with quote).
+						if ( '"' === $js_object_string[ $j ] || "'" === $js_object_string[ $j ] ) {
+							// Quoted key.
+							$quote_char = $js_object_string[ $j ];
+							--$j;
+							while ( $j >= 0 && $quote_char !== $js_object_string[ $j ] ) {
+								--$j;
+							}
+							$key_start = $j + 1;
+						} else {
+							// Unquoted key.
+							while ( $j >= 0 && preg_match( '/[\w]/', $js_object_string[ $j ] ) ) {
+								--$j;
+							}
+							$key_start = $j + 1;
+						}
+						$object_key = substr( $js_object_string, $key_start, $key_end - $key_start + 1 );
+						$object_key = trim( $object_key, "\"'" );
+						if ( '' !== $object_key && ! in_array( $object_key, $object_keys, true ) ) {
+							$object_keys[] = $object_key;
+						}
+						$key_expected = false;
+					} elseif ( ( ',' === $char || '}' === $char ) ) { // The `}` case is for the last key.
+						// Check for shorthand properties (which must be unquoted).
+
+						// Go backwards to find the start of the shorthand key.
+						$j = $i - 1;
+						while ( $j >= 0 && preg_match( '/\s/', $js_object_string[ $j ] ) ) {
+							--$j;
+						}
+						$key_end = $j; // Position of the last character of the key (without a quote).
+						while ( $j >= 0 && preg_match( '/[\w]/', $js_object_string[ $j ] ) ) {
+							--$j;
+						}
+						$key_start = $j + 1;
+						$object_key = substr( $js_object_string, $key_start, $key_end - $key_start + 1 );
+						if ( '' !== $object_key && ! in_array( $object_key, $object_keys, true ) ) {
+							$object_keys[] = $object_key;
+						}
+					} elseif ( '(' === $char ) {
+						// Detect shorthand method definitions.
+
+						// Go back to find the start of the method name.
+						$j = $i - 1;
+						while ( $j >= 0 && preg_match( '/\s/', $js_object_string[ $j ] ) ) {
+							--$j;
+						}
+						$key_end = $j;
+						while ( $j >= 0 && preg_match( '/[\w]/', $js_object_string[ $j ] ) ) {
+							--$j;
+						}
+						$key_start = $j + 1;
+						$object_key = substr( $js_object_string, $key_start, $key_end - $key_start + 1 );
+						if ( '' !== $object_key && ! in_array( $object_key, $object_keys, true ) ) {
+							$object_keys[] = $object_key;
+						}
+					}
+				}
+
+				// Reset the "key expected" flag after a comma or closing brace.
+				if ( ',' === $char || '}' === $char ) {
+					$key_expected = true;
+				}
+			}
+
+			// Handle object depth.
+			if ( '}' === $char || ']' === $char ) {
+				--$depth;
+			}
+		}
+
+		return $object_keys;
+	}
+
+	/**
+	 * Converts old DataTables 1.x CSS classes and parameters to the DataTables 2 variants.
+	 *
+	 * This function is used to modernize "Custom CSS" and "Custom Commands" for compatibility with DataTables 2.x.
+	 * It probably does not catch all possible cases.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param string $code Code that contains DataTables 1.x CSS classes and parameters.
+	 * @return string Updated code with DataTables 2.x CSS classes and parameters.
+	 */
+	public static function convert_datatables_api_data( string $code ): string {
+		/**
+		 * Mappings for DataTables 1.x CSS class or parameter to DataTables 2 variants.
+		 * As this array is used in `strtr()`, it's pre-sorted for descending string length of the array keys.
+		 */
+		static $datatables_api_data_mappings = array(
+			// CSS classes.
+			'.tablepress thead .sorting:hover' => '.tablepress thead .dt-orderable-asc:hover,.tablepress thead .dt-orderable-desc:hover',
+			'.tablepress thead .sorting_desc'  => '.tablepress thead .dt-ordering-desc',
+			'.dataTables_filter label input'   => '.dt-container .dt-search input',
+			'.tablepress thead .sorting_asc'   => '.tablepress thead .dt-ordering-asc',
+			'.dataTables_scrollFootInner'      => '.dt-scroll-footInner',
+			'.dataTables_scrollHeadInner'      => '.dt-scroll-headInner',
+			'.tablepress thead .sorting'       => '.tablepress thead .dt-orderable-asc,.tablepress thead .dt-orderable-desc',
+			'.dataTables_processing'           => '.dt-processing',
+			'.dataTables_scrollBody'           => '.dt-scroll-body',
+			'.dataTables_scrollFoot'           => '.dt-scroll-foot',
+			'.dataTables_scrollHead'           => '.dt-scroll-head',
+			'.dataTables_paginate'             => '.dt-paging',
+			'.tablepress .even td'             => '.tablepress>:where(tbody.row-striping)>:nth-child(odd)>*',
+			'.dataTables_wrapper'              => '.dt-container',
+			'.tablepress .odd td'              => '.tablepress>:where(tbody.row-striping)>:nth-child(even)>*',
+			'.dataTables_filter'               => '.dt-search',
+			'.dataTables_length'               => '.dt-length',
+			'.dataTables_scroll'               => '.dt-scroll',
+			'.dataTables_empty'                => '.dt-empty',
+			'.dataTables_info'                 => '.dt-info',
+			'.paginate_button'                 => '.dt-paging-button',
+			// DataTables API functions.
+			'$.fn.dataTable.'                  => 'DataTable.',
+		);
+		$code = strtr( $code, $datatables_api_data_mappings );
+
+		// HTML ID mappings, which were removed.
+		if ( str_contains( $code, '#tablepress-' ) ) {
+			$code = (string) preg_replace(
+				array(
+					'/#tablepress-([A-Za-z1-9_-]|[A-Za-z0-9_-]{2,})_paginate/',
+					'/#tablepress-([A-Za-z1-9_-]|[A-Za-z0-9_-]{2,})_filter/',
+					'/#tablepress-([A-Za-z1-9_-]|[A-Za-z0-9_-]{2,})_length/',
+					'/#tablepress-([A-Za-z1-9_-]|[A-Za-z0-9_-]{2,})_info/',
+				),
+				array(
+					'#tablepress-$1_wrapper .dt-paging',
+					'#tablepress-$1_wrapper .dt-search',
+					'#tablepress-$1_wrapper .dt-length',
+					'#tablepress-$1_wrapper .dt-info',
+				),
+				$code,
+			);
+		}
+
+		return $code;
 	}
 
 	/**
@@ -530,20 +781,23 @@ abstract class TablePress {
 	}
 
 	/**
-	 * Determines whether the site uses the block editor, so that certain text and input fields referring to Shortcodes can be displayed or not.
+	 * Determines the editor that the site uses, so that certain text and input fields referring to Shortcodes can be displayed or not.
 	 *
-	 * @since 2.0.1
+	 * @since 3.1.0
 	 *
-	 * @return bool True if the site uses the block editor, false otherwise.
+	 * @return string The editor that the site uses, either "block", "elementor", or "other".
 	 */
-	public static function site_uses_block_editor(): bool {
+	public static function site_used_editor(): string {
+		if ( is_plugin_active( 'elementor/elementor.php' ) ) {
+			return 'elementor';
+		}
+
+		// Checking for Elementor is not needed anymore in this condition.
 		$site_uses_block_editor = use_block_editor_for_post_type( 'post' )
-			&& ! is_plugin_active( 'beaver-builder-lite-version/fl-builder.php' )
 			&& ! is_plugin_active( 'classic-editor/classic-editor.php' )
 			&& ! is_plugin_active( 'classic-editor-addon/classic-editor-addon.php' )
-			&& ! is_plugin_active( 'elementor/elementor.php' )
-			&& ! is_plugin_active( 'siteorigin-panels/siteorigin-panels.php' );
-
+			&& ! is_plugin_active( 'siteorigin-panels/siteorigin-panels.php' )
+			&& ! is_plugin_active( 'beaver-builder-lite-version/fl-builder.php' );
 		/**
 		 * Filters the outcome of the check whether the site uses the block editor.
 		 *
@@ -554,246 +808,217 @@ abstract class TablePress {
 		 * @param bool $site_uses_block_editor True if the site uses the block editor, false otherwise.
 		 */
 		$site_uses_block_editor = (bool) apply_filters( 'tablepress_site_uses_block_editor', $site_uses_block_editor );
+		if ( $site_uses_block_editor ) {
+			return 'block';
+		}
 
-		return $site_uses_block_editor;
+		return 'other';
 	}
 
 	/**
-	 * Initializes the list of TablePress premium modules.
+	 * Adds the (translated) names and descriptions to the list of feature modules.
 	 *
-	 * @since 2.1.0
+	 * @since 3.3.0
 	 */
-	public static function init_modules(): void {
-		self::$modules = array(
+	public static function load_modules_data(): void {
+		// Prevent repeated execution of expensive translation functions via a static variable.
+		static $modules_initialized = false;
+		if ( $modules_initialized ) {
+			return;
+		}
+		$modules_initialized = true;
+
+		$modules = array(
 			'advanced-access-rights'              => array(
-				'name'                 => __( 'Advanced Access Rights', 'tablepress' ),
-				'description'          => __( 'Restrict access to individual tables for individual users.', 'tablepress' ),
-				'category'             => 'backend',
-				'class'                => 'TablePress_Module_Advanced_Access_Rights',
-				'incompatible_classes' => array( 'TablePress_Advanced_Access_Rights_Controller' ),
-				'minimum_plan'         => 'max',
-				'default_active'       => false,
+				'name'        => __( 'Advanced Access Rights', 'tablepress' ),
+				'description' => __( 'Restrict access to individual tables for individual users.', 'tablepress' ),
 			),
 			'automatic-periodic-table-import'     => array(
-				'name'                 => __( 'Automatic Periodic Table Import', 'tablepress' ),
-				'description'          => __( 'Periodically update tables from a configured import source.', 'tablepress' ),
-				'category'             => 'backend',
-				'class'                => 'TablePress_Module_Automatic_Periodic_Table_Import',
-				'incompatible_classes' => array( 'TablePress_Table_Auto_Update' ),
-				'minimum_plan'         => 'max',
-				'default_active'       => true,
+				'name'        => __( 'Automatic Periodic Table Import', 'tablepress' ),
+				'description' => __( 'Periodically update tables from a configured import source.', 'tablepress' ),
 			),
 			'automatic-table-export'              => array(
-				'name'                 => __( 'Automatic Table Export', 'tablepress' ),
-				'description'          => __( 'Export and save tables to files on the server after they were modified.', 'tablepress' ),
-				'category'             => 'backend',
-				'class'                => 'TablePress_Module_Automatic_Table_Export',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Automatic Table Export', 'tablepress' ),
+				'description' => __( 'Export and save tables to files on the server after they were modified.', 'tablepress' ),
 			),
 			'cell-highlighting'                   => array(
-				'name'                 => __( 'Cell Highlighting', 'tablepress' ),
-				'description'          => __( 'Add CSS classes to cells for highlighting based on their content.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_Cell_Highlighting',
-				'incompatible_classes' => array( 'TablePress_Cell_Highlighting' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Cell Highlighting', 'tablepress' ),
+				'description' => __( 'Add CSS classes to cells for highlighting based on their content.', 'tablepress' ),
 			),
 			'column-order'                        => array(
-				'name'                 => __( 'Column Order', 'tablepress' ),
-				'description'          => __( 'Order the columns in different ways when a table is shown.', 'tablepress' ),
-				'category'             => 'data-management',
-				'class'                => 'TablePress_Module_Column_Order',
-				'incompatible_classes' => array( 'TablePress_Column_Order' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Column Order', 'tablepress' ),
+				'description' => __( 'Order the columns in different ways when a table is shown.', 'tablepress' ),
 			),
 			'datatables-advanced-loading'         => array(
-				'name'                 => __( 'Advanced Loading', 'tablepress' ),
-				'description'          => __( 'Load the table data from a JSON array for faster loading.', 'tablepress' ),
-				'category'             => 'backend',
-				'class'                => 'TablePress_Module_DataTables_Advanced_Loading',
-				'incompatible_classes' => array( 'TablePress_DataTables_Advanced_Loading' ),
-				'minimum_plan'         => 'max',
-				'default_active'       => false,
+				'name'        => __( 'Advanced Loading', 'tablepress' ),
+				'description' => __( 'Load the table data from a JSON array for faster loading.', 'tablepress' ),
 			),
 			'datatables-alphabetsearch'           => array(
-				'name'                 => __( 'Alphabet Search', 'tablepress' ),
-				'description'          => __( 'Show Alphabet buttons above the table to filter rows by their first letter.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_Alphabetsearch',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Alphabet Search', 'tablepress' ),
+				'description' => __( 'Show Alphabet buttons above the table to filter rows by their first letter.', 'tablepress' ),
 			),
 			'datatables-auto-filter'              => array(
-				'name'                 => __( 'Automatic Filter', 'tablepress' ),
-				'description'          => __( 'Pre-filter a table when it is shown.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_Auto_Filter',
-				'incompatible_classes' => array( 'TablePress_DataTables_Auto_Filter' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Automatic Filter', 'tablepress' ),
+				'description' => __( 'Pre-filter a table when it is shown.', 'tablepress' ),
 			),
 			'datatables-buttons'                  => array(
-				'name'                 => __( 'Buttons', 'tablepress' ),
-				'description'          => __( 'Add buttons for downloading, copying, printing, and changing column visibility of tables.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_DataTables_Buttons',
-				'incompatible_classes' => array( 'TablePress_DataTables_Buttons' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => true,
+				'name'        => __( 'User Action Buttons', 'tablepress' ),
+				'description' => __( 'Add buttons for downloading, copying, printing, and changing column visibility of tables.', 'tablepress' ),
 			),
 			'datatables-columnfilterwidgets'      => array(
-				'name'                 => __( 'Column Filter Dropdowns', 'tablepress' ),
-				'description'          => __( 'Add a search dropdown for each column above the table.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_ColumnFilterWidgets',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => true,
+				'name'        => __( 'Column Filter Dropdowns', 'tablepress' ),
+				'description' => __( 'Add a search dropdown for each column above the table.', 'tablepress' ),
 			),
 			'datatables-column-filter'            => array(
-				'name'                 => __( 'Individual Column Filtering', 'tablepress' ),
-				'description'          => __( 'Add a search field for each column to the table head or foot row.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_Column_Filter',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Individual Column Filtering', 'tablepress' ),
+				'description' => __( 'Add a search field or filter dropdown for each column to a table head or foot row.', 'tablepress' ),
 			),
 			'datatables-counter-column'           => array(
-				'name'                 => __( 'Counter Column', 'tablepress' ),
-				'description'          => __( 'Make the first column an index or counter column with the row position.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_DataTables_Counter_Column',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Index Column', 'tablepress' ),
+				'description' => __( 'Make the first column an index or counter column with the row position.', 'tablepress' ),
 			),
 			'datatables-fixedheader-fixedcolumns' => array(
-				'name'                 => __( 'Fixed Rows and Columns', 'tablepress' ),
-				'description'          => __( 'Fix the header and footer row and the first and last column when scrolling the table.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_DataTables_FixedHeader_FixedColumns',
-				'incompatible_classes' => array(
-					'TablePress_DataTables_FixedHeader',
-					'TablePress_DataTables_FixedColumns',
-				),
-				'minimum_plan'         => 'pro',
-				'default_active'       => true,
+				'name'        => __( 'Fixed Rows and Columns', 'tablepress' ),
+				'description' => __( 'Fix the header and footer row and the first and last column when scrolling the table.', 'tablepress' ),
+			),
+			'datatables-layout'                   => array(
+				'name'        => __( 'Table Layout', 'tablepress' ),
+				'description' => __( 'Customize the layout and position of features around a table.', 'tablepress' ),
 			),
 			'datatables-fuzzysearch'              => array(
-				'name'                 => __( 'Fuzzy Search', 'tablepress' ),
-				'description'          => __( 'Let the search account for spelling mistakes and typos and find similar matches.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_FuzzySearch',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'max',
-				'default_active'       => false,
+				'name'        => __( 'Fuzzy Search', 'tablepress' ),
+				'description' => __( 'Let the search account for spelling mistakes and typos and find similar matches.', 'tablepress' ),
+			),
+			'datatables-inverted-filter'          => array(
+				'name'        => __( 'Inverted Filtering', 'tablepress' ),
+				'description' => __( 'Turn the filtering into a search and hide the table if no search term is entered.', 'tablepress' ),
+			),
+			'datatables-pagination'               => array(
+				'name'        => __( 'Advanced Pagination Settings', 'tablepress' ),
+				'description' => __( 'Customize the pagination settings of the table.', 'tablepress' ),
 			),
 			'datatables-rowgroup'                 => array(
-				'name'                 => __( 'Row Grouping', 'tablepress' ),
-				'description'          => __( 'Group table rows by a common keyword, category, or title.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_DataTables_RowGroup',
-				'incompatible_classes' => array( 'TablePress_DataTables_RowGroup' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Row Grouping', 'tablepress' ),
+				'description' => __( 'Group table rows by a common keyword, category, or title.', 'tablepress' ),
 			),
 			'datatables-searchbuilder'            => array(
-				'name'                 => __( 'Custom Search Builder', 'tablepress' ),
-				'description'          => __( 'Show a search builder interface for filtering from groups and using conditions.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_SearchBuilder',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'max',
-				'default_active'       => false,
+				'name'        => __( 'Custom Search Builder', 'tablepress' ),
+				'description' => __( 'Show a search builder interface for filtering from groups and using conditions.', 'tablepress' ),
 			),
 			'datatables-searchhighlight'          => array(
-				'name'                 => __( 'Search Highlighting', 'tablepress' ),
-				'description'          => __( 'Highlight found search terms in the table.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_SearchHighlight',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Search Highlighting', 'tablepress' ),
+				'description' => __( 'Highlight found search terms in the table.', 'tablepress' ),
 			),
 			'datatables-searchpanes'              => array(
-				'name'                 => __( 'Search Panes', 'tablepress' ),
-				'description'          => __( 'Show panes for filtering the columns.', 'tablepress' ),
-				'category'             => 'search-filter',
-				'class'                => 'TablePress_Module_DataTables_SearchPanes',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Search Panes', 'tablepress' ),
+				'description' => __( 'Show panes for filtering the columns.', 'tablepress' ),
 			),
 			'datatables-serverside-processing'    => array(
-				'name'                 => __( 'Server-side Processing', 'tablepress' ),
-				'description'          => __( 'Process sorting, filtering, and pagination on the server for faster loading of large tables.', 'tablepress' ),
-				'category'             => 'backend',
-				'class'                => 'TablePress_Module_DataTables_ServerSide_Processing',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'max',
-				'default_active'       => true,
+				'name'        => __( 'Server-side Processing', 'tablepress' ),
+				'description' => __( 'Process sorting, filtering, and pagination on the server for faster loading of large tables.', 'tablepress' ),
 			),
 			'default-style-customizer'            => array(
-				'name'                 => __( 'Default Style Customizer', 'tablepress' ),
-				'description'          => __( 'Change the default styling of your tables in the visual style customizer.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_Default_Style_Customizer',
-				'incompatible_classes' => array(),
-				'minimum_plan'         => 'pro',
-				'default_active'       => true,
+				'name'        => __( 'Default Style Customizer', 'tablepress' ),
+				'description' => __( 'Change the default styling of your tables in the visual style customizer.', 'tablepress' ),
+			),
+			'email-notifications'                 => array(
+				'name'        => __( 'Email Notifications', 'tablepress' ),
+				'description' => __( 'Get email notifications when certain actions are performed on tables.', 'tablepress' ),
 			),
 			'responsive-tables'                   => array(
-				'name'                 => __( 'Responsive Tables', 'tablepress' ),
-				'description'          => __( 'Make your tables look good on different screen sizes.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_Responsive_Tables',
-				'incompatible_classes' => array( 'TablePress_Responsive_Tables' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => true,
+				'name'        => __( 'Responsive Tables', 'tablepress' ),
+				'description' => __( 'Make your tables look good on different screen sizes.', 'tablepress' ),
 			),
 			'rest-api'                            => array(
-				'name'                 => __( 'REST API', 'tablepress' ),
-				'description'          => __( 'Read table data via the WordPress REST API, e.g. in external apps.', 'tablepress' ),
-				'category'             => 'backend',
-				'class'                => 'TablePress_Module_REST_API',
-				'incompatible_classes' => array( 'TablePress_REST_API_Controller' ),
-				'minimum_plan'         => 'max',
-				'default_active'       => false,
+				'name'        => __( 'REST API', 'tablepress' ),
+				'description' => __( 'Read table data via the WordPress REST API, e.g. in external apps.', 'tablepress' ),
 			),
 			'row-filtering'                       => array(
-				'name'                 => __( 'Row Filtering', 'tablepress' ),
-				'description'          => __( 'Show only table rows that contain defined keywords.', 'tablepress' ),
-				'category'             => 'data-management',
-				'class'                => 'TablePress_Module_Row_Filtering',
-				'incompatible_classes' => array( 'TablePress_Row_Filter' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => true,
+				'name'        => __( 'Row Filtering', 'tablepress' ),
+				'description' => __( 'Show only table rows that contain defined keywords.', 'tablepress' ),
 			),
 			'row-highlighting'                    => array(
-				'name'                 => __( 'Row Highlighting', 'tablepress' ),
-				'description'          => __( 'Add CSS classes to rows for highlighting based on their content.', 'tablepress' ),
-				'category'             => 'frontend',
-				'class'                => 'TablePress_Module_Row_Highlighting',
-				'incompatible_classes' => array( 'TablePress_Row_Highlighting' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Row Highlighting', 'tablepress' ),
+				'description' => __( 'Add CSS classes to rows for highlighting based on their content.', 'tablepress' ),
 			),
 			'row-order'                           => array(
-				'name'                 => __( 'Row Order', 'tablepress' ),
-				'description'          => __( 'Order the rows in different ways when a table is shown.', 'tablepress' ),
-				'category'             => 'data-management',
-				'class'                => 'TablePress_Module_Row_Order',
-				'incompatible_classes' => array( 'TablePress_Row_Order' ),
-				'minimum_plan'         => 'pro',
-				'default_active'       => false,
+				'name'        => __( 'Row Order', 'tablepress' ),
+				'description' => __( 'Order the rows in different ways when a table is shown.', 'tablepress' ),
 			),
 		);
+
+		// Append translated module names and descriptions to potentially existing module meta data.
+		self::$modules = array_merge_recursive( self::$modules, $modules );
+	}
+
+	/**
+	 * Enqueues a CSS file, possibly with dependencies.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @param string   $name         Name of the CSS file, without extension.
+	 * @param string[] $dependencies Optional. List of names of CSS stylesheets that this stylesheet depends on, and which need to be included before this one.
+	 * @param string   $path         Optional. Path to the CSS file.
+	 */
+	public static function enqueue_style( string $name, array $dependencies = array(), string $path = 'admin/css/build/' ): void {
+		$css_file = "{$path}{$name}.css";
+		$css_url = plugins_url( $css_file, TABLEPRESS__FILE__ );
+		wp_enqueue_style( "tablepress-{$name}", $css_url, $dependencies, self::version );
+	}
+
+	/**
+	 * Enqueues a JavaScript file, possibly with dependencies and extra information.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @param string               $name         Name of the JS file, without extension.
+	 * @param string[]             $dependencies Optional. List of names of JS scripts that this script depends on, and which need to be included before this one.
+	 * @param array<string, mixed> $script_data  Optional. JS data that is printed to the page before the script is included. The array key will be used as the name, the value will be JSON encoded.
+	 * @param string               $path         Optional. Path to the JS file.
+	 */
+	public static function enqueue_script( string $name, array $dependencies = array(), array $script_data = array(), string $path = 'admin/js/build/' ): void {
+		$js_file = "{$path}{$name}.js";
+		$js_url = plugins_url( $js_file, TABLEPRESS__FILE__ );
+
+		$version = self::version;
+
+		// Load dependencies and version from the auto-generated asset PHP file.
+		$script_asset_path = TABLEPRESS_ABSPATH . "{$path}{$name}.asset.php";
+		if ( file_exists( $script_asset_path ) ) {
+			$script_asset = require $script_asset_path;
+			if ( isset( $script_asset['dependencies'] ) ) {
+				$dependencies = array_merge( $dependencies, $script_asset['dependencies'] );
+			}
+			if ( isset( $script_asset['version'] ) ) {
+				$version = $script_asset['version'];
+			}
+		}
+
+		/**
+		 * Filters the dependencies of a TablePress script file.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string[] $dependencies List of the dependencies that the $name script relies on.
+		 * @param string   $name         Name of the JS script, without extension.
+		 */
+		$dependencies = apply_filters( 'tablepress_admin_page_script_dependencies', $dependencies, $name );
+
+		$script_name = "tablepress-{$name}";
+
+		wp_enqueue_script( $script_name, $js_url, $dependencies, $version, array( 'in_footer' => true ) );
+
+		// Load JavaScript translation files, for all scripts that rely on `wp-i18n`.
+		if ( in_array( 'wp-i18n', $dependencies, true ) ) {
+			wp_set_script_translations( $script_name, 'tablepress' );
+		}
+
+		if ( ! empty( $script_data ) ) {
+			foreach ( $script_data as $var_name => $var_data ) {
+				$var_data = wp_json_encode( $var_data, JSON_FORCE_OBJECT | JSON_HEX_TAG | JSON_UNESCAPED_SLASHES );
+				wp_add_inline_script( $script_name, "const tablepress_{$var_name} = {$var_data};", 'before' );
+			}
+		}
 	}
 
 } // class TablePress

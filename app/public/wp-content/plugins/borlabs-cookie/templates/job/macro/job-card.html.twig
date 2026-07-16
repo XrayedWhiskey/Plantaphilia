@@ -1,0 +1,48 @@
+{% macro component(config, localized) %}
+    <div class="bc-w-2/3">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+
+            {% block header %}
+                <div class="bc-flex bc-justify-between bc-items-center">
+                    <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-0">{{ adjustTimezone(config.job.createdAt).format('Y-m-d H:i:s') }}</h3>
+                </div>
+            {% endblock %}
+
+            {% block content %}
+                {% import "system/macro/row/text.html.twig" as row_text %}
+
+                {{ row_text.component({
+                    label: localized.field.id,
+                    value: config.job.id,
+                }) }}
+
+                {{ row_text.component({
+                    label: localized.field.type,
+                    value: config.job.type,
+                }) }}
+
+                {{ row_text.component({
+                    label: localized.field.plannedFor,
+                    value: adjustTimezone(config.job.plannedFor).format('Y-m-d H:i:s'),
+                }) }}
+
+                {{ row_text.component({
+                    label: localized.field.executedAt,
+                    value: adjustTimezone(config.job.executedAt).format('Y-m-d H:i:s') ?? '-',
+                }) }}
+
+                {% if config.job.payload is not empty %}
+                    {{ row_codearea.component({
+                        clipboard: true,
+                        editorLanguage: 'javascript',
+                        id: 'job-' ~ config.job.id,
+                        label: localized.field.payload,
+                        value: config.job.payload | json_encode(constant('JSON_PRETTY_PRINT')),
+                    }) }}
+                {% endif %}
+            {% endblock %}
+        {% endembed %}
+    </div>
+{% endmacro %}

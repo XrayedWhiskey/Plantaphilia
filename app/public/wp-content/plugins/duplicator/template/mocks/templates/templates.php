@@ -1,7 +1,7 @@
 <?php
 
 use Duplicator\Core\Views\TplMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -39,7 +39,7 @@ defined("ABSPATH") || exit;
     <table class="widefat dup-template-list-tbl striped">
         <thead>
         <tr>
-            <th class="col-check"><input type="checkbox" title="Select all packages"></th>
+            <th class="col-check"><input type="checkbox" title="Select all Backups"></th>
             <th class="col-name">Name</th>
             <th class="col-recover">Recovery</th>
             <th class="col-empty"></th>
@@ -194,7 +194,7 @@ defined("ABSPATH") || exit;
         'title'        => __('Easily customize your backups with templates!', 'duplicator'),
         'warning-text' => __('Templates are not available in Duplicator Lite!', 'duplicator'),
         'content-tpl'  => 'mocks/templates/content-popup',
-        'upsell-url'   => Upsell::getCampaignUrl('blurred-mocks', 'Templates')
+        'upsell-url'   => LinkManager::getCampaignUrl('blurred-mocks', 'Templates')
     ),
     true
 ); ?>

@@ -1,0 +1,237 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+    {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+    {% import "system/macro/row/input-group.html.twig" as row_input_group %}
+    {% import "system/macro/row/input-optional.html.twig" as row_input_optional %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.dialogSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_input_optional.component({
+            checked: attribute(data, 'dialogFontFamilyStatus'),
+            hint: localized.hint.dialogFontFamily,
+            id: 'dialogFontFamily',
+            label: localized.field.fontFamily,
+            value: data.dialogFontFamily is not empty and data.dialogFontFamily != 'inherit' ? data.dialogFontFamily : '',
+            placeholder: localized.placeholder.dialogFontFamily
+        }, localized) }}
+
+        {{ row_input_group.component({
+            append: 'px',
+            cssClasses: ['bc-pr-[35px]'],
+            hint: localized.hint.dialogFontSize,
+            id: 'dialogFontSize',
+            isRequired: false,
+            label: localized.field.fontSize,
+            min: '0',
+            type: 'number',
+            value: data.dialogFontSize,
+            width: 'bc-w-1/5'
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogBackgroundColor',
+                label: localized.field.backgroundColor,
+                value: data.dialogBackgroundColor,
+            },
+            colorB:
+            {
+                id: 'dialogTextColor',
+                label: localized.field.textColor,
+                value: data.dialogTextColor,
+            },
+            title: localized.field.dialog,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogFooterBackgroundColor',
+                label: localized.field.backgroundColor,
+                value: data.dialogFooterBackgroundColor,
+            },
+            colorB:
+            {
+                id: 'dialogFooterTextColor',
+                label: localized.field.textColor,
+                value: data.dialogFooterTextColor,
+            },
+            title: localized.field.dialogFooter,
+        }) }}
+
+        {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: true } %}
+            {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+            {% block label %}
+                <label>{{ localized.field.dialogBorderRadius | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <div class="bc-relative bc-flex bc-gap-x-4">
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogBorderRadiusTopLeft',
+                            min: 0,
+                            value: data.dialogBorderRadiusTopLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogBorderRadiusTopLeft">{{ localized.field.topLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogBorderRadiusTopRight',
+                            min: 0,
+                            value: data.dialogBorderRadiusTopRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogBorderRadiusTopRight">{{ localized.field.topRight | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogBorderRadiusBottomLeft',
+                            min: 0,
+                            value: data.dialogBorderRadiusBottomLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogBorderRadiusBottomLeft">{{ localized.field.bottomLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogBorderRadiusBottomRight',
+                            min: 0,
+                            value: data.dialogBorderRadiusBottomRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogBorderRadiusBottomRight">{{ localized.field.bottomRight | raw }}</label>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: true } %}
+            {% import "system/macro/form-component/color-selection.html.twig" as color_selection %}
+            {% import "system/macro/form-component/input.html.twig" as input %}
+            {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+            {% block label %}
+                <label>{{ localized.field.backdrop | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <div class="bc-flex">
+                    <div class="bc-w-1/2">
+                        {{ input.component({
+                            cssClasses: ['color-field'],
+                            id: 'dialogBackdropBackgroundColor',
+                            name: 'dialogBackdropBackgroundColor',
+                            value: data.dialogBackdropBackgroundColor,
+                        }) }}
+                        <div>{{ localized.field.backgroundColor | raw }}</div>
+                    </div>
+                    <div class="bc-w-1/2">
+                        <div class="bc-flex bc-items-center bc-space-x-2 bc-relative">
+                            {{ input_group.component({
+                                append: '%',
+                                cssClasses: ['bc-pr-[35px]'],
+                                id: 'dialogBackdropBackgroundOpacity',
+                                min: 0,
+                                name: 'dialogBackdropBackgroundOpacity',
+                                type: 'number',
+                                value: data.dialogBackdropBackgroundOpacity,
+                                width: 'bc-w-2/5',
+                            }) }}
+                        </div>
+                        <div>{{ localized.field.opacity | raw }}</div>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogControlElementColor',
+                label: localized.field.default,
+                value: data.dialogControlElementColor,
+            },
+            colorB:
+            {
+                id: 'dialogControlElementColorHover',
+                label: localized.field.hover,
+                value: data.dialogControlElementColorHover,
+            },
+            hideInSimplifiedMode: true,
+            title: localized.field.dialogControlElement,
+        }) }}
+
+        {{ row_color_selection.component({
+            id: 'dialogSeparatorColor',
+            hideInSimplifiedMode: true,
+            label: localized.field.dialogSeparatorColor,
+            value: data.dialogSeparatorColor,
+        }) }}
+
+        <!-- Synchronization Settings -->
+        {{ synchronizationSettingsFields(
+            languages,
+            {
+                collectionName: "languages",
+                hasRepository: false,
+                withOverwriteTranslationOption: false,
+            }
+        ) | raw }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionDialogSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineOnWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.onWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}</p>
+                        <p>
+                            <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalDialogSettings" href="#" role="button">
+                                <img class="bc-w-48 bc-h-48 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-dialog-appearance-dialog-settings.png') }}" alt="">
+                            </a>
+                        </p>
+                        {% embed "system/embed/modal/modal.html.twig" with {
+                            id: 'borlabsModalDialogSettings',
+                            maxWidth: 'bc-max-w-2xl',
+                            title: localized.headline.dialogSettings,
+                        } %}
+                            {% block icon %}
+                                {% import "system/macro/icons/paint-brush.html.twig" as pain_brush_icon %}
+                                <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                    {{ pain_brush_icon.component({}) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block description %}
+                                <img src="{{ imageUrl('ttk-dialog-appearance-dialog-settings.png') }}" alt="">
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

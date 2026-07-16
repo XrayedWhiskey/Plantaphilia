@@ -1,0 +1,13 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/form-row.html.twig" %}
+        {% block label %}
+            <div class="bc-flex bc-items-center">
+                <span>{{ config.label | raw }}</span>
+            </div>
+        {% endblock %}
+
+        {% block input %}
+            {{ config.value | raw }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

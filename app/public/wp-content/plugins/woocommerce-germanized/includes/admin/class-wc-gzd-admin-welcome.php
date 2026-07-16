@@ -137,6 +137,74 @@ class WC_GZD_Admin_Welcome {
 			</p>
 
 			<div class="changelog new-feature">
+				<h3>Widerrufsbutton für WooCommerce</h3>
+
+				<div class="columns two-col">
+					<div class="col">
+						<p>
+							Ab dem 19.06.2026 gilt EU-weit die Pflicht zur Einführung eines Widerrufsbuttons für Online-Verträge über Waren und Dienstleistungen. Germanized 4.0 stellt alle benötigten Funktionalitäten zur Erfüllung dieser
+							neuen Vorschriften bereit. Die neue Seite um den Vertrag zu widerrufen wurde als Entwurf bei der Installation von Germanized 4.0 angelegt. Diese Seite solltest du prüfen, rechtzeitig veröffentlichen und z.B. im Footer deines Shops verlinken.
+							Auf dieser Seite befindet sich ein Shortcode, der das Formular für die Erklärung des Widerrufs einbindet. Es gibt auch neue E-Mail-Vorlagen, die sowohl dich als Shopbetreiber auf einen neuen Widerruf hinweisen als auch den Eingang des Widerrufs an den Kunden bestätigen.
+						</p>
+
+						<div class="wc-gzd-actions wc-gzd-actions-right">
+							<a href="https://vendidero.de/widerrufsbutton-rechtssicher-in-woocommerce-umsetzen" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=germanized-general&section=withdrawal_button' ) ); ?>" class="wc-gzd-default-button button button-primary" target="_blank">Einstellungen verwalten</a>
+						</div>
+					</div>
+					<div class="col col-center">
+						<img src="<?php echo esc_url( WC_germanized()->plugin_url() ); ?>/assets/images/order-withdrawal-button.png" style=""/>
+					</div>
+				</div>
+			</div>
+
+			<div class="changelog new-feature">
+				<h3>Goodbye Shipments, hello Shiptastic!</h3>
+
+				<div class="columns two-col">
+					<div class="col col-center">
+						<img src="<?php echo esc_url( WC_germanized()->plugin_url() ); ?>/assets/images/shiptastic.png" style=""/>
+					</div>
+					<div class="col">
+						<p>
+							Die Sendungsintegration in Germanized haben wir in den letzten Versionen kontinuierlich erweitert und verbessert. Jetzt ist es soweit, dass aus den Sendungen ein eigenständiges Plugin wird: <a href="https://wordpress.org/plugins/shiptastic-for-woocommerce">Shiptastic für WooCommerce</a>.
+							Dabei handelt es sich um ein Refactoring der Sendungsintegration aus Germanized, d.h. funktional hat sich nicht viel verändert, technisch werden aber Präfixe, Datenbank-Tabellen und Klassen anders benannt. Aus Kompatibilitätsgründen
+							liefert Germanized die alten Klassen noch mit und wendet auch sehr viele beliebte Hooks & Filter an - wir empfehlen dennoch, insofern du individuelle Anpassungen vorgenommen hast, deine Integration zu aktualisieren.
+						</p>
+
+						<div class="wc-gzd-actions wc-gzd-actions-right">
+							<a href="https://vendidero.de/doc/woocommerce-germanized/shipments-zu-shiptastic-migration" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="changelog new-feature">
+				<h3>Produktsicherheit (GPSR)</h3>
+
+				<div class="columns two-col">
+					<div class="col">
+						<p>
+							Mit der Einführung der Verordnung über die allgemeine Produktsicherheit (GPSR) am 13.12.2024 gehen neue rechtliche Konsequenzen für Shopbetreiber einher, die Produkte an Verbraucher
+							in der EU verkaufen. In Germanized stellen wir schon jetzt Möglichkeiten bereit, mithilfe derer du deine Produktdaten entsprechend erweitern kannst, z.B. über einen verknüpften Hersteller samt Adressangaben
+							und die Hinterlegung spezieller, für die Sicherheit des Produktes relevanter, Dokumente.
+						</p>
+
+						<p>
+							Standardmäßig erfolgt die Ausgabe in einem separaten Tab auf der Produktdetailseite. Wie aus Germanized gewohnt, kannst du diese Darstellung über die Preisauszeichnungen auch bequem anpassen.
+						</p>
+
+						<div class="wc-gzd-actions wc-gzd-actions-right">
+							<a href="https://vendidero.de/doc/woocommerce-germanized/allgemeine-produktsicherheit-gpsr" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
+						</div>
+					</div>
+					<div class="col col-center">
+						<img src="<?php echo esc_url( WC_germanized()->plugin_url() ); ?>/assets/images/gpsr.png" style=""/>
+					</div>
+				</div>
+			</div>
+
+			<div class="changelog new-feature">
 				<h3>Hermes Schnittstelle <span class="wc-gzd-pro wc-gzd-pro-outlined">pro</span></h3>
 
 				<div class="columns two-col">
@@ -151,9 +219,9 @@ class WC_GZD_Admin_Welcome {
 						</p>
 
 						<div class="wc-gzd-actions wc-gzd-actions-right">
-							<a href="https://vendidero.de/dokument/hermes-integration-einrichten" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
+							<a href="https://vendidero.de/doc/woocommerce-germanized/hermes-integration-einrichten" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
 							<a href="https://vendidero.de/woocommerce-germanized" target="_blank" class="wc-gzd-pro-version button button-primary wc-gzd-button"><span class="wc-gzd-pro wc-gzd-pro-outlined">pro</span> Version entdecken</a>
-							<p class="price smaller wc-gzd-pro-version">ab 79 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
+							<p class="price smaller wc-gzd-pro-version">ab 85 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
 						</div>
 					</div>
 				</div>
@@ -172,7 +240,7 @@ class WC_GZD_Admin_Welcome {
 
 						<div class="wc-gzd-actions wc-gzd-actions-right">
 							<a href="https://vendidero.de/woocommerce-germanized" target="_blank" class="wc-gzd-pro-version button button-primary wc-gzd-button"><span class="wc-gzd-pro wc-gzd-pro-outlined">pro</span> Version entdecken</a>
-							<p class="price smaller wc-gzd-pro-version">ab 79 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
+							<p class="price smaller wc-gzd-pro-version">ab 85 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
 						</div>
 					</div>
 					<div class="col col-center">
@@ -198,7 +266,7 @@ class WC_GZD_Admin_Welcome {
 
 						<div class="wc-gzd-actions wc-gzd-actions-right">
 							<a href="https://vendidero.de/woocommerce-germanized" target="_blank" class="wc-gzd-pro-version button button-primary wc-gzd-button"><span class="wc-gzd-pro wc-gzd-pro-outlined">pro</span> Version entdecken</a>
-							<p class="price smaller wc-gzd-pro-version">ab 79 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
+							<p class="price smaller wc-gzd-pro-version">ab 85 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
 						</div>
 					</div>
 				</div>
@@ -278,9 +346,9 @@ class WC_GZD_Admin_Welcome {
 
 						<div class="wc-gzd-actions wc-gzd-actions-right">
 							<a href="https://vendidero.de/woocommerce-germanized" target="_blank" class="wc-gzd-pro-version button button-primary wc-gzd-button"><span class="wc-gzd-pro wc-gzd-pro-outlined">pro</span> Version entdecken</a>
-							<a href="https://vendidero.de/dokument/handelsrechnungen-zu-sendungen-erstellen" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
+							<a href="https://vendidero.de/doc/woocommerce-germanized/handelsrechnungen-zu-sendungen-erstellen" class="wc-gzd-default-button button button-primary" target="_blank">Mehr erfahren</a>
 
-							<p class="price smaller wc-gzd-pro-version">ab 79 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
+							<p class="price smaller wc-gzd-pro-version">ab 85 € inkl. MwSt. - inkl. 1 Jahr Updates & Premium Support!</p>
 						</div>
 					</div>
 				</div>
@@ -291,25 +359,24 @@ class WC_GZD_Admin_Welcome {
 
 				<div class="three-col columns">
 					<div class="col">
-						<h4><span class="dashicons dashicons-yes-alt"></span> Checkboxen</h4>
+						<h4><span class="dashicons dashicons-button"></span> Widerrufsbutton</h4>
 						<p>
-							Die für eine Bestellung protokollierten Checkboxen, z.B. für die Versanddienstleister-Datenweitergabe, werden von nun an
-							übersichtlich in der Sidebar unterhalb der Bestellanmerkungen aufgeführt.
+							Germanized 4.0 fügt umfangreiche Funktionalitäten zur Erfüllung der neuen rechtlichen Rahmenbedingungen des Widerrufsbuttons hinzu. Lasse deine
+							Kunden den Widerruf einfach online erklären und spare Zeit bei der Bearbeitung der Anträge.
 						</p>
 					</div>
 					<div class="col">
-						<h4><span class="dashicons dashicons-admin-generic"></span> Asynchrone Automatisierung</h4>
+						<h4><span class="dashicons dashicons-archive"></span> Versandtools ausgelagert</h4>
 						<p>
-							Um die Performance, z.B. im Checkout, zu verbessern, werden Sendungen, die über die Automatik erstellt werden,
-							nunmehr über den Woo Action Scheduler asynchron im Hintergrund erstellt.
+							Die gesamte Versandfunktionalität (Sendungen, Retouren usw.) wurde mittlerweile in das Plugin Shiptastic für WooCommerce ausgelagert und ist seit 4.0 nicht
+							mehr Teil des Germanized Cores. Nicht jeder Germanized-Nutzer benötigt umfangreiche Versandtools.
 						</p>
 					</div>
 					<div class="col">
-						<h4><span class="dashicons dashicons-admin-tools"></span> Under the Hood</h4>
+						<h4><span class="dashicons dashicons-block-default"></span> 100% Block-Support</h4>
 						<p>
-							Unter der Haube hat sich einiges in Germanized 3.0 verändert. Germanized unterstützt von nun
-							an nur noch WooCommerce ab Version 3. Damit konnten einige, veraltete Legacy-Bestandteile
-							der Software ausgemistet werden.
+							Germanized 4.0 unterstützt vollumfänglich die von WooCommerce bereitgestellten Blöcke, z.B. für Warenkorb, Kasse und Produktseite.
+							Damit wurde ein wichtiger Schritt in Richtung Full-Site-Editing und einem modernen WP Frontend gemacht.
 						</p>
 					</div>
 				</div>
@@ -323,7 +390,7 @@ class WC_GZD_Admin_Welcome {
 	 */
 	public function about_screen() {
 		// Delete the redirect transient
-		delete_option( '_wc_gzd_activation_redirect' );
+		delete_transient( '_wc_gzd_activation_redirect' );
 		?>
 		<div class="wrap about-wrap">
 			<?php $this->intro(); ?>

@@ -1,0 +1,9 @@
+{% import "system/macro/row/select.html.twig" as row_select %}
+{{ row_select.component({
+    hint: translation.hint,
+    id: id,
+    label: translation.label,
+    name: name,
+    options: values.list,
+    value: value == '' ? defaultValue : value,
+}) }}

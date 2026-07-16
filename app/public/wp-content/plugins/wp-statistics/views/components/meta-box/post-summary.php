@@ -1,4 +1,6 @@
-<?php if (!defined('ABSPATH')) exit;
+<?php
+
+if (!defined('ABSPATH')) exit;
 
 if (empty($summary)) {
     exit;
@@ -15,7 +17,7 @@ $thisPeriodTopReferrerLabel = !empty($thisPeriodTopReferrer) ? wp_parse_url($thi
 $thisPeriodTopReferrerLabel = !empty($thisPeriodTopReferrerLabel) && !empty($thisPeriodTopReferrerLabel['host']) ? trim($thisPeriodTopReferrerLabel['host']) : '';
 ?>
 
-<p class="wps-fade-effect"><?php
+<p><?php
 
     // Display the first part of text only if the post has been published more than a week ago
     if (strtotime('now') - strtotime($summary['publishDateString']) >= WEEK_IN_SECONDS) {
@@ -68,3 +70,8 @@ $thisPeriodTopReferrerLabel = !empty($thisPeriodTopReferrerLabel) && !empty($thi
 
     ?>
 </p>
+<?php if(isset($summary)): ?>
+    <div class="c-wps-post-summary-panel-chart">
+        <canvas id="postSummaryChart" height="100" aria-label="Summary chart" role="img"></canvas>
+    </div>
+<?php endif; ?>

@@ -1,6 +1,6 @@
 <?php
 
-use Duplicator\Installer\Utils\LinkManager;
+use Duplicator\Utils\LinkManager;
 use Duplicator\Core\Bootstrap;
 use Duplicator\Core\Views\TplMng;
 
@@ -27,8 +27,8 @@ $err_found   = ($package == null || $package->Status < 100);
         duplicator_header(
             sprintf(
                 esc_html_x(
-                    'Package Details &raquo; %1$s',
-                    '%1$s represents the package name',
+                    'Backup Details &raquo; %1$s',
+                    '%1$s represents the Backup name',
                     'duplicator'
                 ),
                 esc_html($package->Name)
@@ -41,11 +41,11 @@ $err_found   = ($package == null || $package->Status < 100);
         <p>
         <?php printf(
             _x(
-                'This package contains an error. Please review the %1$spackage log%2$s for details.',
+                'This Backup contains an error. Please review the %1$sBackup log%2$s for details.',
                 '%1 and %2 are replaced with <a> and </a> respectively',
                 'duplicator'
             ),
-            '<a href="' . DUP_Settings::getSsdirUrl() . '/{$package->NameHash}.log" target="_blank">',
+            '<a href="' . DUP_Settings::getSsdirLogsUrl() . '/{$package->NameHash}.log" target="_blank">',
             '</a>'
         );
         ?>
@@ -73,7 +73,7 @@ $err_found   = ($package == null || $package->Status < 100);
             <?php esc_html_e('Transfer', 'duplicator'); ?>
         </a>
     </h2>
-    <div class="all-packages"><a href="?page=duplicator" class="button"><i class="fa fa-archive fa-sm"></i> <?php esc_html_e('Packages', 'duplicator'); ?></a></div>
+    <div class="all-packages"><a href="?page=duplicator" class="button"><i class="fa fa-archive fa-sm"></i> <?php esc_html_e('Backups', 'duplicator'); ?></a></div>
 
     <?php
     switch ($current_tab) {

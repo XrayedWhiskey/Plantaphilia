@@ -1,6 +1,6 @@
 <?php
 
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -27,10 +27,10 @@ defined("ABSPATH") || exit;
         <?php endforeach; ?>
     </ul>
     <i>
-        <?php esc_html_e('Set up one-time storage locations and automatically push the package to your destination.', 'duplicator'); ?><br>
+        <?php esc_html_e('Set up one-time storage locations and automatically push the Backup to your destination.', 'duplicator'); ?><br>
     </i>
     <p>
-        <a href="<?php echo esc_url(Upsell::getCampaignUrl($tplData['utm_medium'], 'Popup Upgrade Now')); ?>"
+        <a href="<?php echo esc_url(LinkManager::getCampaignUrl($tplData['utm_medium'], 'Popup Upgrade Now')); ?>"
            target="_blank"
            id="dup-storage-upgrade-btn"
            class="dup-btn dup-btn-green dup-btn-lg" style="padding: 12px 40px;">

@@ -91,7 +91,12 @@ class Database_Optimizer {
 	 */
 	public function delete_auto_drafts() {
 		// Get the auto-drafts of posts.
-		$posts = $this->wpdb->get_col( "SELECT ID FROM " . $this->wpdb->posts . " WHERE post_status = 'auto-draft'" );
+		$posts = $this->wpdb->get_col(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT ID FROM ' . esc_sql( $this->wpdb->posts ) . ' WHERE post_status = %s',
+				'auto-draft'
+			)
+		);
 
 		// Bail if there are no posts.
 		if ( ! $posts ) {
@@ -111,7 +116,12 @@ class Database_Optimizer {
 	 */
 	public function delete_revisions() {
 		// Get all posts revisions.
-		$posts = $this->wpdb->get_col( "SELECT ID FROM " . $this->wpdb->posts . " WHERE post_type = 'revision'" );
+		$posts = $this->wpdb->get_col(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT ID FROM ' . esc_sql( $this->wpdb->posts ) . ' WHERE post_type = %s',
+				'revision'
+			)
+		);
 
 		// Bail if there are no posts.
 		if ( ! $posts ) {
@@ -131,7 +141,12 @@ class Database_Optimizer {
 	 */
 	public function delete_trashed_posts() {
 		// Get all trashed posts.
-		$posts = $this->wpdb->get_col( "SELECT ID FROM " . $this->wpdb->posts . " WHERE post_status = 'trash'" );
+		$posts = $this->wpdb->get_col(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT ID FROM ' . esc_sql( $this->wpdb->posts ) . ' WHERE post_status = %s',
+				'trash'
+			)
+		);
 
 		// Bail if there are no posts.
 		if ( ! $posts ) {
@@ -151,7 +166,12 @@ class Database_Optimizer {
 	 */
 	public function delete_spam_comments() {
 		// Get all spam comments.
-		$comments = $this->wpdb->get_col( "SELECT comment_ID FROM " . $this->wpdb->comments . " WHERE comment_approved = 'spam'" );
+		$comments = $this->wpdb->get_col(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT comment_ID FROM ' . esc_sql( $this->wpdb->comments ) . ' WHERE comment_approved = %s', //phpcs:ignore
+				'spam'
+			)
+		);
 
 		// Bail if there are no comments.
 		if ( ! $comments ) {
@@ -171,7 +191,12 @@ class Database_Optimizer {
 	 */
 	public function delete_trash_comments() {
 		// Get all trashed comments.
-		$comments = $this->wpdb->get_col( "SELECT comment_ID FROM " . $this->wpdb->comments . " WHERE comment_approved = 'trash'" );
+		$comments = $this->wpdb->get_col(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT comment_ID FROM ' . esc_sql( $this->wpdb->comments ) . ' WHERE comment_approved = %s', //phpcs:ignore
+				'trash'
+			)
+		);
 
 		// Bail if there are no comments.
 		if ( ! $comments ) {
@@ -191,7 +216,13 @@ class Database_Optimizer {
 	 */
 	public function expired_transients() {
 		$time  = isset( $_SERVER['REQUEST_TIME'] ) ? (int) $_SERVER['REQUEST_TIME'] : time();
-		$transients = $this->wpdb->get_col( $this->wpdb->prepare( "SELECT option_name FROM " . $this->wpdb->options . " WHERE option_name LIKE %s AND option_value < %d", $this->wpdb->esc_like( '_transient_timeout' ) . '%', $time ) );
+		$transients = $this->wpdb->get_col(
+			$this->wpdb->prepare( //phpcs:ignore
+				'SELECT option_name FROM ' . esc_sql( $this->wpdb->options ) . ' WHERE option_name LIKE %s AND option_value < %d',
+				$this->wpdb->esc_like( '_transient_timeout' ) . '%', //phpcs:ignore
+				$time//phpcs:ignore
+			)//phpcs:ignore
+		);
 
 		// Bail if there are no transients.
 		if ( ! $transients ) {
@@ -210,7 +241,7 @@ class Database_Optimizer {
 	 * @since  5.6.0
 	 */
 	public function optimize_tables() {
-		$tables = $this->wpdb->get_results( "SELECT table_name, data_free FROM information_schema.tables WHERE table_schema = '" . DB_NAME . "' and Engine <> 'InnoDB' and data_free > 0" );
+		$tables = $this->wpdb->get_results( "SELECT table_name, data_free FROM information_schema.tables WHERE table_schema = '" . DB_NAME . "' and Engine <> 'InnoDB' and data_free > 0" ); //phpcs:ignore
 
 		// Bail if there are no results.
 		if ( ! $tables ) {
@@ -232,11 +263,11 @@ class Database_Optimizer {
 		// Loop trough and optimize table.
 		foreach ( $tables as $table ) {
 			// Check if we need to skip that specific table from the optimization.
-			if ( in_array( $table->table_name, $all_tables ) ) {
+			if ( empty( $table->table_name ) || in_array( $table->table_name, $all_tables ) ) {
 				continue;
 			}
 
-			$this->wpdb->query( "OPTIMIZE TABLE $table->table_name" );
+			$this->wpdb->query( "OPTIMIZE TABLE $table->table_name" ); // phpcs:ignore
 		}
 	}
 

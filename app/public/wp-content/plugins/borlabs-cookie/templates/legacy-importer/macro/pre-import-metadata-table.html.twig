@@ -1,0 +1,74 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        showLanguageColumn: true,
+    } | merge(config) %}
+
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% if config.showLanguageColumn %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.language | raw }}
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.name | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.legacyKey | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.newKey | raw }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.preImportMetadataList is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: config.showLanguageColumn ? 'colspan="4"' : 'colspan="3"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.alert.noImportData | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for preImportMetadata in config.preImportMetadataList %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% if config.showLanguageColumn %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {{ preImportMetadata.language }}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endif %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ preImportMetadata.name }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    <span class="{{ preImportMetadata.legacyKey != preImportMetadata.newKey ? 'bc-text-red-600' : '' }}">{{ preImportMetadata.legacyKey }}</span>
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    <span class="{{ preImportMetadata.legacyKey != preImportMetadata.newKey ? 'bc-text-green-600' : '' }}">{{ preImportMetadata.newKey }}</span>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

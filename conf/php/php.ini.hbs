@@ -213,11 +213,14 @@ ldap.max_links = -1
 
 {{#unless apache}}
 [opcache]
+{{! OPcache became built-in in PHP 8.5, so only load it as an extension for earlier versions }}
+{{#unless opcacheBuiltIn}}
 {{#if os.windows}}
 zend_extension = php_opcache.dll
 {{else}}
 zend_extension = {{extensionsDir}}/opcache.so
 {{/if}}
+{{/unless}}
 
 opcache.enable=1
 opcache.enable_cli=1

@@ -1,8 +1,67 @@
 
+# ── Security Headers ─────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    # Clickjacking verhindern
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # MIME-Type Sniffing verhindern
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Referrer-Informationen einschränken
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Kamera, Mikrofon, Geolocation sperren
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # PHP-Version und Server-Kennung verstecken
+    Header always unset X-Powered-By
+    Header always unset Server
+
+    # HSTS – NUR aktivieren wenn SSL-Zertifikat aktiv ist (Produktion)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" "expr=%{HTTPS} == 'on'"
+</IfModule>
+
+# ── HTTPS erzwingen (Produktion – localhost ausgenommen) ──────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTP_HOST} !\.local$ [NC]
+    RewriteCond %{HTTP_HOST} !^127\. [NC]
+    RewriteCond %{HTTP_HOST} !^192\.168\. [NC]
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# ── Verzeichnis-Auflistung sperren ────────────────────────────────────────────
+Options -Indexes
+
+# ── Zugriff auf sensible Dateien sperren ──────────────────────────────────────
+<FilesMatch "^(wp-config\.php|wp-config-sample\.php|readme\.html|license\.txt|xmlrpc\.php|\.htpasswd|\.env)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ── Zugriff auf versteckte Dateien/Ordner sperren (.git, .svn etc.) ───────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule "(^|/)\.(?!well-known)" - [F,L]
+</IfModule>
+
+# ── Zugriff auf PHP-Dateien in Uploads sperren ────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^wp-content/uploads/.*\.php$ - [F,L]
+</IfModule>
+
 # BEGIN WordPress
-# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
-# dynamically generated, and should only be modified via WordPress filters.
-# Any changes to the directives between these markers will be overwritten.
+# Die Direktiven (Zeilen) zwischen „BEGIN WordPress" und „END WordPress" sind
+# dynamisch generiert und sollten nur über WordPress-Filter geändert werden.
+# Alle Änderungen an den Direktiven zwischen diesen Markierungen werden überschrieben.
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

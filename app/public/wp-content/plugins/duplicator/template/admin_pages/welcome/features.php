@@ -53,7 +53,7 @@ defined("ABSPATH") || exit;
                 <img src="<?php echo DUPLICATOR_PLUGIN_URL; ?>assets/img/welcome/secure-file-encryption.svg">
                 <h5><?php esc_html_e('Secure File Encryption', 'duplicator'); ?></h5>
                 <p>
-                    <?php esc_html_e('Protect and secure the archive file with industry-standard AES-256 encryption.', 'duplicator'); ?>
+                    <?php esc_html_e('Protect and secure the Backup file with industry-standard AES-256 encryption.', 'duplicator'); ?>
                 </p>
             </div>
 
@@ -61,8 +61,8 @@ defined("ABSPATH") || exit;
                 <img src="<?php echo DUPLICATOR_PLUGIN_URL; ?>assets/img/welcome/server-to-server-import.svg">
                 <h5><?php esc_html_e('Server to Server Import', 'duplicator'); ?></h5>
                 <p>
-                    <?php esc_html_e('Direct package import from source server or cloud storage using URL. No need to ' .
-                        'download the package to your desktop machine first.', 'duplicator'); ?>
+                    <?php esc_html_e('Direct Backup import from source server or cloud storage using URL. No need to ' .
+                        'download the Backup to your desktop machine first.', 'duplicator'); ?>
                 </p>
             </div>
 
@@ -95,7 +95,7 @@ defined("ABSPATH") || exit;
         </div>
 
         <div class="button-wrap">
-            <a href="<?php echo \Duplicator\Utils\Upsell::getCampaignUrl('welcome-page', 'See All Features') ?>"
+            <a href="<?php echo \Duplicator\Utils\LinkManager::getCampaignUrl('welcome-page', 'See All Features') ?>"
                class="dup-btn dup-btn-lg dup-btn-grey" rel="noopener noreferrer"
                target="_blank">
                 <?php esc_html_e('See All Features', 'duplicator'); ?>

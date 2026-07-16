@@ -1,0 +1,31 @@
+{% macro component(config, activeModule) %}
+    {% import "system/macro/navigation/dropdown-item.html.twig" as dropdown_item %}
+    {% set config = { active: false, dropdownId: '', title: '' } | merge(config) %}
+    {%  set active = config.dropdowns | filter((v, k) => v.module == activeModule)|length > 0 %}
+    <li class="bc-relative">
+        <button
+            class="bc-rounded-md bc-py-2 bc-pl-3 bc-pr-1.5 bc-inline-flex bc-items-center bc-text-sm bc-group aria-expanded:bc-bg-gray-200 {% if active %} bc-bg-gradient-to-tr bc-from-[#ffd86f] bc-to-[#fc6262] bc-text-white {% else %} bc-text-gray-900 hover:bc-bg-gray-100 {% endif %}"
+            aria-expanded="false" aria-controls="{{ config.dropdownId }}"
+            aria-haspopup="menu">
+            {% if config.icon %}
+                <span class="bc-mr-1">{{ config.icon | raw }}</span>
+            {% endif %}
+            {{ config.title | raw }}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                 class="{% if active %} bc-text-white {% else %} bc-text-gray-600 {% endif %} bc-w-5 bc-h-5 bc-ml-0.5 group-aria-expanded:bc-rotate-180 bc-transition">
+                <path fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd"/>
+            </svg>
+        </button>
+        <ul class="bc-hidden bc-divide-y bc-z-50 bc-w-full lg:bc-w-[200px] lg:bc-absolute bc-top-[40px] bc-bg-white bc-pl-4 lg:bc-pl-0 lg:bc-border-t-0 bc-border-t bc-border-t-gray-200 lg:bc-shadow-lg bc-rounded-b-md"
+            id="{{ config.dropdownId }}">
+
+            {% for dropdown in config.dropdowns %}
+                {% if dropdown is not null %}
+                    {{ dropdown_item.component(dropdown, activeModule) }}
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </li>
+{% endmacro %}

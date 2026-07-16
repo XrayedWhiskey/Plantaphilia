@@ -1,0 +1,135 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.name | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.id | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.position | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.global.table.languageName | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.status | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                {% block content %}
+                    {{ trash_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                {% block content %}
+                    {{ edit_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.services is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        <td colspan="7" class="bc-py-4 bc-text-center bc-rounded-b-md">
+                            {{ localized.alert.noServiceConfigured | raw }}
+                        </td>
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for service in config.services %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ service.name }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ service.key }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% block content %}
+                                    {{ service.position }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ languageName(service.language) }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/table/toggle-switch.html.twig" as toggle_switch %}
+                                {% block content %}
+                                    {% if service.key is not same as('borlabs-cookie') %}
+                                        {{ toggle_switch.component({
+                                            status: service.status,
+                                            href:  wpNonceUrl("?page=#{config.controllerId}&action=switch-status&id=#{service.id}", "#{config.controllerId}-#{service.id}-switch-status")
+                                        }) }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                {% block content %}
+                                    {% if not service.undeletable %}
+                                        <button
+                                            data-brlbs-modal-target="{{ 'borlabsModalDelete-' ~ service.id }}">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            action: "?page=#{config.controllerId}",
+                                            buttonText: localized.global.button.delete,
+                                            id: 'borlabsModalDelete-' ~ service.id,
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                            {% block description %}
+                                                <p class="bc-text-sm"><strong>{{ localized.table.name | raw }}
+                                                        :</strong> {{ service.name }}</p>
+                                                <p class="bc-text-sm"><strong>{{ localized.table.id | raw }}
+                                                        :</strong> {{ service.key }}</p>
+                                                <p class="bc-text-sm"><strong>{{ localized.table.position | raw }}
+                                                        :</strong> {{ service.position }}</p>
+                                            {% endblock %}
+                                            {% block formData %}
+                                                {{ wpNonceField("#{config.controllerId}-#{service.id}-delete") | raw }}
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="{{ service.id }}">
+                                            {% endblock %}
+                                        {% endembed %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                                {% block content %}
+                                    <a href="{{ wpNonceUrl("?page=#{config.controllerId}&action=edit&id=#{service.id}", "#{config.controllerId}-#{service.id}-edit") | raw }}">
+                                        {{ edit_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

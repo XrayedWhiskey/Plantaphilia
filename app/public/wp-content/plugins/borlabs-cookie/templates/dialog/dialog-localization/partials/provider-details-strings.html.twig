@@ -1,0 +1,98 @@
+{% embed "system/embed/card/card-with-title.html.twig" with { contentSpacing: false, hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.providerDetailsTable,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {{ row_input.component({
+            errorMessage: localized.validation.providerInformationTitle,
+            id: 'providerInformationTitle',
+            label: localized.field.providerInformationTitle,
+            value: data.providerInformationTitle,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerName,
+            id: 'providerName',
+            label: localized.field.providerName,
+            value: data.providerName,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerDescription,
+            id: 'providerDescription',
+            label: localized.field.providerDescription,
+            value: data.providerDescription,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerAddress,
+            id: 'providerAddress',
+            label: localized.field.providerAddress,
+            value: data.providerAddress,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerPrivacyUrl,
+            id: 'providerPrivacyUrl',
+            label: localized.field.providerPrivacyUrl,
+            value: data.providerPrivacyUrl,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerCookieUrl,
+            id: 'providerCookieUrl',
+            label: localized.field.providerCookieUrl,
+            value: data.providerCookieUrl,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerOptOutUrl,
+            id: 'providerOptOutUrl',
+            label: localized.field.providerOptOutUrl,
+            value: data.providerOptOutUrl,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerPartners,
+            id: 'providerPartners',
+            label: localized.field.providerPartners,
+            value: data.providerPartners,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerSingular,
+            id: 'providerSingular',
+            label: localized.field.providerSingular,
+            value: data.providerSingular,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerPlural,
+            id: 'providerPlural',
+            label: localized.field.providerPlural,
+            value: data.providerPlural,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerSearchPlaceholder,
+            id: 'providerSearchPlaceholder',
+            label: localized.field.providerSearchPlaceholder,
+            value: data.providerSearchPlaceholder,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.providerCloseButton,
+            hint: localized.hint.providerCloseButton,
+            id: 'providerCloseButton',
+            label: localized.field.providerCloseButton,
+            value: data.providerCloseButton,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+{% endembed %}

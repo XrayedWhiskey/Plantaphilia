@@ -1,0 +1,173 @@
+{% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            button: localized.contentBlockerLocation.button.addLocation,
+            buttonDataAttribute: 'data-brlbs-add-table-row="contentBlockerLocations"',
+            buttonId: 'addContentBlockerLocation',
+            buttonName: 'addContentBlockerLocation',
+            title: localized.contentBlockerLocation.headline.locations,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: 'data-brlbs-table="contentBlockerLocations"' } %}
+            {% block heading %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.contentBlockerLocation.table.hostname | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.contentBlockerLocation.table.path | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        #
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+
+            {% block body %}
+                {% if data.contentBlockerLocations is not empty %}
+                    {% for contentBlockerLocation in data.contentBlockerLocations %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "contentBlockerLocations-#{loop.index0}-hostname",
+                                            name: "contentBlockerLocations[#{loop.index0}][hostname]",
+                                            spellcheck: false,
+                                            value: contentBlockerLocation.hostname,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "contentBlockerLocations-#{loop.index0}-path",
+                                            name: "contentBlockerLocations[#{loop.index0}][path]",
+                                            spellcheck: false,
+                                            value: contentBlockerLocation.path,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "borlabsCookieContentBlockerLocationModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "borlabsCookieContentBlockerLocationModalDelete-#{loop.index0}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+                {% endif %}
+
+                {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: data.contentBlockerLocations is not empty } %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: 'colspan="3"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.contentBlockerLocation.alert.noLocationConfigured | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        <script type="text/template" data-brlbs-row-template="contentBlockerLocations">
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "contentBlockerLocations-##LOOP_INDEX##-hostname",
+                                name: "contentBlockerLocations[##LOOP_INDEX##][hostname]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "contentBlockerLocations-##LOOP_INDEX##-path",
+                                name: "contentBlockerLocations[##LOOP_INDEX##][path]",
+                                spellcheck: false,
+                                value: '/',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                        {% block content %}
+                            <button data-brlbs-modal-target="{{ 'borlabsCookieContentBlockerLocationModalDelete-##LOOP_INDEX##' }}" type="button">
+                                {{ trash_icon.component({}) }}
+                            </button>
+                            {% embed "system/embed/modal/modal.html.twig" with {
+                                buttonText: localized.global.button.delete,
+                                id: 'borlabsCookieContentBlockerLocationModalDelete-##LOOP_INDEX##',
+                                title: localized.global.headline.deleteSelection,
+                            } %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </script>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLocationsExplained', expanded: true } %}
+                    {% block title %}
+                        {{ localized.contentBlockerLocation.thingsToKnow.headlineLocationsExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.contentBlockerLocation.thingsToKnow.locationsExplained | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHostnameExplained' } %}
+                    {% block title %}
+                        {{ localized.contentBlockerLocation.thingsToKnow.headlineHostnameExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.contentBlockerLocation.thingsToKnow.hostnameExplained | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

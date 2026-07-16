@@ -22,19 +22,6 @@ if (SnapString::isHTML($exception->getMessage())) {
     <p>
         Message: <?php echo $message; ?><br>
         Please see the <?php DUPX_View_Funcs::installerLogLink(); ?> file for more details.
-        <?php
-        if ($exception instanceof DupxException) {
-            if ($exception->haveFaqLink()) {
-                ?>
-                <br>
-                See FAQ: <a href="<?php echo $exception->getFaqLinkUrl(); ?>" ><?php echo $exception->getFaqLinkLabel(); ?></a>
-                <?php
-            }
-            if (strlen($longMsg = $exception->getLongMsg())) {
-                echo '<br><br>' . $longMsg;
-            }
-        }
-        ?>
     </p>
     <hr>
     Trace:

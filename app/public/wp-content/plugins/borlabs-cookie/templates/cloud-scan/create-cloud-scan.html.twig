@@ -1,0 +1,198 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+{% import "system/macro/row/input.html.twig" as row_input %}
+{% import "system/macro/row/save.html.twig" as row_save %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            localized.breadcrumb.create
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    {{ displayModeSettingsToggle() | raw }}
+
+    <form action="{{ "?page=#{controllerId}&action=store" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/row/input.html.twig" as row_input %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+            {% import "system/macro/row/select.html.twig" as row_select %}
+            {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+            {% block mainHeader %}
+                {{ card_heading.component({
+                    title: localized.headline.scans,
+                }) }}
+            {% endblock %}
+
+            {% block mainContent %}
+                {{ row_select.component({
+                    id: 'selectScanType',
+                    label: localized.field.selectScanType,
+                    name: 'selectScanType',
+                    options: scanTypes.list,
+                    value: data.selectScanType == '' ? 'setup' : data.selectScanType,
+                }) }}
+
+                {{ row_select.component({
+                    id: 'selectPageType',
+                    label: localized.field.selectPageType,
+                    name: 'selectPageType',
+                    options: pageTypes.list,
+                    value: data.selectPageType == '' ? '' : data.selectPageType,
+                }) }}
+
+                <div id="customScanPage">
+                    {% embed "system/embed/form-row.html.twig" %}
+                        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                        {% block label %}
+                            <label class="bc-flex bc-items-center bc-space-x-1" for="scanPageUrl">
+                                <span>{{ localized.field.scanPageUrl | raw }}</span>
+                                {{ hint.component({
+                                    hint: localized.hint.scanPageUrl,
+                                }) }}
+                            </label>
+                        {% endblock %}
+
+                        {% block input %}
+                            {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {% import "system/macro/form-component/select.html.twig" as select %}
+                            {% import "system/macro/form-component/textarea.html.twig" as textarea %}
+
+                            <div class="bc-flex bc-items-center bc-space-x-2">
+                                {{ select.component({
+                                    dataAttribute: 'data-brlbs-scan-request-url',
+                                    id: 'scanPageUrl',
+                                    isDisabled: data.customScanUrls is not empty,
+                                    name: 'scanPageUrl',
+                                    options: config.pages.list,
+                                    value: data.scanPageUrl
+                                }) }}
+                            </div>
+
+                            <div class="bc-flex bc-items-center bc-space-x-2 bc-pt-2 bc-w-3/4">
+                                {% set checkboxConfig = {
+                                    checked: data.customScanUrls is not empty,
+                                    dataAttribute: "data-brlbs-enable-target=\"customScanUrls\" data-brlbs-disable-target=\"scanPageUrl\"",
+                                    id: 'enableCustomScanUrls',
+                                    name: 'enableCustomScanUrls',
+                                } %}
+
+                                {% set textareaConfig = {
+                                    cssClasses: ['bc-border', 'bc-rounded-none', 'bc-rounded-r', 'bc-border-transparent', 'bc-border-l-gray-300'],
+                                    dataAttribute: 'data-brlbs-scan-request-url',
+                                    hasToggle: true,
+                                    id: 'customScanUrls',
+                                    isDisabled: data.customScanUrls is empty,
+                                    name: 'customScanUrls',
+                                    value: data.customScanUrls,
+                                    width: 'bc-w-full' } %}
+                                {% set textareaConfig = textareaConfig | filter((v, k) => k != 'hint') %}
+                                {% set textareaConfig = textareaConfig | filter((v, k) => k != 'errorMessage') %}
+
+                                <div class="bc-flex bc-w-full bc-border bc-border-solid bc-bg-gray-50 bc-items-center bc-rounded-md bc-border-gray-300 bc-shadow-sm">
+                                    <div class="bc-flex bc-items-center bc-p-2.5">
+                                        {{ checkbox.component(checkboxConfig, localized) }}
+                                    </div>
+                                    {{ textarea.component(textareaConfig, localized) }}
+                                </div>
+                            </div>
+                        {% endblock %}
+                    {% endembed %}
+                </div>
+
+                {{ row_switch_button.component({
+                    dataAttribute: 'data-brlbs-blurer="httpAuthFields"',
+                    hideInSimplifiedMode: true,
+                    id: 'enableHttpAuth',
+                    label: localized.field.httpAuthRequired,
+                    value: false,
+                }) }}
+
+                <div id="httpAuthFields" class="bc-flex bc-flex-col brlbs-cmpnt-blurable brlbs-cmpnt-hide-in-simplified-mode">
+                    {{ row_input.component({
+                        id: 'httpAuthUsername',
+                        label: localized.field.httpAuthUsername,
+                        value: data.httpAuthUsername,
+                    }) }}
+
+                    {{ row_input.component({
+                        id: 'httpAuthPassword',
+                        label: localized.field.httpAuthPassword,
+                        value: data.httpAuthPassword,
+                    }) }}
+                </div>
+
+                {{ row_save.component({
+                    action: 'store',
+                    backLink: "?page=#{controllerId}",
+                    backButton: localized.button.back,
+                    button: localized.button.createScan,
+                    nonce: wpNonceField("#{controllerId}-store"),
+                    value: data.id,
+                }, localized) }}
+
+            {% endblock %}
+
+            {% block infoPanelHeader %}
+                {{ localized.global.headline.thingsToKnow | raw }}
+            {% endblock %}
+
+            {% block infoPanelContent %}
+                {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                    {% block content %}
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHowTheScannerWorks', expanded: true} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlineHowTheScannerWorks | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.howTheScannerWorksA | raw }}</p>
+                                <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning">{{ localized.thingsToKnow.howTheScannerWorksB | raw }}</div>
+                                <p>{{ localized.thingsToKnow.howTheScannerWorksC | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionScanType'} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlineScanType | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.scanTypeAudit | raw }}</p>
+                                <p>{{ localized.thingsToKnow.scanTypeSetup | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPagesToScan'} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlinePagesToScan | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.pagesToScanCustom | raw }}</p>
+                                <p>{{ localized.thingsToKnow.pagesToScanHomepage | raw }}</p>
+                                <p>{{ localized.thingsToKnow.pagesToScanSelectionOfSitesPerPostType | raw }}</p>
+                                <p>{{ localized.thingsToKnow.numberOfSelectionOfSitesPerPostType | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHttpAuth'} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlineHttpAuth | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.httpAuth | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    </form>
+{% endif %}

@@ -272,7 +272,6 @@ class WC_GZD_Product_Grouped extends WC_GZD_Product {
 		$price = '';
 
 		if ( $this->has_unit() ) {
-
 			$prices        = $this->get_child_unit_prices( $tax_display );
 			$min_price     = current( $prices['price'] );
 			$max_price     = end( $prices['price'] );
@@ -302,6 +301,6 @@ class WC_GZD_Product_Grouped extends WC_GZD_Product {
 		}
 
 		/** This filter is documented in includes/abstract/abstract-wc-gzd-product.php */
-		return apply_filters( 'woocommerce_gzd_unit_price_html', $price, $this );
+		return apply_filters( 'woocommerce_gzd_unit_price_html', $price, $this, $tax_display );
 	}
 }

@@ -1,0 +1,107 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        {% embed "system/embed/card/card-with-info-panel.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+            {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+            {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+            {% block mainHeader %}
+                {{ card_heading.component({
+                    title: localized.headline.generalSettings,
+                }) }}
+            {% endblock %}
+            {% block mainContent %}
+                {{ row_textarea.component({
+                    hint: localized.hint.excludedHostnames,
+                    id: 'excludedHostnames',
+                    isRequired: false,
+                    label: localized.field.excludedHostnames,
+                    value: data.excludedHostnames | join('\n'),
+                }) }}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.virtualExcludedHostnamesList | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.virtualExcludedHostnamesList,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-ml-4 bc-list-disc bc-text-left">
+                            {% for virtualExcludedHostname in data.disabledContentBlockersHostnames %}
+                                <li>{{ virtualExcludedHostname }}</li>
+                            {% else %}
+                                <li class="-bc-ml-4 bc-list-none">-</li>
+                            {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+
+                {{ row_switch_button.component({
+                    hint: localized.hint.removeIframesInFeeds,
+                    id: 'removeIframesInFeeds',
+                    label: localized.field.removeIframesInFeeds,
+                    value: data.removeIframesInFeeds,
+                }) }}
+
+                <!-- Synchronization Settings -->
+                {{ synchronizationSettingsFields(
+                    languages,
+                    {
+                        collectionName: "languages",
+                        hasRepository: false,
+                        withOverwriteTranslationOption: false,
+                    }
+                ) | raw }}
+
+                {{ row_save.component({
+                    action: 'save',
+                    nonce: wpNonceField("#{controllerId}-save")
+                }, localized) }}
+            {% endblock %}
+
+            {% block infoPanelHeader %}
+                {{ localized.global.headline.thingsToKnow | raw }}
+            {% endblock %}
+
+            {% block infoPanelContent %}
+                {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                    {% block content %}
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHostnameExplained', expanded: true} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlineHostnameExplained | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.hostnameExplained | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    </form>
+    <!-- Reset Content Blocker Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.reset,
+        hint: localized.hint.reset,
+        action: 'reset',
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

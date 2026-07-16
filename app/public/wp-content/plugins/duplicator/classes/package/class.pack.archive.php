@@ -66,6 +66,8 @@ class DUP_Archive
     private $listFileObj = null;
     /** @var DUP_Archive_File_List */
     private $listDirObj = null;
+    /** @var string|null */
+    private $wpContentDirNormalizePath = null;
 
     /**
      * Class constructor
@@ -92,7 +94,7 @@ class DUP_Archive
         $this->wpCoreExactPaths[] = $paths['muplugins'];
         $this->wpCoreExactPaths[] = $paths['themes'];
 
-        $this->relativeFiltersDir = array(DUP_Settings::getSsdirTmpPath(), 'backups-dup-pro');
+        $this->relativeFiltersDir = array(DUP_Settings::getSsdirTmpPath(), 'backups-dup-pro', 'duplicator-backups');
     }
 
     /**
@@ -364,6 +366,8 @@ class DUP_Archive
             $this->FilterInfo->Dirs->Instance  = strlen($this->FilterDirs) > 0 ? array_map('DUP_Util::safePath', explode(";", $this->FilterDirs)) : array();
             $this->FilterInfo->Files->Instance = strlen($this->FilterFiles) > 0 ? array_map('DUP_Util::safePath', explode(";", $this->FilterFiles)) : array();
             $this->FilterInfo->Exts->Instance  = explode(";", $this->FilterExts);
+            // Remove blank entries
+            $this->FilterInfo->Exts->Instance = array_filter(array_map('trim', $this->FilterInfo->Exts->Instance));
         }
 
         //FILTER: CORE ITMES
@@ -380,6 +384,7 @@ class DUP_Archive
             $wp_root . '/.opcache',
             //WP-CONTENT
             $wp_content . '/backups-dup-pro',
+            $wp_content . '/duplicator-backups',
             $wp_content . '/ai1wm-backups',
             $wp_content . '/backupwordpress',
             $wp_content . '/content/cache',
@@ -429,8 +434,9 @@ class DUP_Archive
             $this->FilterInfo->Files->Global[] = $config_file_path;
         }
 
-        $this->FilterDirsAll    = array_merge($this->FilterInfo->Dirs->Instance, $this->FilterInfo->Dirs->Core);
-        $this->FilterExtsAll    = array_merge($this->FilterInfo->Exts->Instance, $this->FilterInfo->Exts->Core);
+        $this->FilterDirsAll = array_merge($this->FilterInfo->Dirs->Instance, $this->FilterInfo->Dirs->Core);
+        $this->FilterExtsAll = array_merge($this->FilterInfo->Exts->Instance, $this->FilterInfo->Exts->Core);
+        DUP_Log::traceObject('FilterExtsAll:', $this->FilterExtsAll);
         $this->FilterFilesAll   = array_merge($this->FilterInfo->Files->Instance, $this->FilterInfo->Files->Global);
         $abs_path               = duplicator_get_abs_path();
         $this->FilterFilesAll[] = $abs_path . '/.htaccess';
@@ -583,7 +589,7 @@ class DUP_Archive
 
         $this->listDirObj->addEntry($relativePath, $size, $nodes);
         $this->Dirs[] = $dirPath;
-        $this->dirsCount ++;
+        $this->dirsCount++;
     }
 
     private function addToFileList($filePath, $relativePath, $fileSize)

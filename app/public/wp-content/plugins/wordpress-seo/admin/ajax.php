@@ -21,7 +21,7 @@ if ( ! defined( 'WPSEO_VERSION' ) ) {
 function wpseo_ajax_json_echo_die( $results ) {
 	// phpcs:ignore WordPress.Security.EscapeOutput -- Reason: WPSEO_Utils::format_json_encode is safe.
 	echo WPSEO_Utils::format_json_encode( $results );
-	die();
+	exit();
 }
 
 /**
@@ -31,22 +31,22 @@ function wpseo_ajax_json_echo_die( $results ) {
  */
 function wpseo_set_option() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	check_ajax_referer( 'wpseo-setoption' );
 
 	if ( ! isset( $_POST['option'] ) || ! is_string( $_POST['option'] ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	$option = sanitize_text_field( wp_unslash( $_POST['option'] ) );
 	if ( $option !== 'page_comments' ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	update_option( $option, 0 );
-	die( '1' );
+	exit( '1' );
 }
 
 add_action( 'wp_ajax_wpseo_set_option', 'wpseo_set_option' );
@@ -63,19 +63,19 @@ add_action( 'wp_ajax_yoast_dismiss_notification', [ 'Yoast_Notification_Center',
  */
 function wpseo_set_ignore() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	check_ajax_referer( 'wpseo-ignore' );
 
 	if ( ! isset( $_POST['option'] ) || ! is_string( $_POST['option'] ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	$ignore_key = sanitize_text_field( wp_unslash( $_POST['option'] ) );
 	WPSEO_Options::set( 'ignore_' . $ignore_key, true );
 
-	die( '1' );
+	exit( '1' );
 }
 
 add_action( 'wp_ajax_wpseo_set_ignore', 'wpseo_set_ignore' );
@@ -113,7 +113,7 @@ function wpseo_save_what( $what ) {
 	check_ajax_referer( 'wpseo-bulk-editor' );
 
 	if ( ! isset( $_POST['new_value'], $_POST['wpseo_post_id'], $_POST['existing_value'] ) || ! is_string( $_POST['new_value'] ) || ! is_string( $_POST['existing_value'] ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	$new = sanitize_text_field( wp_unslash( $_POST['new_value'] ) );
@@ -122,7 +122,7 @@ function wpseo_save_what( $what ) {
 	$original = sanitize_text_field( wp_unslash( $_POST['existing_value'] ) );
 
 	if ( $post_id === 0 ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	$results = wpseo_upsert_new( $what, $post_id, $new, $original );
@@ -144,7 +144,7 @@ function wpseo_save_what( $what ) {
  */
 function wpseo_upsert_meta( $post_id, $new_meta_value, $orig_meta_value, $meta_key, $return_key ) {
 
-	$post_id                  = intval( $post_id );
+	$post_id                  = (int) $post_id;
 	$sanitized_new_meta_value = wp_strip_all_tags( $new_meta_value );
 	$orig_meta_value          = wp_strip_all_tags( $orig_meta_value );
 
@@ -171,7 +171,7 @@ function wpseo_upsert_meta( $post_id, $new_meta_value, $orig_meta_value, $meta_k
 		$upsert_results['results'] = sprintf(
 			/* translators: %s expands to post type. */
 			__( 'Post has an invalid Content Type: %s.', 'wordpress-seo' ),
-			$the_post->post_type
+			$the_post->post_type,
 		);
 
 		return $upsert_results;
@@ -183,7 +183,7 @@ function wpseo_upsert_meta( $post_id, $new_meta_value, $orig_meta_value, $meta_k
 		$upsert_results['results'] = sprintf(
 			/* translators: %s expands to post type name. */
 			__( 'You can\'t edit %s.', 'wordpress-seo' ),
-			$post_type_object->label
+			$post_type_object->label,
 		);
 
 		return $upsert_results;
@@ -195,7 +195,7 @@ function wpseo_upsert_meta( $post_id, $new_meta_value, $orig_meta_value, $meta_k
 		$upsert_results['results'] = sprintf(
 			/* translators: %s expands to the name of a post type (plural). */
 			__( 'You can\'t edit %s that aren\'t yours.', 'wordpress-seo' ),
-			$post_type_object->label
+			$post_type_object->label,
 		);
 
 		return $upsert_results;
@@ -289,40 +289,32 @@ function ajax_get_keyword_usage_and_post_types() {
 	check_ajax_referer( 'wpseo-keyword-usage-and-post-types', 'nonce' );
 
 	if ( ! isset( $_POST['post_id'], $_POST['keyword'] ) || ! is_string( $_POST['keyword'] ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- We are casting to an integer.
 	$post_id = (int) wp_unslash( $_POST['post_id'] );
 
 	if ( $post_id === 0 || ! current_user_can( 'edit_post', $post_id ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	$keyword = sanitize_text_field( wp_unslash( $_POST['keyword'] ) );
 
 	$post_ids = WPSEO_Meta::keyword_usage( $keyword, $post_id );
 
-	if ( ! empty( $post_ids ) ) {
-		$post_types = WPSEO_Meta::post_types_for_ids( $post_ids );
-	}
-	else {
-		$post_types = [];
-	}
-
 	$return_object = [
 		'keyword_usage' => $post_ids,
-		'post_types'    => $post_types,
+		'post_types'    => WPSEO_Meta::post_types_for_ids( $post_ids ),
 	];
 
 	wp_die(
 		// phpcs:ignore WordPress.Security.EscapeOutput -- Reason: WPSEO_Utils::format_json_encode is safe.
-		WPSEO_Utils::format_json_encode( $return_object )
+		WPSEO_Utils::format_json_encode( $return_object ),
 	);
 }
 
 add_action( 'wp_ajax_get_focus_keyword_usage_and_post_types', 'ajax_get_keyword_usage_and_post_types' );
-
 
 /**
  * Retrieves the keyword for the keyword doubles of the termpages.
@@ -363,7 +355,7 @@ function ajax_get_term_keyword_usage() {
 
 	wp_die(
 		// phpcs:ignore WordPress.Security.EscapeOutput -- Reason: WPSEO_Utils::format_json_encode is safe.
-		WPSEO_Utils::format_json_encode( $usage )
+		WPSEO_Utils::format_json_encode( $usage ),
 	);
 }
 
@@ -400,20 +392,20 @@ function ajax_get_keyword_usage() {
 	check_ajax_referer( 'wpseo-keyword-usage', 'nonce' );
 
 	if ( ! isset( $_POST['post_id'], $_POST['keyword'] ) || ! is_string( $_POST['keyword'] ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- We are casting to an integer.
 	$post_id = (int) wp_unslash( $_POST['post_id'] );
 
 	if ( $post_id === 0 || ! current_user_can( 'edit_post', $post_id ) ) {
-		die( '-1' );
+		exit( '-1' );
 	}
 
 	$keyword = sanitize_text_field( wp_unslash( $_POST['keyword'] ) );
 
 	wp_die(
 		// phpcs:ignore WordPress.Security.EscapeOutput -- Reason: WPSEO_Utils::format_json_encode is safe.
-		WPSEO_Utils::format_json_encode( WPSEO_Meta::keyword_usage( $keyword, $post_id ) )
+		WPSEO_Utils::format_json_encode( WPSEO_Meta::keyword_usage( $keyword, $post_id ) ),
 	);
 }

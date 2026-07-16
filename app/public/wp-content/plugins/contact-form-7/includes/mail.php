@@ -146,8 +146,7 @@ class WPCF7_Mail {
 		$use_html = ( $this->use_html && 'body' === $component );
 		$exclude_blank = ( $this->exclude_blank && 'body' === $component );
 
-		$template = $this->template;
-		$component = isset( $template[$component] ) ? $template[$component] : '';
+		$component = $this->template[$component] ?? '';
 
 		if ( $replace_tags ) {
 			$component = $this->replace_tags( $component, array(
@@ -233,7 +232,7 @@ class WPCF7_Mail {
 			'sender' => $this->get( 'sender', true ),
 			'body' => $this->get( 'body', true ),
 			'recipient' => $this->get( 'recipient', true ),
-			'additional_headers' => $this->get( 'additional_headers', true ),
+			'additional_headers' => $this->additional_headers(),
 			'attachments' => $this->attachments(),
 		);
 
@@ -248,20 +247,24 @@ class WPCF7_Mail {
 		$subject = wpcf7_strip_newline( $components['subject'] );
 		$sender = wpcf7_strip_newline( $components['sender'] );
 		$recipient = wpcf7_strip_newline( $components['recipient'] );
+		$additional_headers = $components['additional_headers'];
 		$body = $components['body'];
-		$additional_headers = trim( $components['additional_headers'] );
 
-		$headers = "From: $sender\n";
+		$headers = array();
+
+		$headers[] = sprintf( 'From: %s', $sender );
 
 		if ( $this->use_html ) {
-			$headers .= "Content-Type: text/html\n";
-			$headers .= "X-WPCF7-Content-Type: text/html\n";
+			$headers[] = 'Content-Type: text/html';
+			$headers[] = 'X-WPCF7-Content-Type: text/html';
 		} else {
-			$headers .= "X-WPCF7-Content-Type: text/plain\n";
+			$headers[] = 'X-WPCF7-Content-Type: text/plain';
 		}
 
-		if ( $additional_headers ) {
-			$headers .= $additional_headers . "\n";
+		$additional_headers = str_replace( "\r\n", "\n", $additional_headers );
+
+		foreach ( explode( "\n", $additional_headers ) as $additional_header ) {
+			$headers[] = trim( $additional_header );
 		}
 
 		$attachments = array_filter(
@@ -270,31 +273,29 @@ class WPCF7_Mail {
 				$path = path_join( WP_CONTENT_DIR, $attachment );
 
 				if ( ! wpcf7_is_file_path_in_content_dir( $path ) ) {
-					if ( WP_DEBUG ) {
-						trigger_error(
-							sprintf(
-								/* translators: %s: Attachment file path. */
-								__( 'Failed to attach a file. %s is not in the allowed directory.', 'contact-form-7' ),
-								$path
-							),
-							E_USER_NOTICE
-						);
-					}
+					wp_trigger_error(
+						'',
+						sprintf(
+							/* translators: %s: Attachment file path. */
+							__( 'Failed to attach a file. %s is not in the allowed directory.', 'contact-form-7' ),
+							$path
+						),
+						E_USER_NOTICE
+					);
 
 					return false;
 				}
 
 				if ( ! is_readable( $path ) or ! is_file( $path ) ) {
-					if ( WP_DEBUG ) {
-						trigger_error(
-							sprintf(
-								/* translators: %s: Attachment file path. */
-								__( 'Failed to attach a file. %s is not a readable file.', 'contact-form-7' ),
-								$path
-							),
-							E_USER_NOTICE
-						);
-					}
+					wp_trigger_error(
+						'',
+						sprintf(
+							/* translators: %s: Attachment file path. */
+							__( 'Failed to attach a file. %s is not a readable file.', 'contact-form-7' ),
+							$path
+						),
+						E_USER_NOTICE
+					);
 
 					return false;
 				}
@@ -308,12 +309,11 @@ class WPCF7_Mail {
 				$file_size = (int) @filesize( $path );
 
 				if ( 25 * MB_IN_BYTES < $total_size[$this->name] + $file_size ) {
-					if ( WP_DEBUG ) {
-						trigger_error(
-							__( 'Failed to attach a file. The total file size exceeds the limit of 25 megabytes.', 'contact-form-7' ),
-							E_USER_NOTICE
-						);
-					}
+					wp_trigger_error(
+						'',
+						__( 'Failed to attach a file. The total file size exceeds the limit of 25 megabytes.', 'contact-form-7' ),
+						E_USER_NOTICE
+					);
 
 					return false;
 				}
@@ -346,6 +346,33 @@ class WPCF7_Mail {
 
 
 	/**
+	 * Retrieves additional headers from the template.
+	 */
+	private function additional_headers( $template = null ) {
+		if ( ! $template ) {
+			$template = $this->get( 'additional_headers' );
+		}
+
+		$headers = array();
+
+		foreach ( explode( "\n", $template ) as $line ) {
+			if ( ! str_contains( $line, ':' ) ) {
+				continue;
+			}
+
+			$line = $this->replace_tags( $line );
+			$line = str_replace( "\r\n", "\n", $line );
+
+			list( $header ) = explode( "\n", $line, 2 );
+
+			$headers[] = $header;
+		}
+
+		return implode( "\n", $headers );
+	}
+
+
+	/**
 	 * Creates an array of attachments based on uploaded files and local files.
 	 */
 	private function attachments( $template = null ) {
@@ -368,7 +395,7 @@ class WPCF7_Mail {
 		foreach ( explode( "\n", $template ) as $line ) {
 			$line = trim( $line );
 
-			if ( '' === $line or '[' == substr( $line, 0, 1 ) ) {
+			if ( '' === $line or '[' === substr( $line, 0, 1 ) ) {
 				continue;
 			}
 
@@ -417,8 +444,10 @@ function wpcf7_mail_replace_tags( $content, $options = '' ) {
 		if ( $options['exclude_blank'] ) {
 			$replaced_tags = $line->get_replaced_tags();
 
-			if ( empty( $replaced_tags )
-			or array_filter( $replaced_tags, 'strlen' ) ) {
+			if (
+				empty( $replaced_tags ) or
+				array_filter( $replaced_tags, 'strlen' )
+			) {
 				$content[$num] = $replaced;
 			} else {
 				unset( $content[$num] ); // Remove a line.
@@ -485,8 +514,10 @@ class WPCF7_MailTaggedText {
 
 		$this->html = (bool) $options['html'];
 
-		if ( null !== $options['callback']
-		and is_callable( $options['callback'] ) ) {
+		if (
+			null !== $options['callback'] and
+			is_callable( $options['callback'] )
+		) {
 			$this->callback = $options['callback'];
 		} elseif ( $this->html ) {
 			$this->callback = array( $this, 'replace_tags_callback_html' );
@@ -534,8 +565,7 @@ class WPCF7_MailTaggedText {
 	 */
 	private function replace_tags_callback( $matches, $html = false ) {
 		// allow [[foo]] syntax for escaping a tag
-		if ( $matches[1] == '['
-		and $matches[4] == ']' ) {
+		if ( '[' === $matches[1] and ']' === $matches[4] ) {
 			return substr( $matches[0], 1, -1 );
 		}
 
@@ -552,7 +582,7 @@ class WPCF7_MailTaggedText {
 			: null;
 
 		if ( $mail_tag->get_option( 'do_not_heat' ) ) {
-			$submitted = wp_unslash( $_POST[$field_name] ?? '' );
+			$submitted = wpcf7_superglobal_post( $field_name );
 		}
 
 		$replaced = $submitted;

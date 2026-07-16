@@ -1,0 +1,113 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% block mainHeader %}
+                {{ card_heading.component({
+                    title: localized.headline.autoUpdateSettings,
+                }) }}
+            {% endblock %}
+
+            {% block mainContent %}
+                {% import "system/macro/row/save.html.twig" as row_save %}
+                {% import "system/macro/row/select.html.twig" as row_select %}
+                {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+                {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+                {{ row_select.component({
+                    id: 'packageAutoUpdateInterval',
+                    label: localized.field.packageAutoUpdateInterval,
+                    options: options.packageAutoUpdateIntervals.list,
+                    value: data.pluginConfig.packageAutoUpdateInterval,
+                }) }}
+
+                {{ row_select.component({
+                    hint: localized.hint.packageAutoUpdateTimeSpan,
+                    id: 'packageAutoUpdateTimeSpan',
+                    label: localized.field.packageAutoUpdateTimeSpan,
+                    options: options.packageAutoUpdateTimeSpan.list,
+                    value: data.pluginConfig.packageAutoUpdateTimeSpan,
+                }) }}
+
+                {{ row_textarea.component({
+                    hint: localized.hint.packageAutoUpdateEmailAddresses,
+                    id: 'packageAutoUpdateEmailAddresses',
+                    infoMessage: "#{localized.text.packageAutoUpdateEmailAddressesInfoMessageA | raw}<br><br>#{localized.text.packageAutoUpdateEmailAddressesInfoMessageB | raw}",
+                    isRequired: true,
+                    label: localized.field.packageAutoUpdateEmailAddresses,
+                    value: data.pluginConfig.packageAutoUpdateEmailAddresses | join('\n'),
+                }) }}
+
+                {{ row_switch_button.component({
+                    hint: localized.hint.enableEmailNotificationsForUpdatablePackagesWithAutoUpdateEnabled,
+                    id: 'enableEmailNotificationsForUpdatablePackagesWithAutoUpdateEnabled',
+                    label: localized.field.enableEmailNotificationsForUpdatablePackagesWithAutoUpdateEnabled,
+                    value: data.pluginConfig.enableEmailNotificationsForUpdatablePackagesWithAutoUpdateEnabled,
+                }) }}
+
+                {{ row_switch_button.component({
+                    hint: localized.hint.enableEmailNotificationsForUpdatablePackagesWithAutoUpdateDisabled,
+                    id: 'enableEmailNotificationsForUpdatablePackagesWithAutoUpdateDisabled',
+                    label: localized.field.enableEmailNotificationsForUpdatablePackagesWithAutoUpdateDisabled,
+                    value: data.pluginConfig.enableEmailNotificationsForUpdatablePackagesWithAutoUpdateDisabled,
+                }) }}
+
+                {{ row_save.component({
+                    action: 'save',
+                    nonce: wpNonceField("#{controllerId}-save")
+                }, localized) }}
+            {% endblock %}
+
+            {% block infoPanelHeader %}
+                {{ localized.global.headline.thingsToKnow | raw }}
+            {% endblock %}
+
+            {% block infoPanelContent %}
+                {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                    {% block content %}
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPackageAutoUpdateInterval', expanded: true} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlinePackageAutoUpdateInterval | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.packageAutoUpdateIntervalA | raw }}</p>
+                                <p>{{ localized.thingsToKnow.packageAutoUpdateIntervalB | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPackageAutoUpdateSymbol', expanded: false} %}
+                            {% import "system/macro/icons/cpu-chip.html.twig" as cpu_chip_icon %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlinePackageAutoUpdateSymbol | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p class="bc-text-center">{{ cpu_chip_icon.component({
+                                        cssClasses: ['bc-text-white'],
+                                    }) }}</p>
+                                <p>{{ localized.thingsToKnow.packageAutoUpdateSymbol | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    </form>
+    <!-- Reset Content Blocker Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.reset,
+        hint: localized.hint.reset,
+        action: 'reset',
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

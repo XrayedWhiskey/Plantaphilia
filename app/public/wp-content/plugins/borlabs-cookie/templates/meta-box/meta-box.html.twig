@@ -1,0 +1,12 @@
+<div class="brlbs-cmpnt-container" id="BorlabsCookie">
+    {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+    {{ row_textarea.component({
+        hint: localized.hint.customCode,
+        id: 'borlabs-cookie-custom-code',
+        isRequired: false,
+        label: localized.field.customCode,
+        name: 'borlabsCookie[customCode]',
+        value: data.customCode,
+    }) }}
+</div>

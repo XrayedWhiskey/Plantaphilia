@@ -1,0 +1,67 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.importSettings,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {{ row_codearea.component({
+            dataAttribute: 'data-brlbs-import-data',
+            editorLanguage: 'javascript',
+            hint: localized.hint.importData,
+            id: 'importData',
+            label: localized.field.importData,
+        }) }}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                {{ localized.descriptionList.ImportingFollowingSettings | raw }}
+            {% endblock %}
+
+            {% block input %}
+                <ul class="bc-list-disc bc-text-left">
+                    <li class="bc-hidden" data-brlbs-import-data-setting="contentBlockerStyleConfigData">{{ localized.field.contentBlockerStyleConfig | raw }}</li>
+                    <li class="bc-hidden" data-brlbs-import-data-setting="dialogSettingsConfigData">{{ localized.field.dialogSettingsConfig | raw }}</li>
+                    <li class="bc-hidden" data-brlbs-import-data-setting="dialogStyleConfigData">{{ localized.field.dialogStyleConfig | raw }}</li>
+                    <li class="bc-hidden" data-brlbs-import-data-setting="dialogLocalizationData">{{ localized.field.dialogLocalization | raw }}</li>
+                    <li class="bc-hidden" data-brlbs-import-data-setting="widgetConfigData">{{ localized.field.widgetConfig | raw }}</li>
+                </ul>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_save.component({
+            action: 'save',
+            button: localized.button.importSettings,
+            nonce: wpNonceField("#{controllerId}-save"),
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHowToImportSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineHowToImportSettings | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.howToImportSettingsA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.howToImportSettingsB | raw }}</p>
+
+                        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning">
+                            {{ localized.thingsToKnow.noBorlabsCookieLegacySettings | raw }}
+                        </div>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -14,6 +14,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import ServerSideRender from '@wordpress/server-side-render';
 import { useBlockProps, InspectorControls, InspectorAdvancedControls } from '@wordpress/block-editor';
 import { ComboboxControl, ExternalLink, Icon, PanelBody, Placeholder, TextControl } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 import shortcode from '@wordpress/shortcode';
 
 /**
@@ -24,7 +25,8 @@ import block from '../block.json';
 /**
  * Internal dependencies.
  */
-import { shortcode_attrs_to_string } from './common/functions';
+import { shortcodeAttrsToString } from './common/functions';
+import TablePressTableIcon from './icon';
 
 /**
  * Load CSS code that only applies inside the block editor.
@@ -32,9 +34,10 @@ import { shortcode_attrs_to_string } from './common/functions';
 import './editor.scss';
 
 // Options for the table selection dropdown, in the form [ { value: <id>, label: <text> }, ... ].
-const ComboboxControl_options = Object.entries( tp.tables ).map( ( [ id, name ] ) => {
+const ComboboxControlOptions = Object.entries( tp.tables ).map( ( [ id, name ] ) => {
 	return {
 		value: id,
+		/* translators: %1$s: Table ID, %2$s: Table name */
 		label: sprintf( __( 'ID %1$s: “%2$s”', 'tablepress' ), id, name ),
 	};
 } );
@@ -42,7 +45,7 @@ const ComboboxControl_options = Object.entries( tp.tables ).map( ( [ id, name ] 
 /**
  * Custom component for the "Manage your tables." link.
  */
-const ManageTablesLink = function() {
+const ManageTablesLink = function () {
 	return (
 		'' !== tp.url &&
 			<ExternalLink href={ tp.url }>
@@ -78,20 +81,22 @@ const TablePressTableEdit = ( { attributes, setAttributes } ) => {
 					/>
 				}
 				<div className="table-overlay">
+					{/* translators: %1$s: Table ID, %2$s: Table name */}
 					{ sprintf( __( 'TablePress table %1$s: “%2$s”', 'tablepress' ), attributes.id, tp.tables[ attributes.id ] ) }
 				</div>
 			</div>
 		);
 	} else {
-		let instructions = 0 < ComboboxControl_options.length ? __( 'Select the TablePress table that you want to embed in the Settings sidebar.', 'tablepress' ) : __( 'There are no TablePress tables on this site yet.', 'tablepress' );
+		let instructions = 0 < ComboboxControlOptions.length ? __( 'Select the TablePress table that you want to embed in the Settings sidebar.', 'tablepress' ) : __( 'There are no TablePress tables on this site yet.', 'tablepress' );
 		if ( attributes.id ) {
 			// Show an error message if a table could not be found (e.g. after a table was deleted). The tp.tables.hasOwnProperty( attributes.id ) check happens above.
+			/* translators: %1$s: Table ID */
 			instructions = sprintf( __( 'There is a problem: The TablePress table with the ID “%1$s” could not be found.', 'tablepress' ), attributes.id ) + ' ' + instructions;
 		}
 		blockMarkup = (
 			<div { ...blockProps }>
 				<Placeholder
-					icon={ <Icon icon="list-view" /> }
+					icon={ <Icon icon={ TablePressTableIcon } /> }
 					label={ __( 'TablePress table', 'tablepress' ) }
 					instructions={ instructions }
 				>
@@ -107,9 +112,11 @@ const TablePressTableEdit = ( { attributes, setAttributes } ) => {
 				<PanelBody
 					opened={ true }
 				>
-					{ 0 < ComboboxControl_options.length
+					{ 0 < ComboboxControlOptions.length
 						?
 						<ComboboxControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
 							label={ __( 'Table:', 'tablepress' ) }
 							help={
 								<>
@@ -119,7 +126,7 @@ const TablePressTableEdit = ( { attributes, setAttributes } ) => {
 								</>
 							}
 							value={ attributes.id }
-							options={ ComboboxControl_options }
+							options={ ComboboxControlOptions }
 							onChange={ ( id ) => {
 								id ??= '';
 								setAttributes( { id: id.replace( /[^0-9a-zA-Z-_]/g, '' ) } );
@@ -137,8 +144,19 @@ const TablePressTableEdit = ( { attributes, setAttributes } ) => {
 			{ attributes.id && tp.tables.hasOwnProperty( attributes.id ) &&
 				<InspectorAdvancedControls>
 					<TextControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 						label={ __( 'Configuration parameters:', 'tablepress' ) }
-						help={ __( 'These additional parameters can be used to modify specific table features.', 'tablepress' ) + ' ' + __( 'See the TablePress Documentation for more information.', 'tablepress' ) }
+						help={
+							createInterpolateElement(
+								__( 'These additional parameters can be used to modify specific table features.', 'tablepress' )
+								+ ' '
+								+ __( 'See the <a>TablePress Documentation</a> for more information.', 'tablepress' ),
+								{
+									a: <a href="https://tablepress.org/faq/configuration-parameter-reference/" />, // eslint-disable-line jsx-a11y/anchor-has-content
+								},
+							)
+						}
 						value={ attributes.parameters }
 						onChange={ ( parameters ) => {
 							parameters = shortcode.replace(
@@ -147,7 +165,7 @@ const TablePressTableEdit = ( { attributes, setAttributes } ) => {
 								( { attrs: shortcodeAttrs } ) => {
 									shortcodeAttrs = { named: { ...shortcodeAttrs.named }, numeric: [ ...shortcodeAttrs.numeric ] }; // Use object destructuring to get a clone of the object.
 									delete shortcodeAttrs.named.id;
-									return ' ' + shortcode_attrs_to_string( shortcodeAttrs ) + ' '; // Add spaces around replacement text to have separation to possibly already existing parameters.
+									return ' ' + shortcodeAttrsToString( shortcodeAttrs ) + ' '; // Add spaces around replacement text to have separation to possibly already existing parameters.
 								}
 							);
 							parameters = parameters.replace( /=“([^”]*)”/g, '="$1"' ); // Replace curly quotation marks around a value with normal ones.
@@ -166,7 +184,7 @@ const TablePressTableEdit = ( { attributes, setAttributes } ) => {
 	return (
 		<>
 			{ blockMarkup }
-			{ sidebarMarkup}
+			{ sidebarMarkup }
 		</>
 	);
 };

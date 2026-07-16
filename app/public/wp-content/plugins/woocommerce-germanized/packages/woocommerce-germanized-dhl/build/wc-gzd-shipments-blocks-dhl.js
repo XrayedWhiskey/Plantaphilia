@@ -1,1 +1,0 @@
-((window.wcShipments=window.wcShipments||{}).blocks=window.wcShipments.blocks||{})["wc-gzd-shipments-blocks-dhl"]={};

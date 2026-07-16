@@ -1,0 +1,41 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            isEditAction ? localized.breadcrumb.edit : localized.breadcrumb.new
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}&action=edit&id=#{data.id}" }}{% if data.serviceGroupId is not empty %}&serviceGroupId={{ data.serviceGroupId }}{% endif %}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- General Settings -->
+        {% include "service/partials/general-settings.html.twig" %}
+        <!-- Service Information -->
+        {% include "service/partials/service-information.html.twig" %}
+        <!-- Service Group Information -->
+        {% include "service/partials/service-group-information.html.twig" %}
+        <!-- Provider Information -->
+        {% include "service/partials/provider-information.html.twig" %}
+        <!-- Cookies -->
+        {% include "service/partials/cookies.html.twig" %}
+        <!-- Locations -->
+        <div class="bc-w-2/3">
+            {% include "service/partials/locations.html.twig" %}
+        </div>
+        <!-- Options -->
+        <div class="bc-w-2/3">
+            {% include "service/partials/options.html.twig" %}
+        </div>
+        <!-- Additional Settings-->
+        {% include "service/partials/additional-settings.html.twig" %}
+        <!-- Additional Repeatable Settings-->
+        {% include "service/partials/additional-repeatable-settings.html.twig" %}
+        <!-- Codes -->
+        {% include "service/partials/codes.html.twig" %}
+    </form>
+{% endif %}

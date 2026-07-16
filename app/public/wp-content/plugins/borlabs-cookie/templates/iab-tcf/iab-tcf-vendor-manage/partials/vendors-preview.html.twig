@@ -1,0 +1,24 @@
+{% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/icons/sparkles.html.twig" as sparkles_icon %}
+
+    {% block header %}
+        {{ card_heading.component({
+            button: "#{sparkles_icon.component({ cssClasses: ['bc-relative', 'bc--top-0.5'], height: 'bc-h-4', width: 'bc-w-4', })}#{localized.button.updatePreview}",
+            buttonDataAttribute: 'data-brlbs-update-vendor-preview',
+            buttonId: 'updatePreview',
+            buttonName: 'updatePreview',
+            title: localized.headline.vendorsPreview,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        <div class="bc-flex bc-items-center bc-py-2.5 bc-px-5 last:bc-rounded-b-md">
+            <div data-brlbs-info>
+                <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info" role="alert">{{ localized.alert.vendorsPreviewListEmpty | raw }}</div>
+            </div>
+            <div data-brlbs-result class="bc-hidden bc-w-full">
+                <ul class="bc-grid bc-px-3 bc-grid-cols-1 bc-gap-0.5 sm:bc-grid-cols-4 bc-list-disc" data-brlbs-iab-tcf-vendor-list></ul>
+            </div>
+        </div>
+    {% endblock %}
+{% endembed %}

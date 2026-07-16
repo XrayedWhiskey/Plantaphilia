@@ -37,6 +37,7 @@ use SiteGround_Optimizer\Install_Service\Install_7_1_5;
 use SiteGround_Optimizer\Install_Service\Install_7_2_2;
 use SiteGround_Optimizer\Install_Service\Install_7_2_7;
 use SiteGround_Optimizer\Install_Service\Install_7_4_0;
+use SiteGround_Optimizer\Install_Service\Install_7_7_2;
 use SiteGround_Optimizer\Install_Service\Install_Cleanup;
 use SiteGround_Optimizer\Supercacher\Supercacher;
 
@@ -91,6 +92,7 @@ class Install_Service {
 			new Install_7_2_2(),
 			new Install_7_2_7(),
 			new Install_7_4_0(),
+			new Install_7_7_2(),
 		);
 	}
 

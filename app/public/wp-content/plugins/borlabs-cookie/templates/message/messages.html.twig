@@ -1,0 +1,9 @@
+{% if noWrapper != true %}
+<div class="bc-my-6">
+{% endif %}
+    {% for message in messages %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-{{ message.type }}" role="alert">{{ message.message | raw }}</div>
+    {% endfor %}
+{% if noWrapper != true %}
+</div>
+{% endif %}

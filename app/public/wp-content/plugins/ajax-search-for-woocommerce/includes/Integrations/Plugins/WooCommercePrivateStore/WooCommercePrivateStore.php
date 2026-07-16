@@ -6,6 +6,7 @@
 namespace DgoraWcas\Integrations\Plugins\WooCommercePrivateStore;
 
 use DgoraWcas\Helpers;
+use DgoraWcas\Integrations\Plugins\AbstractPluginIntegration;
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) {
     exit;
@@ -16,22 +17,22 @@ if ( !defined( 'ABSPATH' ) ) {
  * Plugin URL: https://barn2.co.uk/wordpress-plugins/woocommerce-private-store/
  * Author: Barn2 Plugins
  */
-class WooCommercePrivateStore {
-    public function init() {
-        if ( !defined( '\\Barn2\\Plugin\\WC_Private_Store\\PLUGIN_VERSION' ) ) {
-            return;
-        }
-        if ( version_compare( \Barn2\Plugin\WC_Private_Store\PLUGIN_VERSION, '1.6.3' ) < 0 ) {
-            return;
-        }
+class WooCommercePrivateStore extends AbstractPluginIntegration {
+    protected const LABEL = 'WooCommerce Private Store';
+
+    protected const VERSION_CONST = '\\Barn2\\Plugin\\WC_Private_Store\\PLUGIN_VERSION';
+
+    protected const MIN_VERSION = '1.6.3';
+
+    public function init() : void {
         if ( !dgoraAsfwFs()->is_premium() ) {
             add_filter(
                 'http_request_args',
-                array($this, 'httpRequestArgs'),
+                [$this, 'httpRequestArgs'],
                 10,
                 2
             );
-            add_filter( 'dgwt/wcas/search_results/output', array($this, 'hideSearchResults') );
+            add_filter( 'dgwt/wcas/search_results/output', [$this, 'hideSearchResults'] );
         }
     }
 
@@ -47,9 +48,9 @@ class WooCommercePrivateStore {
         if ( defined( 'DGWT_WCAS_SEARCH_ACTION' ) && defined( 'WCPS_COOKIE_PREFIX' ) && strpos( $url, \WC_AJAX::get_endpoint( \DGWT_WCAS_SEARCH_ACTION ) ) !== false ) {
             $cookie = \filter_input( \INPUT_COOKIE, \WCPS_COOKIE_PREFIX . \COOKIEHASH );
             if ( !empty( $cookie ) ) {
-                $args['cookies'] = array(
+                $args['cookies'] = [
                     \WCPS_COOKIE_PREFIX . \COOKIEHASH => $cookie,
-                );
+                ];
             }
         }
         return $args;
@@ -69,10 +70,10 @@ class WooCommercePrivateStore {
         if ( is_callable( '\\Barn2\\Plugin\\WC_Private_Store\\Util::store_locked' ) ) {
             if ( \Barn2\Plugin\WC_Private_Store\Util::store_locked() ) {
                 $output['total'] = 0;
-                $output['suggestions'] = array(array(
+                $output['suggestions'] = [[
                     'value' => '',
                     'type'  => 'no-results',
-                ));
+                ]];
                 $output['time'] = '0 sec';
             }
         }

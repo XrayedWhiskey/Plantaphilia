@@ -1,0 +1,70 @@
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.styleBlockerConfiguration,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% embed "system/embed/form-row.html.twig" %}
+                {% block label %}
+                    {{ localized.field.handles }}
+                {% endblock %}
+
+                {% block input %}
+                    {% if data.handles.list is empty %}
+                        <span>-</span>
+                    {% else %}
+                        <ul class="bc-list-outside bc-list-disc">
+                            {% for handle in data.handles.list %}
+                                <li>{{ handle.key }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% block label %}
+                    {{ localized.field.phrases }}
+                {% endblock %}
+
+                {% block input %}
+                    {% if data.phrases.list is empty %}
+                        <span>-</span>
+                    {% else %}
+                        <ul class="bc-list-outside bc-list-disc">
+                            {% for phrase in data.phrases.list %}
+                                <li>
+                                    {{ phrase.value }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'javascript',
+                hint: localized.hint.contentBlockerGlobalJavaScript,
+                id: 'contentBlockerGlobalJavaScript',
+                label: localized.field.contentBlockerGlobalJavaScript,
+                value: data.contentBlockerGlobalJavaScript,
+            }) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'html',
+                hint: localized.hint.serviceOptInScriptTag,
+                id: 'serviceOptInScriptTag',
+                label: localized.field.serviceOptInScriptTag,
+                value: data.serviceOptInScriptTag,
+            }) }}
+        {% endblock %}
+    {% endembed %}
+</div>

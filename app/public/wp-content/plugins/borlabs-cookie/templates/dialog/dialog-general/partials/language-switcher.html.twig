@@ -1,0 +1,205 @@
+{% embed "system/embed/card/card-with-info-panel-below.html.twig" with { hideInSimplifiedMode: true } %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            button: localized.button.addLanguageOption,
+            buttonDataAttribute: 'data-brlbs-add-table-row="languageOptions"',
+            buttonId: 'addLanguageOption',
+            buttonName: 'addLanguageOption',
+            title: localized.headline.languageSwitcher,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: 'data-brlbs-table="languageOptions"' } %}
+            {% block heading %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.languageCode | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.language | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.url | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        #
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+
+            {% block body %}
+                {% if data.languageOptions.list is not empty %}
+                    {% for languageOption in data.languageOptions.list %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "languageOptions-#{loop.index0}-code",
+                                            name: "languageOptions[#{loop.index0}][code]",
+                                            spellcheck: false,
+                                            value: languageOption.code,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "languageOptions-#{loop.index0}-name",
+                                            name: "languageOptions[#{loop.index0}][name]",
+                                            spellcheck: false,
+                                            value: languageOption.name,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "languageOptions-#{loop.index0}-url",
+                                            name: "languageOptions[#{loop.index0}][url]",
+                                            spellcheck: false,
+                                            type: 'url',
+                                            value: languageOption.url,
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "borlabsCookieLanguageOptionModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "borlabsCookieLanguageOptionModalDelete-#{loop.index0}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+                {% endif %}
+
+                {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: data.languageOptions.list is not empty } %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: 'colspan="4"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.alert.noLanguageOptionConfigured | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        <script type="text/template" data-brlbs-row-template="languageOptions">
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "languageOptions-##LOOP_INDEX##-code",
+                                name: "languageOptions[##LOOP_INDEX##][code]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "languageOptions-##LOOP_INDEX##-name",
+                                name: "languageOptions[##LOOP_INDEX##][name]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "languageOptions-##LOOP_INDEX##-url",
+                                name: "languageOptions[##LOOP_INDEX##][url]",
+                                spellcheck: false,
+                                type: 'url',
+                                value: '',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                        {% block content %}
+                            <button data-brlbs-modal-target="{{ 'borlabsCookieLanguageOptionModalDelete-##LOOP_INDEX##' }}" type="button">
+                                {{ trash_icon.component({}) }}
+                            </button>
+                            {% embed "system/embed/modal/modal.html.twig" with {
+                                buttonText: localized.global.button.delete,
+                                id: 'borlabsCookieLanguageOptionModalDelete-##LOOP_INDEX##',
+                                title: localized.global.headline.deleteSelection,
+                            } %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </script>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLanguageOptions', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineLanguageSwitcherExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.languageSwitcherExplained | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLanguageOptionsInputFieldsExplained' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineLanguageSwitcherInputFieldsExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.languageSwitcherInputFieldsExplainedCode | raw }}</p>
+                        <p>{{ localized.thingsToKnow.languageSwitcherInputFieldsExplainedName | raw }}</p>
+                        <p>{{ localized.thingsToKnow.languageSwitcherInputFieldsExplainedUrl | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

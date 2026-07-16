@@ -15,6 +15,9 @@ abstract class DUP_Archive_Build_Mode
     const DupArchive = 3;
 }
 
+/**
+ * Maintains the settings for the Duplicator plugin.
+ */
 class DUP_Settings
 {
     const UNINSTALL_PACKAGE_OPTION_KEY  = 'duplicator_uninstall_package';
@@ -23,10 +26,18 @@ class DUP_Settings
     const OPT_SETTINGS                  = 'duplicator_settings';
     const INSTALLER_NAME_MODE_WITH_HASH = 'withhash';
     const INSTALLER_NAME_MODE_SIMPLE    = 'simple';
-    const STORAGE_POSITION_LEGACY       = 'legacy';
     const STORAGE_POSITION_WP_CONTENT   = 'wpcont';
-    const SSDIR_NAME_LEGACY             = 'wp-snapshots';
     const SSDIR_NAME_NEW                = 'backups-dup-lite';
+
+    /**
+     * @deprecated since 1.5.14. Use STORAGE_POSITION_WP_CONTENT instead.
+     */
+    const STORAGE_POSITION_LEGACY = 'legacy';
+
+    /**
+     * @deprecated since 1.5.14. Use SSDIR_NAME_NEW instead.
+     */
+    const SSDIR_NAME_LEGACY = 'wp-snapshots';
 
     protected static $Data      = array();
     protected static $ssDirPath = null;
@@ -35,7 +46,7 @@ class DUP_Settings
     /**
      *  Class used to manage all the settings for the plugin
      */
-    public static function init()
+    public static function init(): void
     {
         static $initialized = null;
         if ($initialized == null) {
@@ -55,7 +66,7 @@ class DUP_Settings
      *
      *  @param string $key  The name of the key to find
      *
-     *  @return string The value stored in the key returns null if key does not exist
+     *  @return ?scalar value stored in the key returns null if key does not exist
      */
     public static function Get($key = '')
     {
@@ -79,7 +90,7 @@ class DUP_Settings
      *  @param string $value        The value to set
      *  remarks:     The Save() method must be called to write the Settings object to the DB
      */
-    public static function Set($key, $value)
+    public static function Set($key, $value): void
     {
         self::init();
         if ($key == 'usage_tracking') {
@@ -100,7 +111,7 @@ class DUP_Settings
      *
      * @return void
      */
-    public static function setUsageTracking($value)
+    public static function setUsageTracking($value): void
     {
         if (DUPLICATOR_USTATS_DISALLOW) { // @phpstan-ignore-line
             // If usagfe tracking is hardcoded disabled, don't change the setting value
@@ -121,6 +132,15 @@ class DUP_Settings
         }
     }
 
+    /**
+     * Set the storage position
+     *
+     * @deprecated since 1.5.14. Storage is now always in wp-content.
+     *
+     * @param string $newPosition The new storage position
+     *
+     * @return bool True if the position was set, false otherwise
+     */
     public static function setStoragePosition($newPosition)
     {
         self::init();
@@ -163,7 +183,12 @@ class DUP_Settings
         return true;
     }
 
-    protected static function resetPositionVars()
+    /**
+     * Reset the position variables
+     *
+     * @return void
+     */
+    protected static function resetPositionVars(): void
     {
         self::$ssDirPath = null;
         self::$ssDirUrl  = null;
@@ -218,6 +243,11 @@ class DUP_Settings
         return false;
     }
 
+    /**
+     * Get all defaults
+     *
+     * @return array The defaults
+     */
     public static function GetAllDefaults()
     {
         $default            = array();
@@ -272,7 +302,7 @@ class DUP_Settings
      *
      * @return void
      */
-    public static function setEmailSummaryFrequency($frequency)
+    public static function setEmailSummaryFrequency($frequency): void
     {
         $oldFrequency = self::Get('email_summary_frequency');
         if (EmailSummaryBootstrap::updateFrequency($oldFrequency, $frequency) === false) {
@@ -283,6 +313,11 @@ class DUP_Settings
         self::Set('email_summary_frequency', $frequency);
     }
 
+    /**
+     * Get the create date format
+     *
+     * @return int The create date format
+     */
     public static function get_create_date_format()
     {
         static $ui_create_frmt = null;
@@ -292,16 +327,35 @@ class DUP_Settings
         return $ui_create_frmt;
     }
 
+    /**
+     * Get legacy storage directory path (wp-snapshots)
+     *
+     * @deprecated since 1.5.14. Use getSsdirPathWpCont() instead.
+     *
+     * @return string The legacy storage path
+     */
     public static function getSsdirPathLegacy()
     {
         return SnapIO::safePathTrailingslashit(duplicator_get_abs_path()) . self::SSDIR_NAME_LEGACY;
     }
 
+    /**
+     * Get wp-content storage directory path (backups-dup-lite)
+     *
+     * @return string The wp-content storage path
+     */
     public static function getSsdirPathWpCont()
     {
         return SnapIO::safePathTrailingslashit(WP_CONTENT_DIR) . self::SSDIR_NAME_NEW;
     }
 
+    /**
+     * Get the storage directory path
+     *
+     * @return string The storage directory path
+     *
+     * @todo: This function should be removed in future versions as the storage position is now always in wp-content
+     */
     public static function getSsdirPath()
     {
         if (is_null(self::$ssDirPath)) {
@@ -314,6 +368,13 @@ class DUP_Settings
         return self::$ssDirPath;
     }
 
+    /**
+     * Get the storage directory URL
+     *
+     * @return string The storage directory URL
+     *
+     * @todo: This function should be removed in future versions as the storage position is now always in wp-content
+     */
     public static function getSsdirUrl()
     {
         if (is_null(self::$ssDirUrl)) {
@@ -326,13 +387,43 @@ class DUP_Settings
         return self::$ssDirUrl;
     }
 
+    /**
+     * Get the temporary directory path
+     *
+     * @return string The temporary directory path
+     */
     public static function getSsdirTmpPath()
     {
         return self::getSsdirPath() . '/tmp';
     }
 
+    /**
+     * Get the installer directory path
+     *
+     * @return string The installer directory path
+     */
     public static function getSsdirInstallerPath()
     {
         return self::getSsdirPath() . '/installer';
+    }
+
+    /**
+     * Get the logs directory path
+     *
+     * @return string The logs directory path
+     */
+    public static function getSsdirLogsPath()
+    {
+        return self::getSsdirPath() . '/' . DUPLICATOR_LOGS_DIR_NAME;
+    }
+
+    /**
+     * Get the logs directory URL
+     *
+     * @return string The logs directory URL
+     */
+    public static function getSsdirLogsUrl()
+    {
+        return self::getSsdirUrl() . '/' . DUPLICATOR_LOGS_DIR_NAME;
     }
 }

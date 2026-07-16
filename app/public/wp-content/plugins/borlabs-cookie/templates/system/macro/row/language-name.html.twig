@@ -1,0 +1,20 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/form-row.html.twig" %}
+        {% block label %}
+            {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+            <div class="bc-flex bc-items-center">
+                <span>{{ localized.global.field.language | raw }}</span>
+                {# Displays the hint icon. #}
+                <div class="bc-inline-block bc-pl-1">
+                    {{ hint.component({
+                        hint: localized.global.hint.language,
+                    }) }}
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block input %}
+            {{ languageName(config.language) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

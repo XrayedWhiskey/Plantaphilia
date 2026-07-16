@@ -1,0 +1,46 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.debugSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {{ row_switch_button.component({
+            id: 'enableDebugConsole',
+            hint: localized.hint.enableDebugConsole,
+            label: localized.field.enableDebugConsole,
+            value: data.enableDebugConsole,
+        }) }}
+
+        {{ row_switch_button.component({
+            id: 'enableDebugLogging',
+            hideInSimplifiedMode: true,
+            hint: localized.hint.enableDebugLogging,
+            label: localized.field.enableDebugLogging,
+            value: data.enableDebugLogging,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionDebugConsole', expanded: true} %}
+            {% block title %}
+                {{ localized.thingsToKnow.headlineDebugConsole | raw }}
+            {% endblock %}
+            {% block content %}
+                <p>{{ localized.thingsToKnow.debugConsoleA | raw }}</p>
+                <p>{{ localized.thingsToKnow.debugConsoleB | raw }}</p>
+                <p class="bc-text-center">{{ localized.thingsToKnow.debugConsoleC | format(localized.url.debugConsole) | raw }}</p>
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

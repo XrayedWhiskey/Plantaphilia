@@ -1,7 +1,7 @@
-import * as tinymce from 'tinymce'
-import { Editor } from 'tinymce'
-import { ContentShortcodeAtts, SourceShortcodeAtts } from './types/Shortcodes'
-import { LocalisedEditor } from './types/WordPressEditor'
+import tinymce from 'tinymce'
+import type { Editor } from 'tinymce'
+import type { ContentShortcodeAtts, SourceShortcodeAtts } from './types/Shortcodes'
+import type { LocalisedEditor } from './types/WordPressEditor'
 
 const convertToValues = (array: Record<string, string>) =>
 	Object.keys(array).map(key => ({
@@ -19,7 +19,7 @@ export const insertContentMenu = (editor: Editor, activeEditor: LocalisedEditor)
 					type: 'listbox',
 					name: 'id',
 					label: activeEditor.getLang('code_snippets.snippet_label'),
-					values: convertToValues(activeEditor.getLang('code_snippets.all_snippets') as Record<string, string>)
+					values: convertToValues(<Record<string, string>> activeEditor.getLang('code_snippets.all_snippets'))
 				},
 				{
 					type: 'checkbox',
@@ -29,7 +29,9 @@ export const insertContentMenu = (editor: Editor, activeEditor: LocalisedEditor)
 			],
 			onsubmit: (event: { data: SourceShortcodeAtts }) => {
 				const id = parseInt(event.data.id, 10)
-				if (!id) return
+				if (!id) {
+					return
+				}
 
 				let atts = ''
 
@@ -53,7 +55,7 @@ export const insertSourceMenu = (editor: Editor, ed: LocalisedEditor) => ({
 					type: 'listbox',
 					name: 'id',
 					label: ed.getLang('code_snippets.snippet_label'),
-					values: convertToValues(ed.getLang('code_snippets.content_snippets') as Record<string, string>)
+					values: convertToValues(<Record<string, string>> ed.getLang('code_snippets.content_snippets'))
 				},
 				{
 					type: 'checkbox',
@@ -73,7 +75,9 @@ export const insertSourceMenu = (editor: Editor, ed: LocalisedEditor) => ({
 			],
 			onsubmit: (event: { data: ContentShortcodeAtts }) => {
 				const id = parseInt(event.data.id, 10)
-				if (!id) return
+				if (!id) {
+					return
+				}
 
 				let atts = ''
 
@@ -89,12 +93,40 @@ export const insertSourceMenu = (editor: Editor, ed: LocalisedEditor) => ({
 	}
 })
 
+// Custom scissors icon as base64-encoded SVG (same as used in WP admin menu)
+// Base64-encoded version of menu-icon.svg
+const scissorsIcon =
+	'data:image/svg+xml;base64,' +
+	'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZX' + 
+  'dCb3g9IjAgMCAyNiAyNSI+PHBhdGggZmlsbD0iIzUxNTc1ZiIgZD0iTTYuMTI3IDExLjk2Nmgz' + 
+  'LjQxNGEuOTEuOTEgMCAwIDEgLjg0NC41NjMuOTMuOTMgMCAwIDEtLjE4NSAxLjAwNGwuMDA1Lj' + 
+  'AxLTIuMzM4IDIuMzU1YTQuMTkgNC4xOSAwIDAgMCAwIDUuODg1QTQuMTEgNC4xMSAwIDAgMCAx' + 
+  'MC43ODQgMjNhNC4xMSA0LjExIDAgMCAwIDIuOTE3LTEuMjE3IDQuMiA0LjIgMCAwIDAgMS4wND' + 
+  'gtMS44MDIgNC4yIDQuMiAwIDAgMC0uOTE1LTMuOTQgNC4xIDQuMSAwIDAgMC0xLjczMi0xLjE0' + 
+  'NWwuNjE0LS42MTloNy44NDZjMS44NyAwIDMuMzkxLTEuNjA0IDMuNDM2LTMuNjA2IDAtLjAzMy' + 
+  '4wMDQtLjA2IDAtLjA5MmExLjAyIDEuMDIgMCAwIDAtLjMyNi0uNjYgMSAxIDAgMCAwLS42ODEt' + 
+  'LjI2NmgtNS42OTJsNC4xMS00LjE0NWExLjAyNSAxLjAyNSAwIDAgMCAuMDY4LTEuMzc0Yy0uMD' + 
+  'IyLS4wMjctLjA0NC0uMDQ2LS4wNjgtLjA2OC0xLjQzLTEuMzc4LTMuNjM0LTEuNDMtNC45NTMt' + 
+  'LjA5OGwtNS42MzUgNS42ODVIOS44MmMuMzk4LS44MS41MjQtMS43My4zNTgtMi42MTlhNC4xNy' + 
+  'A0LjE3IDAgMCAwLTEuMjc5LTIuMzA4IDQuMDk2IDQuMDk2IDAgMCAwLTQuOTUtLjQ1NyA0LjE1' + 
+  'IDQuMTUgMCAwIDAtMS42NzIgMi4wMzYgNC4yIDQuMiAwIDAgMC0uMTE5IDIuNjQyYy4yNDYuOD' + 
+  'cuNzY3IDEuNjM1IDEuNDgzIDIuMThzMS41OS44NCAyLjQ4Ni44MzlNNy45NiA3LjgwNWMwIC40' + 
+  'OS0uMTkzLjk2LS41MzYgMS4zMDhhMS44MjUgMS44MjUgMCAwIDEtMi41OTIuMDAxQTEuODU3ID' + 
+  'EuODU3IDAgMCAxIDQuODMgNi41YTEuODI1IDEuODI1IDAgMCAxIDIuNTkzIDBjLjM0My4zNDYu' + 
+  'NTM3LjgxNi41MzcgMS4zMDZtNC4xMTkgOS43MzNhMS44NiAxLjg2IDAgMCAxLS41OTUgMy4wMT' + 
+  'QgMS44MSAxLjgxIDAgMCAxLTEuOTk5LS40MDIgMS44NSAxLjg1IDAgMCAxLS41MzYtMS4zMDYg' + 
+  'MS44NiAxLjg2IDAgMCAxIDEuMTMtMS43MSAxLjgxIDEuODEgMCAwIDEgMiAuNDA0Ii8+PC9zdmc+'
+
 tinymce.PluginManager.add('code_snippets', editor => {
-	const activeEditor = tinymce.activeEditor as LocalisedEditor
+	const activeEditor = <LocalisedEditor> tinymce.activeEditor
 
 	editor.addButton('code_snippets', {
-		icon: 'code',
-		menu: [insertContentMenu(editor, activeEditor), insertSourceMenu(editor, activeEditor)],
-		type: 'menubutton'
+		type: 'menubutton',
+		title: 'Code Snippets',
+		image: scissorsIcon,
+		menu: [
+			insertContentMenu(editor, activeEditor), 
+			insertSourceMenu(editor, activeEditor)
+		],
 	})
 })

@@ -1,7 +1,8 @@
 <?php
 
+use Duplicator\Core\Controllers\ControllersManager;
 use Duplicator\Core\Views\TplMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined('ABSPATH') || defined('DUPXABSPATH') || exit;
 ?>
@@ -71,7 +72,7 @@ defined('ABSPATH') || defined('DUPXABSPATH') || exit;
     div.dup-install-prefill-tab-pnl {min-height:180px !important; }
 </style>
 <?php
-$action_url       = admin_url("admin.php?page=duplicator&tab=new2&retry={$retry_state}");
+$action_url       = ControllersManager::getMenuLink(ControllersManager::PACKAGES_SUBMENU_SLUG, 'new2', null, ['retry' => $retry_state]);
 $action_nonce_url = wp_nonce_url($action_url, 'new2-package');
 $storage_position = DUP_Settings::Get('storage_position');
 ?>
@@ -106,7 +107,7 @@ STORAGE -->
     <div class="dup-box-panel" id="dup-pack-storage-panel" style="<?php echo esc_html($ui_css_storage); ?>">
         <div style="padding:0 5px 3px 0">
             <span class="dup-guide-txt-color">
-                <?php esc_html_e("This is the storage location on this server where the archive and installer files will be saved.", 'duplicator'); ?>
+                <?php esc_html_e("This is the storage location on this server where the Backup and installer files will be saved.", 'duplicator'); ?>
             </span>
             <div style="float:right">
                 <a href="admin.php?page=duplicator-settings&tab=storage"><?php  esc_html_e("[Storage Options]", 'duplicator'); ?> </a>
@@ -158,12 +159,12 @@ STORAGE -->
                                     '<i class="fas fa-network-wired fa-fw"></i>&nbsp;' . 'FTP/SFTP'
                                 );
                         ?>
-                                <a href="<?php echo esc_url(Upsell::getCampaignUrl('package-build-setup', 'Additional Storages')); ?>" target="_blank">
+                                <a href="<?php echo esc_url(LinkManager::getCampaignUrl('package-build-setup', 'Additional Storages')); ?>" target="_blank">
                                     <?php esc_html_e('Duplicator Pro', 'duplicator');?>
                                 </a>
                                 <i class="fas fa-question-circle"
                                     data-tooltip-title="<?php esc_attr_e("Additional Storage:", 'duplicator'); ?>"
-                                    data-tooltip="<?php esc_attr_e('Duplicator Pro allows you to create a package and store it at a custom location on this server or to a remote '
+                                    data-tooltip="<?php esc_attr_e('Duplicator Pro allows you to create a Backup and store it at a custom location on this server or to a remote '
                                             . 'cloud location such as Google Drive, Amazon, Dropbox and many more.', 'duplicator'); ?>">
                                  </i>
                             </span>
@@ -183,7 +184,7 @@ ARCHIVE -->
         <div class="dup-title-txt">
         <i class="far fa-file-archive"></i>
             <?php
-                _e('Archive', 'duplicator');
+                _e('Backup', 'duplicator');
                 echo "&nbsp;<sup class='archive-ext'>{$archive_build_mode}</sup>";
             ?> &nbsp; &nbsp;
         </div>
@@ -196,7 +197,7 @@ ARCHIVE -->
                 <i class="fa fa-table fa-fw"></i>
                 <sup><i class="fa fa-filter fa-sm"></i></sup>
             </span>
-            <span id="dup-archive-db-only" title="<?php esc_attr_e('Archive Only the Database', 'duplicator') ?>">
+            <span id="dup-archive-db-only" title="<?php esc_attr_e('Backup Only the Database', 'duplicator') ?>">
                 <i class="fas fa-database fa-fw"></i> <?php esc_html_e('Database Only', 'duplicator') ?>
                 <sup>&nbsp;</sup>
             </span>
@@ -211,7 +212,7 @@ ARCHIVE -->
             <ul>
                 <li><?php esc_html_e('Files', 'duplicator') ?></li>
                 <li><?php esc_html_e('Database', 'duplicator') ?></li>
-                <li><?php esc_html_e('File Archive Encryption', 'duplicator') ?></li>
+                <li><?php esc_html_e('File Backup Encryption', 'duplicator') ?></li>
             </ul>
 
             <!-- TAB1:PACKAGE -->
@@ -244,7 +245,7 @@ ARCHIVE -->
                     </div>
                     <div class="dup-tbl-scroll">
                     <?php
-                        $tables    = $wpdb->get_results("SHOW FULL TABLES FROM `" . DB_NAME . "` WHERE Table_Type = 'BASE TABLE' ", ARRAY_N);
+                        $tables    = $wpdb->get_results("SHOW FULL TABLES FROM `" . esc_sql(DB_NAME) . "` WHERE Table_Type = 'BASE TABLE' ", ARRAY_N);
                         $num_rows  = count($tables);
                         $next_row  = round($num_rows / 4, 0);
                         $counter   = 0;
@@ -305,8 +306,8 @@ ARCHIVE -->
                     <?php esc_html_e("Compatibility Mode", 'duplicator') ?>:&nbsp;
                     <i class="fas fa-question-circle fa-sm"
                        data-tooltip-title="<?php esc_attr_e("Compatibility Mode:", 'duplicator'); ?>"
-                       data-tooltip="<?php esc_attr_e('This is an advanced database backwards compatibility feature that should ONLY be used if having problems installing packages.'
-                               . ' If the database server version is lower than the version where the package was built then these options may help generate a script that is more compliant'
+                       data-tooltip="<?php esc_attr_e('This is an advanced database backwards compatibility feature that should ONLY be used if having problems installing Backups.'
+                               . ' If the database server version is lower than the version where the Backup was built then these options may help generate a script that is more compliant'
                                . ' with the older database server. It is recommended to try each option separately starting with mysql40.', 'duplicator'); ?>">
                     </i>&nbsp;
                     <small style="font-style:italic">
@@ -350,9 +351,9 @@ ARCHIVE -->
             <!-- TAB3: SECURITY -->
             <div>
                 <p>
-                    <?php _e('Protect and secure the archive file with industry-standard AES-256 encryption.', 'duplicator'); ?>
+                    <?php _e('Protect and secure the Backup file with industry-standard AES-256 encryption.', 'duplicator'); ?>
                 </p>
-                <a href="<?php echo esc_url(Upsell::getCampaignUrl('package_build-securit_tab', 'Upgrade To Pro')); ?>"
+                <a href="<?php echo esc_url(LinkManager::getCampaignUrl('package_build-securit_tab', 'Upgrade To Pro')); ?>"
                    class="dup-btn dup-btn-md dup-btn-green"
                    target="_blank">
                     <?php _e('Upgrade To Pro', 'duplicator'); ?>
@@ -384,7 +385,7 @@ INSTALLER -->
 
     <div class="dup-installer-panel-optional">
         <span class="dup-guide-txt-color">
-              <?php esc_html_e("The installer file is used to redeploy/install the archive contents.", 'duplicator'); ?>
+              <?php esc_html_e("The installer file is used to redeploy/install the Backup contents.", 'duplicator'); ?>
         </span><br/>
         <b><?php esc_html_e('All values in this section are', 'duplicator'); ?> <u><?php esc_html_e('optional', 'duplicator'); ?></u></b>
         <i class="fas fa-question-circle fa-sm"
@@ -402,7 +403,7 @@ INSTALLER -->
         <tr>
             <td style="width:130px;"><b><?php esc_html_e("Branding", 'duplicator') ?></b></td>
             <td>
-                <a href="<?php echo esc_url(Upsell::getCampaignUrl('package-build-setup', 'Installer Branding')); ?>" target="_blank">
+                <a href="<?php echo esc_url(LinkManager::getCampaignUrl('package-build-setup', 'Installer Branding')); ?>" target="_blank">
                     <span class="dup-pro-text"><?php esc_html_e('Available with Duplicator Pro!', 'duplicator'); ?></span></a>
                 <i class="fas fa-question-circle fa-sm"
                        data-tooltip-title="<?php esc_attr_e("Branding", 'duplicator'); ?>:"
@@ -543,7 +544,7 @@ INSTALLER -->
                     <img src="<?php echo esc_url(DUPLICATOR_PLUGIN_URL . "assets/img/cpanel-48.png"); ?>" style="width:16px; height:12px" />
                     <?php esc_html_e("Create the database and database user at install time without leaving the installer!", 'duplicator'); ?><br/>
                     <?php esc_html_e("This feature is only availble in ", 'duplicator'); ?>
-                    <a href="<?php echo esc_url(Upsell::getCampaignUrl('package-build-setup', 'cPanel')); ?>" target="_blank">
+                    <a href="<?php echo esc_url(LinkManager::getCampaignUrl('package-build-setup', 'cPanel')); ?>" target="_blank">
                         <?php esc_html_e('Duplicator Pro!', 'duplicator');?>
                     </a><br/>
                     <small><i><?php esc_html_e("This feature works only with hosts that support cPanel.", 'duplicator'); ?></i></small>
@@ -568,8 +569,8 @@ INSTALLER -->
 THICK-BOX DIALOGS: -->
 <?php
     $confirm1             = new DUP_UI_Dialog();
-    $confirm1->title      = __('Reset Package Settings?', 'duplicator');
-    $confirm1->message    = __('This will clear and reset all of the current package settings.  Would you like to continue?', 'duplicator');
+    $confirm1->title      = __('Reset Backup Settings?', 'duplicator');
+    $confirm1->message    = __('This will clear and reset all of the current Backup settings.  Would you like to continue?', 'duplicator');
     $confirm1->jscallback = 'Duplicator.Pack.ResetSettings()';
     $confirm1->initConfirm();
 

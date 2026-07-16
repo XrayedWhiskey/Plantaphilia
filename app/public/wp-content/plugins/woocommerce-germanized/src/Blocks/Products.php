@@ -39,8 +39,15 @@ final class Products {
 	private function register_single_product_hook_compatibility() {
 		add_filter(
 			'woocommerce_blocks_hook_compatibility_additional_data',
-			function( $additional_hook_data ) {
+			function ( $additional_hook_data ) {
 				foreach ( wc_gzd_get_single_product_shopmarks() as $price_label ) {
+					/**
+					 * Exclude price labels which are attached to the product safety tab
+					 */
+					if ( in_array( $price_label->get_filter(), array( 'woocommerce_gzd_single_product_safety_information', 'woocommerce_product_additional_information' ), true ) ) {
+						continue;
+					}
+
 					$additional_hook_data[] = array(
 						'hook'     => $price_label->get_filter(),
 						'function' => $price_label->get_callback(),
@@ -56,7 +63,7 @@ final class Products {
 	private function register_integrations() {
 		add_action(
 			'woocommerce_blocks_all-products_block_registration',
-			function( $integration_registry ) {
+			function ( $integration_registry ) {
 				$integration_registry->register( Package::container()->get( ProductElements::class ) );
 			}
 		);
@@ -205,62 +212,72 @@ final class Products {
 			array(
 				'endpoint'        => ProductSchema::IDENTIFIER,
 				'namespace'       => 'woocommerce-germanized',
-				'data_callback'   => function( $product ) {
+				'data_callback'   => function ( $product ) {
 					$gzd_product    = wc_gzd_get_product( $product );
 					$is_pro         = Package::is_pro();
 					$html_formatter = \Automattic\WooCommerce\Blocks\Package::container()->get( \Automattic\WooCommerce\StoreApi\StoreApi::class )->container()->get( ExtendSchema::class )->get_formatter( 'html' );
 
 					return array(
-						'unit_price_html'             => $html_formatter->format( $gzd_product->get_unit_price_html() ),
-						'unit_prices'                 => (object) $this->get_unit_prices( $gzd_product ),
-						'unit'                        => $gzd_product->get_unit(),
-						'unit_base'                   => $gzd_product->get_unit_base(),
-						'unit_product'                => $gzd_product->get_unit_product(),
-						'unit_product_html'           => $html_formatter->format( $gzd_product->get_unit_product_html() ),
-						'delivery_time_html'          => $html_formatter->format( $gzd_product->get_delivery_time_html() ),
-						'tax_info_html'               => $html_formatter->format( $gzd_product->get_tax_info() ),
-						'shipping_costs_info_html'    => $html_formatter->format( $gzd_product->get_shipping_costs_html() ),
-						'defect_description_html'     => $html_formatter->format( $gzd_product->get_formatted_defect_description() ),
-						'nutri_score'                 => $is_pro ? $gzd_product->get_nutri_score() : '',
-						'nutri_score_html'            => $is_pro ? $html_formatter->format( $gzd_product->get_formatted_nutri_score() ) : '',
-						'deposit_html'                => $is_pro ? $html_formatter->format( $gzd_product->get_deposit_amount_html() ) : '',
-						'deposit_prices'              => (object) $this->get_deposit_prices( $gzd_product ),
-						'deposit_packaging_type_html' => $is_pro ? $html_formatter->format( $gzd_product->get_deposit_packaging_type_title() ) : '',
+						'unit_price_html'                 => $html_formatter->format( $gzd_product->get_unit_price_html() ),
+						'unit_prices'                     => (object) $this->get_unit_prices( $gzd_product ),
+						'unit'                            => $gzd_product->get_unit(),
+						'unit_base'                       => $gzd_product->get_unit_base(),
+						'unit_product'                    => $gzd_product->get_unit_product(),
+						'unit_product_html'               => $html_formatter->format( $gzd_product->get_unit_product_html() ),
+						'delivery_time_html'              => $html_formatter->format( $gzd_product->get_delivery_time_html() ),
+						'manufacturer_html'               => $html_formatter->format( $gzd_product->get_manufacturer_html() ),
+						'product_safety_attachments_html' => $html_formatter->format( $gzd_product->get_product_safety_attachments_html() ),
+						'safety_instructions_html'        => $html_formatter->format( $gzd_product->get_formatted_safety_instructions() ),
+						'tax_info_html'                   => $html_formatter->format( $gzd_product->get_tax_info() ),
+						'shipping_costs_info_html'        => $html_formatter->format( $gzd_product->get_shipping_costs_html() ),
+						'defect_description_html'         => $html_formatter->format( $gzd_product->get_formatted_defect_description() ),
+						'nutri_score'                     => $is_pro ? $gzd_product->get_nutri_score() : '',
+						'nutri_score_html'                => $is_pro ? $html_formatter->format( $gzd_product->get_formatted_nutri_score() ) : '',
+						'deposit_html'                    => $is_pro ? $html_formatter->format( $gzd_product->get_deposit_amount_html() ) : '',
+						'deposit_prices'                  => (object) $this->get_deposit_prices( $gzd_product ),
+						'deposit_packaging_type_html'     => $is_pro ? $html_formatter->format( $gzd_product->get_deposit_packaging_type_title() ) : '',
+						'power_supply_html'               => $html_formatter->format( $gzd_product->get_power_supply_html() ),
 					);
 				},
 				'schema_callback' => function () {
 					return array(
-						'unit'                        => array(
+						'unit'                            => array(
 							'description' => __( 'The unit for the unit price.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'unit_base'                   => array(
+						'unit_base'                       => array(
 							'description' => __( 'The unit base.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'unit_product'                => array(
+						'unit_product'                    => array(
 							'description' => __( 'The unit product.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'unit_product_html'           => array(
+						'unit_product_html'               => array(
 							'description' => __( 'Unit product string formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'unit_price_html'             => array(
+						'unit_price_html'                 => array(
 							'description' => __( 'Unit price string formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'unit_prices'                 => array(
+						'power_supply_html'               => array(
+							'description' => __( 'Power supply string formatted as HTML.', 'woocommerce-germanized' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit' ),
+							'readonly'    => true,
+						),
+						'unit_prices'                     => array(
 							'description' => __( 'Unit price data provided using the smallest unit of the currency.', 'woocommerce-germanized' ),
 							'type'        => 'object',
 							'context'     => array( 'view', 'edit' ),
@@ -306,55 +323,73 @@ final class Products {
 								),
 							),
 						),
-						'delivery_time_html'          => array(
+						'delivery_time_html'              => array(
 							'description' => __( 'Delivery time formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'tax_info_html'               => array(
+						'tax_info_html'                   => array(
 							'description' => __( 'Tax notice formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'shipping_costs_info_html'    => array(
+						'shipping_costs_info_html'        => array(
 							'description' => __( 'Shipping costs notice formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'defect_description_html'     => array(
+						'defect_description_html'         => array(
 							'description' => __( 'Defect description formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'deposit_html'                => array(
+						'deposit_html'                    => array(
 							'description' => __( 'Deposit string formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'deposit_packaging_type_html' => array(
+						'deposit_packaging_type_html'     => array(
 							'description' => __( 'Deposit packaging type string formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'nutri_score_html'            => array(
+						'nutri_score_html'                => array(
 							'description' => __( 'Nutri score string formatted as HTML.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'nutri_score'                 => array(
+						'manufacturer_html'               => array(
+							'description' => __( 'Manufacturer information formatted as HTML.', 'woocommerce-germanized' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit' ),
+							'readonly'    => true,
+						),
+						'product_safety_attachments_html' => array(
+							'description' => __( 'Product safety attachments list formatted as HTML.', 'woocommerce-germanized' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit' ),
+							'readonly'    => true,
+						),
+						'safety_instructions_html'        => array(
+							'description' => __( 'Safety instructions formatted as HTML.', 'woocommerce-germanized' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit' ),
+							'readonly'    => true,
+						),
+						'nutri_score'                     => array(
 							'description' => __( 'Nutri score.', 'woocommerce-germanized' ),
 							'type'        => 'string',
 							'context'     => array( 'view', 'edit' ),
 							'readonly'    => true,
 						),
-						'deposit_prices'              => array(
+						'deposit_prices'                  => array(
 							'description' => __( 'Deposit price data provided using the smallest unit of the currency.', 'woocommerce-germanized' ),
 							'type'        => 'object',
 							'context'     => array( 'view', 'edit' ),

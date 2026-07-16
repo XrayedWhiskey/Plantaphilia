@@ -506,7 +506,7 @@ class Images_Optimizer extends Abstract_Images_Optimizer {
 	 * @return bool|string       Status code of the compression.
 	 */
 	public function custom_attachment_compression_level( $attachment_id ) {
-		if ( ! isset( $_REQUEST['compression_level'] ) ) {
+		if ( ! isset( $_REQUEST['compression_level'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $attachment_id;
 		}
 
@@ -525,9 +525,9 @@ class Images_Optimizer extends Abstract_Images_Optimizer {
 		}
 
 		// Compress the image only if the compression level is different than none.
-		if ( 0 !== intval( $_REQUEST['compression_level'] ) ) {
+		if ( 0 !== intval( $_REQUEST['compression_level'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			// Optimize the image with the new compression level.
-			return $this->execute_optimization_command( $filepath, intval( $_REQUEST['compression_level'] ) );
+			return $this->execute_optimization_command( $filepath, intval( $_REQUEST['compression_level'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 	}
 

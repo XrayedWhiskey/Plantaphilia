@@ -1,0 +1,8 @@
+{% macro component(config) %}
+    {# Sets a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    <input class="color-field" id="{{ config.id }}" name="{{ name }}" type="text" value="{{ config.value }}">
+{% endmacro %}

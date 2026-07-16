@@ -1,0 +1,61 @@
+<div id="{{ id }}"
+     class="bc-fixed bc-left-0 bc-top-0 bc-w-screen bc-h-screen bc-z-[100] bc-opacity-100 aria-hidden:bc-opacity-0 aria-hidden:bc-w-0 aria-hidden:bc-invisible aria-hidden:bc-h-0 bc-group bc-backdrop-blur-sm"
+     aria-labelledby="modal-title" role="dialog" aria-modal="true" aria-hidden="{{ showModal is not empty ? 'false' : 'true' }}">
+    <div class="bc-fixed bc-inset-0 bc-bg-gray-600 bc-bg-opacity-80 bc-transition-opacity"></div>
+    <div class="bc-fixed bc-inset-0 bc-z-10 bc-overflow-y-auto">
+        <div
+            class="bc-flex bc-min-h-full bc-items-end bc-justify-center bc-p-4 bc-text-center sm:bc-items-center sm:bc-p-0 bc-ease-out bc-duration-300
+                group-aria-hidden:bc-opacity-0 group-aria-hidden:bc-translate-y-4 group-aria-hidden:sm:bc-translate-y-0 group-aria-hidden:sm:bc-scale-95
+                group-aria-visible:bc-opacity-100 group-aria-visible:bc-translate-y-0 group-aria-visible:sm:bc-scale-100">
+            <div class="bc-relative bc-transform bc-overflow-hidden bc-rounded-lg bc-bg-white bc-px-4 bc-pt-5 bc-pb-4 bc-text-left bc-shadow-xl bc-transition-all sm:bc-my-8 sm:bc-w-full {{ maxWidth ? maxWidth : 'sm:bc-max-w-lg' }} sm:bc-p-6">
+                <div class="sm:bc-flex bc-items-center">
+                    {% block icon %}
+                        <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-red-100 sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                            {% import "system/macro/icons/exclamation-triangle.html.twig" as exclamation_triangle_icon %}
+                            {{ exclamation_triangle_icon.component({
+                                cssClasses: ['bc-text-red-600'],
+                                height: "bc-h-6",
+                                width: "bc-w-6",
+                            }) }}
+                        </div>
+                    {% endblock %}
+                    <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900 bc-text-center bc-mt-3 sm:bc-mt-0 sm:bc-ml-4 sm:bc-text-left" id="modal-title">{{ title | raw }}</h3>
+                </div>
+                {% if block("description") is not empty %}
+                    <div class="bc-mt-2 bc-text-sm bc-text-gray-700">
+                        {% block description %}{% endblock %}
+                    </div>
+                {% endif %}
+                <div class="bc-mt-4 sm:bc-mt-3 sm:bc-flex sm:bc-flex-row-reverse">
+                    {% if action is not empty %}
+                    <form method="post" novalidate action="{{ action | raw }}">
+                        {% endif %}
+                        {% block formData %}{% endblock %}
+                        {% if action is not empty or js_callback is not empty or buttonText is not empty %}
+                            {% block actionButton %}
+                                <button
+                                    data-brlbs-modal-confirm-button type="{{ action is not empty ? 'submit' : 'button' }}" {% if js_callback is not empty %}
+                                    onClick="{{ js_callback | raw }}" {% endif %}
+                                    class="bc-inline-flex bc-w-full bc-justify-center bc-rounded-md bc-border bc-border-transparent bc-bg-red-600 bc-px-4 bc-py-2 bc-text-base bc-font-medium bc-text-white bc-shadow-sm hover:bc-bg-red-700 focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-red-500 focus:bc-ring-offset-2 sm:bc-ml-3 sm:bc-w-auto sm:bc-text-sm"
+                                >{{ buttonText | raw }}</button>
+                            {% endblock %}
+                        {% endif %}
+                        {% if action is not empty %}
+                    </form>
+                    {% endif %}
+
+                    {% block closeButton %}
+                        {% import "system/macro/form-component/button.html.twig" as button %}
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            button: closeButtonText is not empty ? closeButtonText : localized.global.button.close,
+                            dataAttribute: "data-brlbs-modal-target=\"#{id}\"",
+                            focusColor: 'focus:bc-ring-slate-950',
+                        }, localized) }}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

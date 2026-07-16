@@ -1,0 +1,14 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+
+{% if data.isImportDataAvailable %}
+    <!-- Import Legacy Data -->
+    {{ form_confirmation.component({
+        action: "import",
+        button: localized.button.import,
+        headline: localized.headline.importLegacyData,
+        hint: localized.hint.importLegacyData,
+        nonce: wpNonceField("#{controllerId}-import"),
+        route: "?page=#{controllerId}",
+        title: localized.field.confirmImport,
+    }, localized) }}
+{% endif %}

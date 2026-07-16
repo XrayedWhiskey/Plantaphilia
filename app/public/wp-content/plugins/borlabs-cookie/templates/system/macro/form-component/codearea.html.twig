@@ -1,0 +1,26 @@
+{% macro component(config) %}
+    {# Merge overwrite default config with given config. #}
+    {% set config = { cssClasses: [], editorLanguage:'data-brlbs-editor-javascript' } | merge(config) %}
+    {% set cssClasses = [] | merge(config.cssClasses) %}
+    {# Sets a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    {% set editorLanguage = 'data-brlbs-editor-javascript' %}
+    {% if config.editorLanguage == 'html' %}
+        {% set editorLanguage = 'data-brlbs-editor-html' %}
+    {% elseif config.editorLanguage == 'css' %}
+        {% set editorLanguage = 'data-brlbs-editor-css' %}
+    {% endif %}
+
+    <div class="code-editor {{ cssClasses | join(' ') }}">
+        <textarea
+            id="{{ config.id }}"
+            name="{{ name }}"
+            {% if config.dataAttribute is not empty %} {{ config.dataAttribute | raw }}{% endif %}
+            rows="5"
+            {{ editorLanguage }}
+        >{{ config.value }}</textarea>
+    </div>
+{% endmacro %}

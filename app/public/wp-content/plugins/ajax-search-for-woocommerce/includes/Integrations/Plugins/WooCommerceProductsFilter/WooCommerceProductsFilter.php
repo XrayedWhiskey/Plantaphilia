@@ -3,6 +3,7 @@
 namespace DgoraWcas\Integrations\Plugins\WooCommerceProductsFilter;
 
 use DgoraWcas\Helpers;
+use DgoraWcas\Integrations\Plugins\AbstractPluginIntegration;
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,27 +16,26 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin URL: https://wordpress.org/plugins/woocommerce-products-filter/
  * Author: realmag777
  */
-class WooCommerceProductsFilter {
-	public function init() {
-		if ( ! defined( 'WOOF_VERSION' ) ) {
-			return;
-		}
-		if ( version_compare( WOOF_VERSION, '1.2.3' ) < 0 ) {
-			return;
-		}
+class WooCommerceProductsFilter extends AbstractPluginIntegration {
+	protected const LABEL         = 'WOOF – Products Filter for WooCommerce';
+	protected const VERSION_CONST = 'WOOF_VERSION';
+	protected const MIN_VERSION   = '1.2.3';
+
+	public function init(): void {
+		// Only on search page
 		if ( ! $this->is_search() ) {
 			return;
 		}
 
-		add_action( 'pre_get_posts', array( $this, 'search_products' ), 900000 );
+		add_action( 'pre_get_posts', [ $this, 'search_products' ], 900000 );
 
-		add_action( 'woof_before_draw_filter', array( $this, 'inject_search_filter' ), 10, 2 );
+		add_action( 'woof_before_draw_filter', [ $this, 'inject_search_filter' ], 10, 2 );
 
-		add_filter( 'woof_get_filtered_price_query', array( $this, 'get_filtered_price_query' ) );
+		add_filter( 'woof_get_filtered_price_query', [ $this, 'get_filtered_price_query' ] );
 
-		add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ) );
+		add_action( 'pre_get_posts', [ $this, 'pre_get_posts' ] );
 
-		add_filter( 'woof_dynamic_count_attr', array( $this, 'dynamic_count_attr' ), 10, 2 );
+		add_filter( 'woof_dynamic_count_attr', [ $this, 'dynamic_count_attr' ], 10, 2 );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class WooCommerceProductsFilter {
 		if ( ! $query->is_main_query() ) {
 			return;
 		}
-
+		//phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$dgwt_wcas_s = isset( $_GET['dgwt_wcas_s'] ) && ! empty( trim( $_GET['dgwt_wcas_s'] ) ) ? trim( $_GET['dgwt_wcas_s'] ) : '';
 
 		if ( ! empty( $dgwt_wcas_s ) ) {
@@ -77,7 +77,7 @@ class WooCommerceProductsFilter {
 		<script>
 			function dgwt_wcas_s_init() {
 				setTimeout(function () {
-					woof_current_values.dgwt_wcas_s = '<?php echo esc_js( get_search_query() ) ?>';
+					woof_current_values.dgwt_wcas_s = '<?php echo esc_js( get_search_query() ); ?>';
 				}, 100);
 			}
 
@@ -103,10 +103,10 @@ class WooCommerceProductsFilter {
 	public function get_filtered_price_query( $sql ) {
 		global $wpdb;
 
-		$post_ids = apply_filters( 'dgwt/wcas/search_page/result_post_ids', array() );
+		$post_ids = apply_filters( 'dgwt/wcas/search_page/result_post_ids', [] );
 
 		if ( $post_ids ) {
-			$sql .= " AND $wpdb->posts.ID IN(" . implode( ',', $post_ids ) . ")";
+			$sql .= " AND $wpdb->posts.ID IN(" . implode( ',', $post_ids ) . ')';
 		}
 
 		return $sql;
@@ -118,6 +118,7 @@ class WooCommerceProductsFilter {
 	 * @return bool
 	 */
 	private function is_search() {
+		//phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if (
 			isset( $_GET['dgwt_wcas'] ) && $_GET['dgwt_wcas'] === '1' &&
 			isset( $_GET['post_type'] ) && $_GET['post_type'] === 'product' &&
@@ -128,6 +129,7 @@ class WooCommerceProductsFilter {
 		) {
 			return true;
 		}
+		//phpcs:enable
 
 		return false;
 	}
@@ -141,7 +143,7 @@ class WooCommerceProductsFilter {
 	 */
 	public function pre_get_posts( $query ) {
 		if ( $this->is_search() && Helpers::is_running_inside_class( 'WP_QueryWoofCounter', 15 ) ) {
-			$post_ids = apply_filters( 'dgwt/wcas/search_page/result_post_ids', array() );
+			$post_ids = apply_filters( 'dgwt/wcas/search_page/result_post_ids', [] );
 			$query->set( 'post__in', $post_ids );
 		}
 
@@ -161,7 +163,7 @@ class WooCommerceProductsFilter {
 			return $args;
 		}
 
-		$post_ids = apply_filters( 'dgwt/wcas/search_page/result_post_ids', array() );
+		$post_ids = apply_filters( 'dgwt/wcas/search_page/result_post_ids', [] );
 
 		if ( $post_ids ) {
 			$args['post__in'] = $post_ids;

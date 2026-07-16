@@ -1,0 +1,23 @@
+{% import "consent-log/macro/consent-card.html.twig" as consent_card %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            "#{localized.breadcrumb.details}: #{data.consentLogs[0].uid | upper}"
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    {% for consentLog in data.consentLogs %}
+        {{ consent_card.component({
+            consentLog: consentLog,
+            services: data.services,
+            serviceGroups: data.serviceGroups
+        }, localized) }}
+    {% endfor %}
+{% endif %}

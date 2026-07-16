@@ -87,13 +87,13 @@ class WC_GZD_Legal_Checkbox {
 	 * Returns an option of the current checkbox from the database.
 	 *
 	 * @param $key
-	 * @param string $default
+	 * @param string $default_value
 	 *
 	 * @return array|string
 	 */
-	public function get_option( $key, $default = '' ) {
+	public function get_option( $key, $default_value = '' ) {
 		$options = WC_GZD_Legal_Checkbox_Manager::instance()->get_options();
-		$value   = $default;
+		$value   = $default_value;
 
 		if ( isset( $options[ $this->get_id() ] ) && isset( $options[ $this->get_id() ][ $key ] ) ) {
 			$value = $options[ $this->get_id() ][ $key ];
@@ -450,7 +450,7 @@ class WC_GZD_Legal_Checkbox {
 	 * @return array
 	 */
 	public function get_supporting_locations() {
-		return $this->settings['supporting_locations'];
+		return apply_filters( 'woocommerce_gzd_legal_checkbox_get_supporting_locations', $this->settings['supporting_locations'], $this );
 	}
 
 	public function set_supporting_locations( $locations ) {
@@ -463,7 +463,7 @@ class WC_GZD_Legal_Checkbox {
 	 * @return array
 	 */
 	public function get_show_for_categories() {
-		return $this->settings['show_for_categories'];
+		return apply_filters( 'woocommerce_gzd_legal_checkbox_show_for_categories', $this->settings['show_for_categories'], $this );
 	}
 
 	public function set_show_for_categories( $category_ids ) {
@@ -751,6 +751,10 @@ class WC_GZD_Legal_Checkbox {
 	 * Render the checkbox. Output a wrapper to make the checkbox refreshable even though it is not being printed.
 	 */
 	public function render() {
+		if ( ! $this->is_enabled() ) {
+			return;
+		}
+
 		echo '<div class="wc-gzd-checkbox-placeholder wc-gzd-checkbox-placeholder-' . esc_attr( $this->get_html_id() ) . '" data-checkbox="' . esc_attr( $this->get_id() ) . '">';
 
 		if ( $this->is_printable() ) {
@@ -981,10 +985,10 @@ class WC_GZD_Legal_Checkbox {
 		return $old_value;
 	}
 
-	public function pre_get_option( $value, $name, $default = null ) {
+	public function pre_get_option( $value, $name, $default_value = null ) {
 		$name = str_replace( $this->get_form_field_id_prefix(), '', $name );
 
-		return $this->get_option( $name, $default );
+		return $this->get_option( $name, $default_value );
 	}
 
 	/**
@@ -1033,5 +1037,3 @@ class WC_GZD_Legal_Checkbox {
 		}
 	}
 }
-
-

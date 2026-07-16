@@ -17,6 +17,7 @@ final class ControllersManager
     const PACKAGES_SUBMENU_SLUG  = 'duplicator';
     const IMPORT_SUBMENU_SLUG    = 'duplicator-import';
     const SCHEDULES_SUBMENU_SLUG = 'duplicator-schedules';
+    const STAGING_SUBMENU_SLUG   = 'duplicator-staging';
     const STORAGE_SUBMENU_SLUG   = 'duplicator-storage';
     const ABOUT_US_SUBMENU_SLUG  = 'duplicator-about-us';
     const TEMPLATES_SUBMENU_SLUG = 'duplicator-templates';
@@ -76,6 +77,7 @@ final class ControllersManager
             case self::PACKAGES_SUBMENU_SLUG:
             case self::IMPORT_SUBMENU_SLUG:
             case self::SCHEDULES_SUBMENU_SLUG:
+            case self::STAGING_SUBMENU_SLUG:
             case self::STORAGE_SUBMENU_SLUG:
             case self::ABOUT_US_SUBMENU_SLUG:
             case self::TEMPLATES_SUBMENU_SLUG:

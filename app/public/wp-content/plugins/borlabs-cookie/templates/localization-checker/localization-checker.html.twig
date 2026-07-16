@@ -1,0 +1,148 @@
+{{ messages() | raw }}
+
+<div class="bc-w-full">
+    <div class="bc-rounded-md bc-bg-white bc-shadow bc-mb-6">
+        <div class="bc-border-b bc-border-solid bc-border-gray-200 bc-px-5 bc-py-3">
+            <div class="bc-flex bc-justify-between bc-items-center">
+                <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900 bc-mb-0">Different Contents in TranslationKey Tags</h3>
+            </div>
+        </div>
+
+        <div class="bc-w-full">
+            <table class="bc-min-w-full bc-divide-y bc-divide-gray-300 bc-mb-4">
+                <thead class="bc-bg-gray-800">
+                    <tr>
+                        <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">ClassName 1</th>
+                        <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">ClassName 2</th>
+                        <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Content 1</th>
+                        <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Content 2</th>
+                    </tr>
+                </thead>
+                <tbody class="bc-divide-y bc-divide-gray-200 bc-bg-white">
+                    {% for entry in localizationCheckerResults.differencesPerTag.translationKeys %}
+                        <tr>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.classNameFirst | split('\\') | last }}</td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.classNameSecond | split('\\') | last }}</td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.contentFirst }}</td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.contentSecond }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="bc-text-center bc-py-4">No entries</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bc-w-full">
+    <div class="bc-rounded-md bc-bg-white bc-shadow bc-mb-6">
+        <div class="bc-border-b bc-border-solid bc-border-gray-200 bc-px-5 bc-py-3">
+            <div class="bc-flex bc-justify-between bc-items-center">
+                <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900 bc-mb-0">Differences in Current Localization</h3>
+            </div>
+        </div>
+
+        <div class="bc-w-full">
+            <table class="bc-min-w-full bc-divide-y bc-divide-gray-300 bc-mb-4">
+                <thead class="bc-bg-gray-800">
+                    <tr>
+                        <th scope="col" class="bc-w-1/5 bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Name ID</th>
+                        <th scope="col" class="bc-w-2/5 bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Content 1</th>
+                        <th scope="col" class="bc-w-2/5 bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Content 2</th>
+                    </tr>
+                </thead>
+                <tbody class="bc-divide-y bc-divide-gray-200 bc-bg-white">
+                    {% for entry in localizationCheckerResults.differencesInLocalization.translationKeys %}
+                        <tr>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.id }}</td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.contentFirst }}</td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ entry.contentSecond }}</td>
+                        </tr>
+                        <tr>
+                            <td class=""></td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">
+                                <span class="bc-font-bold">Text 1</span><br>
+                                {{ entry.textFirst }}
+                            </td>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">
+                                <span class="bc-font-bold">Text 2</span><br>
+                                {{ entry.textSecond }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="bc-text-center bc-py-4">No entries</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bc-w-full">
+    <div class="bc-rounded-md bc-bg-white bc-shadow bc-mb-6">
+        <div class="bc-border-b bc-border-solid bc-border-gray-200 bc-px-5 bc-py-3">
+            <div class="bc-flex bc-justify-between bc-items-center">
+                <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900 bc-mb-0">Found TranslationKey IDs</h3>
+            </div>
+        </div>
+
+        <div class="bc-w-full">
+            <table class="bc-min-w-full bc-divide-y bc-divide-gray-300 bc-mb-4">
+                <thead class="bc-bg-gray-800">
+                <tr>
+                    <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Name ID</th>
+                    <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">Content</th>
+                </tr>
+                </thead>
+                <tbody class="bc-divide-y bc-divide-gray-200 bc-bg-white">
+                {% for tag in localizationCheckerResults.informationPerTag.translationKeys.list %}
+                    <tr>
+                        <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ tag.id }}</td>
+                        <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ tag.contents[0] }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="2" class="bc-text-center bc-py-4">No entries</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bc-w-full">
+    <div class="bc-rounded-md bc-bg-white bc-shadow bc-mb-6">
+        <div class="bc-border-b bc-border-solid bc-border-gray-200 bc-px-5 bc-py-3">
+            <div class="bc-flex bc-justify-between bc-items-center">
+                <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900 bc-mb-0">Inspected classes</h3>
+            </div>
+        </div>
+
+        <div class="bc-w-full">
+            <table class="bc-min-w-full bc-divide-y bc-divide-gray-300 bc-mb-4">
+                <thead class="bc-bg-gray-800">
+                <tr>
+                    <th scope="col" class="bc-p-2 bc-text-left bc-text-sm bc-font-semibold bc-text-white">ClassName</th>
+                </tr>
+                </thead>
+                <tbody class="bc-divide-y bc-divide-gray-200 bc-bg-white">
+                    {% for localizationClass in localizationClasses.list %}
+                        <tr>
+                            <td class="bc-p-2 bc-text-sm bc-text-gray-500">{{ localizationClass.className | split('\\') | slice(2) | join('\\') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="bc-text-center bc-py-4">No entries</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

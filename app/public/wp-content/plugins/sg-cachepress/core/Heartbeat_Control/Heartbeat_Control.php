@@ -87,8 +87,8 @@ class Heartbeat_Control {
 				0 == $interval_data['selected'] &&
 				false !== $interval_data['selected']
 			) {
-				// Deregiter the script.
-				wp_deregister_script( 'heartbeat' );
+				// Dequeue the script.
+				wp_dequeue_script( 'heartbeat' );
 				return;
 			}
 		}

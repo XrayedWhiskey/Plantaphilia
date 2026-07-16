@@ -421,6 +421,7 @@
                     type: 'post',
                     data: {
                         action: 'dgwt_wcas_index_details_toggle',
+                        _wpnonce: dgwt_wcas.nonces.index_details_toggle,
                         display: display
                     }
                 });
@@ -456,7 +457,10 @@
                         if (typeof res != 'undefined' && typeof res.data != 'undefined') {
                             _this.initSelectize(res.data);
                         }
-                    }
+                    },
+                    error: function () {
+                        $('.dgwt-wcas-selectize').removeClass('loading').parent().find('.dgwt_wcas_settings-description-field').html(dgwt_wcas.adminLabels.custom_fields_loading_error).css({'color': '#f04124'});
+                    },
                 });
             }
 
@@ -470,11 +474,18 @@
                 $inputs.each(function () {
 
                     var $input = $(this);
+                    var disabledBeforeInit = $(this).data('disabled-before-init');
                     var optionsRaw = $input.data('options');
                     var options = loadedOptions;
 
+                    if (disabledBeforeInit) {
+                        $input.removeAttr('disabled');
+                        $input.removeClass('loading');
+                    }
+
                     if (optionsRaw.length > 0) {
-                        optionsRaw = JSON.parse('["' + decodeURI(optionsRaw.replace(/&/g, "\",\"").replace(/=/g, "\",\"")) + '"]');
+                        optionsRaw = decodeURI(optionsRaw).replace(/"/g, '\\"');
+                        optionsRaw = JSON.parse('["' + optionsRaw.replace(/&/g, '","').replace(/=/g, '","') + '"]');
 
                         var lastKey = '';
 
@@ -1106,9 +1117,10 @@
                     'show_brands_images',
                     'show_matching_posts',
                     'show_matching_pages',
-                    'show_grouped_results',
                     'suggestions_limit',
-                    'show_details_box'
+                    'show_details_box',
+                    'show_matching_post_type',
+                    'show_post_type_images'
                 ];
             for (var i = 0; i < options.length; i++) {
                 var tag = ['search_style', 'search_layout'].includes(options[i]) ? 'select' : 'input',
@@ -1119,7 +1131,9 @@
                     methodToCall = 'onChange' + _this.camelCase(options[i]);
 
                 if (typeof _this[methodToCall] == 'function' && $el.length > 0) {
-                    _this[methodToCall]($el, $el.val());
+                    $.each($el, function (index, $elItem) {
+                        _this[methodToCall]($($elItem), $($elItem).val());
+                    });
 
                     $(document).on('change', selector, function () {
                         methodToCall = $(this).attr('id').replace(']', '').replace('dgwt_wcas_settings[', '');
@@ -1130,6 +1144,9 @@
                     });
                 } else if (typeof _this[methodToCall] == 'function' && $altEl.length > 0) {
                     _this[methodToCall]($altEl, $altEl.val());
+                    $.each($altEl, function (index, $altElItem) {
+                        _this[methodToCall]($($altElItem), $($altElItem).val());
+                    });
 
                     $(document).on('change', altSelector, function () {
                         methodToCall = $(this).data('option-trigger');
@@ -1322,8 +1339,6 @@
                 $headline.show();
                 $items.show();
                 $items.removeClass('js-dgwt-wcas-suggestion-hidden');
-
-                _this.onChangeShowGroupedResults($("input[id*='show_grouped_results']"));
             } else {
                 $headline.hide();
                 $items.hide();
@@ -1353,8 +1368,6 @@
                 $headline.show();
                 $items.show();
                 $items.removeClass('js-dgwt-wcas-suggestion-hidden');
-
-                _this.onChangeShowGroupedResults($("input[id*='show_grouped_results']"));
             } else {
                 $headline.hide();
                 $items.hide();
@@ -1374,8 +1387,6 @@
                 $headline.show();
                 $items.show();
                 $items.removeClass('js-dgwt-wcas-suggestion-hidden');
-
-                _this.onChangeShowGroupedResults($("input[id*='show_grouped_results']"));
             } else {
                 $headline.hide();
                 $items.hide();
@@ -1405,8 +1416,6 @@
                 $headline.show();
                 $items.show();
                 $items.removeClass('js-dgwt-wcas-suggestion-hidden');
-
-                _this.onChangeShowGroupedResults($("input[id*='show_grouped_results']"));
             } else {
                 $headline.hide();
                 $items.hide();
@@ -1426,8 +1435,6 @@
                 $headline.show();
                 $items.show();
                 $items.removeClass('js-dgwt-wcas-suggestion-hidden');
-
-                _this.onChangeShowGroupedResults($("input[id*='show_grouped_results']"));
             } else {
                 $headline.hide();
                 $items.hide();
@@ -1438,40 +1445,35 @@
             _this.onChangeSuggestionsLimit($limitInput, $limitInput.val());
 
         },
-        onChangeShowGroupedResults: function ($el, value) {
+        onChangeShowMatchingPostType: function ($el, value) {
+            var $postType = $($el).data('post-type');
             var _this = this,
-                $directHeadlines = $('.dgwt-wcas-st--direct-headline'),
-                $headlines = $('.dgwt-wcas-suggestion-headline');
+                $headline = $('.dgwt-wcas-suggestion-headline-' + $postType),
+                $items = $('.dgwt-wcas-suggestion-' + $postType);
 
             if (_this.isChecked($el)) {
-                $directHeadlines.addClass('dgwt-wcas-hidden');
-
-                _this.suggestionWrapp.addClass('dgwt-wcas-has-headings');
-
-                $('.dgwt-wcas-suggestion-headline').show();
-
-                if (!_this.isChecked($("input[data-option-trigger='show_matching_categories']"))) {
-                    $('.dgwt-wcas-suggestion-headline-cat').hide();
-                }
-                if (!_this.isChecked($("input[data-option-trigger='show_matching_tags']"))) {
-                    $('.dgwt-wcas-suggestion-headline-tag').hide();
-                }
-                if (!_this.isChecked($("input[data-option-trigger='show_matching_brands']"))) {
-                    $('.dgwt-wcas-suggestion-headline-brand').hide();
-                }
-                if (!_this.isChecked($("input[id*='show_matching_posts']"))) {
-                    $('.dgwt-wcas-suggestion-headline-post').hide();
-                }
-                if (!_this.isChecked($("input[id*='show_matching_pages']"))) {
-                    $('.dgwt-wcas-suggestion-headline-page').hide();
-                }
-
+                $headline.show();
+                $items.show();
+                $items.removeClass('js-dgwt-wcas-suggestion-hidden');
             } else {
-                $directHeadlines.removeClass('dgwt-wcas-hidden');
-                $headlines.hide();
-                _this.suggestionWrapp.removeClass('dgwt-wcas-has-headings');
+                $headline.hide();
+                $items.hide();
+                $items.addClass('js-dgwt-wcas-suggestion-hidden');
             }
 
+            var $limitInput = $("input[id*='suggestions_limit']");
+            _this.onChangeSuggestionsLimit($limitInput, $limitInput.val());
+        },
+        onChangeShowPostTypeImages: function ($el, value) {
+            var $postType = $($el).data('post-type');
+            var _this = this,
+                $contentWrapp = $('.js-dgwt-wcas-suggestion-' + $postType);
+
+            if (_this.isChecked($el)) {
+                $contentWrapp.addClass('dgwt-wcas-has-img');
+            } else {
+                $contentWrapp.removeClass('dgwt-wcas-has-img');
+            }
         },
         onChangeSuggestionsLimit: function ($el, value) {
             setTimeout(function () {
@@ -1479,10 +1481,10 @@
                     i = 0,
                     limit = 7,
                     $duplicated = $('.dgwt-wcas-suggestion-duplicated'),
-                    types = ['brand', 'cat', 'tag', 'post', 'page', 'product'];
+                    types = ['brand', 'cat', 'tag', 'product'].concat(typeof dgwt_wcas.postTypes === 'undefined' ? ['post', 'page'] : dgwt_wcas.postTypes);
 
                 if (value.length > 0 && value != '0') {
-                    limit = Math.abs(value);
+                    limit = Math.min(Math.abs(value), 15);
                 }
 
                 if ($duplicated.length > 0) {

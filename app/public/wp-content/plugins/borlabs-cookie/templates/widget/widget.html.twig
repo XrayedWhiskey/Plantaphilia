@@ -1,0 +1,121 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+    <form action="{{ "?page=#{controllerId}" }}" method="post">
+        <div class="sm:bc-w-2/3">
+            {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+                {% import "system/macro/row/save.html.twig" as row_save %}
+                {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+                {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+                {% import "system/macro/row/select.html.twig" as row_select %}
+                {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+                {% block header %}
+                    {{ card_heading.component({
+                        title: localized.headline.widgetSettings,
+                    }) }}
+                {% endblock %}
+                {% block content %}
+                    {{ row_switch_button.component({
+                        id: 'show',
+                        label: localized.field.show,
+                        value: data.show,
+                        warningMessage: data.iabTcf.iabTcfStatus ? localized.alert.settingNotAvailableBecauseIabTcfIsEnabled : null,
+                    }) }}
+
+                    {% embed "system/embed/form-row.html.twig" %}
+                        {% import "system/macro/form-component/radio.html.twig" as radio %}
+
+                        {% block label %}
+                            {{ localized.field.icon }}
+                        {% endblock %}
+
+                        {% block input %}
+                            <div class="bc-flex bc-flex-col sm:bc-flex-row bc-justify-between">
+                                <div class="bc-flex bc-flex-col bc-items-center bc-gap-4">
+                                    <div><img src="{{ imageUrl('borlabs-cookie-widget-a.svg') }}" alt="" class="bc-w-16 bc-h-16 bc-m-auto"></div>
+                                    <div>
+                                        {{ radio.component({
+                                            checked: data.icon == 'borlabs-cookie-widget-a.svg',
+                                            id: 'iconA',
+                                            name: 'icon',
+                                            value: 'borlabs-cookie-widget-a.svg',
+                                        }, localized) }}
+                                    </div>
+                                </div>
+                                <div class="bc-flex bc-flex-col bc-items-center bc-gap-4">
+                                    <div><img src="{{ imageUrl('borlabs-cookie-widget-b.svg') }}" alt="" class="bc-w-16 bc-h-16 bc-m-auto"></div>
+                                    <div>
+                                        {{ radio.component({
+                                            checked: data.icon == 'borlabs-cookie-widget-b.svg',
+                                            id: 'iconB',
+                                            name: 'icon',
+                                            value: 'borlabs-cookie-widget-b.svg',
+                                        }, localized) }}
+                                    </div>
+                                </div>
+                                <div class="bc-flex bc-flex-col bc-items-center bc-gap-4">
+                                    <div><img src="{{ imageUrl('borlabs-cookie-widget-c.svg') }}" alt="" class="bc-w-16 bc-h-16 bc-m-auto"></div>
+                                    <div>
+                                        {{ radio.component({
+                                            checked: data.icon == 'borlabs-cookie-widget-c.svg',
+                                            id: 'iconC',
+                                            name: 'icon',
+                                            value: 'borlabs-cookie-widget-c.svg',
+                                        }, localized) }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {{ row_color_selection.component({
+                        id: 'color',
+                        label: localized.field.color,
+                        value: data.color,
+                    }) }}
+
+                    {{ row_select.component({
+                        hint: localized.hint.position,
+                        id: 'position',
+                        label: localized.field.position,
+                        options: [
+                            {key: 'bottom-left', value: localized.option.positionBottomLeft},
+                            {key: 'bottom-right', value: localized.option.positionBottomRight},
+                        ],
+                        value: data.position,
+                    }) }}
+
+                    <!-- Synchronization Settings -->
+                    {{ synchronizationSettingsFields(
+                        languages,
+                        {
+                            collectionName: "languages",
+                            hasRepository: false,
+                            withOverwriteTranslationOption: false,
+                        }
+                    ) | raw }}
+
+                    {{ row_save.component({
+                        action: 'save',
+                        button: localized.global.button.save,
+                        nonce: wpNonceField("#{controllerId}-save"),
+                    }, localized) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </form>
+    <!-- Reset Widget Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.resetWidgetSettings,
+        hint: localized.hint.resetSettings,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

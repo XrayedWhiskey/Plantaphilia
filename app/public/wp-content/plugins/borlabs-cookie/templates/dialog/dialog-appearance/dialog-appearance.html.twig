@@ -1,0 +1,62 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    <!-- Assistant -->
+    <div class="bc-bg-neutral-200 bc-shadow-inner bc-px-6 bc-pt-6 bc-rounded-md bc-mb-6">
+        {% include "dialog/dialog-appearance/partials/color-assistant.html.twig" %}
+    </div>
+
+    {{ displayModeSettingsToggle() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- Dialog Settings -->
+        {% include "dialog/dialog-appearance/partials/dialog-settings.html.twig" %}
+
+        <!-- Tab Bar Settings -->
+        {% include "dialog/dialog-appearance/partials/tab-bar-settings.html.twig" %}
+
+        <!-- Search Bar Settings -->
+        {% include "dialog/dialog-appearance/partials/search-bar-settings.html.twig" %}
+
+        <!-- Card Settings -->
+        {% include "dialog/dialog-appearance/partials/card-settings.html.twig" %}
+
+        <!-- List Settings -->
+        {% include "dialog/dialog-appearance/partials/list-settings.html.twig" %}
+
+        <!-- Table Settings -->
+        {% include "dialog/dialog-appearance/partials/table-settings.html.twig" %}
+
+        <!-- Button Settings -->
+        {% include "dialog/dialog-appearance/partials/button-settings.html.twig" %}
+
+        <!-- Checkbox Settings -->
+        {% include "dialog/dialog-appearance/partials/checkbox-settings.html.twig" %}
+
+        <!-- Switch Button Settings -->
+        {% include "dialog/dialog-appearance/partials/switch-button-settings.html.twig" %}
+
+        <!-- Link Settings -->
+        {% include "dialog/dialog-appearance/partials/link-settings.html.twig" %}
+
+        <!-- Custom CSS -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-appearance/partials/custom-css.html.twig" %}
+        </div>
+    </form>
+    <!-- Reset Dialog Appearance Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.resetDialogAppearanceSettings,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+        hint: localized.hint.reset,
+    }, localized) }}
+{% endif %}

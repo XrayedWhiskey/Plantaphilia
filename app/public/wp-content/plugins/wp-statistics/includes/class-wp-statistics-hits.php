@@ -5,10 +5,13 @@ namespace WP_STATISTICS;
 use Exception;
 use WP_Statistics\Components\Singleton;
 use WP_Statistics\Service\Analytics\VisitorProfile;
-use WP_Statistics\Service\Integrations\WpConsentApi;
+use WP_Statistics\Service\Integrations\IntegrationHelper;
+use WP_Statistics\Traits\ErrorLoggerTrait;
 
 class Hits extends Singleton
 {
+    use ErrorLoggerTrait;
+
     /**
      * Rest-APi Hit Record Params Key
      *
@@ -60,7 +63,23 @@ class Hits extends Singleton
      */
     public function set_current_page($current_page)
     {
+        /**
+         * Filter to resolve page type and ID from URL for SPA tracking.
+         *
+         * @param string $pageUri The page URI (decoded)
+         */
+        $pageUri  = isset($this->rest_hits->page_uri) ? base64_decode($this->rest_hits->page_uri) : '';
+        $resolved = apply_filters('wp_statistics_resolve_page_from_uri', $pageUri);
 
+        if (is_array($resolved) && isset($resolved['type']) && $resolved['type'] !== 'unknown') {
+            return array(
+                'type'         => esc_sql($resolved['type']),
+                'id'           => esc_sql($resolved['id']),
+                'search_query' => isset($resolved['search_query']) ? $resolved['search_query'] : ''
+            );
+        }
+
+        // Default behavior - use client-provided values
         if (isset($this->rest_hits->source_type) and isset($this->rest_hits->source_id)) {
             return array(
                 'type'         => esc_sql($this->rest_hits->source_type),
@@ -151,30 +170,9 @@ class Hits extends Singleton
          */
         if ($exclusion['exclusion_match'] === true) {
             Exclusion::record($exclusion);
+            self::errorListener();
 
             throw new Exception($exclusion['exclusion_reason'], 200);
-        }
-
-        /**
-         * Record User Views
-         */
-        if (Visit::active()) {
-            Visit::record();
-        }
-
-        /**
-         * Record Visitor Detail
-         */
-        $visitorId = false;
-        if (Visitor::active()) {
-            $visitorId = Visitor::record($visitorProfile);
-        }
-
-        /**
-         * Record Search Engine
-         */
-        if ($visitorId) {
-            SearchEngine::record(array('visitor_id' => $visitorId));
         }
 
         /**
@@ -186,57 +184,21 @@ class Hits extends Singleton
         }
 
         /**
+         * Record Visitor Detail
+         */
+        $visitorId = false;
+        if (Visitor::active()) {
+            $visitorId = Visitor::record($visitorProfile, ['page_id' => $pageId]);
+        }
+
+        /**
          * Record Visitor Relationship
          */
         if ($visitorId && $pageId) {
             Visitor::save_visitors_relationships($pageId, $visitorId);
         }
 
-        /**
-         * Record User Online with the visitor request in the same time.
-         */
-        self::recordOnline($visitorProfile, $exclusion, $pageId);
-
-        return $exclusion;
-    }
-
-    /**
-     * Record the user online standalone
-     *
-     * @throws Exception
-     */
-    public static function recordOnline($visitorProfile = null, $exclusion = null, $pageId = null)
-    {
-        if (!UserOnline::active()) {
-            return;
-        }
-
-        if (!$visitorProfile) {
-            $visitorProfile = new VisitorProfile();
-        }
-
-        /**
-         * Check the exclusion
-         */
-        if (!$exclusion) {
-            $exclusion = Exclusion::check($visitorProfile);
-        }
-
-        /**
-         * Record exclusion if needed & then skip the tracking
-         */
-        if ($exclusion['exclusion_match'] === true) {
-            Exclusion::record($exclusion);
-
-            throw new Exception($exclusion['exclusion_reason'], 200);
-        }
-
-        $args = null;
-        if ($pageId) {
-            $args['page_id'] = $pageId;
-        }
-
-        UserOnline::record($visitorProfile, $args);
+        self::errorListener();
 
         return $exclusion;
     }
@@ -252,7 +214,7 @@ class Hits extends Singleton
             try {
                 self::record();
             } catch (Exception $e) {
-
+                self::errorListener();
             }
         }
     }
@@ -265,18 +227,19 @@ class Hits extends Singleton
     public static function trackServerSideCallback()
     {
         try {
-            if (is_admin() or is_preview() or Option::get('use_cache_plugin') or Helper::dntEnabled()) {
+            if (is_favicon() || is_admin() || is_preview() || Option::get('use_cache_plugin') || Helper::dntEnabled()) {
                 return;
             }
 
-            $consentLevel = Option::get('consent_level_integration', 'disabled');
+            $isConsentGiven     = IntegrationHelper::isConsentGiven();
+            $trackAnonymously   = IntegrationHelper::shouldTrackAnonymously();
 
-            if ($consentLevel == 'disabled' || Helper::shouldTrackAnonymously() || !WpConsentApi::isWpConsentApiActive() || !function_exists('wp_has_consent') || wp_has_consent($consentLevel)) {
+            if ($isConsentGiven || $trackAnonymously) {
                 self::record();
             }
 
         } catch (Exception $e) {
-
+            self::errorListener();
         }
     }
 }

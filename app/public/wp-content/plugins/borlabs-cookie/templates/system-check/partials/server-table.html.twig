@@ -1,0 +1,60 @@
+{% embed "system/embed/table/responsive-table.html.twig" %}
+    {% block heading %}
+        {% embed "system/embed/table/table-header-element.html.twig" with { attributes: 'colspan="2"' }%}
+            {% block content %}
+                {{ localized.table.serverInformation | raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+    {% block body %}
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.dbVersion | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ data.dbVersion }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.phpVersion | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ data.phpVersion }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.ssl | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorText: data.status.system.ssl.message,
+                            status: data.status.system.ssl.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

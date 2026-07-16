@@ -42,6 +42,9 @@ class WC_GZD_Product_Variation extends WC_GZD_Product {
 		'default_delivery_time',
 		'delivery_time_countries',
 		'warranty_attachment_id',
+		'manufacturer_slug',
+		'safety_attachment_ids',
+		'safety_instructions',
 		'gtin',
 		'mpn',
 		'deposit_type',
@@ -54,11 +57,17 @@ class WC_GZD_Product_Variation extends WC_GZD_Product {
 		'drained_weight',
 		'net_filling_quantity',
 		'alcohol_content',
+		'is_non_alcoholic',
 		'food_distributor',
 		'food_place_of_origin',
 		'food_description',
 		'is_food',
 		'mini_desc',
+		'device_charging_watt_min',
+		'device_charging_watt_max',
+		'wireless_electronic_device',
+		'device_charging_supports_usb_pd',
+		'device_contains_power_supply',
 	);
 
 	protected $gzd_variation_prevent_zero_inherit_meta_data = array(
@@ -71,6 +80,13 @@ class WC_GZD_Product_Variation extends WC_GZD_Product {
 		'free_shipping',
 		'differential_taxation',
 		'is_food',
+		'wireless_electronic_device',
+		'device_charging_supports_usb_pd',
+		'device_contains_power_supply',
+	);
+
+	protected $gzd_variation_inherit_data_if_set = array(
+		'is_non_alcoholic',
 	);
 
 	public function get_gzd_parent() {
@@ -100,6 +116,14 @@ class WC_GZD_Product_Variation extends WC_GZD_Product {
 			// Make sure forced inherited meta data (e.g. not choosable from admin view) is rejected if available
 			if ( in_array( $prop, $this->gzd_variation_forced_inherited_meta_data, true ) ) {
 				$value = '';
+			} elseif ( in_array( $prop, $this->gzd_variation_inherit_data_if_set, true ) ) {
+				if ( $parent = $this->get_gzd_parent() ) {
+					$default_value = $parent->get_wc_product()->get_meta( $meta_key, true, $context );
+
+					if ( ! empty( $default_value ) && 'no' !== $default_value ) {
+						$value = $default_value;
+					}
+				}
 			}
 
 			$variation_misses_value = ! $value || '' === $value;
@@ -137,6 +161,25 @@ class WC_GZD_Product_Variation extends WC_GZD_Product {
 		 *
 		 */
 		return apply_filters( "woocommerce_gzd_get_product_variation_{$prop}", $value, $this, $this->child, $context );
+	}
+
+	/**
+	 * Copy meta value of force inherited props to variation.
+	 *
+	 * @param $prop
+	 * @param $value
+	 *
+	 * @return void
+	 */
+	public function set_prop( $prop, $value ) {
+		if ( in_array( $prop, $this->get_forced_inherited_props(), true ) ) {
+			if ( $parent = $this->get_gzd_parent() ) {
+				$meta_key = substr( $prop, 0, 1 ) !== '_' ? '_' . $prop : $prop;
+				$value    = $parent->get_wc_product()->get_meta( $meta_key, true, 'edit' );
+			}
+		}
+
+		parent::set_prop( $prop, $value );
 	}
 
 	public function get_unit( $context = 'view' ) {

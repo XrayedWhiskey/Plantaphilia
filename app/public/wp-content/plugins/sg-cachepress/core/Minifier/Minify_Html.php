@@ -102,7 +102,8 @@ class Minify_Html {
 			$this->_isXhtml = (false !== @strpos($this->_html, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML'));
 		}
 
-		$this->_replacementHash = 'MINIFYHTML' . md5($_SERVER['REQUEST_TIME']);
+		// Use cryptographically secure random bytes to prevent placeholder prediction attacks
+		$this->_replacementHash = 'MINIFYHTML' . bin2hex(random_bytes(16));
 		$this->_placeholders = array();
 
 		// remove HTML comments (not containing IE conditional comments).
@@ -128,8 +129,10 @@ class Minify_Html {
 			,$this->_html);
 
 		// replace data: URIs with placeholders
+		// Strict regex: match complete data URIs from opening quote to closing quote
+		// Prevents attribute injection by ensuring the data URI is properly quoted and terminated
 		$this->_html = preg_replace_callback(
-			'/(=("|\')data:.*\\2)/Ui'
+			'/(=("|\')data:[^"\']*?\\2)/i'
 			,array($this, '_removeDataURICB')
 			,$this->_html);
 
@@ -154,6 +157,8 @@ class Minify_Html {
 		//$this->_html = preg_replace('/(<[a-z\\-]+)\\s+([^>]+>)/i', "$1\n$2", $this->_html);
 
 		// fill placeholders
+		// Security: Only replace placeholders we actually created (stored in $this->_placeholders)
+		// The cryptographically random hash prevents attackers from injecting matching placeholder strings
 		$this->_html = str_replace(
 			array_keys($this->_placeholders)
 			,array_values($this->_placeholders)

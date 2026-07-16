@@ -301,7 +301,8 @@
             suggestionsContainerOrientTop: 'dgwt-wcas-suggestions-wrapp--top',
             inputFilled: 'dgwt-wcas-search-filled',
             darkenOverlayMounted: 'js-dgwt-wcas-search-darkoverl-mounted',
-            fixed: 'dgwt-wcas-suggestions-wrapp-fixed'
+            fixed: 'dgwt-wcas-suggestions-wrapp-fixed',
+            initialized: 'dgwt-wcas-suggestions-wrapp-initialized'
         };
         that.hint = null;
         that.hintValue = '';
@@ -398,6 +399,7 @@
         voiceSearchLang: '',
         showRecentlySearchedProducts: false,
         showRecentlySearchedPhrases: false,
+        goToFirstVariationOnSubmit: true,
     }
 
     function _lookupFilter(suggestion, originalQuery, queryLowerCase) {
@@ -483,7 +485,8 @@
 
             that.hideAfterClickOutsideListener();
 
-            // Mark as initialized
+            that.getFormWrapper().addClass(that.classes.initialized);
+
             that.suggestionsContainer.addClass('js-dgwt-wcas-initialized');
 
             if (that.detailsContainer && that.detailsContainer.length > 0) {
@@ -574,20 +577,19 @@
                 }
 
                 // If variation suggestion exist, click it instead submit search results page
-                if (that.suggestions.length > 0) {
-
-                    $.each(that.suggestions, function (i, suggestion) {
-
-                        if (
-                            typeof suggestion.type != 'undefined'
-                            && suggestion.type == 'product_variation'
-                        ) {
-                            that.select(i);
-                            e.preventDefault();
-                            return false;
-                        }
-                    });
-
+                if (that.options.goToFirstVariationOnSubmit) {
+                    if (that.suggestions.length > 0) {
+                        $.each(that.suggestions, function (i, suggestion) {
+                            if (
+                                typeof suggestion.type != 'undefined'
+                                && suggestion.type == 'product_variation'
+                            ) {
+                                that.select(i);
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
+                    }
                 }
 
                 if (that.options.showRecentlySearchedPhrases) {
@@ -599,13 +601,10 @@
             });
 
             // Position preloader
-            if (document.readyState === 'complete') {
+            that.positionPreloaderAndMic();
+            $(window).on('load', function () {
                 that.positionPreloaderAndMic();
-            } else {
-                $(window).on('load', function () {
-                    that.positionPreloaderAndMic();
-                });
-            }
+            });
 
             that.el.on('keydown.autocomplete', function (e) {
                 that.onKeyPress(e);
@@ -773,7 +772,7 @@
                     }, 110);
 
                 }
-
+                return false;
             });
 
             if ($('.js-dgwt-wcas-initialized').length == 0 && $('.js-dgwt-wcas-search-icon-handler').length > 0) {
@@ -809,26 +808,31 @@
                 }
             });
 
-            if (document.readyState == 'complete') {
+            that.reloadFlexibleLayout();
+            $(window).on('load.autocomplete', function () {
                 that.reloadFlexibleLayout();
-            } else {
-                $(window).on('load.autocomplete', function () {
-                    that.reloadFlexibleLayout();
-                });
-            }
+            });
 
         },
         activateMobileOverlayMode: function () {
             var that = this,
-                $formWrapper = that.getFormWrapper();
+                $formWrapper = that.getFormWrapper(),
+                $iconHandler = $formWrapper.find('.js-dgwt-wcas-search-icon-handler');
 
             if (
                 $formWrapper.hasClass('js-dgwt-wcas-mobile-overlay-enabled')
                 && !$formWrapper.find('.js-dgwt-wcas-enable-mobile-form').length
             ) {
 
-                $formWrapper.prepend('<div class="js-dgwt-wcas-enable-mobile-form dgwt-wcas-enable-mobile-form"></div>');
+                var aria = typeof dgwt_wcas.labels.mob_overlay_label === 'string' ? dgwt_wcas.labels.mob_overlay_label : '';
+
+                $formWrapper.prepend('<a href="#" aria-label="' + aria + '" class="js-dgwt-wcas-enable-mobile-form dgwt-wcas-enable-mobile-form"></a>');
                 $formWrapper.addClass('dgwt-wcas-mobile-overlay-trigger-active');
+
+                // Don't focus an icon handler when mobile overlay handler is displayed.
+                if ($iconHandler.length) {
+                    $iconHandler.attr('tabindex', '-1');
+                }
 
                 var $el = $formWrapper.find('.js-dgwt-wcas-enable-mobile-form');
 
@@ -842,15 +846,15 @@
                         that.showMobileOverlay();
                     }
 
+                    return false;
                 });
-
             }
 
         },
         deactivateMobileOverlayMode: function () {
             var that = this,
                 $formWrapper = that.getFormWrapper(),
-                $suggestionsWrapper = that.getSuggestionsContainer();
+                $iconHandler = $formWrapper.find('.js-dgwt-wcas-search-icon-handler');
 
             var $el = $formWrapper.find('.js-dgwt-wcas-enable-mobile-form');
 
@@ -860,6 +864,11 @@
                 that.closeOverlayMobile();
                 $el.remove();
                 $formWrapper.removeClass('dgwt-wcas-mobile-overlay-trigger-active');
+
+                // Focus an icon handler when mobile overlay is deactivated.
+                if ($iconHandler.length) {
+                    $iconHandler.removeAttr('tabindex');
+                }
             }
 
         },
@@ -1004,7 +1013,8 @@
         reloadFlexibleLayout: function () {
             var that = this,
                 $searchWrapp = that.getFormWrapper(),
-                flexibleMode = 0;
+                flexibleMode = 0,
+                $iconPreloader = $searchWrapp.find('.dgwt-wcas-icon-preloader');
 
             /**
              * flexibleMode
@@ -1034,6 +1044,9 @@
                 }
 
                 $searchWrapp.addClass('dgwt-wcas-layout-icon-flexible-loaded');
+                if ($iconPreloader.length) {
+                    $iconPreloader.remove();
+                }
             }
         },
         onFocus: function (e) {
@@ -1409,6 +1422,11 @@
                     that.el.blur();
                 }
 
+                // Hide the mobile overlay on ESC.
+                if (e.keyCode === keys.ESC && $('html').hasClass('dgwt-wcas-overlay-mobile-on')) {
+                    that.closeOverlayMobile();
+                }
+
                 return;
             }
 
@@ -1580,7 +1598,7 @@
                     break;
             }
 
-            return $(window).width() <= breakpoint;
+            return window.innerWidth <= breakpoint;
         },
         getQuery: function (value) {
             var delimiter = this.options.delimiter,
@@ -1669,6 +1687,8 @@
                 that.suggest();
                 that.selectFirstSuggestion(response.suggestions);
                 options.onSearchComplete.call(that.element, q, response.suggestions);
+
+				that.updatePrices();
 
                 if (that.isNoResults(response.suggestions)) {
                     document.dispatchEvent(new CustomEvent('fibosearch/no-results', {
@@ -1864,13 +1884,11 @@
             }
 
             $(document).trigger('dgwtWcasDetailsPanelLoaded', that);
-            document.dispatchEvent(new CustomEvent('fibosearch/show-details-panel', {
-                detail: that
-            }));
+
         },
         updatePrices: function (noAjax) {
             var that = this,
-                i, j,
+                i,
                 productsToLoad = [];
 
             if (!(that.options.showPrice && that.options.dynamicPrices)) {
@@ -1887,7 +1905,13 @@
                     typeof that.suggestions[i].type != 'undefined'
                     && (that.suggestions[i].type == 'product' || that.suggestions[i].type == 'product_variation')
                 ) {
-                    var key = 'product__' + that.suggestions[i].post_id;
+                    var key = '';
+                    if (typeof that.suggestions[i].variation_id !== 'undefined') {
+                        // Variation as single product.
+                        key = 'product__' + that.suggestions[i].variation_id;
+                    } else {
+                        key = 'product__' + that.suggestions[i].post_id;
+                    }
 
                     if (typeof that.cachedPrices[key] != 'undefined') {
 
@@ -1896,8 +1920,12 @@
                     } else {
 
                         that.applyPreloaderForPrice(i);
-
-                        productsToLoad.push(that.suggestions[i].post_id);
+                        if (typeof that.suggestions[i].variation_id !== 'undefined') {
+                            // Variation as single product.
+                            productsToLoad.push(that.suggestions[i].variation_id);
+                        } else {
+                            productsToLoad.push(that.suggestions[i].post_id);
+                        }
                     }
                 }
 
@@ -1916,29 +1944,30 @@
                     type: 'post',
                     url: dgwt_wcas.ajax_prices_endpoint,
                     success: function (response) {
-
-                        if (typeof response.success != 'undefined' && response.success && response.data.length > 0) {
-                            for (i = 0; i < response.data.length; i++) {
-
-                                var postID = response.data[i].id,
-                                    price = response.data[i].price;
-
-                                if (that.suggestions.length > 0) {
-                                    for (j = 0; j < that.suggestions.length; j++) {
-                                        if (
-                                            typeof that.suggestions[j].type != 'undefined'
-                                            && (that.suggestions[j].type == 'product' || that.suggestions[j].type == 'product_variation')
-                                            && that.suggestions[j].post_id == postID
-                                        ) {
-
-                                            var key = 'product__' + postID;
-
-                                            that.cachedPrices[key] = price;
-
-                                            that.updatePrice(j, price);
-
-                                        }
-                                    }
+                        if (
+                            typeof response.success != 'undefined'
+                            && response.success
+                            && Object.keys(response.data).length > 0
+                            && that.suggestions.length > 0
+                        ) {
+                            for (i = 0; i < that.suggestions.length; i++) {
+                                if (
+                                    typeof that.suggestions[i].type !== 'undefined'
+                                    && that.suggestions[i].type === 'product'
+                                    && typeof response.data[that.suggestions[i].post_id] === 'string'
+                                ) {
+                                    key = 'product__' + that.suggestions[i].post_id;
+                                    that.cachedPrices[key] = response.data[that.suggestions[i].post_id];
+                                    that.updatePrice(i, response.data[that.suggestions[i].post_id]);
+                                } else if (
+                                    typeof that.suggestions[i].type !== 'undefined'
+                                    && that.suggestions[i].type === 'product_variation'
+                                    && typeof that.suggestions[i].variation_id !== 'undefined'
+                                    && typeof response.data[that.suggestions[i].variation_id] === 'string'
+                                ) {
+                                    key = 'product__' + that.suggestions[i].variation_id;
+                                    that.cachedPrices[key] = response.data[that.suggestions[i].variation_id];
+                                    that.updatePrice(i, response.data[that.suggestions[i].variation_id]);
                                 }
                             }
                         }
@@ -2040,6 +2069,10 @@
                 $containerDetails = that.getDetailsContainer(),
                 objectHash = utils.hashCode(objectID),
                 $el = $containerDetails.find('.dgwt-wcas-details-inner[data-object="' + objectHash + '"]');
+
+            document.dispatchEvent(new CustomEvent('fibosearch/show-details-panel', {
+                detail: that
+            }));
 
             if ($el.length) {
                 that.preloader('hide', 'details', '');
@@ -2335,15 +2368,10 @@
                         if (!options.showHeadings) {
                             prepend += '<span class="dgwt-wcas-st--direct-headline">' + dgwt_wcas.labels.vendor + '</span>';
                         }
-                    } else if (options.isPremium && suggestion.type === 'post' && typeof suggestion.post_type !== 'undefined' && suggestion.post_type === 'post') {
-                        classes += ' dgwt-wcas-suggestion-pt dgwt-wcas-suggestion-pt-post';
+                    } else if (options.isPremium && suggestion.type === 'post' && typeof suggestion.post_type !== 'undefined') {
+                        classes += ' dgwt-wcas-suggestion-pt dgwt-wcas-suggestion-pt-' + suggestion.post_type;
                         if (!options.showHeadings) {
-                            prepend += '<span class="dgwt-wcas-st--direct-headline">' + dgwt_wcas.labels.post + '</span>';
-                        }
-                    } else if (options.isPremium && suggestion.type === 'post' && typeof suggestion.post_type !== 'undefined' && suggestion.post_type === 'page') {
-                        classes += ' dgwt-wcas-suggestion-pt dgwt-wcas-suggestion-pt-page';
-                        if (!options.showHeadings) {
-                            prepend += '<span class="dgwt-wcas-st--direct-headline">' + dgwt_wcas.labels.page + '</span>';
+                            prepend += '<span class="dgwt-wcas-st--direct-headline">' + dgwt_wcas.labels['post_type_' + suggestion.post_type] + '</span>';
                         }
                     } else if (suggestion.type === 'more_products') {
                         classes += ' js-dgwt-wcas-suggestion-more dgwt-wcas-suggestion-more';
@@ -2372,9 +2400,11 @@
                         html += that.createNoResultsContent();
 
                     } else {
-
                         // Image
-                        if (typeof suggestion.image_src != 'undefined' && suggestion.image_src) {
+                        if (
+                            (typeof suggestion.image_src != 'undefined' && suggestion.image_src) ||
+                            (typeof suggestion.image != 'undefined' && suggestion.image)
+                        ) {
                             isImg = true;
                         }
 
@@ -2382,12 +2412,13 @@
                         prepend += that.apply3rdPartyPlaceholder('title_before', suggestion);
                         append += that.apply3rdPartyPlaceholder('title_after', suggestion);
 
-                        title = title.length > 0 ? ' title="' + title + '"' : '';
+                        title = title.length > 0 ? ' title="' + title.replace(/>/g, '&gt;') + '"' : '';
 
                         html += '<a href="' + url + '" class="' + classes + '" data-index="' + i + '">';
 
                         if (isImg) {
-                            html += '<span class="dgwt-wcas-si"><img src="' + suggestion.image_src + '" /></span>';
+                            const imgSrc = suggestion.image_src ? suggestion.image_src : suggestion.image;
+                            html += '<span class="dgwt-wcas-si"><img src="' + imgSrc + '" /></span>';
                             html += '<div class="dgwt-wcas-content-wrapp">';
                         }
 
@@ -2525,6 +2556,8 @@
             // Open Title wrapper
             html += '<div class="dgwt-wcas-st">';
 
+
+
             // Custom content before title (3rd party)
             html += that.apply3rdPartyPlaceholder('title_before', suggestion);
 
@@ -2559,6 +2592,11 @@
 
             // Custom content after description (3rd party)
             html += that.apply3rdPartyPlaceholder('content_after', suggestion);
+
+            // Display score (only visible in debug mode with ?fibodebug=score)
+            if (typeof suggestion.score !== 'undefined') {
+                html += '<div class="dgwt-wcas-score">Score: ' + suggestion.score + '</div>';
+            }
 
             // Close title wrapper
             html += '</div>';
@@ -2608,7 +2646,11 @@
                 $searchWrapp = that.getFormWrapper(),
                 style = 'solaris'; //Default style
 
-            $($searchWrapp.attr('class').split(/\s+/)).each(function (index) {
+             if (!$searchWrapp || $searchWrapp.length === 0) {
+                return style;
+             }
+
+            $($searchWrapp?.attr('class')?.split(/\s+/)).each(function (index) {
                 if (/dgwt-wcas-style-/i.test(this)) {
                     style = this.replace(/dgwt-wcas-style-/i, '');
                 }
@@ -2664,9 +2706,9 @@
 
                     if (isVoiceSearchSupported && isSolarisStyle) {
                         if (dgwt_wcas.is_rtl == 1) {
-                            $voiceSearch.css('left', $(this).outerWidth() + 'px');
+                            $voiceSearch.css('transform', 'translateX(' + $(this).outerWidth() + 'px)');
                         } else {
-                            $voiceSearch.css('right', $(this).outerWidth() + 'px');
+                            $voiceSearch.css('transform', 'translateX(-' + $(this).outerWidth() + 'px)');
                         }
                     }
 
@@ -2766,7 +2808,7 @@
             // Cache results if cache is not disabled:
             if (!options.noCache) {
                 that.cachedResponse[cacheKey] = result;
-                if (options.preventBadQueries && !result.suggestions.length) {
+				if (options.preventBadQueries && !result.suggestions.length) {
                     that.badQueries.push(originalQuery);
                 }
             }
@@ -2916,6 +2958,7 @@
                 if (
                     suggestion.type === 'more_products'
                     || (that.actionTriggerSource === 'enter' && that.latestActivateSource != 'key' && suggestion.type != 'product_variation')
+                    || (that.actionTriggerSource === 'enter' && that.latestActivateSource != 'key' && suggestion.type == 'product_variation' && !that.options.goToFirstVariationOnSubmit)
                 ) {
                     that.el.closest('form').trigger('submit');
                     forceSubmit = true;
@@ -3826,10 +3869,23 @@
                 voiceSearchLang: typeof dgwt_wcas.voice_search_lang != 'undefined' ? dgwt_wcas.voice_search_lang : '',
                 showRecentlySearchedProducts: typeof dgwt_wcas.show_recently_searched_products != 'undefined' ? dgwt_wcas.show_recently_searched_products : false,
                 showRecentlySearchedPhrases: typeof dgwt_wcas.show_recently_searched_phrases != 'undefined' ? dgwt_wcas.show_recently_searched_phrases : false,
+                goToFirstVariationOnSubmit: typeof dgwt_wcas.go_to_first_variation_on_submit != 'undefined' ? dgwt_wcas.go_to_first_variation_on_submit : false,
             };
 
             $('.dgwt-wcas-search-input').dgwtWcasAutocomplete(window.dgwt_wcas.config);
 
+            /**
+             * If a user clicked on the search bar o an icon before it finished initializing,
+             * trigger a focus or click on that after initialization.
+             */
+            var $focusedElement = $(document.activeElement);
+            if ($focusedElement.length) {
+                if ($focusedElement.hasClass('dgwt-wcas-search-input')) {
+                    $focusedElement.trigger('focus');
+                } else if ($focusedElement.hasClass('js-dgwt-wcas-search-icon-handler')) {
+                    $focusedElement.trigger('click');
+                }
+            }
         });
 
 

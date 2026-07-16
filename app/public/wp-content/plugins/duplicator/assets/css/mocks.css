@@ -325,20 +325,24 @@ div#dpro-pro-import-available-packages {
 /* SCHEDULES MOCK STYLE */
 
 table.schedule-tbl tr:nth-child(odd),
-table.storage-tbl tr:nth-child(odd) {
+table.storage-tbl tr:nth-child(odd),
+table.staging-tbl tr:nth-child(odd) {
     background-color: #f6f7f7;
 }
 
-table.schedule-tbl td {
-    height: 45px
+table.schedule-tbl td,
+table.staging-tbl td {
+    height: 45px;
 }
 
-table.schedule-tbl a.name {
-    font-weight: bold
+table.schedule-tbl a.name,
+table.staging-tbl a.name {
+    font-weight: bold;
 }
 
-table.schedule-tbl input[type='checkbox'] {
-    margin-left: 5px
+table.schedule-tbl input[type='checkbox'],
+table.staging-tbl input[type='checkbox'] {
+    margin-left: 5px;
 }
 
 table.schedule-tbl div.sub-menu {
@@ -642,4 +646,47 @@ table.package-tbl tfoot td {
     display: inline-block;
     font-weight: bold;
     margin-right: 2px;
+}
+
+#db-reset-content-wrapper {
+    width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#db-reset-content-wrapper p,
+#db-reset-content-wrapper div {
+    font-size: 15px;
+}
+
+#db-reset-content-wrapper .two-cols-valig {
+    display: flex;
+    align-items: center;
+    column-gap: 20px;
+    text-align: left;
+}
+
+#db-reset-content-wrapper .two-cols-valig img,
+#db-reset-content-wrapper .two-cols-valig .arrow-list {
+    margin: 0;
+    height: 200px;
+}
+
+#db-reset-content-wrapper .two-cols-valig .arrow-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#db-reset-content-wrapper h1 {
+    margin: 20px 0;
+}
+
+#db-reset-content-wrapper .two-cols-valig .arrow-list li {
+    padding: 0 0 0 24px;
+    background-image: url("./images/arrow-right.svg");
+    background-position: left 3px;
+    background-repeat: no-repeat;
+    background-size: 14px;
+    color: #777777;
 }

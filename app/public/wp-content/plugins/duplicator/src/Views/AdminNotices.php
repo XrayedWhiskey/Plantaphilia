@@ -5,9 +5,11 @@ namespace Duplicator\Views;
 use Closure;
 use DUP_Server;
 use Duplicator\Core\MigrationMng;
-use Duplicator\Installer\Utils\LinkManager;
+use Duplicator\Utils\LinkManager;
 use Duplicator\Libs\Snap\SnapUtil;
 use Duplicator\Core\Controllers\ControllersManager;
+use Duplicator\Core\Notifications\Notice;
+use Duplicator\Core\Views\TplMng;
 use Duplicator\Utils\Autoloader;
 use Exception;
 
@@ -50,6 +52,7 @@ class AdminNotices
         $notices = array();
         if (is_multisite()) {
             $noCapabilitiesNotice = is_super_admin() && !current_user_can('export');
+            $notices[]            = array(__CLASS__, 'multisiteNotice');
         } else {
             $noCapabilitiesNotice = in_array('administrator', $GLOBALS['current_user']->roles) && !current_user_can('export');
         }
@@ -68,6 +71,7 @@ class AdminNotices
             $notices[] = array(__CLASS__, 'clearInstallerFilesAction'); // BEFORE MIGRATION SUCCESS NOTICE
             $notices[] = array(__CLASS__, 'migrationSuccessNotice');
             $notices[] = array(__CLASS__, 'installAutoDeactivatePlugins');
+            $notices[] = array(__CLASS__, 'failedOneClickUpgradeNotice');
         }
 
         $action = is_multisite() ? 'network_admin_notices' : 'admin_notices';
@@ -130,7 +134,7 @@ class AdminNotices
         }
 
 
-        if (SnapUtil::filterInputRequest('action', FILTER_DEFAULT) === 'installer') {
+        if (sanitize_text_field(SnapUtil::filterInputRequest('action')) === 'installer') {
             if (! wp_verify_nonce($_REQUEST['_wpnonce'], 'duplicator_cleanup_page')) {
                 echo '<p>' . __('Security issue', 'duplicator') . '</p>';
                 exit; // Get out of here bad nounce!
@@ -211,7 +215,7 @@ class AdminNotices
                     esc_html__('Remove Installation Files Now!', 'duplicator')
                 );
                 printf(
-                    "2. <a href='https://wordpress.org/support/plugin/duplicator/reviews/?filter=5' target='wporg'>%s</a> <br/> ",
+                    "2. <a href='https://wordpress.org/support/plugin/duplicator/reviews/#new-post' target='wporg'>%s</a> <br/> ",
                     esc_html__('Optionally, Review Duplicator at WordPress.org...', 'duplicator')
                 );
                 echo "<div class='pass-msg'>" . esc_html($msg2) . "</div>";
@@ -221,12 +225,21 @@ class AdminNotices
                 $title = __('Migration Almost Complete!', 'duplicator');
                 $msg   = __(
                     'Reserved Duplicator installation files have been detected in the root directory.  Please delete these installation files to '
-                    . 'avoid security issues. <br/> Go to:Duplicator > Tools > Information >Stored Data and click the "Remove Installation Files" button',
+                    . 'avoid security issues. <br/> Go to: Duplicator > Tools > General > Information > Utils and click the "Remove Installation Files" button',
                     'duplicator'
                 );
 
                 $nonce = wp_create_nonce('duplicator_cleanup_page');
-                $url   = self_admin_url('admin.php?page=duplicator-tools&tab=diagnostics&section=info&_wpnonce=' . $nonce);
+                $url   = ControllersManager::getMenuLink(
+                    ControllersManager::TOOLS_SUBMENU_SLUG,
+                    'diagnostics',
+                    null,
+                    array(
+                        'section'   => 'info',
+                        '_wpnonce' => $nonce,
+                    ),
+                    true
+                );
                 echo "<b>{$title}</b><br/> {$safe_html} {$msg}";
                 @printf("<br/><a href='{$url}'>%s</a>", __('Take me there now!', 'duplicator'));
             }
@@ -292,7 +305,7 @@ class AdminNotices
         foreach ($shouldBeActivated as $slug => $title) {
             $activateURL              = wp_nonce_url(admin_url('plugins.php?action=activate&plugin=' . $slug), 'activate-plugin_' . $slug);
             $anchorTitle              = sprintf(esc_html__('Activate %s', 'duplicator'), $title);
-            $activatePluginsAnchors[] = '<a href="' . $activateURL . '" 
+            $activatePluginsAnchors[] = '<a href="' . $activateURL . '"
                                             title="' . esc_attr($anchorTitle) . '">' .
                 $title . '</a>';
         }
@@ -311,6 +324,20 @@ class AdminNotices
             </p>
         </div>
         <?php
+    }
+
+    /**
+     * Shows install deactivated function
+     *
+     * @return void
+     */
+    public static function failedOneClickUpgradeNotice()
+    {
+        if (SnapUtil::sanitizeTextInput(SnapUtil::INPUT_REQUEST, 'action') !== 'upgrade_finalize_fail') {
+            return;
+        }
+
+        Notice::error(__('Upgrade failed. Please check if you have the necessary permissions to activate plugins.', 'duplicator'), 'upgrade_finalize_fail');
     }
 
     /**
@@ -342,12 +369,14 @@ class AdminNotices
             return;
         }
 
+        global $wpdb;
         // not using DUP_Util::getTablePrefix() in place of $tablePrefix because AdminNotices included initially (Duplicator\Lite\Requirement
         // is depended on the AdminNotices)
         $tablePrefix   = (is_multisite() && is_plugin_active_for_network('duplicator/duplicator.php')) ?
-            $GLOBALS['wpdb']->base_prefix :
-            $GLOBALS['wpdb']->prefix;
-        $packagesCount = $GLOBALS['wpdb']->get_var('SELECT count(id) FROM ' . $tablePrefix . 'duplicator_packages WHERE status=100');
+            $wpdb->base_prefix :
+            $wpdb->prefix;
+        $tableName     = esc_sql($tablePrefix . 'duplicator_packages');
+        $packagesCount = $wpdb->get_var("SELECT count(id) FROM `{$tableName}` WHERE status=100");
 
         if ($packagesCount < DUPLICATOR_FEEDBACK_NOTICE_SHOW_AFTER_NO_PACKAGE) {
             return;
@@ -367,19 +396,19 @@ class AdminNotices
         <div class="notice updated duplicator-message duplicator-message-dismissed" data-notice_id="<?php echo esc_attr($notice_id); ?>">
             <div class="duplicator-message-inner">
                 <div class="duplicator-message-icon">
-                    <img 
-                        src="<?php echo esc_url(DUPLICATOR_PLUGIN_URL . "assets/img/logo.png"); ?>" 
+                    <img
+                        src="<?php echo esc_url(DUPLICATOR_PLUGIN_URL . "assets/img/logo.png"); ?>"
                         style="text-align:top; margin:0; height:60px; width:60px;" alt="Duplicator">
                 </div>
                 <div class="duplicator-message-content">
                     <p>
                         <strong>
                             <?php echo __('Congrats!', 'duplicator'); ?>
-                        </strong> 
+                        </strong>
                         <?php
                         printf(
                             esc_html__(
-                                'You created over %d packages with Duplicator. Great job! If you can spare a minute, 
+                                'You created over %d backups with Duplicator. Great job! If you can spare a minute,
                                 please help us by leaving a five star review on WordPress.org.',
                                 'duplicator'
                             ),
@@ -387,13 +416,13 @@ class AdminNotices
                         ); ?>
                     </p>
                     <p class="duplicator-message-actions">
-                        <a 
-                            href="https://wordpress.org/support/plugin/duplicator/reviews/?filter=5/#new-post" 
+                        <a
+                            href="https://wordpress.org/support/plugin/duplicator/reviews/#new-post"
                             target="_blank" class="button button-primary duplicator-notice-rate-now"
                         >
                             <?php esc_html_e("Sure! I'd love to help", 'duplicator'); ?>
                         </a>
-                        <a href="<?php echo esc_url_raw($dismiss_url); ?>" class="button duplicator-notice-dismiss">
+                        <a href="<?php echo esc_url($dismiss_url); ?>" class="button duplicator-notice-dismiss">
                             <?php esc_html_e('Hide Notification', 'duplicator'); ?>
                         </a>
                     </p>
@@ -417,7 +446,7 @@ class AdminNotices
                 'duplicator menu missing'
             ));
             $errorMessage = __(
-                '<strong>Duplicator</strong><hr> Your logged-in user role does not have export 
+                '<strong>Duplicator</strong><hr> Your logged-in user role does not have export
                 capability so you don\'t have access to Duplicator functionality.',
                 'duplicator'
             ) .
@@ -434,6 +463,25 @@ class AdminNotices
             );
             self::displayGeneralAdminNotice($errorMessage, self::GEN_ERROR_NOTICE, true);
         }
+    }
+
+    /**
+     * Display multisite notice
+     *
+     * @return void
+     */
+    public static function multisiteNotice()
+    {
+        if (
+            !ControllersManager::isDuplicatorPage() ||
+            ControllersManager::isCurrentPage(ControllersManager::ABOUT_US_SUBMENU_SLUG) ||
+            ControllersManager::isCurrentPage(ControllersManager::SETTINGS_SUBMENU_SLUG, 'general')
+        ) {
+            return;
+        }
+
+        $message = TplMng::getInstance()->render('parts/notices/drm_multisite_msg', array(), false);
+        self::displayGeneralAdminNotice($message, self::GEN_ERROR_NOTICE, false, ['duplicator-multisite-notice']);
     }
 
     /**

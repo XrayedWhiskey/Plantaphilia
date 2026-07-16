@@ -1,0 +1,74 @@
+{% macro component(config) %}
+    {% set config = {
+        backgroundColorChecked: 'aria-checked:bc-bg-blue-600',
+        focusColor: 'focus:bc-ring-blue-500',
+        iconColorChecked: 'bc-text-blue-600',
+    } | merge(config)
+    %}
+    {% set cssClasses = [
+        'bc-bg-gray-300 bc-relative bc-inline-flex bc-h-6 bc-w-11 bc-flex-shrink-0 bc-cursor-pointer bc-rounded-full bc-border-2 bc-border-transparent bc-transition-colors bc-duration-200 bc-ease-in-out focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-offset-2 [&_.bc-switch-knob]:aria-checked:bc-translate-x-5
+                        [&_.bc-switch-inactive]:aria-checked:bc-opacity-0 [&_.bc-switch-inactive]:aria-checked:bc-ease-out [&_.bc-switch-inactive]:aria-checked:bc-duration-100
+                        [&_.bc-switch-active]:aria-checked:bc-opacity-100 [&_.bc-switch-active]:aria-checked:ease-in [&_.bc-switch-active]:aria-checked:bc-duration-200',
+        config.backgroundColorChecked,
+        config.focusColor,
+    ] %}
+
+    {% if config.value == '1' %}
+        {% set cssClasses = ['active'] | merge(cssClasses) %}
+    {% endif %}
+
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+    <div class="bc-flex bc-items-center bc-space-x-2">
+        <button type="button"
+                data-brlbs-switch-button="{{ config.id }}"
+                {% if config.dataAttribute is not empty %}{{ config.dataAttribute | raw }}{% endif %}
+                aria-pressed="{% if config.value == '1' %}true{% else %}false{% endif %}"
+                class="{{ cssClasses | join(' ') }}"
+                role="switch"
+                aria-checked="{% if config.value == '1' %}true{% else %}false{% endif %}">
+            <span class="bc-sr-only">{{ config.label }}</span>
+            <span
+                class="bc-switch-knob bc-translate-x-0 bc-pointer-events-none bc-relative bc-inline-block bc-h-5 bc-w-5 bc-transform bc-rounded-full bc-bg-white bc-shadow bc-ring-0 bc-transition bc-duration-200 bc-ease-in-out">
+        <span
+            class="bc-switch-inactive bc-opacity-100 bc-ease-in bc-duration-200 bc-absolute bc-inset-0 bc-flex bc-h-full bc-w-full bc-items-center bc-justify-center bc-transition-opacity"
+            aria-hidden="true">
+          <svg class="bc-h-3 bc-w-3 bc-text-gray-400" fill="none" viewBox="0 0 12 12">
+            <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </span>
+                <!-- Enabled: "opacity-100 ease-in duration-200", Not Enabled: "opacity-0 ease-out duration-100" -->
+        <span
+            class="bc-switch-active bc-opacity-0 bc-ease-out bc-duration-100 bc-absolute bc-inset-0 bc-flex bc-h-full bc-w-full bc-items-center bc-justify-center bc-transition-opacity"
+            aria-hidden="true">
+          <svg class="bc-h-3 bc-w-3 {{ config.iconColorChecked }}" fill="currentColor" viewBox="0 0 12 12">
+            <path
+                d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z"></path>
+          </svg>
+        </span>
+      </span>
+        </button>
+        <input id="{{ config.id }}" name="{{ name }}" type="hidden" value="{{ config.value }}">
+        {% if config.hint is not empty %}
+            {{ hint.component({
+                hint: config.hint,
+                position: config.hintPopupPosition
+            }) }}
+        {% endif %}
+    </div>
+    {% if config.alertMessage is not empty %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error" id="{{ config.id }}-alert">{{ config.alertMessage | raw }}</div>
+    {% endif %}
+    {% if config.warningMessage is not empty %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning" id="{{ config.id }}-warning">{{ config.warningMessage | raw }}</div>
+    {% endif %}
+    {# Displays the info message. #}
+    {% if config.infoMessage is not empty %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info">{{ config.infoMessage | raw }}</div>
+    {% endif %}
+{% endmacro %}

@@ -1,0 +1,175 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="background-tasks-status">
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+        {% import "system/macro/icons/chevron-down.html.twig" as chevron_down_icon %}
+        {% import "system/macro/icons/clock.html.twig" as clock_icon %}
+        {% import "system/macro/icons/forward.html.twig" as forward_icon %}
+        {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+
+        {% block mainHeader %}
+            {{ card_heading.component({
+                title: localized.headline.finalizingInstallation,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            <table class="brlbs-cmpnt-table bc-min-w-full">
+                <thead class="bc-bg-gray-100">
+                <tr>
+                    <th class="bc-w-24 bc-text-left" scope="col">{{ localized.table.status | raw }}</th>
+                    <th class="bc-text-left" scope="col">{{ localized.table.task | raw }}</th>
+                </tr>
+                </thead>
+                <tbody class="brlbs-cmpnt-text">
+                    <tr data-brlbs-task="download-page-selection-keyword-list" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.downloadPageSelectionKeywordList | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="configure-legal-pages" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="skipped">{{ forward_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.configureLegalPages | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="configure-language-switcher" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="skipped">{{ forward_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.configureLanguageSwitcher | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="register-cloud-scan-setup" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.registerCloudScanSetup | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="check-cloud-scan-status" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.checkCloudScanStatus | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="get-suggested-packages" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.getSuggestedPackages | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="register-installation-tasks" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.registerInstallationTasks | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="install-packages" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="skipped">{{ forward_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.installPackages | raw }}</td>
+                    </tr>
+                    <tr data-brlbs-task="register-cloud-scan-audit" data-brlbs-state="pending">
+                        <td>
+                            <div class="bc-flex bc-justify-start">
+                                <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                <div data-brlbs-state-match="processing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                <div class="bc-text-green-600" data-brlbs-state-match="completed">{{ check_circle_icon.component({}) }}</div>
+                                <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                            </div>
+                        </td>
+                        <td>{{ localized.table.registerCloudScanAudit | raw }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bc-hidden">
+                <div class="bc-flex bc-flex-col bc-place-items-center bc-gap-y-6 bc-p-6">
+                    <div class="bc-w-full bc-flex bc-justify-end bc-gap-x-2 bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        <span class="bc-text-sm bc-font-medium brlbs-cmpnt-text">{{ localized.text.pressNextToComplete | raw }}</span>
+                        <span class="bc-animate-bounce">{{ chevron_down_icon.component({ }) }}</span>
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with { id: 'symbolsExplained', expanded: true } %}
+                        {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                        {% import "system/macro/icons/clock.html.twig" as clock_icon %}
+                        {% import "system/macro/icons/forward.html.twig" as forward_icon %}
+                        {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineSymbolsExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <ul class="bc-space-y-2 bc-text-left">
+                                <li>{{ clock_icon.component({}) }} {{ localized.thingsToKnow.symbolExplainedPending | raw }}</li>
+                                <li>{{ check_circle_icon.component({}) }} {{ localized.thingsToKnow.symbolExplainedCompleted | raw }}</li>
+                                <li>{{ x_circle_icon.component({}) }} {{ localized.thingsToKnow.symbolExplainedFailed | raw }}</li>
+                                <li>{{ forward_icon.component({}) }} {{ localized.thingsToKnow.symbolExplainedSkipped | raw }}</li>
+                            </ul>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 1 + (data.setupType != 'quick' ? 7 : 0) + (data.setupType == 'guided' ? 5 : 0) + (data.multilanguagePluginActive ? 0 : -1),
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

@@ -12,27 +12,6 @@ namespace Duplicator\Installer\Utils;
 class InstallerUpsell
 {
     /**
-     * Utils::getCampainUrl
-     * Get upgrade campaign URL
-     *
-     * @param string $medium  utm_medium flag
-     * @param string $content utm_content flag
-     *
-     * @return string
-     */
-    public static function getCampaignUrl($medium, $content = '')
-    {
-        $utmData = array(
-            'utm_medium' => $medium,
-            'utm_content' => $content,
-            'utm_source'   => 'WordPress',
-            'utm_campaign' => 'liteplugin'
-        );
-
-        return 'https://duplicator.com/lite-upgrade/?' . http_build_query($utmData);
-    }
-
-    /**
      * getCampainUrlHtml
      * Get upgrade campaign HTML for tooltips
      *
@@ -42,7 +21,7 @@ class InstallerUpsell
      */
     public static function getCampaignTooltipHTML($utmData)
     {
-        $url = self::getCampaignUrl($utmData);
+        $url = InstallerLinkManager::getCampaignUrl($utmData);
         if (function_exists('esc_url')) {
             $url = esc_url($url);
         } else {

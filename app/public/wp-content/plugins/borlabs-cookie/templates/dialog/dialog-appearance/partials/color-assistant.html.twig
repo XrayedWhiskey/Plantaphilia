@@ -1,0 +1,256 @@
+<div class="bc-flex bc-flex-wrap md:bc-flex-nowrap md:bc-gap-x-6">
+    <div class="bc-w-full md:bc-w-5/12">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+
+            {% block header %}
+                {{ card_heading.component({
+                    title: localized.headline.colorAssistant,
+                }) }}
+            {% endblock %}
+
+            {% block content %}
+                <form action="#">
+                    {{ row_color_selection.component({
+                        id: 'colorAssistantAccentColor',
+                        hint: localized.hint.colorAssistantAccentColor,
+                        label: localized.field.colorAssistantAccentColor,
+                        value: data.dialogButtonSaveConsentColor,
+                    }) }}
+
+                    {{ row_color_selection.component({
+                        id: 'colorAssistantContrastColor',
+                        hint: localized.hint.colorAssistantContrastColor,
+                        label: localized.field.colorAssistantContrastColor,
+                        value: data.dialogButtonSaveConsentTextColor,
+                    }) }}
+
+                    {{ row_color_selection.component({
+                        id: 'colorAssistantDialogBackgroundColor',
+                        hint: localized.hint.colorAssistantDialogBackgroundColor,
+                        label: localized.field.colorAssistantDialogBackgroundColor,
+                        value: data.dialogBackgroundColor,
+                    }) }}
+
+                    {% embed "system/embed/form-row.html.twig" %}
+                        {% import "system/macro/form-component/button-sparkle.html.twig" as button_sparkle %}
+
+                        {% block label %}
+                        {% endblock %}
+
+                        {% block input %}
+                            {{ button_sparkle.component({
+                                button: localized.button.applyColors,
+                                dataAttribute: 'data-brlbs-color-assistant-apply-colors-button',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+                </form>
+            {% endblock %}
+        {% endembed %}
+    </div>
+    <div class="bc-w-full md:bc-w-7/12">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+            {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+            {% block header %}
+                {{ card_heading.component({
+                    title: localized.headline.schematicPreview,
+                }) }}
+            {% endblock %}
+            {% block content %}
+                <div class="bc-grid" style="background-image: url('{{ imageUrl('borlabs-cookie-website-scheme.png') }}'); background-size: cover;">
+                    <div class="brlbs-cmpnt-color-assistant-preview-backdrop bc-col-span-full bc-row-span-full"></div>
+                    <div class="bc-col-span-full bc-row-span-full bc-m-auto bc-p-5 bc-w-full md:bc-w-1/2 bc-z-10">
+                        <svg class="bc-w-full bc-shadow-2xl" viewBox="0 0 512 384" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <style>
+                                #bcPreviewHeadlineTextMode {
+                                    font: bold 24px sans-serif;
+                                }
+
+                                #bcPreviewButtonSaveTextTextMode,
+                                #bcPreviewButtonEssentialTextTextMode,
+                                #bcPreviewButtonAllTextTextMode,
+                                #bcPreviewCardAHeadlineTextMode,
+                                #bcPreviewCardBHeadlineTextMode,
+                                #bcPreviewTabHistoryTextTextMode,
+                                #bcPreviewTabServiceGroupsTextTextMode,
+                                #bcPreviewTabServicesTextTextMode,
+                                #bcPreviewTabProviderTextTextMode {
+                                    font: bold 10px sans-serif;
+                                }
+
+                                #bcPreviewCardAControlElementTextMode,
+                                #bcPreviewCardAServiceListItemAControlElementTextMode,
+                                #bcPreviewCardAServiceListItemAHeadlineTextMode,
+                                #bcPreviewCardAServiceListItemBControlElementTextMode,
+                                #bcPreviewCardAServiceListItemBHeadlineTextMode,
+                                #bcPreviewCardBControlElementTextMode,
+                                #bcPreviewControlElementTextMode,
+                                #bcPreviewDialogFooterLinkTextMode {
+                                    font: 8px sans-serif;
+                                }
+
+
+                                #bcPreviewCardATextTextMode,
+                                #bcPreviewDeselectAllButtonTextTextMode,
+                                #bcPreviewSelectAllButtonTextTextMode {
+                                    font: 6px sans-serif;
+                                }
+
+                                [data-brlbs-color-assistant-preview-text-mode="show"] {
+                                    display: none;
+                                }
+                            </style>
+                            <rect id="bcPreviewDialog" x="0" y="0" width="512" height="384" rx="5" fill="#ffffff" />
+                            <g transform="translate(20,23)">
+                                <rect id="bcPreviewControlElement" data-brlbs-color-assistant-preview-text-mode="hide" width="48" height="10" rx="0" fill="#2563eb" />
+                                <text id="bcPreviewControlElementTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="0" y="2.5%" dominant-baseline="middle" text-anchor="left" fill="#2563eb">Lorem</text>
+                            </g>
+                            <rect id="bcPreviewHeadline" data-brlbs-color-assistant-preview-text-mode="hide" x="128" y="14" width="256" height="28" rx="0" fill="#555555" />
+                            <text id="bcPreviewHeadlineTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="50%" y="33" dominant-baseline="middle" text-anchor="middle" fill="#555555">Lorem ipsum</text>
+                            <rect id="bcPreviewHeadlineSeparator" x="20" y="55" width="472" height="1" rx="0" fill="#e5e5e5" />
+                            <!-- TabBar -->
+                            <g transform="translate(20,65)">
+                                <rect id="bcPreviewTabServiceGroups" width="118" height="28" rx="5" fill="#2563eb" />
+                                <rect id="bcPreviewTabServiceGroupsText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(31,8)" width="56" height="10" rx="0" fill="#ffffff" />
+                                <text id="bcPreviewTabServiceGroupsTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="59" y="14" dominant-baseline="middle" text-anchor="middle" fill="#ffffff">Lorem ipsum</text>
+                            </g>
+                            <rect id="bcPreviewTabActiveFakeBorder" x="20" y="89" width="118" height="4" rx="0" fill="#2563eb" />
+                            <rect id="bcPreviewTabActiveBorder" x="20" y="91" width="118" height="2" rx="0" fill="#0063e3" />
+                            <g transform="translate(138,65)">
+                                <rect id="bcPreviewTabServices" width="118" height="28" rx="5" fill="#ffffff" />
+                                <rect id="bcPreviewTabServicesText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(31,8)" width="56" height="10" rx="0" fill="#555555" />
+                                <text id="bcPreviewTabServicesTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="59" y="14" dominant-baseline="middle" text-anchor="middle" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(256,65)">
+                                <rect id="bcPreviewTabProvider" width="118" height="28" rx="5" fill="#ffffff" />
+                                <rect id="bcPreviewTabProviderText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(31,8)" width="56" height="10" rx="0" fill="#555555" />
+                                <text id="bcPreviewTabProviderTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="59" y="14" dominant-baseline="middle" text-anchor="middle" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(374,65)">
+                                <rect id="bcPreviewTabHistory" width="118" height="28" rx="5" fill="#ffffff" />
+                                <rect id="bcPreviewTabHistoryText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(31,8)" width="56" height="10" rx="0" fill="#555555" />
+                                <text id="bcPreviewTabHistoryTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="59" y="14" dominant-baseline="middle" text-anchor="middle" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <rect id="bcPreviewTabInactiveTabsFakeBorder" x="138" y="89" width="354" height="4" rx="0" fill="#ffffff" />
+                            <rect id="bcPreviewTabInactiveTabsBorder" x="138" y="91" width="354" height="2" rx="0" fill="#e6e6e6" />
+                            <!-- Select Buttons -->
+                            <g transform="translate(373,100)">
+                                <rect id="bcPreviewSelectAllButton" width="56" height="20" rx="5" fill="#000000" />
+                                <rect id="bcPreviewSelectAllButtonText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(12,8)" width="32" height="4" rx="0" fill="#ffffff" />
+                                <text id="bcPreviewSelectAllButtonTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="28" y="11" dominant-baseline="middle" text-anchor="middle" fill="#ffffff">Lorem</text>
+                            </g>
+                            <g transform="translate(436,100)">
+                                <rect id="bcPreviewDeselectAllButton" width="56" height="20" rx="5" fill="#000000" />
+                                <rect id="bcPreviewDeselectAllButtonText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(12,8)" width="32" height="4" rx="0" fill="#ffffff" />
+                                <text id="bcPreviewDeselectAllButtonTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="28" y="11" dominant-baseline="middle" text-anchor="middle" fill="#ffffff">Lorem</text>
+                            </g>
+                            <!-- Card A -->
+                            <rect id="bcPreviewCardA" x="20" y="131" width="472" height="103" rx="5" fill="#f7f7f7" />
+                            <g transform="translate(40,141)">
+                                <rect id="bcPreviewCardACheckbox" width="12" height="12" rx="3" fill="#2563eb" stroke="#0063e3" stroke-width="2" />
+                                <rect id="bcPreviewCardAHeadline" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(24,-1)" width="96" height="14" rx="0" fill="#555555" />
+                                <text id="bcPreviewCardAHeadlineTextMode" data-brlbs-color-assistant-preview-text-mode="show" transform="translate(24,7)" dominant-baseline="middle" text-anchor="left" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(40,158)">
+                                <rect id="bcPreviewCardAText" data-brlbs-color-assistant-preview-text-mode="hide" width="320" height="8" rx="0" fill="#555555" />
+                                <text id="bcPreviewCardATextTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="0" y="6" dominant-baseline="middle" text-anchor="left" fill="#555555">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore.</text>
+                            </g>
+                            <g transform="translate(424,141)">
+                                <rect id="bcPreviewCardAControlElement" data-brlbs-color-assistant-preview-text-mode="hide" width="48" height="14" rx="0" fill="#2563eb" />
+                                <text id="bcPreviewCardAControlElementTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="10" y="10" dominant-baseline="middle" text-anchor="right" fill="#2563eb">Lorem</text>
+                            </g>
+                            <!-- ListItem A -->
+                            <rect id="bcPreviewCardAServiceListItemA" x="40" y="172" width="432" height="28" rx="5" fill="#ffffff" />
+                            <g transform="translate(50,181)">
+                                <rect id="bcPreviewCardAServiceListItemAHeadline" data-brlbs-color-assistant-preview-text-mode="hide" width="96" height="10" rx="0" fill="#555555" />
+                                <text id="bcPreviewCardAServiceListItemAHeadlineTextMode" data-brlbs-color-assistant-preview-text-mode="show" y="6" dominant-baseline="middle" text-anchor="left" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(382,181)">
+                                <rect id="bcPreviewCardAServiceListItemAControlElement" data-brlbs-color-assistant-preview-text-mode="hide" width="48" height="10" rx="0" fill="#2563eb" />
+                                <text id="bcPreviewCardAServiceListItemAControlElementTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="10" y="6" dominant-baseline="middle" text-anchor="right" fill="#2563eb">Lorem</text>
+                            </g>
+                            <rect id="bcPreviewCardAServiceListItemASwitchButton" x="434" y="179" width="28" height="14" rx="8" fill="#2563eb" />
+                            <rect id="bcPreviewCardAServiceListItemASwitchButtonDot" x="450" y="182" width="8" height="8" rx="4" fill="#ffffff" />
+                            <!-- ListItem B -->
+                            <rect id="bcPreviewCardAServiceListItemB" x="40" y="201" width="432" height="28" rx="5" fill="#ffffff" />
+                            <g transform="translate(50,210)">
+                                <rect id="bcPreviewCardAServiceListItemBHeadline" data-brlbs-color-assistant-preview-text-mode="hide" width="96" height="10" rx="0" fill="#555555" />
+                                <text id="bcPreviewCardAServiceListItemBHeadlineTextMode" data-brlbs-color-assistant-preview-text-mode="show" y="6" dominant-baseline="middle" text-anchor="left" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(382,210)">
+                                <rect id="bcPreviewCardAServiceListItemBControlElement" data-brlbs-color-assistant-preview-text-mode="hide" width="48" height="10" rx="0" fill="#2563eb" />
+                                <text id="bcPreviewCardAServiceListItemBControlElementTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="10" y="6" dominant-baseline="middle" text-anchor="right" fill="#2563eb">Lorem</text>
+                            </g>
+                            <rect id="bcPreviewCardAServiceListItemBSwitchButton"  x="434" y="208" width="28" height="14" rx="8" fill="#bdc1c8" />
+                            <rect id="bcPreviewCardAServiceListItemBSwitchButtonDot" x="438" y="211" width="8" height="8" rx="4" fill="#ffffff" />
+                            <!-- Card B -->
+                            <rect id="bcPreviewCardB" x="20" y="244" width="472" height="41" rx="5" fill="#f7f7f7" />
+                            <g transform="translate(40,254)">
+                                <rect id="bcPreviewCardBCheckbox" width="12" height="12" rx="3" fill="#ffffff" stroke="#a72828" stroke-width="2" />
+                                <rect id="bcPreviewCardBHeadline" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(24,-1)" width="96" height="14" rx="0" fill="#555555" />
+                                <text id="bcPreviewCardBHeadlineTextMode" data-brlbs-color-assistant-preview-text-mode="show" transform="translate(24,7)" dominant-baseline="middle" text-anchor="left" fill="#555555">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(424,254)">
+                                <rect id="bcPreviewCardBControlElement" data-brlbs-color-assistant-preview-text-mode="hide" width="48" height="14" rx="0" fill="#2563eb" />
+                                <text id="bcPreviewCardBControlElementTextMode" data-brlbs-color-assistant-preview-text-mode="show" x="10" y="10" dominant-baseline="middle" text-anchor="right" fill="#2563eb">Lorem</text>
+                            </g>
+                            <!-- Consent Buttons -->
+                            <g transform="translate(44,299)">
+                                <rect id="bcPreviewButtonSave" width="128" height="28" rx="5" fill="#2563eb" />
+                                <rect id="bcPreviewButtonSaveText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(32,9)" width="64" height="10" rx="0" fill="#ffffff" />
+                                <text id="bcPreviewButtonSaveTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" transform="translate(64,14)" dominant-baseline="middle" text-anchor="middle" fill="#ffffff">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(192,299)">
+                                <rect id="bcPreviewButtonAll" width="128" height="28" rx="5" fill="#2563eb" />
+                                <rect id="bcPreviewButtonAllText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(32,9)"  width="64" height="10" rx="0" fill="#ffffff" />
+                                <text id="bcPreviewButtonAllTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" transform="translate(64,14)" dominant-baseline="middle" text-anchor="middle" fill="#ffffff">Lorem ipsum</text>
+                            </g>
+                            <g transform="translate(340,299)">
+                                <rect id="bcPreviewButtonEssential" width="128" height="28" rx="5" fill="#2563eb" />
+                                <rect id="bcPreviewButtonEssentialText" data-brlbs-color-assistant-preview-text-mode="hide" transform="translate(32,9)"  width="64" height="10" rx="0" fill="#ffffff" />
+                                <text id="bcPreviewButtonEssentialTextTextMode" data-brlbs-color-assistant-preview-text-mode="show" transform="translate(64,14)" dominant-baseline="middle" text-anchor="middle" fill="#ffffff">Lorem ipsum</text>
+                            </g>
+                            <!-- Footer -->
+                            <rect id="bcPreviewDialogFooter" x="0" y="342" width="512" height="42" rx="5" fill="#f5f5f5" />
+                            <rect id="bcPreviewDialogFooterFakeBorder" x="0" y="342" width="512" height="3" rx="0" fill="#f5f5f5" />
+                            <g transform="translate(192,358)">
+                                <rect id="bcPreviewDialogFooterLink" data-brlbs-color-assistant-preview-text-mode="hide" width="128" height="10" rx="0" fill="#404040" />
+                                <text id="bcPreviewDialogFooterLinkTextMode" data-brlbs-color-assistant-preview-text-mode="show" transform="translate(64,5)" dominant-baseline="middle" text-anchor="middle" fill="#404040">Lorem ipsum</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                {{ row_switch_button.component({
+                    id: 'textMode',
+                    hint: localized.hint.colorAssistantTextMode,
+                    label: localized.field.colorAssistantTextMode,
+                    value: false,
+                }) }}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/button.html.twig" as button %}
+                    {% import "system/macro/icons/arrow-path.html.twig" as arrow_path_icon %}
+
+                    {% block label %}
+                    {% endblock %}
+
+                    {% block input %}
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            button: "#{arrow_path_icon.component({ cssClasses: ['bc-relative', 'bc--top-0.5'], height: 'bc-h-4', width: 'bc-w-4', })}#{localized.button.updatePreview}",
+                            dataAttribute: 'data-brlbs-color-assistant-preview-update-button',
+                            focusColor: 'focus:bc-ring-slate-950',
+                        }) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    </div>
+</div>

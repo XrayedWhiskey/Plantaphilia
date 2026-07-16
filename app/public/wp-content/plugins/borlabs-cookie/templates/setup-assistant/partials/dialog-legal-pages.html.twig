@@ -1,0 +1,62 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="dialog-legal-pages">
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/media-selection.html.twig" as media_selection %}
+        {% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+
+        {% block mainHeader %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.legalPages,
+                subtitle: localized.headline.dialogSettings,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            <div data-brlbs-loading>
+                <div class="bc-flex bc-p-5 bc-justify-center">
+                    <img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin" style="width: 32px; height: 32px;">
+                </div>
+            </div>
+
+            <div data-brlbs-result class="bc-hidden">
+                <fieldset class="bc-p-6">
+                    <legend class="bc-pt-6 bc-text-lg bc-font-medium bc-text-center">{{ localized.headline.checkLegalPagesForAccuracy | raw }}</legend>
+                    <div class="bc-flex bc-flex-col bc-gap-y-4">
+                        {% for language in data.languages.list %}
+                            <div class="bc-w-full {{ loop.last == false ? 'bc-mb-6' : '' }}">
+                                {% include "setup-assistant/partials/language-specific-legal-pages.html.twig" %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            </div>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLegalPages', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineLegalPages | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.legalPagesA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.legalPagesB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 5 + (data.setupType == 'guided' ? 5 : 0) + (data.multilanguagePluginActive ? 0 : -1),
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

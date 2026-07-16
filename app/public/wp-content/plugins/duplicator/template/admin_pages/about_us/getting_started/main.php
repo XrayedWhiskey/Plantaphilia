@@ -8,7 +8,7 @@
  */
 
 use Duplicator\Core\Views\TplMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined('ABSPATH') || exit;
 
@@ -26,3 +26,5 @@ defined('ABSPATH') || exit;
 TplMng::getInstance()->render('admin_pages/about_us/getting_started/first_package');
 
 TplMng::getInstance()->render('admin_pages/about_us/getting_started/get_pro');
+?>
+</div>

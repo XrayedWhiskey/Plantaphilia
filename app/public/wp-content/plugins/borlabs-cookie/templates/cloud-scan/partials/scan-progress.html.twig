@@ -1,0 +1,43 @@
+{% import "system/macro/rest-client-error.html.twig" as rest_client_error %}
+
+<div class="bc-rounded-md bc-bg-white bc-shadow bc-mb-6">
+    <div
+         data-brlbs-cloud-scan="{{ data.scan.id }}"
+         data-brlbs-cloud-scan-details-url="{{ wpNonceUrl("?page=#{controllerId}&action=details&id=#{data.scan.id}", "#{controllerId}-#{data.scan.id}-details") | raw }}"
+         data-brlbs-cloud-scan-overview-url="?page={{ controllerId }}"
+    >
+        <div class="bc-p-5 bc-text-center">
+            <img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-[spin_2s_linear_infinite] bc-w-8 bc-h-8 bc-m-auto">
+        </div>
+
+        <p class="bc-text-center bc-text-xs borlabs-cookie-cloud-scan-status-scanning">{{ localized.text.scanInProgress | raw }}...</p>
+        <p class="bc-text-center bc-text-xs bc-hidden borlabs-cookie-cloud-scan-status-analysing">{{ localized.text.scanAnalysing | raw }}...</p>
+
+        <div class="bc-flex bc-flex-col bc-items-center">
+            <div class="bc-w-8/12 bc-mt-5">
+                <div class="bc-w-full bc-rounded-full bc-bg-neutral-600 bc-p-1">
+                    <div id="borlabs-cookie-cloud-scan-progress-bar" class="bc-transition-all bc-duration-1000 bc-rounded-full bc-bg-gradient-to-t bc-from-blue-600 bc-to-blue-400 bc-p-1.5" style="width: 0"></div>
+                </div>
+            </div>
+        </div>
+
+        <dl class="bc-grid bc-grid-cols-3 bc-text-center bc-mt-5 bc-border-t bc-border-solid bc-border-gray-200">
+            <div class="bc-col-span-1 bc-p-3">
+                <dt class="bc-font-semibold">{{ localized.text.scanningCount | raw }}</dt>
+                <dd><span id="borlabs-cookie-cloud-scan-scanning-count">-</span></dd>
+            </div>
+            <div class="bc-col-span-1 bc-p-3">
+                <dt class="bc-font-semibold">{{ localized.text.finishedCount | raw }}</dt>
+                <dd><span id="borlabs-cookie-cloud-scan-finished-count">-</span></dd>
+            </div>
+            <div class="bc-col-span-1 bc-p-3">
+                <dt class="bc-font-semibold">{{ localized.text.failedCount | raw }}</dt>
+                <dd><span id="borlabs-cookie-cloud-scan-failure-count">-</span></dd>
+            </div>
+        </dl>
+    </div>
+
+    {{ rest_client_error.component({
+        defaultErrorMessage: localized.api.alert.apiError,
+    }, localized.restClient) }}
+</div>

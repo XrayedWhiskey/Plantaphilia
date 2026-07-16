@@ -7,6 +7,7 @@
  * @copyright (c) 2022, Snap Creek LLC
  */
 
+use Duplicator\Utils\LinkManager;
 use Duplicator\Utils\Upsell;
 
 defined('ABSPATH') || exit;
@@ -87,7 +88,7 @@ defined('ABSPATH') || exit;
             <?php
             printf(
                 '<a href="%s" target="_blank" rel="noopener noreferrer">',
-                esc_url(Upsell::getCampaignUrl('duplicator-about_getting-started', 'Get Duplicator Pro Today'))
+                esc_url(LinkManager::getCampaignUrl('duplicator-about_getting-started', 'Get Duplicator Pro Today'))
             );
 
             _e('Get Duplicator Pro Today and Unlock all the Powerful Features', 'duplicator');

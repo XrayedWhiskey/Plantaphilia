@@ -1,4 +1,4 @@
-import * as Prism from 'prismjs'
+import Prism from 'prismjs'
 import 'prismjs/components/prism-markup'
 import 'prismjs/components/prism-markup-templating'
 import 'prismjs/components/prism-clike'
@@ -19,3 +19,5 @@ document.addEventListener('readystatechange', () => {
 		Prism.highlightAll()
 	}
 })
+
+window.CODE_SNIPPETS_PRISM = Prism

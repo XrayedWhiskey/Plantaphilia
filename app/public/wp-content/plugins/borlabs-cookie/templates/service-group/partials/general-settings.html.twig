@@ -1,0 +1,141 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.serviceGroupSettings,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% import "system/macro/row/input.html.twig" as row_input %}
+        {% import "system/macro/row/language-name.html.twig" as row_language_name %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.key,
+            hint: localized.hint.key,
+            id: 'key',
+            isDisabled: isCreateAction ? false : true,
+            isRequired: isCreateAction ? true : false,
+            label: localized.field.key,
+            value: data.key,
+        }) }}
+
+        {% if isEditAction %}
+            {{ row_input.component({
+                clipboard: true,
+                hint: localized.hint.shortcode,
+                id: 'shortcode',
+                isDisabled: true,
+                isRequired: false,
+                label: localized.field.shortcode,
+                value: "[borlabs-cookie id=\"#{data.key}\" type=\"service-group\"]#{localized.placeholder.blockThis | raw}[/borlabs-cookie]",
+            }, localized) }}
+        {% endif %}
+
+        {% if isCreateAction or data.key is not same as('essential') %}
+            {{ row_switch_button.component({
+                hint: localized.hint.status,
+                id: 'status',
+                label: localized.field.status,
+                value: data.status,
+            }) }}
+        {% else %}
+            <input type="hidden" name="status" id="status" value="1">
+        {% endif %}
+
+        {% if isCreateAction or data.key is not same as('essential') %}
+            {{ row_switch_button.component({
+                hint: localized.hint.preSelected,
+                id: 'preSelected',
+                label: localized.field.preSelected,
+                value: data.preSelected,
+            }) }}
+        {% else %}
+            <input type="hidden" name="preSelected" id="preSelected" value="1">
+        {% endif %}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.position,
+            hint: localized.hint.position,
+            id: 'position',
+            label: localized.field.position,
+            min: '1',
+            step: '1',
+            type: 'number',
+            value: data.position,
+        }) }}
+
+        {{ row_language_name.component({
+            language: data.language,
+        }, localized) }}
+
+        <!-- Synchronization Settings -->
+        {{ synchronizationSettingsFields(
+            languages,
+            {
+                collectionName: "languages",
+                hasRepository: true,
+                isCreateAction: isCreateAction,
+            }
+        ) | raw }}
+
+        {{ row_save.component({
+            action: 'save',
+            backLink: "?page=#{controllerId}",
+            nonce: wpNonceField("#{controllerId}-#{data.id}-save"),
+            value: data.id,
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionShortcodeExplained', expanded: true } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineShortcode | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.shortcodeExplainedA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.shortcodeExplainedB | raw }}</p>
+
+                        {% if isCreateAction %}
+                            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info">
+                                {{ localized.thingsToKnow.shortcodesAvailableAfterCreation | raw }}
+                            </div>
+                        {% endif %}
+                    {% endblock %}
+                {% endembed %}
+
+                {% if isEditAction %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionSynchronizeConfigurationExplained' } %}
+                        {% block title %}
+                            {{ localized.global.thingsToKnow.headlineSynchronizeConfigurationExplained | raw }}
+                        {% endblock %}
+
+                        {% block content %}
+                            <p>{{ localized.global.thingsToKnow.synchronizeConfigurationExplained | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionSynchronizeTranslationExplained' } %}
+                        {% block title %}
+                            {{ localized.global.thingsToKnow.headlineSynchronizeTranslationExplained | raw }}
+                        {% endblock %}
+
+                        {% block content %}
+                            <p>{{ localized.global.thingsToKnow.synchronizeTranslationExplained | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endif %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

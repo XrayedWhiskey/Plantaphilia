@@ -1,0 +1,172 @@
+{% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            button: localized.serviceLocation.button.addLocation,
+            buttonDataAttribute: 'data-brlbs-add-table-row="serviceLocations"',
+            buttonId: 'addServiceLocation',
+            buttonName: 'addServiceLocation',
+            title: localized.serviceLocation.headline.locations,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: 'data-brlbs-table="serviceLocations"' } %}
+            {% block heading %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceLocation.table.hostname | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceLocation.table.path | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        #
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+
+            {% block body %}
+                {% if data.serviceLocations is not empty %}
+                    {% for serviceLocation in data.serviceLocations %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceLocations-#{loop.index0}-hostname",
+                                            name: "serviceLocations[#{loop.index0}][hostname]",
+                                            spellcheck: false,
+                                            value: serviceLocation.hostname,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceLocations-#{loop.index0}-path",
+                                            name: "serviceLocations[#{loop.index0}][path]",
+                                            spellcheck: false,
+                                            value: serviceLocation.path,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "borlabsCookieServiceLocationModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "borlabsCookieServiceLocationModalDelete-#{loop.index0}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+                {% endif %}
+
+                {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: data.serviceLocations is not empty } %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: 'colspan="3"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.serviceLocation.alert.noLocationConfigured | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        <script type="text/template" data-brlbs-row-template="serviceLocations">
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceLocations-##LOOP_INDEX##-hostname",
+                                name: "serviceLocations[##LOOP_INDEX##][hostname]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceLocations-##LOOP_INDEX##-path",
+                                name: "serviceLocations[##LOOP_INDEX##][path]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                        {% block content %}
+                            <button data-brlbs-modal-target="{{ 'borlabsCookieServiceLocationModalDelete-##LOOP_INDEX##' }}" type="button">
+                                {{ trash_icon.component({}) }}
+                            </button>
+                                {% embed "system/embed/modal/modal.html.twig" with {
+                                    buttonText: localized.global.button.delete,
+                                    id: 'borlabsCookieServiceLocationModalDelete-##LOOP_INDEX##',
+                                    title: localized.global.headline.deleteSelection,
+                                } %}
+                                {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </script>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLocationsExplained', expanded: true } %}
+                    {% block title %}
+                        {{ localized.serviceLocation.thingsToKnow.headlineLocationsExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.serviceLocation.thingsToKnow.locationsExplained | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHostnameExplained' } %}
+                    {% block title %}
+                        {{ localized.serviceLocation.thingsToKnow.headlineHostnameExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.serviceLocation.thingsToKnow.hostnameExplained | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

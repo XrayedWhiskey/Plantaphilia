@@ -1,4 +1,9 @@
 <?php
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fread
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -16,6 +21,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 
 	protected $delimiter = ',';
 	protected $enclosure = '"';
+	protected $escape = "\\";
 
 	protected $filename;
 
@@ -36,7 +42,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 				$this->handle = fopen( $this->filename, 'a' );
 			}
 			$data = array_map( 'serialize', array( $row->getKey(), $row->getMeta(), $row->getData() ) );
-			fputcsv( $this->handle, $data, $this->delimiter, $this->enclosure );
+			fputcsv( $this->handle, $data, $this->delimiter, $this->enclosure, $this->escape );
 		}
 	}
 
@@ -74,7 +80,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 		foreach ( $this->header as $column ) {
 			$rawHeader[] = serialize( array( $column->getKey(), $column->getMeta() ) );
 		}
-		fputcsv( $this->handle, $rawHeader, $this->delimiter, $this->enclosure );
+		fputcsv( $this->handle, $rawHeader, $this->delimiter, $this->enclosure, $this->escape );
 	}
 
 	public function forceSave() {
@@ -88,11 +94,11 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 		foreach ( $this->header as $column ) {
 			$rawHeader[] = serialize( array( $column->getKey(), $column->getMeta() ) );
 		}
-		fputcsv( $handle, $rawHeader, $this->delimiter, $this->enclosure );
+		fputcsv( $handle, $rawHeader, $this->delimiter, $this->enclosure, $this->escape );
 
 		foreach ( $this->rowsBuffer as $row ) {
 			$data = array_map( 'serialize', array( $row->getKey(), $row->getMeta(), $row->getData() ) );
-			fputcsv( $handle, $data, $this->delimiter, $this->enclosure );
+			fputcsv( $handle, $data, $this->delimiter, $this->enclosure, $this->escape );
 		}
 
 		fclose( $handle );
@@ -108,7 +114,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 			return;
 		}
 
-		$header = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure );
+		$header = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure, $this->escape );
 		if ( ! $header ) {
 			return;
 		}
@@ -123,7 +129,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 		}
 
 		$this->rowsBuffer = array();
-		while ( $rawRow = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure ) ) {
+		while ( $rawRow = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure, $this->escape ) ) {
 			$row    = array_map( 'unserialize', $rawRow );
 			$rowObj = new WOE_Formatter_Storage_Row();
 			$rowObj->setKey( $row[0] );
@@ -146,7 +152,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 			return;
 		}
 
-		$header = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure );
+		$header = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure, $this->escape );
 		if ( ! $header ) {
 			return;
 		}
@@ -184,7 +190,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 
 		foreach ( $this->rowsBuffer as $row ) {
 			$data = array_map( 'serialize', array( $row->getKey(), $row->getMeta(), $row->getData() ) );
-			fputcsv( $handle, $data, $this->delimiter, $this->enclosure );
+			fputcsv( $handle, $data, $this->delimiter, $this->enclosure, $this->escape );
 		}
 
 		fclose( $handle );
@@ -197,7 +203,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
                     $type       = !is_array($sort) ? 'string' : (isset($sort[2]) ? $sort[2] : 'string');
 
                     if ($type === 'money' || $type === 'number') {
-                        return $direction === 'asc' ? $a->getDataItem($field) - $b->getDataItem($field) : $b->getDataItem($field) - $a->getDataItem($field);
+                        return $direction === 'asc' ? (float)$a->getDataItem($field) - (float)$b->getDataItem($field) : (float)$b->getDataItem($field) - (float)$a->getDataItem($field);
                     }
 
                     if ($type === 'date') {
@@ -238,7 +244,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 			return false;
 		}
 
-		$header = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure );
+		$header = fgetcsv( $handle, 0, $this->delimiter, $this->enclosure, $this->escape );
 		if ( ! $header ) {
 			return false;
 		}
@@ -265,7 +271,7 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 			return null;
 		}
 
-		$rawRow = fgetcsv( $this->handle, 0, $this->delimiter, $this->enclosure );
+		$rawRow = fgetcsv( $this->handle, 0, $this->delimiter, $this->enclosure, $this->escape );
 
 		if ( ! $rawRow ) {
 			return null;
@@ -294,6 +300,15 @@ class WOE_Formatter_Storage_Csv implements WOE_Formatter_Storage {
 
     public function delete() {
 		if( file_exists($this->filename) )
-			unlink($this->filename);
+			wp_delete_file($this->filename);
     }
+
+ 	public function setColumns($columns) {
+		$this->header = $columns;
+	}
+
+ 	public function setRows($rows) {
+		$this->rowsBuffer = $rows;
+	}
+
 }

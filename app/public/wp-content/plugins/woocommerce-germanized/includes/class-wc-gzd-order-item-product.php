@@ -38,6 +38,16 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 		return $amount;
 	}
 
+	public function get_deposit_packaging_net_amount() {
+		$amount = $this->order_item->get_meta( '_deposit_packaging_net_amount', true );
+
+		if ( '' === $amount ) {
+			$amount = wc_format_decimal( 0 );
+		}
+
+		return $amount;
+	}
+
 	private function parse_incl_tax( $incl_tax ) {
 		if ( 'incl' === $incl_tax ) {
 			$incl_tax = true;
@@ -58,6 +68,22 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 		}
 
 		$amount = $this->order_item->get_meta( '_deposit_amount', true );
+
+		if ( '' === $amount ) {
+			$amount = wc_format_decimal( 0 );
+		}
+
+		return $amount;
+	}
+
+	public function get_deposit_packaging_amount( $incl_tax = false ) {
+		$incl_tax = $this->parse_incl_tax( $incl_tax );
+
+		if ( false === $incl_tax ) {
+			return $this->get_deposit_packaging_net_amount();
+		}
+
+		$amount = $this->order_item->get_meta( '_deposit_packaging_amount', true );
 
 		if ( '' === $amount ) {
 			$amount = wc_format_decimal( 0 );
@@ -97,6 +123,16 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 		return $quantity;
 	}
 
+	public function get_deposit_packaging_number_of_contents() {
+		$quantity = $this->order_item->get_meta( '_deposit_packaging_number_contents', true );
+
+		if ( '' === $quantity ) {
+			$quantity = 1;
+		}
+
+		return $quantity;
+	}
+
 	public function get_deposit_packaging_type() {
 		return $this->order_item->get_meta( '_deposit_packaging_type', true );
 	}
@@ -117,6 +153,16 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 		 * @since 3.9.0
 		 */
 		return apply_filters( 'woocommerce_gzd_order_item_product_deposit_packaging_type_title', $returnable_type_title, $this );
+	}
+
+	public function get_deposit_tax_status() {
+		$tax_status = 'taxable';
+
+		if ( $this->order_item->get_meta( '_deposit_tax_status', true ) ) {
+			$tax_status = $this->order_item->get_meta( '_deposit_tax_status', true );
+		}
+
+		return $tax_status;
 	}
 
 	public function get_deposit_net_amount_per_unit() {
@@ -146,7 +192,7 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 	}
 
 	public function has_deposit() {
-		return ! empty( $this->get_deposit_type() ) && $this->get_deposit_amount() > 0;
+		return ! empty( $this->get_deposit_type() ) && (float) $this->get_deposit_amount() !== 0.00;
 	}
 
 	public function get_formatted_unit_base() {
@@ -165,6 +211,10 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 		$this->order_item->update_meta_data( '_deposit_type', $deposit_type );
 	}
 
+	public function set_deposit_tax_status( $tax_status ) {
+		$this->order_item->update_meta_data( '_deposit_tax_status', $tax_status );
+	}
+
 	public function set_deposit_packaging_type( $packaging_type ) {
 		$this->order_item->update_meta_data( '_deposit_packaging_type', $packaging_type );
 	}
@@ -173,12 +223,24 @@ class WC_GZD_Order_Item_Product extends WC_GZD_Order_Item {
 		$this->order_item->update_meta_data( '_deposit_amount', wc_format_decimal( $amount ) );
 	}
 
+	public function set_deposit_packaging_amount( $amount ) {
+		$this->order_item->update_meta_data( '_deposit_packaging_amount', wc_format_decimal( $amount ) );
+	}
+
 	public function set_deposit_net_amount( $amount ) {
 		$this->order_item->update_meta_data( '_deposit_net_amount', wc_format_decimal( $amount ) );
 	}
 
+	public function set_deposit_packaging_net_amount( $amount ) {
+		$this->order_item->update_meta_data( '_deposit_packaging_net_amount', wc_format_decimal( $amount ) );
+	}
+
 	public function set_deposit_quantity( $amount ) {
 		$this->order_item->update_meta_data( '_deposit_quantity', absint( $amount ) );
+	}
+
+	public function set_deposit_packaging_number_of_contents( $amount ) {
+		$this->order_item->update_meta_data( '_deposit_packaging_number_contents', absint( $amount ) );
 	}
 
 	public function set_deposit_amount_per_unit( $amount ) {

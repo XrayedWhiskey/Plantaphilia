@@ -1,0 +1,17 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- Import -->
+        {% include "import-export/partials/import.html.twig" %}
+    </form>
+
+    <!-- Export -->
+    {% include "import-export/partials/export.html.twig" %}
+{% endif %}

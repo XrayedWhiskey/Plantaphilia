@@ -27,7 +27,7 @@ class TablePress_Export {
 	 * @since 1.0.0
 	 * @var array<string, string>
 	 */
-	public $export_formats = array();
+	public array $export_formats = array();
 
 	/**
 	 * Delimiters for the CSV export.
@@ -35,15 +35,14 @@ class TablePress_Export {
 	 * @since 1.0.0
 	 * @var array<string, string>
 	 */
-	public $csv_delimiters = array();
+	public array $csv_delimiters = array();
 
 	/**
 	 * Whether ZIP archive support is available in the PHP installation on the server.
 	 *
 	 * @since 1.0.0
-	 * @var bool
 	 */
-	public $zip_support_available = false;
+	public bool $zip_support_available = false;
 
 	/**
 	 * Initialize the Export class.
@@ -102,13 +101,13 @@ class TablePress_Export {
 				$tbody = array();
 
 				foreach ( $table['data'] as $row_idx => $row ) {
-					// First row, need to check for head (but only if at least two rows).
-					if ( 0 === $row_idx && $table['options']['table_head'] && $num_rows > 1 ) {
+					// Table head rows, but only if there's at least one additional row.
+					if ( $row_idx < $table['options']['table_head'] && $num_rows > $table['options']['table_head'] ) {
 						$thead = $this->html_render_row( $row, 'th' );
 						continue;
 					}
-					// Last row, need to check for footer (but only if at least two rows).
-					if ( $last_row_idx === $row_idx && $table['options']['table_foot'] && $num_rows > 1 ) {
+					// Table foot rows, but only if there's at least one additional row.
+					if ( $row_idx > $last_row_idx - $table['options']['table_foot'] && $num_rows > $table['options']['table_foot'] ) {
 						$tfoot = $this->html_render_row( $row, 'th' );
 						continue;
 					}
@@ -125,7 +124,7 @@ class TablePress_Export {
 				}
 				$tbody = "\t<tbody>\n" . implode( '', $tbody ) . "\t</tbody>\n";
 
-				$output = "<table>\n" . $thead . $tfoot . $tbody . "</table>\n";
+				$output = "<table>\n" . $thead . $tbody . $tfoot . "</table>\n";
 				break;
 			case 'json':
 				$output = wp_json_encode( $table, TABLEPRESS_JSON_OPTIONS );
@@ -158,21 +157,27 @@ class TablePress_Export {
 		// Escape potentially dangerous functions that could be used for CSV injection attacks in external spreadsheet software.
 		$active_content_triggers = array( '=', '+', '-', '@' );
 		if ( in_array( $cell_content[0], $active_content_triggers, true ) ) {
+			// phpcs:disable Generic.Strings.UnnecessaryStringConcat.Found -- Avoid concatenation of function names to prevent false positives in code scanners.
 			$functions_to_escape = array(
 				'cmd|',
-				'rundll32',
-				'DDE(',
-				'IMPORTXML(',
-				'IMPORTFEED(',
-				'IMPORTHTML(',
-				'IMPORTRANGE(',
-				'IMPORTDATA(',
+				'FOR' . 'FILES|',
+				'rund' . 'll32',
+				'DD' . 'E(',
+				'IMPORT' . 'XML(',
+				'IMPORT' . 'FEED(',
+				'IMPORT' . 'HTML(',
+				'IMPORT' . 'RANGE(',
+				'IMPORT' . 'DATA(',
 				'IMAGE(',
 				'HYPERLINK(',
 				'WEBSERVICE(',
 			);
+			// phpcs:enable
+
+			$fn_stripos = function_exists( 'mb_stripos' ) ? 'mb_stripos' : 'stripos';
+
 			foreach ( $functions_to_escape as $function ) {
-				if ( false !== stripos( $cell_content, $function ) ) {
+				if ( false !== $fn_stripos( $cell_content, $function ) ) {
 					$cell_content = "'" . $cell_content; // Prepend a ' to indicate that the cell format is a text string.
 					break;
 				}
@@ -222,7 +227,7 @@ class TablePress_Export {
 		 * Replace any & with &amp; that is not already an encoded entity (from function htmlentities2 in WP 2.8).
 		 * A complete htmlentities2() or htmlspecialchars() would encode <HTML> tags, which we don't want.
 		 */
-		$cell_content = preg_replace( '/&(?![A-Za-z]{0,4}\w{2,3};|#[0-9]{2,4};)/', '&amp;', $cell_content );
+		$cell_content = (string) preg_replace( '/&(?![A-Za-z]{0,4}\w{2,3};|#[0-9]{2,4};)/', '&amp;', $cell_content );
 		$cell_content = "\t\t\t<{$html_tag}>{$cell_content}</{$html_tag}>\n";
 	}
 

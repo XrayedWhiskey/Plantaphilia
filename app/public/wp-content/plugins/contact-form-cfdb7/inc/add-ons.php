@@ -1,6 +1,14 @@
 <?php
 
-add_submenu_page('cfdb7-list.php', __( 'Extensions', 'contact-form-cfdb7' ), __( 'Extensions', 'contact-form-cfdb7' ), 'manage_options', 'cfdb7-extensions',  'cfdb7_extensions' );
+if (!defined( 'ABSPATH')) exit;
+
+add_submenu_page(
+	'cfdb7-list.php', 
+	__( 'Extensions', 'contact-form-cfdb7' ), 
+	'<span style="color:#f18500">' . esc_html__( 'Addons', 'contact-form-cfdb7' ) . '</span>',
+	'manage_options', 'cfdb7-extensions',  
+	'cfdb7_extensions' 
+);
 
 /**
  * Extensions page
@@ -13,7 +21,7 @@ function cfdb7_extensions(){
                 <a class="button-primary" href="https://ciphercoin.com/contact-form-7-database-cfdb7-add-ons/"><?php _e( 'Browse All Extensions', 'contact-form-cfdb7' ); ?></a>
             </span>
         </h2>
-        <p><?php _e( 'These extensions <strong>add functionality</strong> to CFDB7', 'contact-form-cfdb7' ); ?></p>
+        <p><?php _e( 'Add extra features to CFDB7 with these extensions.', 'contact-form-cfdb7' ); ?></p>
         <?php echo cfdb7_add_ons_get_feed(); ?>
     </div>
     <?php

@@ -24,7 +24,7 @@ $optimizer_i18n_strings = array(
 	__( 'Speed Optimizer by SiteGround', 'sg-cachepress' ),
 	__( 'Get the best performance for your WordPress website with our top-rated optimization plugin. The Speed Optimizer by SiteGround handles caching better than ever and provides a number of environment, media and frontend optimizations for a blazing-fast loading.', 'sg-cachepress' ),
 	__( 'Speed Optimizer - Caching', 'sg-cachepress' ),
-	__( 'Caching is essential for speeding up your website. With our Dynamic Caching enabled all non-static resources of your website are cached to prevent unnecessary database queries and page loading, effectively decreasing the loading sped and TTFB (time to first byte) of your website.', 'sg-cachepress' ),
+	__( 'Caching is essential for speeding up your website. With our Dynamic Caching enabled all non-static resources of your website are cached to prevent unnecessary database queries and page loading, effectively decreasing the loading speed and TTFB (time to first byte) of your website.', 'sg-cachepress' ),
 	__( 'Speed Optimizer - Environment', 'sg-cachepress' ),
 	__( 'Create a safer and faster experience for your users with an optimized environment - decrease the CPU usage by modifying the WordPress Heartbeat API; Pre-Fetch External domains to decrease loading time for third-party domains content; Schedule Database Maintenance to keep your databases clean and fast, and more.', 'sg-cachepress' ),
 	__( 'Speed Optimizer - Frontend Optimization', 'sg-cachepress' ),

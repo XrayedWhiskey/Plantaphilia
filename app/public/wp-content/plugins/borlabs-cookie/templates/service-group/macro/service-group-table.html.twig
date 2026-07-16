@@ -1,0 +1,129 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.name | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.id | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.position | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.global.table.languageName | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.status | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                {% block content %}
+                    {{ trash_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                {% block content %}
+                    {{ edit_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.serviceGroups is empty %}
+                <tr>
+                    <td colspan="6" class="bc-py-4 bc-text-center">
+                        {{ localized.alert.noServiceGroupConfigured | raw }}
+                    </td>
+                </tr>
+            {% else %}
+                {% for serviceGroup in config.serviceGroups %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ serviceGroup.name }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ serviceGroup.key }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% block content %}
+                                    {{ serviceGroup.position }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ languageName(serviceGroup.language) }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/table/toggle-switch.html.twig" as toggle_switch %}
+                                {% block content %}
+                                    {% if serviceGroup.key is not same as('essential') %}
+                                        {{ toggle_switch.component({
+                                            status: serviceGroup.status,
+                                            href:  wpNonceUrl("?page=#{config.controllerId}&action=switch-status&id=#{serviceGroup.id}", "#{config.controllerId}-#{serviceGroup.id}-switch-status")
+                                        }) }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                {% block content %}
+                                    {% if not serviceGroup.undeletable %}
+                                        <button
+                                            data-brlbs-modal-target="{{ 'borlabsModalDelete-' ~ serviceGroup.id }}">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            action: wpNonceUrl("?page=#{config.controllerId}&action=delete&id=#{serviceGroup.id}", "#{config.controllerId}-#{serviceGroup.id}-delete"),
+                                            buttonText: localized.global.button.delete,
+                                            id: 'borlabsModalDelete-' ~ serviceGroup.id,
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                            {% block description %}
+                                                <p class="bc-text-sm"><strong>{{ localized.table.name | raw }}
+                                                        :</strong> {{ serviceGroup.name }}</p>
+                                                <p class="bc-text-sm"><strong>{{ localized.table.id | raw }}
+                                                        :</strong> {{ serviceGroup.key }}</p>
+                                            {% endblock %}
+                                            {% block formData %}
+                                                <input type="hidden" name="id" value="{{ serviceGroup.id }}">
+                                            {% endblock %}
+                                        {% endembed %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                                {% block content %}
+                                    <a href="{{ wpNonceUrl("?page=#{config.controllerId}&action=edit&id=#{serviceGroup.id}", "#{config.controllerId}-#{serviceGroup.id}-edit") | raw }}">
+                                        {{ edit_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

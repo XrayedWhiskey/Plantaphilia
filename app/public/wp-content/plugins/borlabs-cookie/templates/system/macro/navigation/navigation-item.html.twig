@@ -1,0 +1,12 @@
+{% macro component(config, activeModule) %}
+    {% set config = { module: '', title: '' } | merge(config) %}
+    <li>
+        <a class="bc-rounded-md bc-py-2 bc-px-3 bc-inline-flex bc-items-center bc-text-sm {% if activeModule == config.module %} bc-bg-gradient-to-tr bc-from-[#ffd86f] bc-to-[#fc6262] bc-text-white {% else %} bc-text-gray-900 hover:bc-bg-gray-100 {% endif %}" {% if activeModule == config.module %} aria-current="page" {% endif %}
+           href="{{ config.href ?? "?page=#{ getControllerId(config.module) }" }}">
+            {% if config.icon %}
+                <span class="bc-mr-1">{{ config.icon | raw }}</span>
+            {% endif %}
+            {{ config.title | raw }}
+        </a>
+    </li>
+{% endmacro %}

@@ -1,0 +1,96 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.type | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.scannedPages | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.status | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.cloudScanId | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.createdAt | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/report.html.twig" as report_icon %}
+                {% block content %}
+                    {{ report_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.scans is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        <td colspan="6"
+                            class="bc-py-4 bc-text-center bc-rounded-b-md">{{ localized.alert.noCloudScanConfig | raw }}
+                        </td>
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for scan in config.scans %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ scan.type.description }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ scan.pages.list | length }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% block content %}
+                                    {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                    {% import "system/macro/icons/loading.html.twig" as loading_icon %}
+                                    {% if scan.status == 'finished' %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% elseif scan.status == 'analyzing' %}
+                                        <span class="bc-text-orange-600">{{ loading_icon.component({}) }}</span>
+                                    {% else %}
+                                        <span class="bc-text-orange-600">{{ loading_icon.component({}) }}</span>
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ scan.externalId }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ scan.createdAt | date('Y-m-d H:i') }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/report.html.twig" as report_icon %}
+                                {% block content %}
+                                    <a href="{{ wpNonceUrl("?page=#{config.controllerId}&action=details&id=#{scan.id}", "#{config.controllerId}-#{scan.id}-details") | raw }}">
+                                        {{ report_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

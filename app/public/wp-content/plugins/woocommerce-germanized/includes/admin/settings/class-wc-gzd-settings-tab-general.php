@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 
 	public function get_description() {
-		return __( 'Adjust general options e.g. legal pages.', 'woocommerce-germanized' );
+		return __( 'Adjust general options e.g. legal pages, withdrawal button, small business regulation.', 'woocommerce-germanized' );
 	}
 
 	public function get_label() {
@@ -40,6 +40,12 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 			);
 		}
 
+		if ( class_exists( '\Vendidero\OrderWithdrawalButton\Settings' ) ) {
+			$sections = $sections + array(
+				'withdrawal_button' => __( 'Withdrawal Button', 'woocommerce-germanized' ),
+			);
+		}
+
 		return $sections;
 	}
 
@@ -48,6 +54,8 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 			return sprintf( __( 'Since Feb. 1 2017 regulations regarding alternative dispute resolution take effect. Further information regarding your duty to supply information can be found <a href="%s" target="_blank">here</a>.', 'woocommerce-germanized' ), 'http://shopbetreiber-blog.de/2017/01/05/streitschlichtung-neue-infopflichten-fuer-alle-online-haendler-ab-1-februar/' );
 		} elseif ( 'photovoltaic_systems' === $section ) {
 			return sprintf( __( 'Learn more about the <a href="%s" target="_blank">sale of photovoltaic systems</a> according to §12 paragraph 3 UStG.', 'woocommerce-germanized' ), 'https://vendidero.de/photovoltaikanlagen-in-woocommerce-verkaufen-so-funktionierts' );
+		} elseif ( 'withdrawal_button' === $section ) {
+			return sprintf( __( 'Learn more about the <a href="%s" target="_blank">withdrawal button</a>.', 'woocommerce-germanized' ), 'https://vendidero.de/widerrufsbutton-rechtssicher-in-woocommerce-umsetzen' );
 		}
 
 		return '';
@@ -171,12 +179,30 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 				'css'      => 'min-width:300px;',
 				'desc_tip' => true,
 			),
+			array(
+				'title'    => _x( 'Withdrawal page', 'owb', 'woocommerce-germanized' ),
+				'id'       => 'woocommerce_withdraw_from_contract_page_id',
+				'type'     => $page_type,
+				'class'    => $class,
+				'desc'     => _x( 'This page should contain your withdrawal form shortcode.', 'owb', 'woocommerce-germanized' ),
+				'args'     => array(
+					'exclude' => array(),
+				),
+				'default'  => '',
+				'css'      => 'min-width:300px;',
+				'autoload' => false,
+				'desc_tip' => true,
+			),
 
 			array(
 				'type' => 'sectionend',
 				'id'   => 'legal_page_options',
 			),
 		);
+	}
+
+	protected function get_withdrawal_button_settings() {
+		return class_exists( '\Vendidero\OrderWithdrawalButton\Settings' ) ? \Vendidero\OrderWithdrawalButton\Settings::get_settings() : array();
 	}
 
 	protected function get_dispute_resolution_settings() {
@@ -217,7 +243,7 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 				'title'    => __( 'Resolution Text', 'woocommerce-germanized' ),
 				'desc'     => __( 'Adapt this example text regarding alternative dispute resolution to your needs. Text will be added to the [gzd_complaints] Shortcode. You may as well add this text to your terms & conditions.', 'woocommerce-germanized' ),
 				'desc_tip' => true,
-				'default'  => __( 'The european commission provides a platform for online dispute resolution (OS) which is accessible at https://ec.europa.eu/consumers/odr. We are not obliged nor willing to participate in dispute settlement proceedings before a consumer arbitration board.', 'woocommerce-germanized' ),
+				'default'  => __( 'We are not obliged nor willing to participate in dispute settlement proceedings before a consumer arbitration board.', 'woocommerce-germanized' ),
 				'css'      => 'width:100%; height: 65px;',
 				'id'       => 'woocommerce_gzd_alternative_complaints_text_none',
 				'type'     => 'textarea',
@@ -226,7 +252,7 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 				'title'    => __( 'Resolution Text', 'woocommerce-germanized' ),
 				'desc'     => __( 'Adapt this example text regarding alternative dispute resolution to your needs. Text will be added to the [gzd_complaints] Shortcode. You may as well add this text to your terms & conditions.', 'woocommerce-germanized' ),
 				'desc_tip' => true,
-				'default'  => __( 'The european commission provides a platform for online dispute resolution (OS) which is accessible at https://ec.europa.eu/consumers/odr. Consumers may use this platform for the settlements of their disputes. We are in principle prepared to participate in an extrajudicial arbitration proceeding.', 'woocommerce-germanized' ),
+				'default'  => __( 'We are in principle prepared to participate in an extrajudicial arbitration proceeding.', 'woocommerce-germanized' ),
 				'css'      => 'width:100%; height: 65px;',
 				'id'       => 'woocommerce_gzd_alternative_complaints_text_willing',
 				'type'     => 'textarea',
@@ -235,7 +261,7 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 				'title'    => __( 'Resolution Text', 'woocommerce-germanized' ),
 				'desc'     => __( 'Adapt this example text regarding alternative dispute resolution to your needs. Text will be added to the [gzd_complaints] Shortcode. You may as well add this text to your terms & conditions.', 'woocommerce-germanized' ),
 				'desc_tip' => true,
-				'default'  => __( 'The european commission provides a platform for online dispute resolution (OS) which is accessible at https://ec.europa.eu/consumers/odr. Consumers may contact [Name, Address, Website of arbitration board] for the settlements of their disputes. We are obliged to participate in arbitration proceeding before that board.', 'woocommerce-germanized' ),
+				'default'  => __( 'Consumers may contact [Name, Address, Website of arbitration board] for the settlements of their disputes. We are obliged to participate in arbitration proceeding before that board.', 'woocommerce-germanized' ),
 				'css'      => 'width:100%; height: 65px;',
 				'id'       => 'woocommerce_gzd_alternative_complaints_text_obliged',
 				'type'     => 'textarea',
@@ -294,7 +320,7 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 	protected function get_checkout_settings() {
 		$shipping_methods_options = WC_GZD_Admin::instance()->get_shipping_method_instances_options();
 
-		return array(
+		$settings = array(
 			array(
 				'title' => '',
 				'type'  => 'title',
@@ -309,59 +335,105 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 				'type'    => 'gzd_toggle',
 				'default' => 'no',
 			),
-			array(
-				'title'   => __( 'Validate street number', 'woocommerce-germanized' ),
-				'desc'    => __( 'Force the existence of a street number within the first address field.', 'woocommerce-germanized' ),
-				'id'      => 'woocommerce_gzd_checkout_validate_street_number',
-				'type'    => 'select',
-				'default' => 'never',
-				'options' => array(
-					'never'     => __( 'Never', 'woocommerce-germanized' ),
-					'always'    => __( 'Always', 'woocommerce-germanized' ),
-					'base_only' => __( 'Base country only', 'woocommerce-germanized' ),
-					'eu_only'   => __( 'EU countries only', 'woocommerce-germanized' ),
-				),
-			),
-			array(
-				'title'   => __( 'Disallow cancellations', 'woocommerce-germanized' ),
-				'desc'    => __( 'Don\'t allow customers to manually cancel orders.', 'woocommerce-germanized' ) . '<div class="wc-gzd-additional-desc">' . __( 'By default payment methods like PayPal allow order cancellation by clicking the abort link. This option will stop customers from manually cancel orders.', 'woocommerce-germanized' ) . '</div>',
-				'id'      => 'woocommerce_gzd_checkout_stop_order_cancellation',
-				'type'    => 'gzd_toggle',
-				'default' => 'yes',
-			),
-			array(
-				'title'   => __( 'Disallow gateway choosing', 'woocommerce-germanized' ),
-				'desc'    => __( 'Don\'t allow customers to change the payment gateway after ordering.', 'woocommerce-germanized' ) . '<div class="wc-gzd-additional-desc">' . __( 'Customers paying through a gateway which allows later payment (e.g. PayPal) will find a link within their customer account which redirects them to a pay page. This page offers the possibility to choose another gateway than before which may lead to further problems e.g. additional gateway costs etc. which would require a new order submittal. This option makes sure the customer gets redirected directly to the gateways payment page, e.g. to PayPal.', 'woocommerce-germanized' ) . '</div>',
-				'id'      => 'woocommerce_gzd_checkout_disallow_belated_payment_method_selection',
-				'type'    => 'gzd_toggle',
-				'default' => 'no',
-			),
-			array(
-				'title'   => __( 'Free shipping', 'woocommerce-germanized' ),
-				'desc'    => __( 'Force free shipping method if available.', 'woocommerce-germanized' ) . '<div class="wc-gzd-additional-desc">' . __( 'By default WooCommerce will let customers choose other shipping methods than free shipping (if available). This option will force free shipping if available.', 'woocommerce-germanized' ) . '</div>',
-				'id'      => 'woocommerce_gzd_display_checkout_free_shipping_select',
-				'default' => 'no',
-				'type'    => 'gzd_toggle',
-			),
-
-			array(
-				'title'             => __( 'Exclude Methods', 'woocommerce-germanized' ),
-				'id'                => 'woocommerce_gzd_display_checkout_free_shipping_excluded',
-				'default'           => array(),
-				'class'             => 'wc-enhanced-select',
-				'type'              => 'multiselect',
-				'options'           => $shipping_methods_options,
-				'custom_attributes' => array(
-					'data-show_if_woocommerce_gzd_display_checkout_free_shipping_select' => '',
-				),
-				'desc'              => '<div class="wc-gzd-additional-desc">' . __( 'Optionally choose methods which should be excluded from hiding when free shipping is available (e.g. express shipping options).', 'woocommerce-germanized' ) . '</div>',
-			),
-
-			array(
-				'type' => 'sectionend',
-				'id'   => 'checkout_options',
-			),
 		);
+
+		if ( \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					array(
+						'title'   => __( 'Validate street number', 'woocommerce-germanized' ),
+						'desc'    => __( 'Force the existence of a street number within the first address field.', 'woocommerce-germanized' ),
+						'id'      => 'woocommerce_gzd_checkout_validate_street_number',
+						'type'    => 'select',
+						'default' => 'never',
+						'options' => array(
+							'never'     => __( 'Never', 'woocommerce-germanized' ),
+							'always'    => __( 'Always', 'woocommerce-germanized' ),
+							'base_only' => __( 'Base country only', 'woocommerce-germanized' ),
+							'eu_only'   => __( 'EU countries only', 'woocommerce-germanized' ),
+						),
+					),
+				)
+			);
+		}
+
+		$settings = array_merge(
+			$settings,
+			array(
+				array(
+					'title'   => __( 'Disallow cancellations', 'woocommerce-germanized' ),
+					'desc'    => __( 'Don\'t allow customers to manually cancel orders.', 'woocommerce-germanized' ) . '<div class="wc-gzd-additional-desc">' . __( 'By default payment methods like PayPal allow order cancellation by clicking the abort link. This option will stop customers from manually cancel orders.', 'woocommerce-germanized' ) . '</div>',
+					'id'      => 'woocommerce_gzd_checkout_stop_order_cancellation',
+					'type'    => 'gzd_toggle',
+					'default' => 'yes',
+				),
+				array(
+					'title'   => __( 'Disallow gateway choosing', 'woocommerce-germanized' ),
+					'desc'    => __( 'Don\'t allow customers to change the payment gateway after ordering.', 'woocommerce-germanized' ) . '<div class="wc-gzd-additional-desc">' . __( 'Customers paying through a gateway which allows later payment (e.g. PayPal) will find a link within their customer account which redirects them to a pay page. This page offers the possibility to choose another gateway than before which may lead to further problems e.g. additional gateway costs etc. which would require a new order submittal. This option makes sure the customer gets redirected directly to the gateways payment page, e.g. to PayPal.', 'woocommerce-germanized' ) . '</div>',
+					'id'      => 'woocommerce_gzd_checkout_disallow_belated_payment_method_selection',
+					'type'    => 'gzd_toggle',
+					'default' => 'no',
+				),
+				array(
+					'title'   => __( 'Free shipping', 'woocommerce-germanized' ),
+					'desc'    => __( 'Force free shipping method if available.', 'woocommerce-germanized' ) . '<div class="wc-gzd-additional-desc">' . __( 'By default WooCommerce will let customers choose other shipping methods than free shipping (if available). This option will force free shipping if available.', 'woocommerce-germanized' ) . '</div>',
+					'id'      => 'woocommerce_gzd_display_checkout_free_shipping_select',
+					'default' => 'no',
+					'type'    => 'gzd_toggle',
+				),
+
+				array(
+					'title'             => __( 'Exclude Methods', 'woocommerce-germanized' ),
+					'id'                => 'woocommerce_gzd_display_checkout_free_shipping_excluded',
+					'default'           => array(),
+					'class'             => 'wc-enhanced-select',
+					'type'              => 'multiselect',
+					'options'           => $shipping_methods_options,
+					'custom_attributes' => array(
+						'data-show_if_woocommerce_gzd_display_checkout_free_shipping_select' => '',
+					),
+					'desc'              => '<div class="wc-gzd-additional-desc">' . __( 'Optionally choose methods which should be excluded from hiding when free shipping is available (e.g. express shipping options).', 'woocommerce-germanized' ) . '</div>',
+				),
+			)
+		);
+
+		if ( WC_GZD_Payment_Gateways::instance()->enable_legacy_cod_fee() ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					array(
+						'title'   => sprintf( __( 'COD fee (%s)', 'woocommerce-germanized' ), get_woocommerce_currency_symbol() ),
+						'id'      => 'woocommerce_gzd_checkout_cod_gateway_fee',
+						'type'    => 'text',
+						'class'   => 'wc_input_decimal',
+						'css'     => 'max-width: 150px;',
+						'default' => '',
+					),
+					array(
+						'title'   => sprintf( __( 'COD forwarding fee (%s)', 'woocommerce-germanized' ), get_woocommerce_currency_symbol() ),
+						'id'      => 'woocommerce_gzd_checkout_cod_gateway_forwarding_fee',
+						'type'    => 'text',
+						'desc'    => __( 'Forwarding fee will be charged by the transport agent in addition to the cash of delivery fee e.g. DHL - tax free.', 'woocommerce-germanized' ),
+						'class'   => 'wc_input_decimal',
+						'css'     => 'max-width: 150px;',
+						'default' => '',
+					),
+				)
+			);
+		}
+
+		$settings = array_merge(
+			$settings,
+			array(
+				array(
+					'type' => 'sectionend',
+					'id'   => 'checkout_options',
+				),
+			)
+		);
+
+		return $settings;
 	}
 
 	protected function get_shop_settings() {
@@ -613,6 +685,8 @@ class WC_GZD_Settings_Tab_General extends WC_GZD_Settings_Tab {
 			$settings = $this->get_shop_settings();
 		} elseif ( 'photovoltaic_systems' === $current_section ) {
 			$settings = $this->get_photovoltaic_systems_settings();
+		} elseif ( 'withdrawal_button' === $current_section ) {
+			$settings = $this->get_withdrawal_button_settings();
 		}
 
 		return $settings;

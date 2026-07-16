@@ -12,26 +12,26 @@ class DB {
 	/**
 	 * Unprefixed site-wide table name.
 	 */
-	const TABLE_NAME = 'snippets';
+	public const TABLE_NAME = 'snippets';
 
 	/**
 	 * Unprefixed network-wide table name.
 	 */
-	const MS_TABLE_NAME = 'ms_snippets';
+	public const MS_TABLE_NAME = 'ms_snippets';
 
 	/**
 	 * Side-wide table name.
 	 *
 	 * @var string
 	 */
-	public $table;
+	public string $table;
 
 	/**
 	 * Network-wide table name.
 	 *
 	 * @var string
 	 */
-	public $ms_table;
+	public string $ms_table;
 
 	/**
 	 * Class constructor.
@@ -168,17 +168,18 @@ class DB {
 
 		/* Create the database table */
 		$sql = "CREATE TABLE $table_name (
-				id          BIGINT(20)   NOT NULL AUTO_INCREMENT,
-				name        TINYTEXT     NOT NULL,
-				description TEXT         NOT NULL,
-				code        LONGTEXT     NOT NULL,
-				tags        LONGTEXT     NOT NULL,
-				scope       VARCHAR(15)  NOT NULL DEFAULT 'global',
-				priority    SMALLINT     NOT NULL DEFAULT 10,
-				active      TINYINT(1)   NOT NULL DEFAULT 0,
-				modified    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				revision    BIGINT(20)   NOT NULL DEFAULT 1,
-				cloud_id    VARCHAR(255) NULL,
+				id           BIGINT(20)   NOT NULL AUTO_INCREMENT,
+				name         TINYTEXT     NOT NULL,
+				description  TEXT         NOT NULL,
+				code         LONGTEXT     NOT NULL,
+				tags         LONGTEXT     NOT NULL,
+				scope        VARCHAR(15)  NOT NULL DEFAULT 'global',
+				condition_id BIGINT(20)   NOT NULL DEFAULT 0,
+				priority     SMALLINT     NOT NULL DEFAULT 10,
+				active       TINYINT(1)   NOT NULL DEFAULT 0,
+				modified     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				revision     BIGINT(20)   NOT NULL DEFAULT 1,
+				cloud_id     VARCHAR(255) NULL,
 				PRIMARY KEY  (id),
 				KEY scope (scope),
 				KEY active (active)
@@ -194,6 +195,132 @@ class DB {
 		}
 
 		return $success;
+	}
+
+		/**
+		 * Generate the SQL for fetching active snippets from the database.
+		 *
+		 * @param string[] $scopes List of scopes to retrieve in.
+         *
+         * @return array{
+         *     id: int,
+         *     code: string,
+         *     scope: string,
+         *     table: string,
+         *     network: bool,
+         *     priority: int,
+         * } List of active snippets.
+         */
+	public function fetch_active_snippets( array $scopes ): array {
+		$active_snippets = [];
+
+		// Fetch the active snippets for the current site, if there are any.
+		$snippets = $this->fetch_snippets_from_table( $this->table, $scopes, true );
+		if ( $snippets ) {
+			foreach ( $snippets as $snippet ) {
+				$active_snippets[] = [
+					'id'       => intval( $snippet['id'] ),
+					'code'     => $snippet['code'],
+					'scope'    => $snippet['scope'],
+					'table'    => $this->table,
+					'network'  => false,
+					'priority' => intval( $snippet['priority'] ),
+				];
+			}
+		}
+
+		// If multisite is enabled, fetch all snippets from the network table, and filter down to only active snippets.
+		if ( is_multisite() ) {
+			$ms_snippets = $this->fetch_snippets_from_table( $this->ms_table, $scopes, false );
+
+			if ( $ms_snippets ) {
+				$active_shared_ids = get_option( 'active_shared_network_snippets', [] );
+				$active_shared_ids = is_array( $active_shared_ids )
+					? array_map( 'intval', $active_shared_ids )
+					: [];
+
+				foreach ( $ms_snippets as $snippet ) {
+					$id = intval( $snippet['id'] );
+					$active_value = intval( $snippet['active'] );
+
+					if ( ! self::is_network_snippet_enabled( $active_value, $id, $active_shared_ids ) ) {
+						continue;
+					}
+
+					$active_snippets[] = [
+						'id'       => $id,
+						'code'     => $snippet['code'],
+						'scope'    => $snippet['scope'],
+						'table'    => $this->ms_table,
+						'network'  => true,
+						'priority' => intval( $snippet['priority'] ),
+					];
+				}
+
+				$this->sort_active_snippets( $active_snippets );
+			}
+		}
+
+		return $active_snippets;
+	}
+
+	/**
+	 * Determine whether a network snippet should execute on the current site.
+	 *
+	 * Network snippets execute when active=1, or when the snippet is listed as active-shared for the site.
+	 * Trashed snippets (active=-1) should never execute.
+	 *
+	 * @param int   $active_value      Raw active value: 1=active, 0=inactive, -1=trashed (can be stored as a string in the database).
+	 * @param int   $snippet_id        Snippet ID.
+	 * @param int[] $active_shared_ids Active shared network snippet IDs for the current site.
+	 *
+	 * @return bool
+	 */
+	public static function is_network_snippet_enabled( int $active_value, int $snippet_id, array $active_shared_ids ): bool {
+		if ( -1 === $active_value ) {
+			return false;
+		}
+
+		if ( 1 === $active_value ) {
+			return true;
+		}
+
+		return in_array( $snippet_id, $active_shared_ids, true );
+	}
+
+	/**
+	 * Sort the active snippets by priority, table, and ID.
+	 *
+	 * @param array $active_snippets List of active snippets to sort.
+	 */
+	private function sort_active_snippets( array &$active_snippets ): void {
+		$comparisons = [
+			function ( array $a, array $b ) {
+				return $a['priority'] <=> $b['priority'];
+			},
+			function ( array $a, array $b ) {
+				$a_table = $a['table'] === $this->ms_table ? 0 : 1;
+				$b_table = $b['table'] === $this->ms_table ? 0 : 1;
+				return $a_table <=> $b_table;
+			},
+			function ( array $a, array $b ) {
+				return $a['id'] <=> $b['id'];
+			},
+		];
+
+		usort(
+			$active_snippets,
+			static function ( $a, $b ) use ( $comparisons ) {
+				foreach ( $comparisons as $comparison ) {
+					$result = $comparison( $a, $b );
+					if ( 0 !== $result ) {
+						return $result;
+					}
+				}
+
+				return 0;
+			}
+		);
 	}
 
 	/**
@@ -227,7 +354,7 @@ class DB {
 		$snippets = $wpdb->get_results(
 			$wpdb->prepare(
 				"
-				SELECT id, code, scope, active
+				SELECT id, code, scope, active, priority
 				FROM $table_name
 				WHERE scope IN ($scopes_format) $extra_where
 				ORDER BY priority, id",
@@ -243,44 +370,5 @@ class DB {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Generate the SQL for fetching active snippets from the database.
-	 *
-	 * @param array<string>|string $scopes List of scopes to retrieve in.
-	 *
-	 * @return array<string, array<string, mixed>> List of active snippets, indexed by table.
-	 */
-	public function fetch_active_snippets( $scopes ): array {
-		$active_snippets = array();
-
-		// Ensure that the list of scopes is an array.
-		if ( ! is_array( $scopes ) ) {
-			$scopes = array( $scopes );
-		}
-
-		// Fetch the active snippets for the current site, if there are any.
-		$snippets = $this->fetch_snippets_from_table( $this->table, $scopes );
-		if ( $snippets ) {
-			$active_snippets[ $this->table ] = $snippets;
-		}
-
-		// If multisite is enabled, fetch all snippets from the network table, and filter down to only active snippets.
-		if ( is_multisite() ) {
-			$active_shared_ids = (array) get_option( 'active_shared_network_snippets', array() );
-			$ms_snippets = $this->fetch_snippets_from_table( $this->ms_table, $scopes, false );
-
-			if ( $ms_snippets ) {
-				$active_snippets[ $this->ms_table ] = array_filter(
-					$ms_snippets,
-					function ( $snippet ) use ( $active_shared_ids ) {
-						return $snippet['active'] || in_array( intval( $snippet['id'] ), $active_shared_ids, true );
-					}
-				);
-			}
-		}
-
-		return $active_snippets;
 	}
 }

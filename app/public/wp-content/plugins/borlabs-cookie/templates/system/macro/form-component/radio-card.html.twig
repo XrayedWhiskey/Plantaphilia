@@ -1,0 +1,52 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/icons/error.html.twig" as error_icon %}
+    {# Merge overwrite default config with given config. #}
+    {% set config = {
+        checked: false,
+        isRequired: true,
+        width: '',
+    } | merge(config) %}
+
+    {% set cssClasses = [
+        config.width,
+        'bc-group bc-relative bc-rounded-md bc-cursor-pointer bc-border bc-border-solid bc-border-gray-300 bc-bg-white has-[:checked]:bc-outline has-[:focus-visible]:bc-outline has-[:checked]:bc-outline-2 has-[:focus-visible]:bc-outline-[3px] has-[:checked]:bc--outline-offset-2 has-[:focus-visible]:bc--outline-offset-1 has-[:checked]:bc-outline-blue-600 hover:bc-outline hover:bc-outline-1 hover:bc--outline-offset-1 hover:bc-outline-blue-600 group-[.was-validated]/form:has-[:invalid]:bc-border-red-500'
+    ] %}
+
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    <label class="{{ cssClasses | join(' ') }}">
+        <input
+            type="radio"
+            class="bc-hidden bc-peer"
+            id="{{ config.id }}"
+            name="{{ name }}"
+            value="{{ config.value }}"
+            {% if config.checked %} checked{% endif %}
+            {% if config.isRequired == true %} required{% endif %}
+        >
+        <span class="bc-hidden bc-absolute group-[.was-validated]/form:peer-invalid:bc-block bc-p-3 bc-text-red-600">{{ error_icon.component({}) }}</span>
+        <span class="bc-invisible bc-block bc-px-5 bc-py-3 bc-text-center bc-font-medium bc-uppercase bc-bg-blue-600 bc-text-white group-has-[:checked]:bc-visible">
+            {{ localized.global.option.selected | raw }}
+        </span>
+        <span class="bc-flex bc-flex-1 bc-flex-col bc-items-center bc-p-4">
+            {% if config.icon %}
+                <span class="bc-flex bc-justify-center bc-mb-2">{{ config.icon | raw }}</span>
+            {% elseif config.imageUrl %}
+                <span class="bc-flex bc-justify-center bc-mb-4"><img class="bc-rounded-md bc-shadow-md" data-brlbs-radio-card-image="{{ config.id }}" src="{{ config.imageUrl | raw }}" alt=""></span>
+            {% endif %}
+            {% if config.label %}
+                <span class="bc-flex bc-justify-center bc-mb-2">
+                    <span class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900">{{ config.label | raw }}</span>
+                </span>
+            {% endif %}
+            {% if config.description %}
+                <span class="bc-flex bc-justify-center">
+                    <span class="bc-text-center brlbs-cmpnt-text">{{ config.description | raw }}</span>
+                </span>
+            {% endif %}
+        </span>
+    </label>
+{% endmacro %}

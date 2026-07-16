@@ -1,0 +1,19 @@
+Hier die 6 Farben mit konkreter Nutzung:
+
+**1. Hintergrund — `#25302B`**
+Schiefergrün, fast schwarz mit klarem grünen Unterton. Body-Background der Seite, große Sektionen ohne eigene Container, Footer-Grundfläche. Das ist deine Grundstimmung – alles andere baut darauf auf. Bei Hero-Bereichen funktioniert auch ein subtiler Verlauf zu etwas Dunklerem.
+
+**2. Nav-Leiste — `#1A231F`**
+Tieferes, kühleres Schiefer-Dunkel. Top-Header / Hauptnavigation, Mobile-Menü-Overlay, Sticky-Elements, ggf. Sidebar-Filter im Shop. Hebt sich subtil vom Body ab, ohne harte Trennlinie zu brauchen. Auch gut für Footer-Top-Section, wenn du da Hierarchie reinbringen willst.
+
+**3. Produktkarten — `#2F3B35`**
+Hellerer Schiefer mit mehr Sage-Anteil. Card-Hintergründe im Shop (Produkt-Tiles), Blog-Post-Vorschauen, Modals/Popups, Form-Inputs, hervorgehobene Tabellenzeilen, Akkordeon-Panels. Schafft die Ebene "schwebt vor dem Hintergrund". Bei Hover kannst du diese Farbe um ~5% aufhellen für Interaktivitäts-Feedback.
+
+**4. Akzent Lila — `#9B6FD0`**
+Gedämpftes Amethyst. **Sparsam einsetzen.** Primary-Buttons ("In den Warenkorb", "Jetzt kaufen"), Preise, Sale-Badges, Link-Hover, Focus-Rings (Accessibility!), aktiver Menüpunkt-Indikator, wichtige Icons. NICHT für Fließtext, NICHT für Card-Hintergründe, NICHT für große Flächen – sonst verliert es seine Wirkung. Faustregel: max. ~5-10% der sichtbaren Fläche.
+
+**5. Schrift primär — `#EAE4D6`**
+Warmes Knochenweiß. Sämtlicher Lesetext: Überschriften, Produktnamen, Body-Copy, Beschreibungen, Button-Labels (auf Lila-Buttons). Funktioniert auf BG, Nav und Karten gleich gut lesbar. Default für alles mit Text. Reines `#FFFFFF` bitte nirgends – würde wie ein Loch im Design wirken.
+
+**6. Schrift sekundär — `#9CA59E`**
+Gedämpftes Salbeigrün-Grau. Meta-Infos (lat. Namen wie *Pelargonium sidoides*, Kategorien, Datum, "auf Lager"-Hinweise), Untertitel, Placeholder in Inputs, deaktivierte Buttons, Breadcrumbs, dezente Borders/Trennlinien (mit Opacity 30-50% für noch zurückhaltender). Alles, was da sein muss, aber nicht um Aufmerksamkeit konkurrieren soll.

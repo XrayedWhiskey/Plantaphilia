@@ -26,12 +26,12 @@ TablePress::load_file( 'class-import-file.php', 'classes' );
 class TablePress_Import {
 
 	/**
-	 * Instance of the TablePress Legacy Importer.
+	 * Instance of the TablePress Legacy or PHPSpreadsheet Importer.
 	 *
 	 * @since 1.0.0
-	 * @var TablePress_Import_Legacy
+	 * @var TablePress_Import_Legacy|TablePress_Import_PHPSpreadsheet
 	 */
-	protected $importer;
+	protected object $importer;
 
 	/**
 	 * Import configuration (mainly the data from the Import form).
@@ -39,16 +39,15 @@ class TablePress_Import {
 	 * @since 2.0.0
 	 * @var array<string, mixed>
 	 */
-	protected $import_config = array();
+	protected array $import_config = array();
 
 	/**
 	 * Whether ZIP archive support is available (which it always is, as PclZip is used as a fallback).
 	 *
 	 * @since 1.0.0
 	 * @deprecated 2.3.0 ZIP support is now always available, either through `ZipArchive` or through `PclZip`.
-	 * @var bool
 	 */
-	public $zip_support_available = true;
+	public bool $zip_support_available = true;
 
 	/**
 	 * List of table names/IDs for use when replacing/appending existing tables (except for the JSON format).
@@ -56,7 +55,7 @@ class TablePress_Import {
 	 * @since 2.0.0
 	 * @var array<string, string[]>
 	 */
-	protected $table_names_ids = array();
+	protected array $table_names_ids = array();
 
 	/**
 	 * Runs the import process for a given import configuration.
@@ -132,6 +131,9 @@ class TablePress_Import {
 					return new WP_Error( 'table_import_url_host_blocked', '', array( 'url' => $this->import_config['url'], 'ip' => $ip ) );
 				}
 
+				// Automatically adjust URLs of common services to point to a direct download URL.
+				$this->import_config['url'] = $this->fix_common_url_mistakes( $this->import_config['url'] );
+
 				/**
 				 * Load WP file functions to be sure that `download_url()` exists, in particular during Cron requests.
 				 */
@@ -183,6 +185,43 @@ class TablePress_Import {
 		}
 
 		return $import_files;
+	}
+
+	/**
+	 * Fixes common mistakes in URLs from popular services to point to a direct download URL.
+	 *
+	 * Currently supports Google Sheets, Microsoft OneDrive, and Dropbox.
+	 * See https://tablepress.org/tutorials/ for more specific instructions on how to get the correct URL.
+	 *
+	 * @since 3.2.4
+	 *
+	 * @param string $url URL that shall be fixed.
+	 * @return string Fixed URL.
+	 */
+	protected function fix_common_url_mistakes( string $url ): string {
+		/**
+		 * Filters whether common URL mistakes shall be fixed automatically.
+		 *
+		 * @since 3.2.4
+		 *
+		 * @param bool $fix_common_url_mistakes Whether to fix common URL mistakes. Default true.
+		 */
+		if ( ! apply_filters( 'tablepress_import_fix_common_url_mistakes', true ) ) {
+			return $url;
+		}
+
+		if ( str_starts_with( $url, 'https://docs.google.com/spreadsheets/' ) && str_ends_with( $url, '/edit?usp=sharing' ) ) {
+			// Google Sheets "Sharing URL" to direct download URL.
+			$url = str_replace( '/edit?usp=sharing', '/export?format=csv', $url );
+		} elseif ( str_starts_with( $url, 'https://1drv.ms/' ) && ! str_ends_with( $url, '&download=1' ) ) {
+			// OneDrive shared link to direct download link.
+			$url .= '&download=1';
+		} elseif ( str_starts_with( $url, 'https://www.dropbox.com/' ) && str_ends_with( $url, '&dl=0' ) ) {
+			// Dropbox shared link to direct download link.
+			$url = str_replace( '&dl=0', '&dl=1', $url );
+		}
+
+		return $url;
 	}
 
 	/**
@@ -287,14 +326,14 @@ class TablePress_Import {
 	 */
 	protected function extract_zip_file_ziparchive( File $zip_file ) /* : array|WP_Error */ {
 		$archive = new ZipArchive();
-		$archive_opened = $archive->open( $zip_file->location, ZIPARCHIVE::CHECKCONS );
+		$archive_opened = $archive->open( $zip_file->location, ZipArchive::CHECKCONS );
 
-		// If the ZIP file can't be opened with ZIPARCHIVE::CHECKCONS, try again without.
+		// If the ZIP file can't be opened with ZipArchive::CHECKCONS, try again without.
 		if ( true !== $archive_opened ) {
 			$archive_opened = $archive->open( $zip_file->location );
 		}
 
-		// If the ZIP file can't even be opened without ZIPARCHIVE::CHECKCONS, bail.
+		// If the ZIP file can't even be opened without ZipArchive::CHECKCONS, bail.
 		if ( true !== $archive_opened ) {
 			return new WP_Error( 'table_import_error_zip_open', '', array( 'ziparchive_error' => $archive_opened ) );
 		}
@@ -374,7 +413,7 @@ class TablePress_Import {
 		require_once ABSPATH . 'wp-admin/includes/class-pclzip.php';
 
 		$archive = new PclZip( $zip_file->location );
-		$archive_files = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING ); // @phpstan-ignore-line PclZip::extract() uses `func_get_args()` to handle optional arguments.
+		$archive_files = $archive->extract( PCLZIP_OPT_EXTRACT_AS_STRING ); // @phpstan-ignore arguments.count (PclZip::extract() uses `func_get_args()` to handle optional arguments.)
 
 		reset_mbstring_encoding();
 
@@ -511,8 +550,10 @@ class TablePress_Import {
 
 		// Choose the Table Import library based on the PHP version and the filter hook value.
 		if ( $use_legacy_import_class ) {
+			// @phpstan-ignore assign.propertyType (The `load_class()` method returns `object` and not a specific type.)
 			$this->importer = TablePress::load_class( 'TablePress_Import_Legacy', 'class-import-legacy.php', 'classes' );
 		} else {
+			// @phpstan-ignore assign.propertyType (The `load_class()` method returns `object` and not a specific type.)
 			$this->importer = TablePress::load_class( 'TablePress_Import_PHPSpreadsheet', 'class-import-phpspreadsheet.php', 'classes' );
 		}
 
@@ -634,7 +675,7 @@ class TablePress_Import {
 			$format = 'csv';
 		}
 
-		if ( ! isset( $this->importer->import_formats[ $format ] ) ) {
+		if ( ! in_array( $format, $this->importer->import_formats, true ) ) { // @phpstan-ignore property.notFound (`$this->importer` is an instance of `TablePress_Import_Legacy` which has the property `import_formats`.)
 			return new WP_Error( 'table_import_legacy_unknown_format', '', $file->name );
 		}
 
@@ -657,7 +698,7 @@ class TablePress_Import {
 	 */
 	protected function load_table_from_file_phpspreadsheet( File $file ) /* : array|WP_Error */ {
 		// Convert File object to array, as those are not yet used outside of this class.
-		return $this->importer->import_table( $file ); // @phpstan-ignore-line
+		return $this->importer->import_table( $file ); // @phpstan-ignore return.type (This is an instance of TablePress_Import_PHPSpreadsheet which does not return false.)
 	}
 
 	/**

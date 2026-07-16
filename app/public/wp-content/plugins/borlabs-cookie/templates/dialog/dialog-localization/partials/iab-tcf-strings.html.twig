@@ -1,0 +1,204 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true, infoPanelGradient: ['bc-bg-gradient-to-tr bc-from-[#e61212] bc-to-[#921212] bc-text-white'] } %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/icons/exclamation-triangle.html.twig" as exclamation_triangle_icon %}
+    {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.dialogIabTcf,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionCookieInformation',
+            label: localized.field.iabTcfDescriptionCookieInformation,
+            value: data.iabTcfDescriptionCookieInformation,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionTechnology',
+            label: localized.field.iabTcfDescriptionTechnology,
+            value: data.iabTcfDescriptionTechnology,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionPersonalData',
+            label: localized.field.iabTcfDescriptionPersonalData,
+            value: data.iabTcfDescriptionPersonalData,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionLegInt',
+            label: localized.field.iabTcfDescriptionLegInt,
+            value: data.iabTcfDescriptionLegInt,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionMoreInformation',
+            label: localized.field.iabTcfDescriptionMoreInformation,
+            value: data.iabTcfDescriptionMoreInformation,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionNoCommitment',
+            label: localized.field.iabTcfDescriptionNoCommitment,
+            value: data.iabTcfDescriptionNoCommitment,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionRevoke',
+            label: localized.field.iabTcfDescriptionRevoke,
+            value: data.iabTcfDescriptionRevoke,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'iabTcfDescriptionIndiviualSettings',
+            label: localized.field.iabTcfDescriptionIndiviualSettings,
+            value: data.iabTcfDescriptionIndiviualSettings,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfTabCategories,
+            id: 'iabTcfTabCategories',
+            label: localized.field.iabTcfTabCategories,
+            value: data.iabTcfTabCategories,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfTabLegitimateInterest,
+            id: 'iabTcfTabLegitimateInterest',
+            label: localized.field.iabTcfTabLegitimateInterest,
+            value: data.iabTcfTabLegitimateInterest,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfTabVendors,
+            id: 'iabTcfTabVendors',
+            label: localized.field.iabTcfTabVendors,
+            value: data.iabTcfTabVendors,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineConsentHistory,
+            id: 'iabTcfHeadlineConsentHistory',
+            label: localized.field.iabTcfHeadlineConsentHistory,
+            value: data.iabTcfHeadlineConsentHistory,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineConsentHistoryNonTcfStandard,
+            id: 'iabTcfHeadlineConsentHistoryNonTcfStandard',
+            label: localized.field.iabTcfHeadlineConsentHistoryNonTcfStandard,
+            value: data.iabTcfHeadlineConsentHistoryNonTcfStandard,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineIllustrations,
+            id: 'iabTcfHeadlineIllustrations',
+            label: localized.field.iabTcfHeadlineIllustrations,
+            value: data.iabTcfHeadlineIllustrations,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfHeadlineNonTcfCategories,
+            id: 'iabTcfHeadlineNonTcfCategories',
+            label: localized.field.iabTcfHeadlineNonTcfCategories,
+            value: data.iabTcfHeadlineNonTcfCategories,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfVendorSingular,
+            id: 'iabTcfVendorSingular',
+            label: localized.field.iabTcfVendorSingular,
+            value: data.iabTcfVendorSingular,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfVendorPlural,
+            id: 'iabTcfVendorPlural',
+            label: localized.field.iabTcfVendorPlural,
+            value: data.iabTcfVendorPlural,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfVendorSearchPlaceholder,
+            id: 'iabTcfVendorSearchPlaceholder',
+            label: localized.field.iabTcfVendorSearchPlaceholder,
+            value: data.iabTcfVendorSearchPlaceholder,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfShowAllVendors,
+            id: 'iabTcfShowAllVendors',
+            label: localized.field.iabTcfShowAllVendors,
+            value: data.iabTcfShowAllVendors,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfDataRetention,
+            id: 'iabTcfDataRetention',
+            label: localized.field.iabTcfDataRetention,
+            value: data.iabTcfDataRetention,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfDataRetentionInDays,
+            id: 'iabTcfDataRetentionInDays',
+            label: localized.field.iabTcfDataRetentionInDays,
+            value: data.iabTcfDataRetentionInDays,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.iabTcfNonTcf,
+            id: 'iabTcfNonTcf',
+            label: localized.field.iabTcfNonTcf,
+            value: data.iabTcfNonTcf,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        <span class="bc-flex bc-items-center bc-space-x-2">
+            {{ exclamation_triangle_icon.component({
+                height: "bc-h-6",
+                width: "bc-w-6",
+            }) }}
+            <span>{{ localized.global.headline.important | upper | raw }}</span>
+            {{ exclamation_triangle_icon.component({
+                height: "bc-h-6",
+                width: "bc-w-6",
+            }) }}
+        </span>
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionIabTcfOne', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineIabTcf | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.iabTcfA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.iabTcfB | raw }}</p>
+                        <ul class="bc-mb-4 bc-space-y-2 bc-list-disc bc-text-left">
+                            <li>{{ localized.thingsToKnow.iabTcfTopicA | raw }}</li>
+                            <li>{{ localized.thingsToKnow.iabTcfTopicB | raw }}</li>
+                            <li>{{ localized.thingsToKnow.iabTcfTopicC | raw }}</li>
+                            <li>{{ localized.thingsToKnow.iabTcfTopicD | raw }}</li>
+                            <li>{{ localized.thingsToKnow.iabTcfTopicE | raw }}</li>
+                            <li>{{ localized.thingsToKnow.iabTcfTopicF | raw }}</li>
+                            <li>{{ localized.thingsToKnow.iabTcfTopicG | raw }}</li>
+                        </ul>
+                        <p>{{ localized.thingsToKnow.iabTcfC | raw }}</p>
+                        <p>{{ localized.thingsToKnow.iabTcfD | raw }}</p>
+                        <p>{{ localized.thingsToKnow.iabTcfF | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}
+

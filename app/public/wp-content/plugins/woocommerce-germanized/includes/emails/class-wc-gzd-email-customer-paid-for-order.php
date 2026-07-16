@@ -34,6 +34,7 @@ if ( ! class_exists( 'WC_GZD_Email_Customer_Paid_For_Order' ) ) :
 
 			// Triggers for this email
 			add_action( 'woocommerce_order_status_pending_to_processing_notification', array( $this, 'trigger' ), 30 );
+			add_action( 'woocommerce_order_status_pending_to_completed_notification', array( $this, 'trigger' ), 30 );
 			add_action( 'woocommerce_order_status_failed_to_processing_notification', array( $this, 'trigger' ), 30 );
 
 			$this->placeholders = array(
@@ -84,11 +85,26 @@ if ( ! class_exists( 'WC_GZD_Email_Customer_Paid_For_Order' ) ) :
 			$this->helper->setup_email_locale();
 
 			if ( $this->is_enabled() && $this->get_recipient() ) {
+				$has_removed_hook = false;
+				$gateway          = $this->object ? wc_get_payment_gateway_by_order( $this->object ) : null;
 
-				// Make sure gateways do not insert data here
-				remove_all_actions( 'woocommerce_email_before_order_table' );
+				if ( $gateway ) {
+					if ( is_callable( array( $gateway, 'email_instructions' ) ) ) {
+						$has_removed_hook = remove_action( 'woocommerce_email_before_order_table', array( $gateway, 'email_instructions' ) );
+					}
+
+					do_action( 'woocommerce_gzd_maybe_remove_email_payment_instructions', $this->object );
+				}
 
 				$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+
+				if ( $gateway ) {
+					if ( $has_removed_hook && is_callable( array( $gateway, 'email_instructions' ) ) ) {
+						add_action( 'woocommerce_email_before_order_table', array( $gateway, 'email_instructions' ), 10, 3 );
+					}
+
+					do_action( 'woocommerce_gzd_maybe_add_email_payment_instructions_after_removal', $this->object );
+				}
 			}
 
 			$this->helper->restore_email_locale();
@@ -150,7 +166,6 @@ if ( ! class_exists( 'WC_GZD_Email_Customer_Paid_For_Order' ) ) :
 				)
 			);
 		}
-
 	}
 
 endif;

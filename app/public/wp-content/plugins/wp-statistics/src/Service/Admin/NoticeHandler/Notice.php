@@ -2,12 +2,21 @@
 
 namespace WP_Statistics\Service\Admin\NoticeHandler;
 
-use WP_STATISTICS\Admin_Template;
+use WP_Statistics\Components\View;
 use WP_Statistics\Utils\Request;
 
 class Notice
 {
     private static $adminNotices = array();
+
+    /**
+     * List Of Dismissed Notices.
+     *
+     * @var array
+     * @static
+     * @access private
+     */
+    private static $dismissedNotices = [];
 
     public static function addNotice($message, $id, $class = 'info', $isDismissible = true)
     {
@@ -41,12 +50,12 @@ class Notice
             'is_dismissible' => (bool)$isDismissible,
         );
 
-        set_transient('wp_statistics_flash_notices', $flashNotices, 1); // Keep for 1 second
+        set_transient('wp_statistics_flash_notices', $flashNotices, 3); // Keep for 3 second
     }
 
     public static function displayNotices()
     {
-        $dismissedNotices = get_option('wp_statistics_dismissed_notices', array());
+        $dismissedNotices = self::getDismissedNotices();
 
         foreach (self::$adminNotices as $id => $notice) {
             if (in_array($id, $dismissedNotices, true)) {
@@ -85,28 +94,37 @@ class Notice
         return '';
     }
 
-    public static function renderNotice($message, $id, $class = 'info')
+    public static function renderNotice($message, $id, $class = 'info', $isDismissible = false, $type = 'simple')
     {
         $notice = array(
             'message'        => $message,
             'id'             => $id,
             'class'          => $class,
-            'is_dismissible' => false,
+            'is_dismissible' => $isDismissible,
+            'type'           => $type,
         );
 
         $dismissible = $notice['is_dismissible'] ? ' is-dismissible' : '';
         $dismissUrl  = self::getDismissUrl($notice['id'], $notice);
 
-        self::renderNoticeInternal($notice, $dismissible, $dismissUrl);
+        self::renderNoticeInternal($notice, $dismissible, $dismissUrl, $type);
     }
 
-    private static function renderNoticeInternal($notice, $dismissible, $dismissUrl)
+    /**
+     *
+     * @param $notice
+     * @param $dismissible
+     * @param $dismissUrl
+     * @return void
+     */
+    private static function renderNoticeInternal($notice, $dismissible, $dismissUrl, $type = 'simple')
     {
-        Admin_Template::get_template('notice', [
+        $args = [
             'notice'      => $notice,
             'dismissible' => $dismissible,
-            'dismissUrl'  => $dismissUrl
-        ]);
+            'dismissUrl'  => $dismissUrl,
+        ];
+        View::load("components/notices/{$type}-notice", $args);
     }
 
     public static function handleDismissNotice()
@@ -118,7 +136,7 @@ class Notice
             check_admin_referer('wp_statistics_dismiss_notice', 'nonce');
 
             $noticeId         = sanitize_text_field($_GET['notice_id']);
-            $dismissedNotices = get_option('wp_statistics_dismissed_notices', array());
+            $dismissedNotices = self::getDismissedNotices();
 
             if (!in_array($noticeId, $dismissedNotices, true)) {
                 $dismissedNotices[] = $noticeId;
@@ -135,5 +153,25 @@ class Notice
     {
         $generalNotices = new GeneralNotices();
         $generalNotices->init();
+    }
+
+    public static function getDismissedNotices()
+    {
+        if (empty(self::$dismissedNotices)) {
+            self::$dismissedNotices = get_option('wp_statistics_dismissed_notices', []);
+        }
+
+        return self::$dismissedNotices;
+    }
+
+    public static function isNoticeDismissed($noticeId)
+    {
+        if (empty($noticeId) || empty(self::$dismissedNotices)) {
+            return;
+        }
+
+        $dismissedNotices = self::getDismissedNotices();
+
+        return in_array($noticeId, $dismissedNotices, true);
     }
 }

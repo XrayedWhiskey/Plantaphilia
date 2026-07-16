@@ -1,21 +1,39 @@
 <?php
 
-use WP_Statistics\Async\CalculatePostWordsCount;
-use WP_Statistics\Async\GeoIPDatabaseDownloadProcess;
-use WP_Statistics\Async\IncompleteGeoIpUpdater;
+use WP_Statistics\Core\CoreFactory;
+use WP_Statistics\Service\Admin\AnonymizedUsageData\AnonymizedUsageDataManager;
 use WP_Statistics\Service\Admin\AuthorAnalytics\AuthorAnalyticsManager;
+use WP_Statistics\Service\Admin\CategoryAnalytics\CategoryAnalyticsManager;
 use WP_Statistics\Service\Admin\ContentAnalytics\ContentAnalyticsManager;
+use WP_Statistics\Service\Admin\Devices\DevicesManager;
+use WP_Statistics\Service\Admin\Exclusions\ExclusionsManager;
+use WP_Statistics\Service\Admin\FilterHandler\FilterManager;
 use WP_Statistics\Service\Admin\Geographic\GeographicManager;
+use WP_Statistics\Service\Admin\LicenseManagement\LicenseManagementManager;
+use WP_Statistics\Service\Admin\Metabox\MetaboxManager;
 use WP_Statistics\Service\Admin\NoticeHandler\Notice;
+use WP_Statistics\Service\Admin\Notification\NotificationManager;
+use WP_Statistics\Service\Admin\MarketingCampaign\MarketingCampaignManager;
+use WP_Statistics\Service\Admin\Overview\OverviewManager;
+use WP_Statistics\Service\Admin\PageInsights\PageInsightsManager;
 use WP_Statistics\Service\Admin\Posts\PostsManager;
 use WP_Statistics\Service\Admin\PrivacyAudit\PrivacyAuditManager;
-use WP_Statistics\Service\Admin\CategoryAnalytics\CategoryAnalyticsManager;
-use WP_Statistics\Service\Analytics\AnalyticsManager;
-use WP_Statistics\Service\Integrations\IntegrationsManager;
-use WP_Statistics\Service\Integrations\WpConsentApi;
-use WP_Statistics\Service\Admin\Devices\DevicesManager;
+use WP_Statistics\Service\Admin\HelpCenter\HelpCenterManager;
+use WP_Statistics\Service\Admin\Referrals\ReferralsManager;
+use WP_Statistics\Service\Admin\TrackerDebugger\TrackerDebuggerManager;
 use WP_Statistics\Service\Admin\VisitorInsights\VisitorInsightsManager;
-use WP_Statistics\Service\Admin\PageInsights\PageInsightsManager;
+use WP_Statistics\Service\Analytics\AnalyticsManager;
+use WP_Statistics\Service\HooksManager;
+use WP_Statistics\Service\CronEventManager;
+use WP_Statistics\Service\Database\Migrations\Queue\QueueManager as DatabaseMigrationQueueManager;
+use WP_Statistics\Service\Integrations\IntegrationsManager;
+use WP_Statistics\Service\CustomEvent\CustomEventManager;
+use WP_Statistics\Service\Admin\ExportImport\ExportImportManager;
+use WP_Statistics\CLI\CliCommands;
+use WP_Statistics\Service\Admin\Optimization\OptimizationManager;
+use WP_Statistics\Globals\AjaxManager;
+use WP_Statistics\Service\Database\Migrations\BackgroundProcess\BackgroundProcessManager;
+use WP_Statistics\Service\Summary\SummaryManager;
 
 defined('ABSPATH') || exit;
 
@@ -32,11 +50,6 @@ final class WP_Statistics
      * @var WP_Statistics
      */
     protected static $_instance = null;
-
-    /**
-     * @var $backgroundProcess
-     */
-    private $backgroundProcess;
 
     /**
      * Main WP Statistics Instance.
@@ -64,7 +77,12 @@ final class WP_Statistics
         /**
          * Install And Upgrade plugin
          */
-        register_activation_hook(WP_STATISTICS_MAIN_FILE, array('WP_Statistics', 'install'));
+        register_activation_hook(WP_STATISTICS_MAIN_FILE, [$this, 'activator']);
+
+        /**
+         * Remove plugin data
+         */
+        register_uninstall_hook(WP_STATISTICS_MAIN_FILE, [self::class, 'uninstaller']);
 
         /**
          * wp-statistics loaded
@@ -92,10 +110,11 @@ final class WP_Statistics
             $this->includes();
 
             /**
-             * Setup background process
+             * Initialize classes during WordPress initialization.
              */
-            $this->initializeBackgroundProcess();
-
+            add_action('init', function () {
+                $postsManager = new PostsManager();
+            });
         } catch (Exception $e) {
             self::log($e->getMessage());
         }
@@ -137,7 +156,6 @@ final class WP_Statistics
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-pages.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-visitor.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-historical.php';
-        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-visit.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-referred.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-search-engine.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-exclusion.php';
@@ -148,11 +166,20 @@ final class WP_Statistics
         // Ajax area
         require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-template.php';
 
-        $postsManager = new PostsManager();
-        $userOnline   = new \WP_STATISTICS\UserOnline();
+        $referrals                  = new ReferralsManager();
+        $userOnline                 = new \WP_STATISTICS\UserOnline();
+        $anonymizedUsageDataManager = new AnonymizedUsageDataManager();
+        $notificationManager        = new NotificationManager();
+        $MarketingCampaignManager   = new MarketingCampaignManager();
+        $exportImportManager        = new ExportImportManager();
+
+        CoreFactory::updater();
+
+        new BackgroundProcessManager();
 
         // Admin classes
         if (is_admin()) {
+            CoreFactory::loader();
 
             $adminManager     = new \WP_Statistics\Service\Admin\AdminManager();
             $contentAnalytics = new ContentAnalyticsManager();
@@ -165,39 +192,44 @@ final class WP_Statistics
             require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-assets.php';
             require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-user.php';
             require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-privacy.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/TinyMCE/class-wp-statistics-tinymce.php';
 
             // Admin Pages List
             require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-settings.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-optimization.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-plugins.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-overview.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-refer.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-searches.php';
-            require_once WP_STATISTICS_DIR . 'includes/admin/pages/class-wp-statistics-admin-page-exclusions.php';
 
             $analytics           = new AnalyticsManager();
             $authorAnalytics     = new AuthorAnalyticsManager();
             $privacyAudit        = new PrivacyAuditManager();
+            $helpCenter          = new HelpCenterManager();
             $geographic          = new GeographicManager();
             $devices             = new DevicesManager();
             $categoryAnalytics   = new CategoryAnalyticsManager();
             $pageInsights        = new PageInsightsManager();
             $visitorInsights     = new VisitorInsightsManager();
             $integrationsManager = new IntegrationsManager();
+            $licenseManager      = new LicenseManagementManager();
+            $trackerDebugger     = new TrackerDebuggerManager();
+            $overviewManager     = new OverviewManager();
+            $metaboxManager      = new MetaboxManager();
+            $exclusionsManager   = new ExclusionsManager();
+            $optimizationManager = new OptimizationManager();
+
+            new FilterManager();
+            new DatabaseMigrationQueueManager();
         }
+
+        $hooksManager       = new HooksManager();
+        $customEventManager = new CustomEventManager();
+        $cronEventManager   = new CronEventManager();
+        $ajaxManager        = new AjaxManager();
+        $summaryManager     = new SummaryManager();
 
         // WordPress ShortCode and Widget
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-shortcode.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-widget.php';
 
-        // Meta Box List
-        \WP_STATISTICS\Meta_Box::includes();
-
         // Rest-Api
         require_once WP_STATISTICS_DIR . 'includes/api/v2/class-wp-statistics-api-hit.php';
         require_once WP_STATISTICS_DIR . 'includes/api/v2/class-wp-statistics-api-meta-box.php';
-        require_once WP_STATISTICS_DIR . 'includes/api/v2/class-wp-statistics-api-online.php';
 
         // WordPress Cron
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-schedule.php';
@@ -209,44 +241,14 @@ final class WP_Statistics
 
         // WP-CLI Class.
         if (defined('WP_CLI') && WP_CLI) {
-            require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-cli.php';
+            \WP_CLI::add_command('statistics', CliCommands::class);
         }
 
         // Template functions.
         include WP_STATISTICS_DIR . 'includes/template-functions.php';
-    }
 
-    /**
-     * Set up background processes.
-     */
-    private function initializeBackgroundProcess()
-    {
-        $this->registerBackgroundProcess(CalculatePostWordsCount::class, 'calculate_post_words_count');
-        $this->registerBackgroundProcess(IncompleteGeoIpUpdater::class, 'update_unknown_visitor_geoip');
-        $this->registerBackgroundProcess(GeoIPDatabaseDownloadProcess::class, 'geoip_database_download');
-    }
-
-    /**
-     * Initialize a background process if the class exists.
-     *
-     * @param string $className The name of the background process class.
-     * @param string $processKey The key to store the background process in the array.
-     */
-    private function registerBackgroundProcess($className, $processKey)
-    {
-        if (class_exists($className)) {
-            $this->backgroundProcess[$processKey] = new $className();
-        }
-    }
-
-    /**
-     * Get the registered background processes.
-     *
-     * @return WP_Background_Process
-     */
-    public function getBackgroundProcess($processKey)
-    {
-        return $this->backgroundProcess[$processKey];
+        // Include functions
+        require_once WP_STATISTICS_DIR . 'functions.php';
     }
 
     private function create_upload_directory()
@@ -266,7 +268,7 @@ final class WP_Statistics
          * Create .htaccess to avoid public access.
          */
         // phpcs:disable
-        if (is_dir($upload_dir_name) and is_writable($upload_dir_name)) {
+        if (apply_filters('wp_statistics_enable_htaccess_protection', true) && is_dir($upload_dir_name) && is_writable($upload_dir_name)) {
             $htaccess_file = path_join($upload_dir_name, '.htaccess');
 
             if (!file_exists($htaccess_file)
@@ -288,7 +290,7 @@ final class WP_Statistics
         if (function_exists('determine_locale')) {
             $locale = apply_filters('plugin_locale', determine_locale(), 'wp-statistics');
 
-            unload_textdomain('wp-statistics');
+            unload_textdomain('wp-statistics', true);
             load_textdomain('wp-statistics', WP_LANG_DIR . '/wp-statistics-' . $locale . '.mo');
         }
 
@@ -309,31 +311,40 @@ final class WP_Statistics
         }
 
         $log_level = strtoupper($level);
-        error_log(sprintf('[WP STATISTICS] [%s]: %s', $log_level, $message));
+
+
+        // Log when debug is enabled
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log(sprintf('[WP STATISTICS] [%s]: %s', $log_level, $message));
+        }
     }
 
     /**
-     * Create tables on plugin activation
+     * Plugin activation callback.
      *
-     * @param object $network_wide
+     * Called by WordPress via register_activation_hook() when the plugin is activated.
+     * Defers to CoreFactory::activator() to perform the actual activation tasks.
+     *
+     * @param bool $networkWide Whether the plugin is being activated network-wide on multisite.
+     * @return void
      */
-    public static function install($network_wide)
+    public function activator($networkWide)
     {
-        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-db.php';
-        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-install.php';
-        $installer = new \WP_STATISTICS\Install();
-        $installer->install($network_wide);
+        require_once WP_STATISTICS_DIR . 'vendor/autoload.php';
+        CoreFactory::activator($networkWide);
     }
 
     /**
-     * Manage task on plugin deactivation
+     * Plugin uninstall callback.
+     *
+     * Called by WordPress via register_uninstall_hook() when the plugin is uninstalled.
+     * Performs final cleanup by delegating to CoreFactory::uninstaller().
      *
      * @return void
      */
-    public static function uninstall()
+    public static function uninstaller()
     {
-        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-db.php';
-        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-uninstall.php';
-        new \WP_STATISTICS\Uninstall();
+        require_once WP_STATISTICS_DIR . 'vendor/autoload.php';
+        CoreFactory::uninstaller();
     }
 }

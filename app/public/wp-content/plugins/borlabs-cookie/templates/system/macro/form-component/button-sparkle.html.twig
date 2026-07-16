@@ -1,0 +1,12 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/form-component/button.html.twig" as button %}
+    {% import "system/macro/icons/sparkles.html.twig" as sparkles_icon %}
+
+    {% set config = {
+        backgroundColor: 'bc-bg-slate-950',
+        backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+        focusColor: 'focus:bc-ring-slate-950',
+    } | merge(config) | merge({ button: "#{sparkles_icon.component({ cssClasses: ['bc-relative', 'bc--top-0.5'], height: 'bc-h-4', width: 'bc-w-4', })}#{config.button}", })
+    %}
+    {{ button.component(config, localized) }}
+{% endmacro %}

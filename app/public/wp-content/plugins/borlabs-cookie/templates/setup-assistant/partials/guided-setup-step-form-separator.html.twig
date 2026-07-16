@@ -1,0 +1,134 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="guide-form-separator">
+    {% embed "system/embed/card/card-with-title.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/icons/chevron-down.html.twig" as chevron_down_icon %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {% block header %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.formSeparator,
+                subtitle: localized.headline.basics,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            <div class="bc-flex bc-flex-col sm:bc-flex-row bc-justify-center bc-p-6 bc-gap-x-6 bc-gap-y-6">
+                <div class="bc-w-full sm:bc-w-2/5">
+                    <h4 class="bc-opacity-0 bc-mb-2 bc-text-lg bc-font-medium bc-text-center brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-down">
+                        {{ localized.headline.separatorLineBetweenForms | raw }}
+                    </h4>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.separatorLineBetweenFormsA | raw }}
+                    </p>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.separatorLineBetweenFormsB | raw }}
+                    </p>
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.separatorLineBetweenFormsC | raw }}
+                    </p>
+
+                    <hr class="bc-opacity-0 bc-my-4" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                    <p class="bc-opacity-0 bc-mb-4 bc-text-sm brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.text.separatorLineBetweenFormsD | raw }}
+                    </p>
+                </div>
+                <div class="bc-w-full sm:bc-w-2/5">
+                    <div class="bc-opacity-0 bc-full bc-rounded-md bc-shadow-inner bc-p-6 bc-bg-neutral-200" data-brlbs-animate="brlbs-animate-fade-in">
+                        <div class="bc-opacity-0 bc-rounded-md bc-shadow bc-mb-6 bc-py-2.5 bc-px-5 bc-bg-white" data-brlbs-animate="brlbs-animate-slide-in-up">
+                            {{ row_switch_button.component({
+                                id: 'guidedSetupExampleSettingA',
+                                label: localized.field.guidedSetupExampleSettingA,
+                                value: '1',
+                            }) }}
+
+                            <div>
+                                {% embed "system/embed/form-row.html.twig" %}
+                                    {% block label %}
+                                    {% endblock %}
+                                    {% block input %}
+                                        {% import "system/macro/form-component/button.html.twig" as button %}
+                                        <div>
+                                            {{ button.component({
+                                                button: localized.button.button,
+                                            }, localized) }}
+                                        </div>
+                                    {% endblock %}
+                                {% endembed %}
+                            </div>
+                        </div>
+
+                        <div class="bc-opacity-0 bc-rounded-md bc-shadow bc-mb-6 bc-py-2.5 bc-px-5 bc-bg-white" data-brlbs-animate="brlbs-animate-slide-in-up">
+                            {{ row_switch_button.component({
+                                id: 'guidedSetupExampleSettingB',
+                                label: localized.field.guidedSetupExampleSettingB,
+                                value: '0',
+                            }) }}
+
+                            <div>
+                                {% embed "system/embed/form-row.html.twig" %}
+                                    {% block label %}
+                                    {% endblock %}
+                                    {% block input %}
+                                        {% import "system/macro/form-component/button.html.twig" as button %}
+                                        <div>
+                                            {{ button.component({
+                                                button: localized.button.button,
+                                            }, localized) }}
+                                        </div>
+                                    {% endblock %}
+                                {% endembed %}
+                            </div>
+                        </div>
+
+                        <hr class="bc-opacity-0 bc-my-6" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                        <div class="bc-opacity-0 bc-rounded-md bc-shadow bc-py-2.5 bc-px-5 bc-bg-white" data-brlbs-animate="brlbs-animate-slide-in-up">
+                            {{ row_switch_button.component({
+                                id: 'guidedSetupExampleSettingC',
+                                label: localized.field.guidedSetupExampleSettingC,
+                                value: '1',
+                            }) }}
+
+                            <div>
+                                {% embed "system/embed/form-row.html.twig" %}
+                                    {% block label %}
+                                    {% endblock %}
+                                    {% block input %}
+                                        {% import "system/macro/form-component/button.html.twig" as button %}
+                                        <div>
+                                            {{ button.component({
+                                                button: localized.button.button,
+                                            }, localized) }}
+                                        </div>
+                                    {% endblock %}
+                                {% endembed %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bc-flex bc-flex-col bc-place-items-center bc-gap-y-6 bc-px-6 bc-pb-6">
+                <div class="bc-w-full bc-flex bc-justify-end bc-gap-x-2 bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                    <span class="bc-text-sm bc-font-medium brlbs-cmpnt-text">{{ localized.text.pressNextToProceed | raw }}</span>
+                    <span class="bc-animate-bounce">{{ chevron_down_icon.component({ }) }}</span>
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 3,
+        steps: data.setupSteps,
+    }, localized) }}
+</div>
+
+
+

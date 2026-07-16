@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="de" data-accent="amethyst" data-density="compact" data-viewport="desktop">
+<head>
+<meta charset="utf-8">
+<title>Bestellbestätigung · Plantaphilia</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="ui_kits/web/styles.css">
+<link rel="stylesheet" href="cart-checkout.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: var(--bg-deep); color: var(--creme); font-family: var(--sans-body); }
+  body { overflow-x: hidden; }
+
+  /* — Share-for-discount banner — */
+  .or-banner {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 15% 30%, rgba(125, 95, 165, 0.22), transparent 55%),
+      radial-gradient(ellipse at 85% 70%, rgba(107, 47, 92, 0.28), transparent 60%),
+      linear-gradient(180deg, #1a1429 0%, #221432 100%);
+    border-bottom: 1px solid var(--border-thin);
+    overflow: hidden;
+  }
+  .or-banner::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 8% 22%, rgba(242,232,213,0.12) 0 1.2px, transparent 1.6px),
+      radial-gradient(circle at 92% 78%, rgba(242,232,213,0.10) 0 1.2px, transparent 1.6px),
+      radial-gradient(circle at 30% 80%, rgba(242,232,213,0.10) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 78% 18%, rgba(242,232,213,0.08) 0 1px, transparent 1.4px);
+    pointer-events: none;
+  }
+  .or-banner-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 36px 48px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 48px;
+    align-items: center;
+    position: relative;
+  }
+  .or-banner-eyebrow {
+    font-family: var(--serif-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--lavender);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .or-banner-title {
+    font-family: var(--serif-display);
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1.05;
+    color: var(--creme);
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .or-banner-title em {
+    font-style: italic;
+    color: var(--lavender);
+  }
+  .or-banner-text {
+    font-family: var(--sans-body);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--creme-dim);
+    max-width: 560px;
+    margin: 0;
+  }
+  .or-banner-tag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--creme-muted);
+    margin-top: 12px;
+  }
+  .or-banner-tag b {
+    font-family: var(--serif-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    color: var(--creme);
+    text-transform: none;
+  }
+  .or-banner-stamp {
+    width: 116px; height: 116px;
+    border: 1px solid var(--border-gold);
+    border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: var(--serif-display);
+    font-style: italic;
+    color: var(--creme);
+    text-align: center;
+    position: relative;
+    background: rgba(15,36,25, 0.35);
+  }
+  .or-banner-stamp::before {
+    content: ""; position: absolute; inset: 6px;
+    border: 1px dashed rgba(138,111,58,0.4);
+    border-radius: 50%;
+  }
+  .or-banner-stamp .pct {
+    font-size: 38px; line-height: 1; font-style: normal; font-weight: 500;
+    color: var(--lavender);
+  }
+  .or-banner-stamp .lbl {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--creme-muted); margin-top: 4px; font-style: normal;
+    font-family: var(--sans-body);
+  }
+  .or-banner-cta {
+    display: inline-flex; align-items: center; gap: 14px;
+    background: var(--creme);
+    color: var(--berry);
+    border: 1px solid var(--creme);
+    padding: 16px 26px;
+    font-family: var(--sans-body);
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    cursor: pointer;
+    transition: background var(--t-base) var(--ease-botanical), gap var(--t-base);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .or-banner-cta:hover { background: var(--lavender); border-color: var(--lavender); gap: 18px; }
+  .or-banner-cta .arrow { font-family: var(--serif-display); font-style: italic; font-size: 18px; letter-spacing: 0; }
+  .or-banner-socials {
+    display: flex; gap: 6px; margin-top: 14px;
+  }
+  .or-banner-soc {
+    width: 30px; height: 30px;
+    border: 1px solid var(--border-thin);
+    color: var(--creme-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+    text-decoration: none;
+  }
+  .or-banner-soc:hover { color: var(--berry); background: var(--creme); border-color: var(--creme); }
+
+  /* — Confirmation hero — */
+  .or-hero {
+    padding: 64px 0 8px;
+  }
+  .or-hero-eyebrow {
+    font-family: var(--sans-body);
+    font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--lavender-dim);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .or-hero-eyebrow .rule { flex: 0 0 36px; height: 1px; background: var(--amethyst-dim); }
+  .or-hero h1 {
+    font-family: var(--serif-display);
+    font-weight: 400;
+    font-size: 72px; line-height: 1; margin: 18px 0 0;
+    letter-spacing: -0.015em;
+    color: var(--creme);
+  }
+  .or-hero h1 em { font-style: italic; color: var(--lavender); }
+  .or-hero-sub {
+    font-family: var(--serif-display);
+    font-style: italic;
+    font-size: 22px; line-height: 1.4;
+    color: var(--creme-dim);
+    margin: 18px 0 0;
+    max-width: 680px;
+  }
+  .or-hero-meta {
+    display: flex; gap: 56px; margin-top: 36px;
+    padding-top: 24px; border-top: 1px solid var(--border-hair);
+  }
+  .or-hero-meta dt {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--creme-muted); margin-bottom: 6px;
+  }
+  .or-hero-meta dd {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--creme);
+  }
+  .or-hero-meta dd b {
+    font-style: normal; font-weight: 500;
+    font-family: var(--mono); font-size: 15px; letter-spacing: 0.04em;
+  }
+
+  /* — Layout — */
+  .or-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 64px;
+    margin-top: 56px;
+  }
+  .or-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hair);
+    padding: 32px 36px;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .or-card h2 {
+    font-family: var(--serif-display);
+    font-weight: 500;
+    font-size: 22px; margin: 0 0 22px;
+    color: var(--creme);
+    display: flex; align-items: baseline; gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-hair);
+  }
+  .or-card h2 em {
+    font-style: italic; color: var(--lavender);
+    font-weight: 400;
+  }
+  .or-card h2 .meta {
+    margin-left: auto;
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--creme-muted);
+  }
+
+  /* — Timeline — */
+  .or-timeline {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .or-timeline li {
+    padding: 0 16px 0 0;
+    position: relative;
+  }
+  .or-timeline li::before {
+    content: ""; position: absolute;
+    left: 0; right: 16px; top: 8px; height: 1px;
+    background: var(--amethyst-dim);
+    opacity: 0.5;
+  }
+  .or-timeline li:last-child::before { display: none; }
+  .or-timeline .dot {
+    width: 17px; height: 17px; border-radius: 50%;
+    border: 1px solid var(--amethyst-dim);
+    background: var(--bg-surface);
+    position: relative; z-index: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .or-timeline li.done .dot {
+    background: var(--lavender); border-color: var(--lavender);
+  }
+  .or-timeline li.done .dot::after {
+    content: "✓"; font-size: 10px; color: var(--berry); line-height: 1;
+  }
+  .or-timeline li.active .dot {
+    border-color: var(--lavender);
+    box-shadow: 0 0 0 4px rgba(125,95,165,0.18);
+  }
+  .or-timeline li.active .dot::after {
+    content: ""; width: 7px; height: 7px; background: var(--lavender); border-radius: 50%;
+  }
+  .or-timeline .lbl {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--creme-muted);
+    display: block; margin-bottom: 4px;
+  }
+  .or-timeline .when {
+    font-family: var(--serif-display); font-style: italic;
+    font-size: 15px; color: var(--creme);
+  }
+  .or-timeline li.active .when { color: var(--lavender); }
+
+  /* — Items table — */
+  .or-items {
+    list-style: none; margin: 0; padding: 0;
+  }
+  .or-item {
+    display: grid;
+    grid-template-columns: 84px 1fr auto;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-hair);
+    align-items: center;
+  }
+  .or-item:last-child { border-bottom: 0; }
+  .or-item-img {
+    width: 84px; height: 84px;
+    background-size: cover; background-position: center;
+    background-color: var(--bg-raised);
+  }
+  .or-item-name {
+    font-family: var(--serif-display);
+    font-size: 19px; font-weight: 500;
+    color: var(--creme); margin: 0;
+  }
+  .or-item-latin {
+    font-family: var(--serif-display); font-style: italic;
+    font-size: 13px; color: var(--lavender); margin: 2px 0 6px;
+  }
+  .or-item-spec {
+    font-family: var(--sans-body); font-size: 11px;
+    color: var(--creme-muted); letter-spacing: 0.04em;
+    display: flex; gap: 14px;
+  }
+  .or-item-spec .sep { color: var(--amethyst-dim); }
+  .or-item-price {
+    text-align: right;
+  }
+  .or-item-price .total {
+    font-family: var(--serif-display); font-size: 19px;
+    color: var(--creme);
+  }
+  .or-item-price .qty {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--creme-muted); margin-top: 4px;
+  }
+
+  /* — Address blocks — */
+  .or-addr-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+  }
+  .or-addr-eyebrow {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--creme-muted); margin-bottom: 10px;
+  }
+  .or-addr {
+    font-family: var(--serif-display);
+    font-size: 15px; line-height: 1.6;
+    color: var(--creme);
+    font-style: italic;
+  }
+  .or-addr b { font-style: normal; font-weight: 500; }
+
+  /* — Summary — */
+  .or-aside {
+    position: sticky; top: 32px;
+    align-self: start;
+  }
+  .or-aside-stamp {
+    position: absolute; top: 18px; right: 22px;
+    font-family: var(--serif-display); font-style: italic;
+    font-size: 11px; letter-spacing: 0.08em;
+    color: var(--lavender);
+    transform: rotate(4deg);
+    border: 1px solid var(--amethyst-dim);
+    padding: 4px 10px;
+  }
+  .or-aside-eyebrow {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--lavender-dim); margin-bottom: 8px;
+  }
+  .or-aside-h {
+    font-family: var(--serif-display);
+    font-weight: 400; font-size: 42px; line-height: 1;
+    margin: 0 0 24px; color: var(--creme);
+  }
+  .or-aside-h em { font-style: italic; color: var(--lavender); }
+  .or-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 10px 0;
+    font-family: var(--sans-body); font-size: 13px;
+  }
+  .or-row .lab { color: var(--creme-dim); }
+  .or-row .val { color: var(--creme); font-family: var(--serif-display); font-size: 15px; }
+  .or-row.free .val { color: var(--lavender); font-style: italic; }
+  .or-divider { height: 1px; background: var(--border-hair); margin: 8px 0; }
+  .or-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 18px 0 4px;
+    border-top: 1px solid var(--amethyst-dim);
+  }
+  .or-total .lab {
+    font-family: var(--serif-display); font-size: 22px; color: var(--creme);
+  }
+  .or-total .val {
+    font-family: var(--serif-display); font-size: 32px; color: var(--lavender);
+  }
+  .or-tax {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--creme-muted); text-align: right; margin-bottom: 22px;
+  }
+  .or-aside-actions {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 22px;
+  }
+
+  /* — Footnote — */
+  .or-footnote {
+    margin-top: 64px; padding: 36px 0;
+    border-top: 1px solid var(--border-hair);
+    border-bottom: 1px solid var(--border-hair);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px;
+  }
+  .or-foot-item h4 {
+    font-family: var(--sans-body); font-size: 10px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--lavender); margin: 0 0 8px;
+  }
+  .or-foot-item p {
+    font-family: var(--serif-display); font-style: italic;
+    font-size: 15px; line-height: 1.55;
+    color: var(--creme-dim); margin: 0;
+  }
+  .or-foot-item a {
+    color: var(--lavender); text-decoration: none;
+    border-bottom: 1px solid var(--amethyst-dim);
+  }
+
+  /* — Mobile — */
+  @media (max-width: 900px) {
+    .or-banner-inner { grid-template-columns: 1fr; gap: 22px; padding: 28px 22px; }
+    .or-banner-stamp { display: none; }
+    .or-hero h1 { font-size: 48px; }
+    .or-hero-meta { flex-direction: column; gap: 18px; }
+    .or-grid { grid-template-columns: 1fr; gap: 32px; }
+    .or-timeline { grid-template-columns: 1fr 1fr; gap: 24px 0; }
+    .or-addr-grid { grid-template-columns: 1fr; }
+    .or-footnote { grid-template-columns: 1fr; gap: 24px; }
+    .or-aside { position: static; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="ui_kits/web/components.jsx"></script>
+  <script type="text/babel" src="cart-checkout.jsx"></script>
+
+  <script type="text/babel">
+    const { Footer } = window.PA;
+    const { MiniHead, Steps, SAMPLE_CART, SHIPPING, fmt } = window.CC;
+
+    const ORDER = {
+      number: 'PA-2026-04781',
+      placedAt: '14. Mai 2026, 14:32',
+      email: 'friedrich.koehler@example.de',
+      payment: 'Rechnung · 14 Tage',
+      shipping: SHIPPING.find((s) => s.id === 'standard'),
+      arrives: 'Mi, 20. Mai – Fr, 22. Mai 2026',
+    };
+    const SHIP_ADDR = {
+      name: 'Friedrich Köhler',
+      street: 'Karl-Tauchnitz-Straße 4',
+      city: '04107 Leipzig',
+      country: 'Deutschland',
+      phone: '+49 341 1234567',
+    };
+
+    function ShareBanner() {
+      return (
+        <section className="or-banner" data-comment-anchor="share-banner">
+          <div className="or-banner-inner">
+            <div className="or-banner-stamp">
+              <span className="pct">10 %</span>
+              <span className="lbl">Dank-Rabatt</span>
+            </div>
+
+            <div>
+              <div className="or-banner-eyebrow">· Eine kleine Geste ·</div>
+              <h2 className="or-banner-title">Rabattcode <em>verdienen</em>.</h2>
+              <p className="or-banner-text">
+                Teile deine Bestellung in den sozialen Medien, tagge uns
+                und erhalte einen persönlichen Rabattcode für deinen nächsten Besuch im Gewächshaus.
+              </p>
+              <div className="or-banner-tag">
+                <span>Tagge</span>
+                <b>@plantaphilia</b>
+                <span>·</span>
+                <b>#plantaphilia</b>
+              </div>
+              <div className="or-banner-socials">
+                <a className="or-banner-soc" href="#" aria-label="Instagram">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
+                </a>
+                <a className="or-banner-soc" href="#" aria-label="TikTok">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4c0 2.5 2 4.5 5 4.5"/></svg>
+                </a>
+                <a className="or-banner-soc" href="#" aria-label="Pinterest">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M11 7.5c2.5-.5 5 1 5 3.5s-2 4-4 4c-1 0-1.5-.5-1.5-.5L9 21"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <a className="or-banner-cta" href="#">
+              Jetzt teilen
+              <span className="arrow">→</span>
+            </a>
+          </div>
+        </section>
+      );
+    }
+
+    function App() {
+      const items = SAMPLE_CART;
+      const subtotal = items.reduce((s, i) => s + i.priceN * i.qty, 0);
+      const giftN = 4.50;
+      const shipObj = ORDER.shipping;
+      const shipPriceN = (shipObj.free80 && subtotal >= 80) ? 0 : shipObj.priceN;
+      const total = subtotal + giftN + shipPriceN;
+      const tax = total * 19 / 119;
+
+      return (
+        <>
+          <MiniHead />
+          <ShareBanner />
+
+          <main className="cc-page" data-screen-label="Bestellbestätigung">
+            <div className="cc-wrap">
+              <Steps current="confirm" />
+
+              <header className="or-hero">
+                <div className="or-hero-eyebrow"><span className="rule"></span>· Bestätigung · Bestellung erhalten ·</div>
+                <h1>Danke, <em>Friedrich</em>.</h1>
+                <p className="or-hero-sub">
+                  Ihre Pflanzen warten bereits im Gewächshaus auf die Reise.
+                  Wir senden Ihnen eine Bestätigung an <b style={{fontStyle:'normal', fontFamily:'var(--sans-body)', fontSize:13, color:'var(--lavender)'}}>{ORDER.email}</b>, sobald die Sendung etikettiert ist.
+                </p>
+
+                <dl className="or-hero-meta">
+                  <div>
+                    <dt>Bestellnummer</dt>
+                    <dd><b>{ORDER.number}</b></dd>
+                  </div>
+                  <div>
+                    <dt>Aufgegeben</dt>
+                    <dd>{ORDER.placedAt}</dd>
+                  </div>
+                  <div>
+                    <dt>Vorauss. Lieferung</dt>
+                    <dd>{ORDER.arrives}</dd>
+                  </div>
+                  <div>
+                    <dt>Zahlart</dt>
+                    <dd>{ORDER.payment}</dd>
+                  </div>
+                </dl>
+              </header>
+
+              <div className="or-grid">
+                <div>
+                  {/* — Timeline — */}
+                  <section className="or-card">
+                    <h2><em>I.</em> Reise Ihrer Pflanzen <span className="meta">Status · live</span></h2>
+                    <ul className="or-timeline">
+                      <li className="done">
+                        <span className="dot"></span>
+                        <span className="lbl">Schritt 1</span>
+                        <span className="when">Bestellung aufgegeben</span>
+                      </li>
+                      <li className="active">
+                        <span className="dot"></span>
+                        <span className="lbl">Schritt 2</span>
+                        <span className="when">In der Gärtnerei</span>
+                      </li>
+                      <li>
+                        <span className="dot"></span>
+                        <span className="lbl">Schritt 3</span>
+                        <span className="when">Verpackt &amp; abgeholt</span>
+                      </li>
+                      <li>
+                        <span className="dot"></span>
+                        <span className="lbl">Schritt 4</span>
+                        <span className="when">Bei Ihnen</span>
+                      </li>
+                    </ul>
+                  </section>
+
+                  {/* — Items — */}
+                  <section className="or-card">
+                    <h2><em>II.</em> Ihre Sammlung <span className="meta">{items.reduce((s,i)=>s+i.qty,0)} Pflanzen</span></h2>
+                    <ul className="or-items">
+                      {items.map((it) => (
+                        <li className="or-item" key={it.key}>
+                          <div className="or-item-img" style={{backgroundImage:`url(${it.img})`}}></div>
+                          <div>
+                            <h3 className="or-item-name">{it.name}</h3>
+                            <div className="or-item-latin">{it.latin}</div>
+                            <div className="or-item-spec">
+                              <span>Art. {it.sku}</span>
+                              <span className="sep">·</span>
+                              <span>Topf {it.pot}</span>
+                              <span className="sep">·</span>
+                              <span>{it.collected}</span>
+                            </div>
+                          </div>
+                          <div className="or-item-price">
+                            <div className="total">{fmt(it.priceN * it.qty)}</div>
+                            <div className="qty">× {it.qty} Stück</div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  {/* — Addresses — */}
+                  <section className="or-card">
+                    <h2><em>III.</em> Versand &amp; Rechnung</h2>
+                    <div className="or-addr-grid">
+                      <div>
+                        <div className="or-addr-eyebrow">· Lieferadresse ·</div>
+                        <address className="or-addr">
+                          <b>{SHIP_ADDR.name}</b><br/>
+                          {SHIP_ADDR.street}<br/>
+                          {SHIP_ADDR.city}<br/>
+                          {SHIP_ADDR.country}<br/>
+                          <span style={{color:'var(--creme-muted)', fontStyle:'normal', fontFamily:'var(--mono)', fontSize:11, letterSpacing:'0.04em'}}>{SHIP_ADDR.phone}</span>
+                        </address>
+                      </div>
+                      <div>
+                        <div className="or-addr-eyebrow">· Rechnungsadresse ·</div>
+                        <address className="or-addr" style={{color:'var(--creme-muted)'}}>
+                          <i>Identisch mit der Lieferadresse.</i><br/><br/>
+                          <span style={{fontStyle:'normal', fontFamily:'var(--sans-body)', fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--lavender-dim)'}}>· Zahlart ·</span><br/>
+                          <span style={{color:'var(--creme)'}}>Kauf auf Rechnung · 14 Tage</span>
+                        </address>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <aside className="or-aside">
+                  <div className="or-card" style={{margin: 0, padding: '36px 32px', position:'relative'}}>
+                    <div className="or-aside-stamp">· Quittung ·</div>
+                    <div className="or-aside-eyebrow">· Gesamtbetrag ·</div>
+                    <h2 className="or-aside-h">Eine <em>Quittung</em>.</h2>
+
+                    <div className="or-row">
+                      <span className="lab">Zwischensumme</span>
+                      <span className="val">{fmt(subtotal)}</span>
+                    </div>
+                    <div className="or-row">
+                      <span className="lab">Pflanzenpass · Geschenk</span>
+                      <span className="val">{fmt(giftN)}</span>
+                    </div>
+                    <div className={'or-row ' + (shipPriceN === 0 ? 'free' : '')}>
+                      <span className="lab">Versand · {shipObj.name.split(' · ')[0]}</span>
+                      <span className="val">{shipPriceN === 0 ? 'Frei' : fmt(shipPriceN)}</span>
+                    </div>
+                    <div className="or-divider"></div>
+                    <div className="or-total">
+                      <span className="lab">Gezahlt</span>
+                      <span className="val">{fmt(total)}</span>
+                    </div>
+                    <div className="or-tax">inkl. {fmt(tax)} MwSt. (19 %)</div>
+
+                    <div className="or-aside-actions">
+                      <a className="cc-cta" href="#" style={{textDecoration:'none'}}>
+                        Rechnung herunterladen
+                        <span className="arrow">↓</span>
+                      </a>
+                      <a className="cc-cta secondary" href="Produktseite.html" style={{textDecoration:'none'}}>
+                        Weiter im Schaubeet stöbern
+                        <span className="arrow">→</span>
+                      </a>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+
+              <section className="or-footnote">
+                <div className="or-foot-item">
+                  <h4>· Fragen zur Bestellung ·</h4>
+                  <p>Schreiben Sie uns unter <a href="mailto:hallo@plantaphilia.de">hallo@plantaphilia.de</a> — wir antworten meist binnen eines Tages.</p>
+                </div>
+                <div className="or-foot-item">
+                  <h4>· Pflegehinweis ·</h4>
+                  <p>Lassen Sie Ihre Pelargonien nach Erhalt einen Tag akklimatisieren, bevor Sie sie ans Fenster stellen.</p>
+                </div>
+                <div className="or-foot-item">
+                  <h4>· 14 Tage Pflanzengarantie ·</h4>
+                  <p>Bei Schäden tauschen wir aus oder erstatten – auf unsere Kosten. <a href="#">Mehr erfahren</a></p>
+                </div>
+              </section>
+            </div>
+          </main>
+
+          <Footer />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

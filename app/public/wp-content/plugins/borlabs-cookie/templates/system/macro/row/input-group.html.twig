@@ -1,0 +1,36 @@
+{% macro component(config) %}
+    {# Import the input-group field macro #}
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+        {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% block label %}
+            {% if config.title is not empty %}
+                <span id="{{ config.id }}-parent" class="bc-flex bc-items-center bc-space-x-2">
+                <span>
+                    {{ config.title | raw }}
+                </span>
+                {% if config.hint is not empty %}
+                    {{ hint.component({
+                        hint: config.hint,
+                    }) }}
+                {% endif %}
+            </span>
+            {% else %}
+                <label class="bc-flex bc-items-center bc-space-x-1" for="{{ config.id }}">
+                <span>
+                    {{ config.label | raw }}
+                </span>
+                    {% if config.hint is not empty %}
+                        {{ hint.component({
+                            hint: config.hint,
+                        }) }}
+                    {% endif %}
+                </label>
+            {% endif %}
+        {% endblock %}
+        {% block input %}
+            {% set config = config | filter((v, k) => k != 'hint') %}
+            {{ input_group.component(config) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

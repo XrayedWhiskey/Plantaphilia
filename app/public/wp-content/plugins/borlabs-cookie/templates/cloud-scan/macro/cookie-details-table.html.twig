@@ -1,0 +1,28 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.pageUrl | raw }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% for example in config.examples.list %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% block content %}
+                                {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                                <a class="bc-ml-2" href="{{ example.pageUrl }}" rel="nofollow noreferrer" target="_blank">
+                                    {{ example.pageUrl }}
+                                    {{ external_link_icon.component({}) }}
+                                </a>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endfor %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

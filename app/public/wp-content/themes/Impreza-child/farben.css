@@ -1,0 +1,104 @@
+/* ── Plantaphilia · farben.css — einzige Farbquelle ────────────────
+ *
+ * Alle Farb-Tokens des Design-Systems.
+ * Keine andere CSS-Datei definiert Farben direkt —
+ * alle anderen Dateien lesen ausschließlich aus diesen Variablen.
+ *
+ * 6 Branding-Farben:
+ *   #25302B  Hintergrund        — Body, große Sektionen, Footer
+ *   #1A231F  Navigation         — Header, dunkelste Ebene
+ *   #2F3B35  Produktkarten      — Karten, Modals, Inputs
+ *   #9B6FD0  Akzent Lila        — Buttons, Preise, Links (sparsam!)
+ *   #EAE4D6  Schrift primär     — alle Überschriften & Lesetexte
+ *   #9CA59E  Schrift sekundär   — Meta, Labels, Placeholder
+ */
+
+:root {
+
+  /* ── 6 Primitive (Branding-Farben) ──────────────────────────────── */
+  --farbe-bg:         #25302B;
+  --farbe-nav:        #1A231F;
+  --farbe-karte:      #2F3B35;
+  --farbe-akzent:     #9B6FD0;
+  --farbe-text:       #EAE4D6;
+  --farbe-text-meta:  #9CA59E;
+
+  /* ── Hintergründe ────────────────────────────────────────────────── */
+  --bg-deep:     var(--farbe-bg);     /* Body, große Sektionen, Footer-Fläche */
+  --bg-surface:  var(--farbe-karte);  /* Karten, Modals, Inputs, Panels */
+  --bg-raised:   #3A4840;             /* leicht heller als Karte — Hover-Feedback */
+  --bg-inky:     var(--farbe-nav);    /* Header, Navigation, Sticky-Bar */
+
+  /* ── Akzent-Palette ──────────────────────────────────────────────── */
+  --plum:          #7D55B0;                    /* tiefer Akzent (Hover, Active-State) */
+  --plum-hot:      var(--farbe-akzent);        /* #9B6FD0 — Haupt-Akzent */
+  --plum-soft:     rgba(155, 111, 208, 0.14);  /* transparenter Akzent-Hintergrund */
+  --amethyst:      var(--farbe-akzent);        /* Alias für Icons & Chevrons */
+  --amethyst-dim:  #7D55B0;                    /* gedämpfter Akzent */
+  --lavender:      #C4B0E5;                    /* heller Akzent-Tint — italic Text */
+  --lavender-dim:  var(--farbe-text-meta);     /* Meta-Text auf Akzent-Tönen */
+
+  /* ── Status-Farben ───────────────────────────────────────────────── */
+  --burgundy:      #5A1A2E;
+  --burgundy-hot:  #7A2840;
+
+  /* ── Dekor-Gold ──────────────────────────────────────────────────── */
+  --gold-dark:     #8A6F3A;
+
+  /* ── Text-Stufen ─────────────────────────────────────────────────── */
+  --creme:         var(--farbe-text);          /* #EAE4D6 — Überschriften, Buttons */
+  --creme-dim:     #CABFAA;                    /* Body-Copy, sekundäre Inhalte */
+  --creme-muted:   var(--farbe-text-meta);     /* #9CA59E — Meta, Placeholder */
+
+  /* ── Ränder ──────────────────────────────────────────────────────── */
+  --border-thin:   rgba(155, 111, 208, 0.30);  /* Akzent-basiert */
+  --border-hair:   rgba(234, 228, 214, 0.08);  /* kaum sichtbar */
+  --border-gold:   rgba(138, 111, 58, 0.35);
+
+  /* ── Schatten ────────────────────────────────────────────────────── */
+  --shadow-cabinet:    0 24px 60px -30px rgba(0,0,0,0.85),
+                       0 2px 0 rgba(155, 111, 208, 0.06) inset;
+  --shadow-specimen:   0 40px 80px -40px rgba(0,0,0,0.9);
+  --shadow-inner-dark: inset 0 0 120px rgba(0,0,0,0.6);
+
+  /* ── Accent-Aliase ───────────────────────────────────────────────── */
+  --accent:       var(--plum-hot);
+  --accent-deep:  var(--plum);
+  --accent-soft:  var(--plum-soft);
+
+  /* ── Transparente Hilfsvariablen ─────────────────────────────────── */
+
+  /* Nav-Farbe #1A231F = rgb(26,35,31) mit Opacity */
+  --bg-nav-35:  rgba(26, 35, 31, 0.35);
+  --bg-nav-55:  rgba(26, 35, 31, 0.55);
+  --bg-nav-78:  rgba(26, 35, 31, 0.78);
+  --bg-nav-85:  rgba(26, 35, 31, 0.85);
+
+  /* Body-Farbe #25302B = rgb(37,48,43) mit Opacity */
+  --bg-base-35: rgba(37, 48, 43, 0.35);
+
+  /* Primärtext #EAE4D6 = rgb(234,228,214) mit Opacity */
+  --text-05:    rgba(234, 228, 214, 0.05);
+  --text-12:    rgba(234, 228, 214, 0.12);
+
+  /* Akzent #9B6FD0 = rgb(155,111,208) mit Opacity */
+  --accent-02:  rgba(155, 111, 208, 0.02);
+  --accent-05:  rgba(155, 111, 208, 0.05);
+  --accent-06:  rgba(155, 111, 208, 0.06);
+  --accent-10:  rgba(155, 111, 208, 0.10);
+  --accent-15:  rgba(155, 111, 208, 0.15);
+  --accent-18:  rgba(155, 111, 208, 0.18);
+  --accent-22:  rgba(155, 111, 208, 0.22);
+  --accent-28:  rgba(155, 111, 208, 0.28);
+  --accent-40:  rgba(155, 111, 208, 0.40);
+
+  /* Plum #7D55B0 = rgb(125,85,176) mit Opacity */
+  --plum-28:    rgba(125, 85, 176, 0.28);
+
+  /* Gold #8A6F3A = rgb(138,111,58) mit Opacity */
+  --gold-25:    rgba(138, 111, 58, 0.25);
+  --gold-40:    rgba(138, 111, 58, 0.40);
+  --gold-45:    rgba(138, 111, 58, 0.45);
+  --gold-50:    rgba(138, 111, 58, 0.50);
+  --gold-60:    rgba(138, 111, 58, 0.60);
+}

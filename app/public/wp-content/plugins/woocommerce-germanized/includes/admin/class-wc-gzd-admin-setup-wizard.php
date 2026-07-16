@@ -58,7 +58,7 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 
 		public function initialize() {
 			$default_steps = array(
-				'germanize'         => array(
+				'germanize'   => array(
 					'name'    => __( 'Germanize', 'woocommerce-germanized' ),
 					'view'    => 'germanize.php',
 					'handler' => array( $this, 'wc_gzd_setup_germanize_save' ),
@@ -67,21 +67,14 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 					),
 					'order'   => 1,
 				),
-				'settings'          => array(
+				'settings'    => array(
 					'name'    => __( 'Settings', 'woocommerce-germanized' ),
 					'view'    => 'settings.php',
 					'handler' => array( $this, 'wc_gzd_setup_settings_save' ),
 					'order'   => 2,
 					'errors'  => array(),
 				),
-				'shipping_provider' => array(
-					'name'    => __( 'Shipping Provider', 'woocommerce-germanized' ),
-					'view'    => 'provider.php',
-					'handler' => array( $this, 'wc_gzd_setup_provider_save' ),
-					'order'   => 5,
-					'errors'  => array(),
-				),
-				'first_steps'       => array(
+				'first_steps' => array(
 					'name'             => __( 'First Steps', 'woocommerce-germanized' ),
 					'view'             => 'first-steps.php',
 					'order'            => 10,
@@ -105,6 +98,31 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 							'button_next' => ( ! WC_GZD_Secret_Box_Helper::has_valid_encryption_key() && WC_GZD_Secret_Box_Helper::supports_auto_insert() ) ? esc_attr__( 'Insert key', 'woocommerce-germanized' ) : esc_attr__( 'Continue', 'woocommerce-germanized' ),
 						);
 					}
+				}
+			}
+
+			if ( ! \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() && current_user_can( 'install_plugins' ) ) {
+				$default_steps['shiptastic'] = array(
+					'name'        => __( 'Shiptastic', 'woocommerce-germanized' ),
+					'view'        => 'shiptastic.php',
+					'handler'     => array( $this, 'wc_gzd_setup_shiptastic_save' ),
+					'order'       => 5,
+					'button_next' => __( 'Install & continue', 'woocommerce-germanized' ),
+					'oss_install' => current_user_can( 'install_plugins' ) ? sprintf( __( 'There was an error while automatically installing %1$s. %2$s', 'woocommerce-germanized' ), esc_html__( 'Shiptastic', 'woocommerce-germanized' ), \Vendidero\Germanized\PluginsHelper::get_plugin_manual_install_message( 'shiptastic-for-woocommerce' ) ) : '',
+				);
+			}
+
+			if ( \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_loaded() ) {
+				$integrations = self::get_available_shipping_provider_integrations();
+
+				if ( ! empty( $integrations ) ) {
+					$default_steps['shipping_provider'] = array(
+						'name'    => __( 'Shipping Provider', 'woocommerce-germanized' ),
+						'view'    => 'provider.php',
+						'handler' => array( $this, 'wc_gzd_setup_provider_save' ),
+						'order'   => 6,
+						'errors'  => array(),
+					);
 				}
 			}
 
@@ -163,7 +181,7 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 					$pages,
 					array(
 						'title'   => _x( 'OSS status', 'install', 'woocommerce-germanized' ),
-						'desc'    => sprintf( __( 'I\'m participating in the <a href="%s" target="_blank" rel="noopener">One Stop Shop (OSS) procedure</a>.', 'woocommerce-germanized' ), 'https://ec.europa.eu/taxation_customs/business/vat/oss_de' ) . ( ! \Vendidero\Germanized\PluginsHelper::is_oss_plugin_active() ? '<div class="wc-gzd-additional-desc">' . __( 'Activating this option will automatically install the <a href="https://wordpress.org/plugins/one-stop-shop-woocommerce/" target="_blank">One Stop Shop Plugin</a> developed by us.', 'woocommerce-germanized' ) . '</div>' : '' ),
+						'desc'    => sprintf( __( 'I\'m participating in the <a href="%s" target="_blank" rel="noopener">One Stop Shop (OSS) procedure</a>.', 'woocommerce-germanized' ), 'https://vat-one-stop-shop.ec.europa.eu/?prefLang=de' ) . ( ! \Vendidero\Germanized\PluginsHelper::is_oss_plugin_active() ? '<div class="wc-gzd-additional-desc">' . __( 'Activating this option will automatically install the <a href="https://wordpress.org/plugins/one-stop-shop-woocommerce/" target="_blank">One Stop Shop Plugin</a> developed by us.', 'woocommerce-germanized' ) . '</div>' : '' ),
 						'id'      => 'oss_use_oss_procedure',
 						'default' => 'no',
 						'type'    => 'gzd_toggle',
@@ -218,13 +236,7 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 					),
 				);
 			} elseif ( 'shipping_provider' === $step ) {
-				$providers = apply_filters( 'woocommerce_gzd_shipment_admin_provider_list', wc_gzd_get_shipping_providers() );
-
-				foreach ( $providers as $provider ) {
-					if ( $provider->is_manual_integration() ) {
-						continue;
-					}
-
+				foreach ( self::get_available_shipping_provider_integrations() as $provider ) {
 					$title_clean = wp_strip_all_tags( preg_replace( '/>.*?</s', '><', $provider->get_title() ) );
 
 					$settings = array_merge(
@@ -253,7 +265,8 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 							)
 						);
 					} else {
-						$is_active = wc_bool_to_string( $provider->is_activated() );
+						$is_installed = is_callable( array( $provider, 'is_installed' ) ) ? $provider->is_installed() : false;
+						$is_active    = wc_bool_to_string( $provider->is_activated() );
 
 						if ( 'deutsche_post' === $provider->get_name() && ! $provider->get_id() ) {
 							$is_active = false;
@@ -264,7 +277,7 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 							array(
 								array(
 									'title'   => $title_clean,
-									'desc'    => sprintf( __( 'Enable %s integration', 'woocommerce-germanized' ), $provider->get_title() ),
+									'desc'    => ! $is_installed ? ( sprintf( __( 'Install %s integration plugin', 'woocommerce-germanized' ), $provider->get_title() ) ) : sprintf( __( 'Enable %s integration', 'woocommerce-germanized' ), $provider->get_title() ),
 									'id'      => 'woocommerce_gzd_' . $provider->get_name() . '_activate',
 									'default' => wc_bool_to_string( $is_active ),
 									'type'    => 'gzd_toggle',
@@ -292,7 +305,7 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 		 * Add admin menus/screens.
 		 */
 		public function admin_menus() {
-			add_submenu_page( '', __( 'Setup', 'woocommerce-germanized' ), __( 'Setup', 'woocommerce-germanized' ), 'manage_options', 'wc-gzd-setup', array( $this, 'none' ) );
+			add_submenu_page( '', __( 'Setup', 'woocommerce-germanized' ), __( 'Setup', 'woocommerce-germanized' ), 'manage_options', 'wc-gzd-setup' );
 		}
 
 		/**
@@ -313,7 +326,7 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 
 				wp_register_script( 'wc-gzd-admin', $gzd->get_assets_build_url( 'static/admin.js' ), array( 'jquery' ), WC_GERMANIZED_VERSION ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
 				wp_register_script( 'wc-gzd-admin-settings', $gzd->get_assets_build_url( 'static/admin-settings.js' ), array( 'wc-gzd-admin' ), WC_GERMANIZED_VERSION, true );
-				wp_register_script( 'wc-gzd-admin-setup', $gzd->get_assets_build_url( 'static/admin-setup.js' ), array( 'jquery', 'wc-gzd-admin-settings', 'jquery-tiptip' ), WC_GERMANIZED_VERSION, true );
+				wp_register_script( 'wc-gzd-admin-setup', $gzd->get_assets_build_url( 'static/admin-setup.js' ), array( 'jquery', 'wc-gzd-admin-settings', $gzd->get_wc_asset_dep_handle( 'jquery-tiptip' ) ), WC_GERMANIZED_VERSION, true );
 
 				wp_enqueue_script( 'wc-gzd-admin-setup' );
 			}
@@ -341,6 +354,12 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 		 */
 		public function setup_wizard() {
 			if ( ! $this->is_setup_wizard() ) {
+				return;
+			}
+
+			$step = $this->get_step();
+
+			if ( ! $step ) {
 				return;
 			}
 
@@ -506,16 +525,72 @@ if ( ! class_exists( 'WC_GZD_Admin_Setup_Wizard' ) ) :
 			call_user_func( $step['handler'] );
 		}
 
+		public function wc_gzd_setup_shiptastic_save() {
+			$current_url = $this->get_step_url( $this->step );
+
+			if ( ! \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() && current_user_can( 'install_plugins' ) ) {
+				$result = \Vendidero\Germanized\PluginsHelper::install_or_activate_shiptastic();
+
+				if ( ! \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() ) {
+					wp_safe_redirect( esc_url_raw( add_query_arg( array( 'error' => 'shiptastic_install' ), $current_url ) ) );
+					exit();
+				} else {
+					update_option( '_wc_gzd_setup_installed_shiptastic', 'yes', false );
+				}
+			}
+
+			$this->initialize();
+
+			if ( $this->get_step( 'shipping_provider' ) ) {
+				$redirect = $this->get_step_url( 'shipping_provider' );
+			} else {
+				$redirect = $this->get_step_url( 'first_steps' );
+			}
+
+			wp_safe_redirect( esc_url_raw( $redirect ) );
+			exit();
+		}
+
+		protected function get_available_shipping_provider_integrations() {
+			$integrations = array();
+
+			if ( \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_loaded() ) {
+				$helper       = \Vendidero\Shiptastic\ShippingProvider\Helper::instance();
+				$integrations = $helper->get_available_shipping_provider_integrations();
+			}
+
+			foreach ( $integrations as $name => $provider ) {
+				$is_installed = is_callable( array( $provider, 'is_installed' ) ) ? $provider->is_installed() : false;
+
+				if ( ! $is_installed && ! current_user_can( 'install_plugins' ) ) {
+					unset( $integrations[ $name ] );
+				}
+			}
+
+			return $integrations;
+		}
+
 		public function wc_gzd_setup_provider_save() {
 			$redirect    = $this->get_step_url( $this->get_next_step() );
 			$current_url = $this->get_step_url( $this->step );
-			$providers   = wc_gzd_get_shipping_providers();
+			$providers   = self::get_available_shipping_provider_integrations();
 
 			foreach ( $providers as $provider ) {
 				if ( isset( $_POST[ "woocommerce_gzd_{$provider->get_name()}_activate" ] ) && 'yes' === wc_bool_to_string( wc_clean( wp_unslash( $_POST[ "woocommerce_gzd_{$provider->get_name()}_activate" ] ) ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					$provider->activate();
-					update_option( '_wc_gzd_setup_shipping_provider_activated', 'yes' );
-				} else {
+					if ( ! $provider->is_installed() && current_user_can( 'install_plugins' ) ) {
+						if ( $provider->get_extension_name() && \Vendidero\Shiptastic\Extensions::is_plugin_whitelisted( $provider->get_extension_name() ) ) {
+							$result = \Vendidero\Shiptastic\Extensions::install_or_activate_extension( $provider->get_extension_name() );
+
+							\Vendidero\Shiptastic\ShippingProvider\Helper::instance()->load_shipping_providers();
+						}
+					}
+
+					if ( $provider = wc_stc_get_shipping_provider( $provider->get_original_name() ) ) {
+						$provider->activate();
+					}
+
+					update_option( '_wc_gzd_setup_shipping_provider_activated', 'yes', false );
+				} elseif ( $provider->is_installed() ) {
 					$provider->deactivate();
 				}
 			}

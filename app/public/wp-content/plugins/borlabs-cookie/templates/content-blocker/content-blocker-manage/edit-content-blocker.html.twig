@@ -1,0 +1,43 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            isEditAction ? localized.breadcrumb.edit : localized.breadcrumb.new
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}&action=edit&id=#{data.id}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- General Settings -->
+        {% include "content-blocker/content-blocker-manage/partials/general-settings.html.twig" %}
+        <!-- Content Blocker Information -->
+        {% include "content-blocker/content-blocker-manage/partials/content-blocker-information.html.twig" %}
+        <!-- Service Information -->
+        {% include "content-blocker/content-blocker-manage/partials/service-information.html.twig" %}
+        <!-- Provider Information -->
+        {% include "content-blocker/content-blocker-manage/partials/provider-information.html.twig" %}
+        <!-- Locations -->
+        <div class="bc-w-2/3">
+            {% include "content-blocker/content-blocker-manage/partials/locations.html.twig" %}
+        </div>
+        <!-- Preview -->
+        {% include "content-blocker/content-blocker-manage/partials/preview.html.twig" %}
+        <!-- Text Placeholder -->
+        <div class="bc-w-2/3">
+            {% include "content-blocker/content-blocker-manage/partials/language-strings.twig" %}
+        </div>
+        <!-- Additional Settings-->
+        <div class="bc-w-2/3">
+            {% include "content-blocker/content-blocker-manage/partials/additional-settings.html.twig" %}
+        </div>
+        <!-- Additional Repeatable Settings-->
+        {% include "service/partials/additional-repeatable-settings.html.twig" %}
+        <!-- Codes -->
+        {% include "content-blocker/content-blocker-manage/partials/codes.html.twig" %}
+    </form>
+{% endif %}

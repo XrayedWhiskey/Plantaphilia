@@ -150,14 +150,14 @@ function wc_gzd_cart_product_item_desc( $title, $cart_item, $cart_item_key = '' 
 	}
 
 	if ( ! empty( $product_desc ) ) {
-		$title .= '<div class="wc-gzd-cart-info wc-gzd-item-desc item-desc">' . do_shortcode( $product_desc ) . '</div>';
+		$title .= '<div class="wc-gzd-cart-info wc-gzd-item-desc item-desc">' . wp_kses_post( do_shortcode( $product_desc ) ) . '</div>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $title );
 	}
 
-	return wp_kses_post( $title );
+	return $title;
 }
 
 /**
@@ -200,14 +200,14 @@ function wc_gzd_cart_product_defect_description( $title, $cart_item, $cart_item_
 	}
 
 	if ( ! empty( $product_desc ) ) {
-		$title .= '<div class="wc-gzd-cart-info wc-gzd-item-defect-description item-defect-description">' . do_shortcode( $product_desc ) . '</div>';
+		$title .= '<div class="wc-gzd-cart-info wc-gzd-item-defect-description item-defect-description">' . wp_kses_post( do_shortcode( $product_desc ) ) . '</div>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $title );
 	}
 
-	return wp_kses_post( $title );
+	return $title;
 }
 
 function wc_gzd_cart_product_attributes( $title, $cart_item, $cart_item_key = '' ) {
@@ -296,6 +296,8 @@ function wc_gzd_cart_product_delivery_time( $title, $cart_item, $cart_item_key =
 		$echo          = true;
 		$cart_item_key = $title;
 		$title         = '';
+	} elseif ( doing_action( 'woocommerce_cart_item_price' ) && '' === $title ) {
+		return $title;
 	}
 
 	if ( is_a( $cart_item, 'WC_Order_Item_Product' ) ) {
@@ -315,14 +317,14 @@ function wc_gzd_cart_product_delivery_time( $title, $cart_item, $cart_item_key =
 	}
 
 	if ( ! empty( $delivery_time ) ) {
-		$title .= '<p class="wc-gzd-cart-info delivery-time-info">' . $delivery_time . '</p>';
+		$title .= '<p class="wc-gzd-cart-info delivery-time-info">' . wp_kses_post( $delivery_time ) . '</p>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $title );
 	}
 
-	return wp_kses_post( $title );
+	return $title;
 }
 
 /**
@@ -346,6 +348,8 @@ function wc_gzd_cart_product_unit_price( $price, $cart_item, $cart_item_key = ''
 		$echo          = true;
 		$cart_item_key = $price;
 		$price         = '';
+	} elseif ( doing_action( 'woocommerce_cart_item_price' ) && '' === $price ) {
+		return $price;
 	}
 
 	$tax_display = get_option( 'woocommerce_tax_display_cart' );
@@ -410,6 +414,10 @@ function wc_gzd_cart_product_unit_price( $price, $cart_item, $cart_item_key = ''
 
 				if ( 0.0 !== $total ) {
 					$unit_price = wc_gzd_format_unit_price( wc_price( $prices['unit'] ), $gzd_product->get_unit_html(), $gzd_product->get_unit_base_html() );
+
+					if ( $gzd_product->hide_shopmarks_due_to_missing_price() ) {
+						$unit_price = '';
+					}
 				}
 			} else {
 				$unit_price = wc_gzd_get_product( $product )->get_unit_price_html( false, $tax_display );
@@ -420,14 +428,14 @@ function wc_gzd_cart_product_unit_price( $price, $cart_item, $cart_item_key = ''
 	}
 
 	if ( ! empty( $unit_price ) ) {
-		$price .= ' <span class="wc-gzd-cart-info unit-price unit-price-cart">' . $unit_price . '</span>';
+		$price .= ' <span class="wc-gzd-cart-info unit-price unit-price-cart">' . wp_kses_post( $unit_price ) . '</span>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $price );
 	}
 
-	return wp_kses_post( $price );
+	return $price;
 }
 
 /**
@@ -451,6 +459,8 @@ function wc_gzd_cart_product_deposit_amount( $price, $cart_item, $cart_item_key 
 		$echo          = true;
 		$cart_item_key = $price;
 		$price         = '';
+	} elseif ( doing_action( 'woocommerce_cart_item_price' ) && '' === $price ) {
+		return $price;
 	}
 
 	$tax_display             = get_option( 'woocommerce_tax_display_cart' );
@@ -498,6 +508,10 @@ function wc_gzd_cart_product_deposit_amount( $price, $cart_item, $cart_item_key 
 			$deposit_type            = wc_gzd_get_product( $product )->get_deposit_type();
 			$deposit_packaging_type  = wc_gzd_get_product( $product )->get_deposit_packaging_type();
 			$deposit_amount_per_unit = wc_gzd_get_product( $product )->get_deposit_amount_per_unit( 'view', $tax_display );
+
+			if ( wc_gzd_get_product( $product )->hide_shopmarks_due_to_missing_price() ) {
+				$deposit_amount = 0.0;
+			}
 		}
 	}
 
@@ -521,14 +535,14 @@ function wc_gzd_cart_product_deposit_amount( $price, $cart_item, $cart_item_key 
 	}
 
 	if ( ! empty( $deposit_html ) ) {
-		$price .= ' <span class="wc-gzd-cart-info deposit-amount deposit-amount-cart">' . $deposit_html . '</span>';
+		$price .= ' <span class="wc-gzd-cart-info deposit-amount deposit-amount-cart">' . wp_kses_post( $deposit_html ) . '</span>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $price );
 	}
 
-	return wp_kses_post( $price );
+	return $price;
 }
 
 /**
@@ -582,14 +596,14 @@ function wc_gzd_cart_product_deposit_packaging_type( $title, $cart_item, $cart_i
 	$packaging_title = apply_filters( 'woocommerce_gzd_cart_product_deposit_packaging_type_html', $packaging_title, $cart_item, $cart_item_key );
 
 	if ( ! empty( $packaging_title ) ) {
-		$title .= '<p class="wc-gzd-cart-info deposit-packaging-type">' . $packaging_title . '</p>';
+		$title .= '<p class="wc-gzd-cart-info deposit-packaging-type">' . wp_kses_post( $packaging_title ) . '</p>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $title );
 	}
 
-	return wp_kses_post( $title );
+	return $title;
 }
 
 /**
@@ -643,14 +657,14 @@ function wc_gzd_cart_product_units( $title, $cart_item, $cart_item_key = '' ) {
 	$units = apply_filters( 'woocommerce_gzd_cart_product_units_html', $units, $cart_item, $cart_item_key );
 
 	if ( ! empty( $units ) ) {
-		$title .= '<p class="wc-gzd-cart-info units-info">' . $units . '</p>';
+		$title .= '<p class="wc-gzd-cart-info units-info">' . wp_kses_post( $units ) . '</p>';
 	}
 
 	if ( $echo ) {
 		echo wp_kses_post( $title );
 	}
 
-	return wp_kses_post( $title );
+	return $title;
 }
 
 function wc_gzd_cart_applies_for_photovoltaic_system_vat_exemption( $items = false ) {
@@ -664,10 +678,6 @@ function wc_gzd_cart_get_photovoltaic_systems_law_details( $args = array() ) {
 		'DE' => array(
 			'text' => __( '§12 paragraph 3 UStG', 'woocommerce-germanized' ),
 			'url'  => 'https://www.gesetze-im-internet.de/ustg_1980/__12.html',
-		),
-		'AT' => array(
-			'text' => __( '§ 28 paragraph 62 UStG 1994', 'woocommerce-germanized' ),
-			'url'  => 'https://www.ris.bka.gv.at/Dokumente/Bundesnormen/NOR40257456/NOR40257456.html',
 		),
 	);
 	$notice_data   = array_key_exists( $base_country, $legal_notices ) ? $legal_notices[ $base_country ] : array(
@@ -977,9 +987,8 @@ function wc_gzd_get_cart_tax_share( $type = 'shipping', $cart_contents = array()
 				$_product   = apply_filters( 'woocommerce_cart_item_product', $item['data'], $item, $key );
 				$class      = $_product->get_tax_class();
 				$line_total = ! empty( $item['line_total'] ) ? $item['line_total'] : 0.0;
-				$tax_rate   = ! empty( $item['line_tax_data'] ) ? key( $item['line_tax_data']['total'] ) : null;
-
-				$tax_rate = apply_filters( 'woocommerce_gzd_tax_share_cart_item_tax_rate', $tax_rate, $item, $type );
+				$tax_rate   = isset( $item['line_tax_data'], $item['line_tax_data']['total'] ) && is_array( $item['line_tax_data']['total'] ) ? key( $item['line_tax_data']['total'] ) : null;
+				$tax_rate   = apply_filters( 'woocommerce_gzd_tax_share_cart_item_tax_rate', $tax_rate, $item, $type );
 			}
 
 			if ( wc_gzd_item_is_tax_share_exempt( $item, $type, $key ) ) {
@@ -1046,7 +1055,7 @@ function wc_gzd_get_cart_main_service_tax_class( $type = 'shipping' ) {
 		}
 	}
 
-	return apply_filters( 'woocommerce_gzd_cart_main_service_tax_class', $main_tax_class );
+	return apply_filters( 'woocommerce_gzd_cart_main_service_tax_class', $main_tax_class, $type );
 }
 
 function wc_gzd_cart_remove_shipping_taxes( $taxes, $cart ) {
@@ -1282,7 +1291,7 @@ function wc_gzd_maybe_disable_checkout_adjustments() {
 	} elseif ( ! wp_doing_ajax() && wc_gzd_checkout_adjustments_disabled() ) {
 		add_action(
 			'woocommerce_review_order_before_payment',
-			function() {
+			function () {
 				echo '<input type="checkbox" name="wc_gzd_checkout_disabled" id="wc_gzd_checkout_disabled" value="1" checked="checked" style="display: none !important; visibility: hidden !important;" />';
 			},
 			50
@@ -1299,7 +1308,7 @@ function wc_gzd_maybe_disable_checkout_adjustments() {
 
 		add_action(
 			'woocommerce_review_order_before_cart_contents',
-			function() {
+			function () {
 				remove_action( 'woocommerce_review_order_before_cart_contents', 'woocommerce_gzd_template_checkout_table_content_replacement' );
 				remove_action( 'woocommerce_review_order_after_cart_contents', 'woocommerce_gzd_template_checkout_table_product_hide_filter_removal' );
 			}

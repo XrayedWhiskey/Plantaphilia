@@ -505,6 +505,8 @@ class Js_Combinator extends Abstract_Combinator {
 		'wp-url',
 		'wp-hooks',
 		'wc-square',
+		'wp-dom-ready',
+		'siteground-optimizer-lazy-sizes-js',
 	);
 
 	/**
@@ -516,6 +518,7 @@ class Js_Combinator extends Abstract_Combinator {
 	 */
 	public $excluded_ids = array(
 		'@wordpress/block-library/navigation-js-module',
+		'@wordpress/block-library/navigation/view-js-module',
 	);
 
 	/**
@@ -752,7 +755,7 @@ class Js_Combinator extends Abstract_Combinator {
 		$is_external = false;
 
 		if (
-			@strpos( Helper_Service::get_home_url(), parse_url( $src, PHP_URL_HOST ) ) === false &&
+			@strpos( Helper_Service::get_home_url(), wp_parse_url( $src, PHP_URL_HOST ) ) === false &&
 			! @strpos( $src, 'wp-includes' )
 		) {
 			$is_external = true;

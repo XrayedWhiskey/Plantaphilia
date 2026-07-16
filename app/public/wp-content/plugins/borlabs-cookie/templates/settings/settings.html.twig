@@ -1,0 +1,29 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    {{ displayModeSettingsToggle() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- General Settings -->
+        {% include "settings/partials/general-settings.html.twig" %}
+        <!-- Consent Settings -->
+        {% include "settings/partials/consent-settings.html.twig" %}
+        <!-- Cookie Settings -->
+        {% include "settings/partials/cookie-settings.html.twig" %}
+    </form>
+    <!-- Reset Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.resetGeneralSettings,
+        hint: localized.hint.reset,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

@@ -1,0 +1,42 @@
+{% macro component(config) %}
+    {% set config = {isDisabled: false} | merge(config) %}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/icons/3-bars.html.twig" as bars_3_icon %}
+        {% block label %}
+            <label for="{{ config.id }}" class="bc-flex bc-items-center">
+                {{ config.label | raw }}
+                {% if config.hint is not empty %}
+                    <div class="bc-inline-block bc-pl-1">
+                        {{ hint.component({
+                            hint: config.hint,
+                            position: config.hintPopupPosition
+                        }) }}
+                    </div>
+                {% endif %}
+            </label>
+        {% endblock %}
+        {% block input %}
+            <div class="bc-flex bc-items-center bc-space-x-2 {{ config.width }}">
+                <ol data-brlbs-orderable-list="{{ config.id }}">
+                    {% for item in config.order %}
+                        <li
+                            data-brlbs-item="{{ item }}"
+                            data-brlbs-dragging-status=""
+                            class="bc-flex bc-justify-between bc-mb-1.5 last:bc-mb-0 bc-py-2.5 bc-px-5 bc-bg-white bc-rounded-md bc-border bc-border-solid bc-border-gray-300 bc-cursor-move data-[brlbs-dragging-status=dragging]:bc-bg-blue-600 data-[brlbs-dragging-status=dragging]:bc-border-transparent data-[brlbs-dragging-status=dragging]:bc-text-white hover:bc-border-blue-500 hover:bc-text-blue-500"
+                            draggable="true"
+                        >
+                            <span class="bc-flex">{{ findObject(config.items, 'key', item).value }}</span>
+                            <span class="bc-ml-3">{{ bars_3_icon.component({}) }}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+                <input data-brlbs-linked-orderable-list="{{ config.id }}" type="hidden" id="{{ config.id }}" name="{{ name }}" value="{{ config.order | json_encode }}" />
+            </div>
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

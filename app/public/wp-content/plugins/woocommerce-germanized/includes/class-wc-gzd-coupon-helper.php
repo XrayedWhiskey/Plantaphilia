@@ -58,7 +58,7 @@ class WC_GZD_Coupon_Helper {
 		 */
 		add_filter(
 			'woocommerce_sort_fees_callback',
-			function( $compare, $a, $b ) {
+			function ( $compare, $a, $b ) {
 				if ( $a->amount === $b->amount ) {
 					$compare = strcmp( $a->id, $b->id );
 				}
@@ -91,14 +91,14 @@ class WC_GZD_Coupon_Helper {
 		 */
 		add_action(
 			'woocommerce_admin_order_items_after_line_items',
-			function() {
+			function () {
 				add_filter( 'woocommerce_order_item_get_discount', array( $this, 'voucher_discount' ), 10, 2 );
 			}
 		);
 
 		add_action(
 			'woocommerce_admin_order_totals_after_discount',
-			function() {
+			function () {
 				remove_filter( 'woocommerce_order_item_get_discount', array( $this, 'voucher_discount' ), 10 );
 			}
 		);
@@ -113,7 +113,7 @@ class WC_GZD_Coupon_Helper {
 		/**
 		 * Legacy support for vouchers which may affect subtotal vs. total in shipment customs data.
 		 */
-		add_filter( 'woocommerce_gzd_shipments_order_has_voucher', array( $this, 'legacy_shipments_order_has_voucher' ), 10, 2 );
+		add_filter( 'woocommerce_shiptastic_order_has_voucher', array( $this, 'legacy_shipments_order_has_voucher' ), 10, 2 );
 		add_action( 'wp_ajax_woocommerce_calc_line_taxes', array( $this, 'legacy_before_recalculate_totals' ), 0 );
 	}
 
@@ -357,8 +357,6 @@ class WC_GZD_Coupon_Helper {
 		$fee->update_meta_data( '_voucher_id', $coupon_data['id'] );
 
 		$fee->set_tax_status( 'none' );
-
-		// Add a placeholder negative amount to trigger the recalculation in WC_GZD_Discount_Helper::allow_order_fee_total_incl_tax()
 		$fee->set_total( wc_format_decimal( $coupon_data['amount'] ) );
 		$fee->set_total_tax( 0 );
 
@@ -453,7 +451,7 @@ class WC_GZD_Coupon_Helper {
 	protected function get_order_fee_total( $order ) {
 		return array_reduce(
 			$order->get_fees(),
-			function( $carry, $item ) {
+			function ( $carry, $item ) {
 				return $carry + ( $item->get_total() + $item->get_total_tax() );
 			}
 		);
@@ -516,7 +514,7 @@ class WC_GZD_Coupon_Helper {
 				if ( $discount < 0 || $max_voucher_total > $max_discount ) {
 					$fee_total = $discount;
 
-					if ( $item->get_total() != $fee_total ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
+					if ( $item->get_total() != $fee_total ) { // phpcs:ignore Universal.Operators.StrictComparisons.LooseNotEqual
 						$voucher_item_updated = true;
 						$item->set_total( $fee_total );
 					}
@@ -764,7 +762,7 @@ class WC_GZD_Coupon_Helper {
 	 *
 	 * @return array
 	 */
-	protected function get_fee_data_from_coupon( $coupon, $object ) {
+	protected function get_fee_data_from_coupon( $coupon, $cart_or_order ) {
 		if ( is_a( $coupon, 'WC_Order_Item_Coupon' ) ) {
 			$coupon = $this->get_voucher_by_coupon_order_item( $coupon );
 		}
@@ -774,7 +772,7 @@ class WC_GZD_Coupon_Helper {
 		}
 
 		$this->unregister_coupon_validation_filters();
-		$discounts = new WC_GZD_Voucher_Discounts( $object, $coupon );
+		$discounts = new WC_GZD_Voucher_Discounts( $cart_or_order, $coupon );
 		$discounts->apply_coupon( $coupon, false );
 		$total_discounts = $discounts->get_discounts_by_coupon();
 		$this->register_coupon_validation_filters();
@@ -998,6 +996,7 @@ class WC_GZD_Coupon_Helper {
 		if ( $this->fee_is_voucher( $fee ) ) {
 			$item->update_meta_data( '_is_voucher', 'yes' );
 			$item->update_meta_data( '_code', wc_clean( $fee->code ) );
+			$item->update_meta_data( '_voucher_id', 'voucher_' . wc_clean( $fee->code ) );
 			$item->update_meta_data( '_voucher_amount', wc_format_decimal( $fee->voucher_amount ) );
 			$item->update_meta_data( '_voucher_discount_type', wc_clean( $fee->voucher_discount_type ) );
 

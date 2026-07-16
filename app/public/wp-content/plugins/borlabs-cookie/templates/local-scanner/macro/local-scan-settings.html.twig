@@ -1,0 +1,158 @@
+{% macro component(config, localized) %}
+    {% set config = { collectionName: 'localScanner' } | merge(config) %}
+
+    {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/input.html.twig" as row_input %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {% block mainHeader %}
+            {{ card_heading.component({
+                title: localized.headline.scanSettings,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+                {% import "system/macro/form-component/input.html.twig" as input %}
+                {% import "system/macro/form-component/select.html.twig" as select %}
+                {% import "system/macro/row/input.html.twig" as row_input %}
+
+                {% block label %}
+                    <label>{{ localized.field.pageToScan | raw }}</label>
+                {% endblock %}
+                {% block input %}
+                    <div class="bc-flex bc-items-center bc-space-x-2">
+                        {{ select.component({
+                            dataAttribute: 'data-brlbs-scan-request-url',
+                            id: generateFormFieldId('scanPageUrl', config.collectionName),
+                            isDisabled: config.customScanUrl is not empty,
+                            name: generateFormFieldName('scanPageUrl', config.collectionName),
+                            options: config.pages.list,
+                            value: config.scanPageUrl
+                        }) }}
+
+                        {{ hint.component({
+                            hint: localized.hint.scanPageId,
+                        }) }}
+                    </div>
+
+                    <div class="bc-flex bc-items-center bc-space-x-2 bc-pt-2 bc-w-3/4">
+                        {{ checkbox.component({
+                            checked: config.customScanUrl is not empty,
+                            dataAttribute: "data-brlbs-enable-target=\"#{generateFormFieldId('customScanUrl', config.collectionName)}\" data-brlbs-disable-target=\"#{generateFormFieldId('scanPageUrl', config.collectionName)}\"",
+                            id: generateFormFieldId('enableCustomScanUrl', config.collectionName),
+                            name: generateFormFieldName('enableCustomScanUrl', config.collectionName)
+                        }) }}
+                        {{ input.component({
+                            dataAttribute: 'data-brlbs-scan-request-url',
+                            id: generateFormFieldId('customScanUrl', config.collectionName),
+                            isDisabled: config.customScanUrl is empty,
+                            name: generateFormFieldName('customScanUrl', config.collectionName),
+                            placeholder: 'https://',
+                            type: 'url',
+                            value: config.customScanUrl,
+                            width: 'bc-w-full'
+                        }) }}
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            {{ row_select.component({
+                dataAttribute: 'data-brlbs-scan-request-scan-mode',
+                id: generateFormFieldId('scanMode', config.collectionName),
+                label: localized.field.scanMode,
+                name: generateFormFieldName('scanMode', config.collectionName),
+                options: config.scanModes.list,
+                value: config.scanMode,
+            }) }}
+
+            {{ row_input.component({
+                dataAttribute: 'data-brlbs-scan-request-search-phrase',
+                hint: localized.hint.searchPhrase,
+                id: generateFormFieldId('searchPhrase', config.collectionName),
+                isRequired: false,
+                label: localized.field.searchPhrase,
+                name: generateFormFieldName('searchPhrase', config.collectionName),
+                value: config.searchPhrase,
+            }) }}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/button-sparkle.html.twig" as button_sparkle %}
+
+                {% block input %}
+                    {{ button_sparkle.component({
+                        button: localized.button.runScan,
+                        backgroundColor: 'bc-bg-slate-950',
+                        backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                        dataAttribute: 'data-brlbs-local-scan-run-scan',
+                    }) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionScanModesExplained', expanded: true} %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineScanModesExplained | raw }}
+                        {% endblock %}
+
+                        {% block content %}
+                            <ul class="bc-space-y-2 bc-text-left">
+                                <li>
+                                    {{ localized.thingsToKnow.scanModeCurrentUser | raw }}
+                                    {% if config.type == 'script' %}
+                                        <br><br>
+                                        {{ localized.thingsToKnow.scanModeCurrentUserJavaScriptExample | raw }}
+                                    {% endif %}
+                                </li>
+                                <li>{{ localized.thingsToKnow.scanModeGuest | raw }}</li>
+                                <li>{{ localized.thingsToKnow.scanModeManual | raw }}</li>
+                            </ul>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+
+    <div class="bc-w-2/3">
+        <div data-brlbs-progress class="bc-hidden">
+            {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+                {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+                {% block header %}
+                    {{ card_heading.component({
+                        title: localized.headline.scanProgress,
+                    }) }}
+                {% endblock %}
+
+                {% block content %}
+                    <div data-brlbs-loading class="bc-hidden">
+                        <div class="bc-flex bc-justify-center bc-p-5">
+                            <img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-w-8 bc-h-8">
+                        </div>
+                    </div>
+
+                    <div data-brlbs-scan-mode-manual-text class="bc-py-2.5 bc-px-5 bc-text-center bc-hidden"></div>
+
+                    <script type="text/template" data-brlbs-scan-mode-manual-text-template>
+                        {{ localized.text.manualScan | raw }}
+                    </script>
+
+                    <div data-brlbs-error class="bc-py-2.5 bc-px-5 bc-hidden">
+                        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error" role="alert">{{ localized.alert.scanError | raw }}</div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+{% endmacro %}

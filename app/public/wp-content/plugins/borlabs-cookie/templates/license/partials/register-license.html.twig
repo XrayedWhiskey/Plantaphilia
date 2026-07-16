@@ -1,0 +1,51 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.yourLicense,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% import "system/macro/row/input.html.twig" as row_input %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+            {{ row_input.component({
+                errorMessage: localized.validation.licenseKey,
+                hint: localized.hint.licenseKey,
+                id: 'licenseKey',
+                label: localized.field.licenseKey,
+                placeholder: data.licenseKeyMasked,
+            }) }}
+
+            {{ row_save.component({
+                action: 'register',
+                nonce: wpNonceField("#{controllerId}-register"),
+            }, localized) }}
+        </form>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionRegistrationNotWorking', expanded: false} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineRegistrationNotWorking | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.registrationNotWorkingA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.registrationNotWorkingB | raw }}</p>
+                        <p class="bc-text-center">{{ localized.thingsToKnow.customerPortal | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

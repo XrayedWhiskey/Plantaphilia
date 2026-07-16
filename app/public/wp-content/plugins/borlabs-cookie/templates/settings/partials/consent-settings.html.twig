@@ -1,0 +1,153 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.consentSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <label>{{ localized.field.cookieVersion | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+                <div class="bc-flex bc-items-center bc-space-x-2">
+                    <span>
+                        {{ localized.text.cookieVersion | raw }} {{ data.cookieVersion }}
+                    </span>
+                    {{ hint.component({
+                        hint: localized.hint.cookieVersion,
+                    }) }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_switch_button.component({
+            hint: localized.hint.updateCookieVersion,
+            id: 'updateCookieVersion',
+            label: localized.field.updateCookieVersion,
+            value: data.updateCookieVersion,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.aggregateConsents,
+            id: 'aggregateConsents',
+            label: localized.field.aggregateConsents,
+            value: data.aggregateConsents,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.cookiesForBots,
+            id: 'cookiesForBots',
+            label: localized.field.cookiesForBots,
+            value: data.cookiesForBots,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            alertMessage: data.respectDoNotTrack != '0' ? localized.alert.doNotTrackEnabled : null,
+            dataAttribute: 'data-brlbs-display-target="respectDoNotTrack-alert"',
+            hint: localized.hint.respectDoNotTrack,
+            id: 'respectDoNotTrack',
+            label: localized.field.respectDoNotTrack,
+            value: data.respectDoNotTrack,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            alertMessage: data.reloadAfterOptIn != '0' ? localized.alert.reloadAfterOptInEnabledDanger : null,
+            dataAttribute: 'data-brlbs-display-target="reloadAfterOptIn-warning"',
+            hint: localized.hint.reloadAfterOptIn,
+            id: 'reloadAfterOptIn',
+            label: localized.field.reloadAfterOptIn,
+            value: data.reloadAfterOptIn,
+            warningMessage: data.reloadAfterOptIn != '0' ? localized.alert.reloadAfterOptInEnabledWarning : null,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            id: 'reloadAfterOptOut',
+            hint: localized.hint.reloadAfterOptOut,
+            label: localized.field.reloadAfterOptOut,
+            value: data.reloadAfterOptOut,
+        }) }}
+
+        {{ row_textarea.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.crossCookieDomains,
+            id: 'crossCookieDomains',
+            isRequired: false,
+            label: localized.field.crossCookieDomains,
+            value: data.crossCookieDomains | join('\n'),
+        }) }}
+
+        {{ row_save.component({
+            action: 'save',
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { expanded: true, id: 'accordionCookieVersion' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineWhatIsTheCookieVersion }}
+                    {% endblock %}
+                    {% block content %}
+                        {{ localized.thingsToKnow.whatIsTheCookieVersion | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with { hideInSimplifiedMode: true, id: 'accordionAggregateCookie' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineAggregateCookieConsent }}
+                    {% endblock %}
+                    {% block content %}
+                        {% if (constant('WP_ALLOW_MULTISITE') is not defined) or (constant('WP_ALLOW_MULTISITE') == false) %}
+                            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info">
+                                {{ localized.thingsToKnow.aggregateConsentsA | raw }}
+                            </div>
+                        {% endif %}
+                        <p class="bc-mb-4">{{ localized.thingsToKnow.aggregateConsentsB | raw }}</p>
+                        <p class="bc-mb-4">
+                            <strong>{{ localized.thingsToKnow.aggregateConsentsC | raw }}</strong>
+                            <br>
+                            {{ localized.thingsToKnow.aggregateConsentsD | raw }}
+                            <br>
+                            {{ localized.thingsToKnow.aggregateConsentsE | raw }}
+                        </p>
+                        <p>
+                            <strong>{{ localized.thingsToKnow.aggregateConsentsF | raw }}</strong>
+                            <br>
+                            {{ localized.thingsToKnow.aggregateConsentsG | raw }}
+                            <br>
+                            {{ localized.thingsToKnow.aggregateConsentsH | raw }}
+                        </p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with { hideInSimplifiedMode: true, id: 'accordionCrossDomain' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineCrossCookieDomains | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.crossCookieDomainsA | raw }}</p>
+                        <p class="bc-text-center">{{ localized.thingsToKnow.crossCookieDomainsB | format(localized.url.crossCookieDomains) | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

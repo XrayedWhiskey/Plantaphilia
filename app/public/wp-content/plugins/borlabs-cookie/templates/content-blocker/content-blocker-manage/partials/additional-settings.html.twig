@@ -1,0 +1,18 @@
+{% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.additionalSettings,
+        }) }}
+    {% endblock %}
+
+    {% block content %}
+        {{ makeFields(data.settingsFields, 'settingsFields', 'settingsFields') | raw }}
+
+        {{ row_save.component({
+            backLink: "?page=#{controllerId}",
+        }, localized) }}
+    {% endblock %}
+{% endembed %}

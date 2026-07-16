@@ -1,6 +1,6 @@
 <?php
 
-use Vendidero\Germanized\DHL\Admin\Importer;
+use Vendidero\Shiptastic\DHL\Admin\Importer;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -55,10 +55,7 @@ class WC_GZD_Admin {
 
 		add_action( 'admin_init', array( $this, 'tool_actions' ) );
 		add_action( 'admin_init', array( $this, 'check_resend_activation_email' ) );
-		add_action( 'admin_init', array( $this, 'check_dhl_import' ) );
-		add_action( 'admin_init', array( $this, 'check_internetmarke_import' ) );
 
-		add_filter( 'woocommerce_addons_section_data', array( $this, 'set_addon' ), 10, 2 );
 		add_filter( 'woocommerce_order_actions', array( $this, 'order_actions' ), 10, 1 );
 		add_action( 'woocommerce_order_action_order_confirmation', array( $this, 'resend_order_confirmation' ), 10, 1 );
 		add_action(
@@ -99,8 +96,6 @@ class WC_GZD_Admin {
 
 		add_action( 'woocommerce_oss_enabled_oss_procedure', array( $this, 'oss_enable_hide_tax_percentage' ), 10 );
 
-		add_filter( 'woocommerce_gzd_shipment_admin_provider_list', array( $this, 'maybe_register_shipping_providers' ), 10 );
-
 		$this->wizard = require 'class-wc-gzd-admin-setup-wizard.php';
 	}
 
@@ -116,6 +111,10 @@ class WC_GZD_Admin {
 			'disable_food_options',
 			'install_oss',
 			'install_ts',
+			'install_shiptastic',
+			'update_database',
+			'migrate_to_shiptastic',
+			'remove_shiptastic_migration_notices',
 		);
 
 		if ( current_user_can( 'manage_woocommerce' ) ) {
@@ -144,6 +143,27 @@ class WC_GZD_Admin {
 		}
 	}
 
+	protected function check_remove_shiptastic_migration_notices() {
+		if ( current_user_can( 'manage_options' ) ) {
+			delete_option( 'woocommerce_gzd_shiptastic_migration_has_errors' );
+			delete_option( 'woocommerce_gzd_shiptastic_migration_errors' );
+
+			update_option( 'woocommerce_gzd_shiptastic_ignore_migration_errors', 'yes', false );
+		}
+	}
+
+	protected function check_migrate_to_shiptastic() {
+		if ( current_user_can( 'manage_options' ) ) {
+			$force = false;
+
+			if ( isset( $_GET['force'] ) && 'yes' === wc_clean( wp_unslash( $_GET['force'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$force = true;
+			}
+
+			WC_GZD_Install::migrate_shipments_to_shiptastic( $force );
+		}
+	}
+
 	protected function check_install_oss() {
 		if ( current_user_can( 'install_plugins' ) ) {
 			\Vendidero\Germanized\PluginsHelper::install_or_activate_oss();
@@ -155,6 +175,39 @@ class WC_GZD_Admin {
 		}
 
 		wp_safe_redirect( esc_url_raw( admin_url( 'plugin-install.php?s=one+stop+shop+woocommerce&tab=search&type=term' ) ) );
+		exit();
+	}
+
+	protected function check_install_shiptastic() {
+		if ( current_user_can( 'install_plugins' ) ) {
+			if ( $note = WC_GZD_Admin_Notices::instance()->get_note( 'shiptastic_install' ) ) {
+				$note->dismiss();
+			}
+
+			\Vendidero\Germanized\PluginsHelper::install_or_activate_shiptastic();
+
+			if ( 'yes' === get_option( 'woocommerce_gzd_is_shiptastic_dhl_standalone_update' ) || isset( $_GET['install-dhl'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				if ( isset( $_GET['install-dhl'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					/**
+					 * Make sure that the shiptastic country reflects the current WC country to actually load DHL.
+					 */
+					$current_wc_country = WC()->countries->get_base_country();
+
+					if ( 'DE' === $current_wc_country ) {
+						update_option( 'woocommerce_shiptastic_shipper_address_country', get_option( 'woocommerce_default_country', 'DE:BE' ) );
+					}
+				}
+
+				\Vendidero\Germanized\PluginsHelper::install_or_activate_shiptastic_dhl();
+			}
+
+			if ( \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() ) {
+				wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=wc-settings&tab=shiptastic' ) ) );
+				exit();
+			}
+		}
+
+		wp_safe_redirect( esc_url_raw( admin_url( 'plugin-install.php?s=shiptastic+for+woocommerce&tab=search&type=term' ) ) );
 		exit();
 	}
 
@@ -188,120 +241,8 @@ class WC_GZD_Admin {
 		}
 	}
 
-	/**
-	 * @param \Vendidero\Germanized\Shipments\Interfaces\ShippingProvider $providers
-	 */
-	public function maybe_register_shipping_providers( $providers ) {
-		if ( ! WC_germanized()->is_pro() ) {
-			if ( $this->is_dpd_available() ) {
-				$dpd               = new WC_GZD_Admin_Provider_DPD();
-				$providers['_dpd'] = $dpd;
-			}
-
-			if ( $this->is_gls_available() ) {
-				$gls               = new WC_GZD_Admin_Provider_GLS();
-				$providers['_gls'] = $gls;
-			}
-
-			if ( $this->is_hermes_available() ) {
-				$hermes               = new WC_GZD_Admin_Provider_Hermes();
-				$providers['_hermes'] = $hermes;
-			}
-		}
-
-		return $providers;
-	}
-
-	public function is_gls_available() {
-		return in_array( \Vendidero\Germanized\Shipments\Package::get_base_country(), array( 'DE', 'AT', 'CH', 'BE', 'LU', 'FR', 'IE', 'ES' ), true );
-	}
-
-	public function is_hermes_available() {
-		return in_array( \Vendidero\Germanized\Shipments\Package::get_base_country(), array( 'DE' ), true );
-	}
-
-	public function is_dpd_available() {
-		return in_array( \Vendidero\Germanized\Shipments\Package::get_base_country(), array( 'DE', 'AT' ), true );
-	}
-
 	public function oss_enable_hide_tax_percentage() {
 		update_option( 'woocommerce_gzd_hide_tax_rate_shop', 'yes' );
-	}
-
-	public function check_dhl_import() {
-		if ( ! class_exists( '\Vendidero\Germanized\DHL\Admin\Importer\DHL' ) ) {
-			return;
-		}
-
-		if ( isset( $_GET['wc-gzd-dhl-import'] ) && isset( $_GET['_wpnonce'] ) && Importer\DHL::is_plugin_enabled() ) {
-			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'woocommerce_gzd_dhl_import_nonce' ) ) {
-				wp_die( esc_html_x( 'Action failed. Please refresh the page and retry.', 'dhl', 'woocommerce-germanized' ) );
-			}
-
-			if ( ! current_user_can( 'manage_woocommerce' ) ) {
-				wp_die( esc_html_x( 'You don\'t have permission to do this.', 'dhl', 'woocommerce-germanized' ) );
-			}
-
-			if ( Importer\DHL::is_available() ) {
-				$this->import_dhl_settings();
-			}
-
-			/**
-			 * Shipper country may be set to something different as the Woo base country
-			 */
-			if ( ! Vendidero\Germanized\Shipments\ShippingProvider\Helper::instance()->get_shipping_provider( 'dhl' ) ) {
-				update_option( 'woocommerce_gzd_shipments_shipper_address_country', get_option( 'woocommerce_default_country', 'DE:BE' ) );
-
-				if ( 'DE' === \Vendidero\Germanized\Shipments\Package::get_base_country() ) {
-					Vendidero\Germanized\DHL\Package::init();
-					Vendidero\Germanized\Shipments\ShippingProvider\Helper::instance()->load_shipping_providers();
-				}
-			}
-
-			if ( $shipping_provider = Vendidero\Germanized\Shipments\ShippingProvider\Helper::instance()->get_shipping_provider( 'dhl' ) ) {
-				$shipping_provider->activate();
-
-				deactivate_plugins( 'dhl-for-woocommerce/pr-dhl-woocommerce.php' );
-				wp_safe_redirect( esc_url_raw( add_query_arg( array( 'has-imported' => 'yes' ), wc_gzd_get_shipping_provider( 'dhl' )->get_edit_link() ) ) );
-				exit();
-			}
-		}
-	}
-
-	public function import_dhl_settings() {
-		Importer\DHL::import_order_data( 50 );
-		Importer\DHL::import_settings();
-
-		update_option( 'woocommerc_gzd_dhl_import_finished', 'yes' );
-	}
-
-	public function check_internetmarke_import() {
-		if ( ! class_exists( '\Vendidero\Germanized\DHL\Admin\Importer\Internetmarke' ) ) {
-			return;
-		}
-
-		if ( isset( $_GET['wc-gzd-internetmarke-import'] ) && isset( $_GET['_wpnonce'] ) && Importer\Internetmarke::is_available() ) {
-			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'woocommerce_gzd_internetmarke_import_nonce' ) ) {
-				wp_die( esc_html_x( 'Action failed. Please refresh the page and retry.', 'dhl', 'woocommerce-germanized' ) );
-			}
-
-			if ( ! current_user_can( 'manage_woocommerce' ) ) {
-				wp_die( esc_html_x( 'You don\'t have permission to do this.', 'dhl', 'woocommerce-germanized' ) );
-			}
-
-			$this->import_internetmarke_settings();
-
-			wp_safe_redirect( esc_url_raw( wc_gzd_get_shipping_provider( 'deutsche_post' )->get_edit_link() ) );
-		}
-	}
-
-	public function import_internetmarke_settings() {
-		Importer\DHL::import_settings();
-
-		deactivate_plugins( 'woo-dp-internetmarke/woo-dp-internetmarke.php' );
-
-		update_option( 'woocommerce_gzd_dhl_internetmarke_enable', 'yes' );
-		update_option( 'woocommerce_gzd_internetmarke_import_finished', 'yes' );
 	}
 
 	public function save_fields( $value, $option, $raw_value ) {
@@ -363,7 +304,7 @@ class WC_GZD_Admin {
 	public function image_field( $value ) {
 		?>
 		<tr valign="top">
-			<th class="forminp forminp-image" colspan="2" id="<?php echo esc_attr( $value['id'] ); ?>">
+			<th scope="row" class="titledesc titledesc-image" colspan="2" id="<?php echo esc_attr( $value['id'] ); ?>">
 				<a href="<?php echo esc_url( $value['href'] ); ?>" target="_blank"><img src="<?php echo esc_url( $value['img'] ); ?>"/></a>
 			</th>
 		</tr>
@@ -381,10 +322,10 @@ class WC_GZD_Admin {
 
 		?>
 		<tr valign="top">
-			<th class="forminp forminp-html" id="<?php echo esc_attr( $value['id'] ); ?>">
+			<th scope="row" class="titledesc titledesc-html" id="<?php echo esc_attr( $value['id'] ); ?>">
 				<label><?php echo esc_attr( $value['title'] ); ?><?php echo( isset( $value['desc_tip'] ) && ! empty( $value['desc_tip'] ) ? wc_help_tip( $value['desc_tip'] ) : '' ); ?></label>
 			</th>
-			<td class="forminp">
+			<td class="forminp forminp-html">
 				<?php echo wp_kses_post( $value['html'] ); ?>
 				<input
 					type="hidden"
@@ -406,8 +347,8 @@ class WC_GZD_Admin {
 	public function hidden_field( $value ) {
 		$option_value = WC_Admin_Settings::get_option( $value['id'], $value['default'] );
 		?>
-		<tr valign="top" style="display: none">
-			<th class="forminp forminp-image">
+		<tr valign="top" style="display: none" aria-hidden="true">
+			<th scope="row" class="titledesc titledesc-hidden">
 				<input type="hidden" id="<?php echo esc_attr( $value['id'] ); ?>" value="<?php echo esc_attr( $option_value ); ?>" name="<?php echo esc_attr( $value['id'] ); ?>"/>
 			</th>
 		</tr>
@@ -433,7 +374,7 @@ class WC_GZD_Admin {
 					'title'             => __( 'Germanized for WooCommerce', 'woocommerce-germanized' ),
 					'path'              => array( WC_germanized()->plugin_path() . '/templates' ),
 					'template_path'     => WC_germanized()->template_path(),
-					'outdated_help_url' => 'https://vendidero.de/dokument/veraltete-germanized-templates-aktualisieren',
+					'outdated_help_url' => 'https://vendidero.de/doc/woocommerce-germanized/veraltete-germanized-templates-aktualisieren',
 					'files'             => array(),
 					'has_outdated'      => false,
 				),
@@ -447,7 +388,7 @@ class WC_GZD_Admin {
 					'title'             => '',
 					'path'              => '',
 					'template_path'     => '',
-					'outdated_help_url' => 'https://vendidero.de/dokument/veraltete-germanized-templates-aktualisieren',
+					'outdated_help_url' => 'https://vendidero.de/doc/woocommerce-germanized/veraltete-germanized-templates-aktualisieren',
 					'files'             => array(),
 					'has_outdated'      => false,
 				)
@@ -779,24 +720,6 @@ class WC_GZD_Admin {
 		return $tabs;
 	}
 
-	public function set_addon( $products, $section_id ) {
-		if ( 'featured' !== $section_id ) {
-			return $products;
-		}
-
-		array_unshift(
-			$products,
-			(object) array(
-				'title'   => 'Germanized für WooCommerce Pro',
-				'excerpt' => 'Upgrade jetzt auf die Pro Version von Germanized und profitiere von weiteren nützliche Funktionen speziell für den deutschen Markt sowie professionellem Support.',
-				'link'    => 'https://vendidero.de/woocommerce-germanized#upgrade',
-				'price'   => '79 €',
-			)
-		);
-
-		return $products;
-	}
-
 	public function status_page() {
 		WC_GZD_Admin_Status::output();
 	}
@@ -842,6 +765,14 @@ class WC_GZD_Admin {
 		);
 
 		wp_localize_script(
+			'wc-gzd-admin-product',
+			'wc_gzd_admin_product_params',
+			array(
+				'i18n_remove_attachment' => __( 'Remove', 'woocommerce-germanized' ),
+			)
+		);
+
+		wp_localize_script(
 			'wc-gzd-admin-product-variations',
 			'wc_gzd_admin_product_variations_params',
 			array(
@@ -872,6 +803,14 @@ class WC_GZD_Admin {
 		if ( in_array( $screen->id, array( 'product', 'edit-product' ), true ) ) {
 			wp_enqueue_script( 'wc-gzd-admin-product' );
 			wp_enqueue_script( 'wc-gzd-admin-product-variations' );
+		}
+
+		/**
+		 * Enqueue enhanced select within product brands screen
+		 */
+		if ( 'edit-product_brand' === $screen->id ) {
+			wp_enqueue_script( 'woocommerce_admin' );
+			wp_enqueue_script( 'wc-enhanced-select' );
 		}
 
 		if ( function_exists( 'wc_get_screen_ids' ) && in_array( $screen->id, wc_get_screen_ids(), true ) ) {
@@ -1166,6 +1105,10 @@ class WC_GZD_Admin {
 		}
 	}
 
+	protected function check_update_database() {
+		WC_GZD_Install::update();
+	}
+
 	public function disable_small_business_options() {
 		// Update woocommerce options to show tax
 		update_option( 'woocommerce_calc_taxes', 'yes' );
@@ -1278,13 +1221,12 @@ class WC_GZD_Admin {
 		}
 
 		return array_filter( $settings );
-
 	}
 
 	public function insert_setting_after( $settings, $id, $insert = array(), $type = '' ) {
 		$key = $this->get_setting_key_by_id( $settings, $id, $type );
 		if ( is_numeric( $key ) ) {
-			$key ++;
+			++$key;
 			$settings = array_merge( array_merge( array_slice( $settings, 0, $key, true ), $insert ), array_slice( $settings, $key, count( $settings ) - 1, true ) );
 		} else {
 			$settings += $insert;
@@ -1292,7 +1234,6 @@ class WC_GZD_Admin {
 
 		return $settings;
 	}
-
 }
 
 WC_GZD_Admin::instance();

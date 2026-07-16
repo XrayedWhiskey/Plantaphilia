@@ -1,0 +1,75 @@
+{% macro component(config, localized) %}
+    {# Set a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+        {% block label %}
+            <div id="{{ config.id }}-parent" class="bc-flex bc-items-center">
+                <span>{{ config.title | raw }}</span>
+                {# Displays the hint icon. #}
+                {% if config.hint is not empty %}
+                    <div class="bc-inline-block bc-pl-1">
+                        {{ hint.component({
+                            hint: config.hint,
+                            position: config.hintPopupPosition
+                        }) }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endblock %}
+        {% block input %}
+            {% if config.checkboxes is not empty %}
+                {% for checkboxConfig in config.checkboxes %}
+                    <div class="bc-flex bc-items-center bc-space-x-1.5 bc-my-1">
+                        {{ checkbox.component({
+                            checked: checkboxConfig.key in config.checkedKeys | keys,
+                            dataAttribute: "data-brlbs-checkbox-list-key=\"#{checkboxConfig.key}\" #{config.dataAttribute}",
+                            id: config.id ~ '-' ~ checkboxConfig.key,
+                            name: name ~ '[' ~ checkboxConfig.key ~ ']'
+                        }) }}
+                        <label class="bc-text-gray-700"
+                               for="{{ config.id }}-{{ checkboxConfig.key }}">{{ checkboxConfig.value }}
+                            <em>({{ checkboxConfig.key }})</em>
+                        </label>
+                    </div>
+                {% endfor %}
+
+                {% if config.checkboxes|length > 1 %}
+                    <div class="bc-flex bc-justify-start bc-my-1 bc-space-x-1.5">
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            button: localized.global.button.selectAll,
+                            dataAttribute: "data-brlbs-checkbox-list-select-all-button=\"#{name}\"",
+                            focusColor: 'focus:bc-ring-slate-950',
+                            id: 'checkboxListSelectAll-' ~ config.id,
+                            name: 'checkboxListSelectAll[' ~ config.id ~ ']',
+                            padding: 'bc-px-2.5 bc-py-1',
+                            textSize: 'bc-text-xxs',
+                            value: '1',
+                        }, localized) }}
+
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            button: localized.global.button.deselectAll,
+                            dataAttribute: "data-brlbs-checkbox-list-deselect-all-button=\"#{name}\"",
+                            focusColor: 'focus:bc-ring-slate-950',
+                            id: 'checkboxListDeselectAll-' ~ config.id,
+                            name: 'checkboxListDeselectAll[' ~ config.id ~ ']',
+                            padding: 'bc-px-2.5 bc-py-1',
+                            textSize: 'bc-text-xxs',
+                            value: '1',
+                        }, localized) }}
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

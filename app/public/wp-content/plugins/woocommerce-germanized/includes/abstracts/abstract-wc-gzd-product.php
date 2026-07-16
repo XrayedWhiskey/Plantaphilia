@@ -30,6 +30,13 @@ class WC_GZD_Product {
 
 	protected $warranty_attachment = false;
 
+	protected $safety_attachments = array();
+
+	/**
+	 * @var null|WP_Term
+	 */
+	protected $manufacturer = null;
+
 	protected $allergenic = null;
 
 	protected $nutrients = null;
@@ -109,7 +116,20 @@ class WC_GZD_Product {
 	}
 
 	public function get_gtin( $context = 'view' ) {
-		return $this->get_prop( 'ts_gtin', $context );
+		$gtin = $this->get_prop( 'ts_gtin', $context );
+
+		/**
+		 * Prefer using the newly introduced GTIN option from the Woo Core.
+		 */
+		if ( 'view' === $context && is_callable( array( $this->child, 'get_global_unique_id' ) ) ) {
+			$wc_core_gtin = $this->child->get_global_unique_id();
+
+			if ( ! empty( $wc_gtin ) ) {
+				$gtin = $wc_core_gtin;
+			}
+		}
+
+		return $gtin;
 	}
 
 	public function get_mpn( $context = 'view' ) {
@@ -200,6 +220,16 @@ class WC_GZD_Product {
 		return apply_filters( 'woocommerce_gzd_product_formatted_nutri_score', $nutri_score, $this );
 	}
 
+	public function get_power_supply_html() {
+		$html = '';
+
+		if ( $this->is_wireless_electronic_device() ) {
+			$html = wc_get_template_html( 'global/power-supply.php', array( 'product' => $this->get_wc_product() ) );
+		}
+
+		return apply_filters( 'woocommerce_gzd_product_power_supply_html', $html, $this );
+	}
+
 	public function get_drained_weight( $context = 'view' ) {
 		return $this->get_prop( 'drained_weight', $context );
 	}
@@ -245,8 +275,18 @@ class WC_GZD_Product {
 		return $alcohol_content;
 	}
 
+	public function get_is_non_alcoholic( $context = 'view' ) {
+		$is_non_alcoholic = wc_string_to_bool( $this->get_prop( 'is_non_alcoholic', $context ) );
+
+		return $is_non_alcoholic;
+	}
+
+	public function is_non_alcoholic( $context = 'view' ) {
+		return true === $this->get_is_non_alcoholic( $context );
+	}
+
 	public function get_formatted_alcohol_content( $context = 'view' ) {
-		return wc_gzd_format_alcohol_content( $this->get_alcohol_content( $context ) );
+		return wc_gzd_format_alcohol_content( $this->get_alcohol_content( $context ), $this->is_non_alcoholic( $context ) );
 	}
 
 	public function includes_alcohol( $context = 'view' ) {
@@ -303,6 +343,183 @@ class WC_GZD_Product {
 		return $this->deposit_type;
 	}
 
+	/**
+	 * @param $context
+	 *
+	 * @return false|WC_GZD_Manufacturer
+	 */
+	public function get_manufacturer( $context = 'view' ) {
+		if ( is_null( $this->manufacturer ) ) {
+			$this->manufacturer = false;
+			$slug               = $this->get_manufacturer_slug( $context );
+
+			if ( ! empty( $slug ) ) {
+				$this->manufacturer = wc_gzd_get_manufacturer( $slug );
+			}
+		}
+
+		return apply_filters( 'woocommerce_gzd_product_manufacturer', $this->manufacturer, $this );
+	}
+
+	public function get_manufacturer_slug( $context = 'view' ) {
+		$manufacturer_slug = $this->get_prop( 'manufacturer_slug', $context );
+
+		if ( 'view' === $context && empty( $manufacturer_slug ) && taxonomy_exists( 'product_brand' ) ) {
+			$product_id              = is_a( $this, 'WC_GZD_Product_Variation' ) ? $this->child->get_parent_id() : $this->get_id();
+			$brands                  = wp_get_post_terms( $product_id, 'product_brand', array( 'parent' => 0 ) );
+			$main_brand              = false;
+			$brand_manufacturer_slug = false;
+
+			if ( is_wp_error( $brands ) ) {
+				return $manufacturer_slug;
+			}
+
+			if ( empty( $brands ) ) {
+				$brands = wp_get_post_terms( $product_id, 'product_brand' );
+			}
+
+			if ( ! empty( $brands ) ) {
+				$main_brand = $brands[0];
+
+				if ( 0 === $main_brand->parent ) {
+					$child_brands = wp_get_post_terms( $product_id, 'product_brand', array( 'parent' => $main_brand->term_id ) );
+
+					foreach ( $child_brands as $child_brand ) {
+						if ( get_term_meta( $child_brand->term_id, 'manufacturer', true ) ) {
+							$main_brand = $child_brand;
+							break;
+						}
+					}
+				}
+			}
+
+			$main_brand = apply_filters( 'woocommerce_gzd_product_get_main_brand_for_manufacturer', $main_brand, $this );
+
+			if ( is_a( $main_brand, 'WP_Term' ) ) {
+				if ( ! $brand_manufacturer_slug && ( $m_slug = get_term_meta( $main_brand->term_id, 'manufacturer', true ) ) ) {
+					$manufacturer_slug = $m_slug;
+				}
+			}
+		}
+
+		return $manufacturer_slug;
+	}
+
+	public function has_product_safety_information() {
+		return apply_filters( 'woocommerce_gzd_product_has_safety_information', ( $this->get_safety_attachment_ids() || $this->get_manufacturer() || $this->get_safety_instructions() ), $this );
+	}
+
+	public function set_manufacturer_slug( $slug ) {
+		$this->manufacturer = null;
+
+		$this->set_prop( 'manufacturer_slug', $slug );
+	}
+
+	public function get_safety_attachment_ids( $context = 'view' ) {
+		return array_filter( (array) $this->get_prop( 'safety_attachment_ids', $context ) );
+	}
+
+	public function set_safety_attachment_ids( $ids ) {
+		$this->set_prop( 'safety_attachment_ids', array_unique( array_map( 'intval', $ids ) ) );
+		$this->safety_attachments = array();
+	}
+
+	public function get_safety_attachment( $id, $context = 'view' ) {
+		if ( $post = get_post( $id ) ) {
+			$this->safety_attachments[ $id ] = $post;
+
+			return $this->safety_attachments[ $id ];
+		}
+
+		return false;
+	}
+
+	public function get_safety_attachment_file( $id, $context = 'view' ) {
+		if ( $attachment = $this->get_safety_attachment( $id, $context ) ) {
+			return get_attached_file( $attachment->ID );
+		}
+
+		return false;
+	}
+
+	public function get_safety_attachment_url( $id, $context = 'view' ) {
+		if ( $attachment = $this->get_safety_attachment( $id, $context ) ) {
+			return wp_get_attachment_url( $attachment->ID );
+		}
+
+		return false;
+	}
+
+	public function get_safety_attachment_filename( $id, $context = 'view' ) {
+		if ( $file = $this->get_safety_attachment_file( $id, $context ) ) {
+			return basename( $file );
+		}
+
+		return false;
+	}
+
+	public function get_safety_attachment_title( $id, $context = 'view' ) {
+		if ( $this->get_safety_attachment( $id, $context ) ) {
+			if ( $caption = wp_get_attachment_caption( $id ) ) {
+				return $caption;
+			} else {
+				return get_the_title( $id );
+			}
+		}
+
+		return false;
+	}
+
+	public function get_manufacturer_html( $context = 'view' ) {
+		if ( $manufacturer = $this->get_manufacturer( $context ) ) {
+			$html = $manufacturer->get_html();
+		} else {
+			$html = '';
+		}
+
+		/**
+		 * Filter to adjust product manufacturer html output.
+		 *
+		 * @param string $html The product manufacturer html.
+		 * @param WC_GZD_Product $product The product object.
+		 *
+		 * @since 3.18.0
+		 */
+		return apply_filters( 'woocommerce_gzd_product_manufacturer_html', $html, $this );
+	}
+
+	public function get_product_safety_attachments_html( $context = 'view' ) {
+		$html = '';
+
+		if ( $this->hide_shopmarks_due_to_missing_price() ) {
+			return '';
+		}
+
+		if ( $this->get_safety_attachment_ids( $context ) ) {
+			foreach ( $this->get_safety_attachment_ids() as $attachment_id ) {
+				if ( $attachment = $this->get_safety_attachment( $attachment_id ) ) {
+					$html .= '<li class="wc-gzd-product-safety-attachment"><a href="' . esc_url( $this->get_safety_attachment_url( $attachment_id ) ) . '" target="_blank">' . esc_html( $this->get_safety_attachment_title( $attachment_id ) ) . '</a></li>';
+				}
+			}
+
+			if ( ! empty( $html ) ) {
+				$html = '<ul class="wc-gzd-product-safety-attachments-list">' . $html . '</ul>';
+			}
+		} else {
+			$html = '';
+		}
+
+		/**
+		 * Filter to adjust product safety attachments html output.
+		 *
+		 * @param string $html The product safety attachments html.
+		 * @param WC_GZD_Product $product The product object.
+		 *
+		 * @since 3.18.0
+		 */
+		return apply_filters( 'woocommerce_gzd_product_safety_attachments_html', $html, $this );
+	}
+
 	public function get_deposit_type( $context = 'view' ) {
 		return $this->get_prop( 'deposit_type', $context );
 	}
@@ -330,26 +547,30 @@ class WC_GZD_Product {
 	/**
 	 * Returns the total deposit amount.
 	 *
-	 * @param string $tax_display
 	 * @param string $context
+	 * @param string $tax_display
 	 *
 	 * @return string formatted deposit amount
 	 */
 	public function get_deposit_amount( $context = 'view', $tax_display = '' ) {
 		$tax_display_mode = $tax_display ? $tax_display : get_option( 'woocommerce_tax_display_shop' );
-		$quantity         = 1;
+		$deposit_quantity = 1;
 
 		// Use the raw deposit amount and calculate taxes for the total deposit amount, not per unit
 		$price = $this->get_deposit_amount_per_unit( 'edit', $tax_display );
 
 		if ( $this->get_deposit_quantity() > 1 ) {
-			$quantity = $this->get_deposit_quantity();
+			$deposit_quantity = $this->get_deposit_quantity();
 		}
 
-		$amount = (float) $price * (float) $quantity;
+		$amount = ( (float) $price * (float) $deposit_quantity );
 
 		// Calculate taxes
-		if ( 'view' === $context && $amount > 0 ) {
+		if ( in_array( $context, array( 'view', 'view_exclude_packaging' ), true ) && 0.0 !== $amount ) {
+			if ( 'view' === $context ) {
+				$amount += (float) $this->get_deposit_packaging_amount( 'edit', $tax_display );
+			}
+
 			$amount           = ( 'incl' === $tax_display_mode ) ? $this->get_deposit_amount_including_tax( 1, $amount ) : $this->get_deposit_amount_excluding_tax( 1, $amount );
 			$shipping_country = $this->get_current_customer_shipping_country();
 
@@ -358,7 +579,69 @@ class WC_GZD_Product {
 			}
 		}
 
-		return apply_filters( 'woocommerce_gzd_product_deposit_amount', $amount, $quantity, $this, $context, $tax_display );
+		return apply_filters( 'woocommerce_gzd_product_deposit_amount', $amount, $deposit_quantity, $this, $context, $tax_display );
+	}
+
+	protected function get_deposit_packaging_term( $context = 'view' ) {
+		if ( $term = $this->get_deposit_type_term( $context ) ) {
+			return WC_germanized()->deposit_types->get_packaging( $term );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the total deposit packaging amount.
+	 *
+	 * @param string $context
+	 * @param string $tax_display
+	 *
+	 * @return string formatted deposit amount
+	 */
+	public function get_deposit_packaging_amount( $context = 'view', $tax_display = '', $quantity = 1 ) {
+		$tax_display_mode = $tax_display ? $tax_display : get_option( 'woocommerce_tax_display_shop' );
+		$deposit_quantity = 1;
+		$amount           = 0.0;
+
+		if ( $this->get_deposit_quantity() > 1 ) {
+			$deposit_quantity = $this->get_deposit_quantity();
+		}
+
+		if ( $packaging = $this->get_deposit_packaging_term( $context ) ) {
+			$number_of_contents      = $this->get_deposit_packaging_number_of_contents( $context );
+			$packaging_deposit       = (float) WC_germanized()->deposit_types->get_deposit( $packaging );
+			$number_packaging_needed = ceil( ( (float) $deposit_quantity * (float) $quantity ) / (float) $number_of_contents );
+			$amount                  = $packaging_deposit * $number_packaging_needed;
+		}
+
+		// Calculate taxes
+		if ( 'view' === $context && 0.0 !== $amount ) {
+			$amount           = ( 'incl' === $tax_display_mode ) ? $this->get_deposit_amount_including_tax( 1, $amount ) : $this->get_deposit_amount_excluding_tax( 1, $amount );
+			$shipping_country = $this->get_current_customer_shipping_country();
+
+			if ( apply_filters( 'woocommerce_gzd_shipping_country_skips_deposit', false, $shipping_country ) ) {
+				$amount = 0;
+			}
+		}
+
+		return apply_filters( 'woocommerce_gzd_product_deposit_packaging_amount', $amount, $quantity, $this, $context, $tax_display );
+	}
+
+	/**
+	 * Returns the number of contents included within the deposit packaging.
+	 *
+	 * @param string $context
+	 *
+	 * @return integer number of contents
+	 */
+	public function get_deposit_packaging_number_of_contents( $context = 'view' ) {
+		$number_of_contents = 1;
+
+		if ( $packaging = $this->get_deposit_packaging_term( $context ) ) {
+			$number_of_contents = WC_germanized()->deposit_types->get_packaging_number_of_contents( $packaging );
+		}
+
+		return absint( $number_of_contents );
 	}
 
 	/**
@@ -370,7 +653,17 @@ class WC_GZD_Product {
 	 * @return string  unit price including tax
 	 */
 	public function get_deposit_amount_including_tax( $qty = 1, $price = '' ) {
-		$price = ( '' === $price ) ? $this->get_deposit_amount_per_unit( 'view', 'incl' ) : $price;
+		$price               = ( '' === $price ) ? $this->get_deposit_amount_per_unit( 'view', 'incl' ) : $price;
+		$is_negative_deposit = false;
+
+		/**
+		 * Use a tweak to support negative deposit amounts (e.g. returns)
+		 * as the wc_get_price_including_tax function does not allow negative prices.
+		 */
+		if ( (float) $price < 0 ) {
+			$is_negative_deposit = true;
+			$price               = (float) $price * -1;
+		}
 
 		/**
 		 * Filter to adjust the deposit amount including tax.
@@ -382,7 +675,7 @@ class WC_GZD_Product {
 		 *
 		 * @since 3.9.0
 		 */
-		return apply_filters(
+		$price = apply_filters(
 			'woocommerce_gzd_deposit_amount_including_tax',
 			( empty( $price ) ) ? '' : wc_get_price_including_tax(
 				$this->child,
@@ -395,6 +688,12 @@ class WC_GZD_Product {
 			$qty,
 			$this
 		);
+
+		if ( $is_negative_deposit ) {
+			$price = (float) $price * -1;
+		}
+
+		return $price;
 	}
 
 	/**
@@ -406,7 +705,17 @@ class WC_GZD_Product {
 	 * @return string deposit amount excluding tax
 	 */
 	public function get_deposit_amount_excluding_tax( $qty = 1, $price = '' ) {
-		$price = ( '' === $price ) ? $this->get_deposit_amount_per_unit( 'view', 'excl' ) : $price;
+		$price               = ( '' === $price ) ? $this->get_deposit_amount_per_unit( 'view', 'excl' ) : $price;
+		$is_negative_deposit = false;
+
+		/**
+		 * Use a tweak to support negative deposit amounts (e.g. returns)
+		 * as the wc_get_price_including_tax function does not allow negative prices.
+		 */
+		if ( (float) $price < 0 ) {
+			$is_negative_deposit = true;
+			$price               = (float) $price * -1;
+		}
 
 		/**
 		 * Filter to adjust the deposit amount excluding tax.
@@ -419,7 +728,7 @@ class WC_GZD_Product {
 		 * @since 3.9,0
 		 *
 		 */
-		return apply_filters(
+		$price = apply_filters(
 			'woocommerce_gzd_deposit_amount_excluding_tax',
 			( empty( $price ) ) ? '' : wc_get_price_excluding_tax(
 				$this->child,
@@ -432,6 +741,12 @@ class WC_GZD_Product {
 			$qty,
 			$this
 		);
+
+		if ( $is_negative_deposit ) {
+			$price = (float) $price * -1;
+		}
+
+		return $price;
 	}
 
 	public function get_deposit_amount_per_unit( $context = 'view', $tax_display = '' ) {
@@ -443,11 +758,21 @@ class WC_GZD_Product {
 
 		$tax_display_mode = $tax_display ? $tax_display : get_option( 'woocommerce_tax_display_shop' );
 
-		if ( 'view' === $context && $amount > 0 ) {
+		if ( 'view' === $context && 0.0 !== (float) $amount ) {
 			$amount = ( 'incl' === $tax_display_mode ) ? $this->get_deposit_amount_including_tax( 1, $amount ) : $this->get_deposit_amount_excluding_tax( 1, $amount );
 		}
 
 		return apply_filters( 'woocommerce_gzd_product_deposit_amount_per_unit', $amount, $this, $context, $tax_display_mode );
+	}
+
+	public function get_deposit_tax_status( $context = 'view' ) {
+		$tax_status = 'taxable';
+
+		if ( $term = $this->get_deposit_type_term( $context ) ) {
+			$tax_status = WC_germanized()->deposit_types->get_tax_status( $term );
+		}
+
+		return apply_filters( 'woocommerce_gzd_product_deposit_tax_status', $tax_status, $context );
 	}
 
 	public function get_deposit_quantity( $context = 'view' ) {
@@ -461,7 +786,7 @@ class WC_GZD_Product {
 	}
 
 	public function has_deposit( $context = 'view' ) {
-		$has_deposit = $this->get_deposit_amount_per_unit() > 0;
+		$has_deposit = (float) $this->get_deposit_amount_per_unit() !== 0.0;
 
 		if ( 'view' === $context && ! $this->is_food() ) {
 			$has_deposit = false;
@@ -520,6 +845,21 @@ class WC_GZD_Product {
 
 	public function get_defect_description( $context = 'view' ) {
 		return $this->get_prop( 'defect_description', $context );
+	}
+
+	public function get_safety_instructions( $context = 'view' ) {
+		return $this->get_prop( 'safety_instructions', $context );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_formatted_safety_instructions( $context = 'view' ) {
+		if ( $instructions = $this->get_safety_instructions( $context ) ) {
+			return wpautop( do_shortcode( wp_kses_post( htmlspecialchars_decode( $instructions ) ) ) );
+		}
+
+		return '';
 	}
 
 	public function get_cart_description( $context = 'view' ) {
@@ -646,6 +986,50 @@ class WC_GZD_Product {
 		return wc_string_to_bool( $this->get_prop( 'defective_copy', $context ) );
 	}
 
+	public function get_wireless_electronic_device( $context = 'view' ) {
+		return wc_string_to_bool( $this->get_prop( 'wireless_electronic_device', $context ) );
+	}
+
+	public function get_device_contains_power_supply( $context = 'view' ) {
+		return wc_string_to_bool( $this->get_prop( 'device_contains_power_supply', $context ) );
+	}
+
+	public function get_device_charging_supports_usb_pd( $context = 'view' ) {
+		return wc_string_to_bool( $this->get_prop( 'device_charging_supports_usb_pd', $context ) );
+	}
+
+	public function get_device_charging_watt_min( $context = 'view' ) {
+		$watt_min = $this->get_prop( 'device_charging_watt_min', $context );
+
+		if ( 'view' === $context ) {
+			$watt_min = wc_format_localized_decimal( $watt_min );
+		}
+
+		return $watt_min;
+	}
+
+	public function get_device_charging_watt_max( $context = 'view' ) {
+		$watt_max = $this->get_prop( 'device_charging_watt_max', $context );
+
+		if ( 'view' === $context ) {
+			$watt_max = wc_format_localized_decimal( $watt_max );
+		}
+
+		return $watt_max;
+	}
+
+	public function is_wireless_electronic_device( $context = 'view' ) {
+		return $this->get_wireless_electronic_device( $context ) === true;
+	}
+
+	public function device_charging_supports_usb_pd( $context = 'view' ) {
+		return $this->get_device_charging_supports_usb_pd( $context ) === true;
+	}
+
+	public function device_contains_power_supply( $context = 'view' ) {
+		return $this->get_device_contains_power_supply( $context ) === true;
+	}
+
 	public function is_defective_copy( $context = 'view' ) {
 		return $this->get_defective_copy( $context ) === true;
 	}
@@ -764,6 +1148,10 @@ class WC_GZD_Product {
 		$this->set_prop( 'food_description', $description );
 	}
 
+	public function set_safety_instructions( $instructions ) {
+		$this->set_prop( 'safety_instructions', $instructions );
+	}
+
 	public function set_unit_price( $price ) {
 		$this->set_prop( 'unit_price', wc_format_decimal( $price ) );
 	}
@@ -804,12 +1192,36 @@ class WC_GZD_Product {
 		$this->set_prop( 'defective_copy', wc_bool_to_string( $is_defective_copy ) );
 	}
 
+	public function set_wireless_electronic_device( $is_wireless_electronic_device ) {
+		$this->set_prop( 'wireless_electronic_device', wc_bool_to_string( $is_wireless_electronic_device ) );
+	}
+
+	public function set_device_charging_supports_usb_pd( $device_charging_supports_usb_pd ) {
+		$this->set_prop( 'device_charging_supports_usb_pd', wc_bool_to_string( $device_charging_supports_usb_pd ) );
+	}
+
+	public function set_device_contains_power_supply( $device_contains_power_supply ) {
+		$this->set_prop( 'device_contains_power_supply', wc_bool_to_string( $device_contains_power_supply ) );
+	}
+
+	public function set_device_charging_watt_min( $device_charging_watt_min ) {
+		$this->set_prop( 'device_charging_watt_min', '' === $device_charging_watt_min ? '' : wc_format_decimal( $device_charging_watt_min ) );
+	}
+
+	public function set_device_charging_watt_max( $device_charging_watt_max ) {
+		$this->set_prop( 'device_charging_watt_max', '' === $device_charging_watt_max ? '' : wc_format_decimal( $device_charging_watt_max ) );
+	}
+
 	public function set_used_good( $is_used_good ) {
 		$this->set_prop( 'used_good', wc_bool_to_string( $is_used_good ) );
 	}
 
 	public function set_is_food( $is_food ) {
 		$this->set_prop( 'is_food', wc_bool_to_string( $is_food ) );
+	}
+
+	public function set_is_non_alcoholic( $is_non_alcoholic ) {
+		$this->set_prop( 'is_non_alcoholic', wc_bool_to_string( $is_non_alcoholic ) );
 	}
 
 	public function set_free_shipping( $shipping ) {
@@ -1203,18 +1615,38 @@ class WC_GZD_Product {
 	}
 
 	public function hide_shopmarks_due_to_missing_price() {
-		$price_html_checked = true;
+		$has_empty_price = '' === $this->child->get_price();
 
 		/**
-		 * Prevent infinite loops in case the shopmark is added via the price_html filter.
-		 * Calling get_price_html during cart/checkout may cause side-effects (e.g. subtotal calculation in Measurement Plugin)
+		 * Prevent infinite loops in case the shopmark is registered via price html filter.
+		 * Calling get_price_html() during cart/checkout may cause side effects (e.g. subtotal calculation in Measurement Plugin)
 		 * within shopmarks - prevent calls here too.
 		 */
-		if ( ! $this->is_doing_price_html_action() && ! is_cart() && ! is_checkout() && apply_filters( 'woocommerce_gzd_shopmarks_empty_price_html_check_enabled', true, $this ) ) {
-			$price_html_checked = ( '' === $this->child->get_price_html() );
+		if ( ! $has_empty_price && ! $this->is_doing_price_html_action() && apply_filters( 'woocommerce_gzd_shopmarks_empty_price_html_check_enabled', true, $this ) ) {
+			if ( apply_filters( 'woocommerce_gzd_shopmarks_empty_price_html_check_checkout_enabled', false ) && ( is_cart() || is_checkout() || WC_Germanized()->is_rest_api_cart_request() ) ) {
+				if ( ! doing_action( 'woocommerce_cart_item_price' ) && WC()->cart ) {
+					$product_price = false;
+
+					/**
+					 * Use the woocommerce_cart_item_price filter to check whether some extension "hides" the price.
+					 */
+					foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+						if ( ( ! empty( $cart_item['variation_id'] ) && $cart_item['variation_id'] === $this->child->get_id() ) || $cart_item['product_id'] === $this->child->get_id() ) {
+							$product_price = apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $this->child ), $cart_item, $cart_item_key );
+							break;
+						}
+					}
+
+					if ( false !== $product_price && '' === $product_price ) {
+						$has_empty_price = true;
+					}
+				}
+			} else {
+				$has_empty_price = '' === $this->child->get_price_html();
+			}
 		}
 
-		$has_empty_price = apply_filters( 'woocommerce_gzd_product_misses_price', ( '' === $this->get_price() && $price_html_checked ), $this );
+		$has_empty_price = apply_filters( 'woocommerce_gzd_product_misses_price', $has_empty_price, $this );
 
 		return apply_filters( 'woocommerce_gzd_product_hide_shopmarks_empty_price', true, $this ) && $has_empty_price;
 	}
@@ -1486,7 +1918,6 @@ class WC_GZD_Product {
 		 *
 		 */
 		if ( apply_filters( 'woocommerce_gzd_hide_deposit_amount_text', false, $this ) ) {
-
 			/**
 			 * Filter to adjust the output of a disabled product deposit text.
 			 *
@@ -1497,6 +1928,8 @@ class WC_GZD_Product {
 			 *
 			 */
 			return apply_filters( 'woocommerce_gzd_disabled_deposit_amount_text', '', $this );
+		} elseif ( $this->hide_shopmarks_due_to_missing_price() ) {
+			return '';
 		}
 
 		$html = '';
@@ -1542,7 +1975,6 @@ class WC_GZD_Product {
 		 *
 		 */
 		if ( apply_filters( 'woocommerce_gzd_hide_unit_text', false, $this ) ) {
-
 			/**
 			 * Filter to adjust the output of a disabled product unit price.
 			 *
@@ -1553,6 +1985,8 @@ class WC_GZD_Product {
 			 *
 			 */
 			return apply_filters( 'woocommerce_germanized_disabled_unit_text', '', $this );
+		} elseif ( $this->hide_shopmarks_due_to_missing_price() ) {
+			return '';
 		}
 
 		$html = '';
@@ -1615,7 +2049,6 @@ class WC_GZD_Product {
 		 * @since 1.0.0
 		 */
 		if ( apply_filters( 'woocommerce_gzd_hide_product_units_text', false, $this ) ) {
-
 			/**
 			 * Filter that allows adjusting the disabled product units output.
 			 *
@@ -1968,7 +2401,6 @@ class WC_GZD_Product {
 		 *
 		 */
 		if ( apply_filters( 'woocommerce_germanized_hide_delivery_time_text', false, $this ) ) {
-
 			/**
 			 * Filter to adjust disabled product delivery time output.
 			 *
@@ -1999,15 +2431,18 @@ class WC_GZD_Product {
 		}
 
 		if ( ! empty( $html ) ) {
-			$delivery_time_str = get_option( 'woocommerce_gzd_delivery_time_text' );
+			$delivery_time_str   = get_option( 'woocommerce_gzd_delivery_time_text' );
+			$delivery_time_class = apply_filters( 'woocommerce_gzd_product_delivery_time_classname', 'delivery-time-' . strtolower( sanitize_html_class( preg_replace( '#[ -]+#', '-', trim( $html ) ) ) ), $this );
 
 			$replacements = array(
-				'{delivery_time}' => $html,
+				'{delivery_time}' => '<span class="delivery-time-data">' . $html . '</span>',
 			);
 
 			if ( strstr( $delivery_time_str, '{stock_status}' ) ) {
 				$replacements['{stock_status}'] = str_replace( array( '<p ', '</p>' ), array( '<span ', '</span>' ), wc_get_stock_html( $this->child ) );
 			}
+
+			$delivery_time_html = '<span class="delivery-time-inner ' . esc_attr( $delivery_time_class ) . '">' . wc_gzd_replace_label_shortcodes( $delivery_time_str, $replacements ) . '</span>';
 
 			/**
 			 * Filter to adjust product delivery time HTML.
@@ -2022,7 +2457,7 @@ class WC_GZD_Product {
 			 */
 			$html = apply_filters(
 				'woocommerce_germanized_delivery_time_html',
-				wc_gzd_replace_label_shortcodes( $delivery_time_str, $replacements ),
+				$delivery_time_html,
 				$delivery_time_str,
 				$html,
 				$this
@@ -2099,7 +2534,6 @@ class WC_GZD_Product {
 		 * @since 1.0.0
 		 */
 		if ( apply_filters( 'woocommerce_germanized_hide_shipping_costs_text', false, $this ) ) {
-
 			/**
 			 * Filter to adjust a product's disabled shipping costs notice.
 			 *
@@ -2121,8 +2555,7 @@ class WC_GZD_Product {
 
 	public function save() {
 		/**
-		 * Update delivery time term slugs if they have been explicitly set during the
-		 * save request.
+		 * Update delivery time term slugs if they have been explicitly set during the save request.
 		 */
 		$slugs = $this->get_delivery_time_slugs( 'save' );
 		$id    = false;
@@ -2153,7 +2586,40 @@ class WC_GZD_Product {
 		} elseif ( taxonomy_exists( 'product_deposit_type' ) ) {
 			wp_delete_object_term_relationships( $this->get_wc_product()->get_id(), 'product_deposit_type' );
 		}
+
+		/**
+		 * Update manufacturer term relationships, maybe create manufacture if he does not yet exist.
+		 */
+		if ( $manufacturer_slug = $this->get_manufacturer_slug( 'edit' ) ) {
+			wp_set_post_terms( $this->get_wc_product()->get_id(), array( sanitize_title( $manufacturer_slug ) ), 'product_manufacturer', false );
+		} elseif ( taxonomy_exists( 'product_manufacturer' ) ) {
+			wp_delete_object_term_relationships( $this->get_wc_product()->get_id(), 'product_manufacturer' );
+		}
+
+		/**
+		 * Update unit term relationships
+		 */
+		if ( $unit = $this->get_unit_term( 'edit' ) ) {
+			wp_set_post_terms( $this->get_wc_product()->get_id(), array( $unit->slug ), 'product_unit', false );
+		} elseif ( taxonomy_exists( 'product_unit' ) ) {
+			wp_delete_object_term_relationships( $this->get_wc_product()->get_id(), 'product_unit' );
+		}
+
+		$labels = array_filter( array( $this->get_sale_price_label_term( 'edit' ), $this->get_sale_price_regular_label_term( 'edit' ) ) );
+
+		/**
+		 * Update price label term relationships
+		 */
+		if ( ! empty( $labels ) ) {
+			$slugs = array();
+
+			foreach ( $labels as $label ) {
+				$slugs[] = $label->slug;
+			}
+
+			wp_set_post_terms( $this->get_wc_product()->get_id(), $slugs, 'product_price_label', false );
+		} elseif ( taxonomy_exists( 'product_price_label' ) ) {
+			wp_delete_object_term_relationships( $this->get_wc_product()->get_id(), 'product_price_label' );
+		}
 	}
 }
-
-

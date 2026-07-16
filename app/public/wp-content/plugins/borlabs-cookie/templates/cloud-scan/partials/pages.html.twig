@@ -1,0 +1,40 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "cloud-scan/macro/page-table.html.twig" as page_table %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.scannedPages,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {{ page_table.component({
+            pages: data.scan.pages,
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPages', expanded: data.scan.pages is empty ? false : true} %}
+                    {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                    {% import "system/macro/icons/loading.html.twig" as loading_icon %}
+                    {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineStatus | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ check_circle_icon.component({}) }} {{ localized.thingsToKnow.statusFinished | raw }}</p>
+                        <p>{{ loading_icon.component({}) }} {{ localized.thingsToKnow.statusScanning | raw }}</p>
+                        <p>{{ x_circle_icon.component({}) }} {{ localized.thingsToKnow.statusFailed | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,59 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="guide-basic-concept">
+    {% embed "system/embed/card/card-with-title.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/icons/chevron-down.html.twig" as chevron_down_icon %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {% block header %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.basicConcept,
+                subtitle: localized.headline.basics,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            <div class="bc-flex bc-justify-center bc-p-6">
+                <div class="bc-w-full sm:bc-w-3/5 xl:bc-w-2/5">
+                    <h4 class="bc-opacity-0 bc-mb-2 bc-text-lg bc-font-medium bc-text-center brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-down">
+                        {{ localized.headline.basicConceptBorlabsCookie | raw }}
+                    </h4>
+
+                    <ol class="bc-mb-6 bc-space-y-4 bc-list-outside bc-list-disc bc-text-sm bc-text-left brlbs-cmpnt-text">
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.basicConceptA | raw }}</li>
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.basicConceptB | raw }}</li>
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.basicConceptC | raw }}</li>
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.basicConceptD | raw }}</li>
+                    </ol>
+
+                    <h4 class="bc-opacity-0 bc-mb-2 bc-text-lg bc-font-medium bc-text-center brlbs-cmpnt-text" data-brlbs-animate="brlbs-animate-slide-in-up">
+                        {{ localized.headline.setupAssistantWorkflow | raw }}
+                    </h4>
+
+                    <ol class="bc-mb-4 bc-space-y-4 bc-list-outside bc-list-disc bc-text-sm bc-text-left brlbs-cmpnt-text">
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.setupAssistantWorkflowA | raw }}</li>
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.setupAssistantWorkflowB | raw }}</li>
+                        <li class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">{{ localized.text.setupAssistantWorkflowC | raw }}</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="bc-flex bc-flex-col bc-place-items-center bc-gap-y-6 bc-px-6 bc-pb-6">
+                <div class="bc-w-full bc-flex bc-justify-end bc-gap-x-2 bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                    <span class="bc-text-sm bc-font-medium brlbs-cmpnt-text">{{ localized.text.pressNextToProceed | raw }}</span>
+                    <span class="bc-animate-bounce">{{ chevron_down_icon.component({ }) }}</span>
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 1,
+        steps: data.setupSteps,
+    }, localized) }}
+</div>
+
+
+

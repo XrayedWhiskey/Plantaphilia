@@ -1,0 +1,209 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/description-list/description-list.html.twig" %}
+        {% block listItems %}
+            {% if config.deviceStorageDisclosureUrl %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.deviceStorageDisclosureUrl | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                        <a href="{{ config.deviceStorageDisclosureUrl }}" rel="noreferrer" target="_blank">
+                            {{ config.deviceStorageDisclosureUrl }}
+                            {{ external_link_icon.component({}) }}
+                        </a>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% set legitimateInterestClaimUrl = findObject(config.urls.list, 'language', 'en').legitimateInterestClaim %}
+            {% if legitimateInterestClaimUrl is empty %}
+                {% set legitimateInterestClaimUrl = config.urls.list[0].legitimateInterestClaim %}
+            {% endif %}
+
+            {% if legitimateInterestClaimUrl is not empty %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.legitimateInterestClaimUrl | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                        <a href="{{ legitimateInterestClaimUrl }}" rel="noreferrer" target="_blank">
+                            {{ legitimateInterestClaimUrl }}
+                            {{ external_link_icon.component({}) }}
+                        </a>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.policyUrl | raw }}
+                {% endblock %}
+                {% block description %}
+                    {% set privacyUrl = findObject(config.urls.list, 'language', 'en').privacy %}
+                    {% if privacyUrl is empty  %}
+                        {% set privacyUrl = config.urls.list[0].privacy %}
+                    {% endif %}
+                    {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                    <a href="{{ privacyUrl }}" rel="noreferrer" target="_blank">
+                        {{ privacyUrl }}
+                        {{ external_link_icon.component({}) }}
+                    </a>
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.usesCookies | raw }}
+                {% endblock %}
+                {% block description %}
+                    {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                    {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+
+                    {% if config.usesCookies %}
+                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                    {% else %}
+                        {{ x_circle_icon.component({}) }}
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.usesNonCookieAccess | raw }}
+                {% endblock %}
+                {% block description %}
+                    {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                    {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+
+                    {% if config.usesNonCookieAccess %}
+                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                    {% else %}
+                        {{ x_circle_icon.component({}) }}
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.cookieMaxAgeSeconds | raw }}
+                {% endblock %}
+                {% block description %}
+                    {{ config.cookieMaxAgeSeconds }} {{ localized.text.seconds }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.standardDataRetention | raw }}
+                {% endblock %}
+                {% block description %}
+                    {{ config.dataRetention.stdRetention }} {{ localized.text.days }}
+                {% endblock %}
+            {% endembed %}
+
+            {% if config.purposes | length %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.purposes | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        <ul class="bc-list-disc bc-text-left">
+                        {% for purposeId in config.purposes %}
+                            <li>
+                                <span data-brlbs-iab-tcf-purpose="{{ purposeId }}">{{ purposeId }}</span>
+                                {% set retention = findObject(config.dataRetention.purposes.list, 'key', purposeId).value %}
+                                {% if retention is not empty %}
+                                    <span class="bc-block bc-text-gray-500 bc-italic">{{ localized.text.dataRetention }}: {{ retention }} {{ localized.text.days }}</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if config.features | length %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.features | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        <ul class="bc-list-disc bc-text-left">
+                        {% for featureId in config.features %}
+                            <li data-brlbs-iab-tcf-feature="{{ featureId }}">{{ featureId }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if config.legIntPurposes | length %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.legIntPurposes | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        <ul class="bc-list-disc bc-text-left">
+                        {% for legIntPurposesId in config.legIntPurposes %}
+                            <li data-brlbs-iab-tcf-leg-int-purpose="{{ legIntPurposesId }}">{{ legIntPurposesId }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if config.specialFeatures | length %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.specialFeatures | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        <ul class="bc-list-disc bc-text-left">
+                        {% for specialFeatureId in config.specialFeatures %}
+                            <li data-brlbs-iab-tcf-special-feature="{{ specialFeatureId }}">{{ specialFeatureId }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if config.specialPurposes | length %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.specialPurposes | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        <ul class="bc-list-disc bc-text-left">
+                        {% for specialPurposeId in config.specialPurposes %}
+                            <li>
+                                <span data-brlbs-iab-tcf-special-purpose="{{ specialPurposeId }}">{{ specialPurposeId }}</span>
+                                {% set retention = findObject(config.dataRetention.specialPurposes.list, 'key', specialPurposeId).value %}
+                                {% if retention is not empty %}
+                                    <span class="bc-block bc-text-gray-500 bc-italic">{{ localized.text.dataRetention }}: {{ retention }} {{ localized.text.days }}</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if config.dataDeclaration | length %}
+                {% embed "system/embed/description-list/list-item.html.twig" %}
+                    {% block term %}
+                        {{ localized.descriptionList.dataCategories | raw }}
+                    {% endblock %}
+                    {% block description %}
+                        <ul class="bc-list-disc bc-text-left">
+                        {% for dataDeclarationId in config.dataDeclaration %}
+                            <li data-brlbs-iab-tcf-data-category="{{ dataDeclarationId }}">{{ dataDeclarationId }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

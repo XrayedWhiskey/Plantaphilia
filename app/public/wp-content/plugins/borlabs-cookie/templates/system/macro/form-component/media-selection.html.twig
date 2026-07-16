@@ -1,0 +1,52 @@
+{% macro component(config, localized) %}
+    {% set config = {centerPreview: false, isDisabled: false} | merge(config) %}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    {% set previewCssClasses = ['media-preview'] %}
+
+    {% if config.centerPreview %}
+        {% set previewCssClasses = ['bc-flex  bc-justify-center'] | merge(previewCssClasses) %}
+    {% endif %}
+
+    {% import "system/macro/form-component/button.html.twig" as button %}
+    {% import "system/macro/form-component/button-danger.html.twig" as button_danger %}
+    {% import "system/macro/form-component/input.html.twig" as input %}
+    <div class="bc-mb-2 bc-flex bc-items-center bc-space-x-2">
+        {{ input.component({
+            id: config.id,
+            isRequired: config.isRequired,
+            name: name,
+            value: config.value,
+            width: 'bc-w-3/4'
+        }, localized) }}
+
+        {{ button.component({
+            backgroundColor: 'bc-bg-slate-950',
+            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+            button: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="bc-w-6 bc-h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg></button>',
+            dataAttribute: 'data-brlbs-media-picker="' ~ config.id ~ '" data-brlbs-media-preview="' ~ config.id ~ 'Preview" data-brlbs-media-button="' ~ config.button ~ '" data-brlbs-media-title="' ~ config.title ~ '"',
+            focusColor: 'focus:bc-ring-slate-950',
+            padding:'bc-px-2 bc-py-1',
+        }, localized) }}
+
+        {{ button_danger.component({
+            dataAttribute: 'data-brlbs-media-clear="' ~ config.id ~ '" data-brlbs-media-preview="' ~ config.id ~ 'Preview"',
+            button: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="bc-w-5 bc-h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    </svg>',
+            padding:'bc-px-2 bc-py-1.5',
+        }, localized) }}
+    </div>
+    <div class="{{ previewCssClasses | join(' ') }}" id="{{ config.id }}Preview">
+        {% if config.value != '' %}
+            <img class="bc-max-w-[64px]" src="{{ config.value }}" alt="">
+        {% endif %}
+    </div>
+{% endmacro %}

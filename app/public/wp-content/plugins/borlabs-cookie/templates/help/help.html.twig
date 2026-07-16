@@ -1,0 +1,74 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="?page=borlabs-cookie">Borlabs Cookie</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ localized.breadcrumb.module | raw }}</li>
+    </ol>
+</nav>
+
+{{ messages() | raw }}
+
+<div class="row mb-3">
+    <div>
+        <div class="mb-4 px-3 pt-3 pb-4 rounded bg-light shadow-sm">
+            <h3 class="border-bottom mb-3">{{ localized.headline.firstAid | raw }}</h3>
+            <div>
+                <div>
+                    <h4>{{ localized.headline.borlabsCookieDoesNotWork | raw }}</h4>
+                    <ol class="help-list">
+                        <li>
+                            <span>{{ localized.text.borlabsCookieDoesNotWorkA | raw }}</span>
+                        </li>
+                        <li>
+                            <span>{{ localized.text.borlabsCookieDoesNotWorkB | raw }}</span>
+                        </li>
+                        <li>
+                            <span>{{ localized.text.borlabsCookieDoesNotWorkC | raw }}</span>
+                        </li>
+                        <li>
+                            <span>{{ localized.text.borlabsCookieDoesNotWorkD | raw }}</span>
+                        </li>
+                    </ol>
+                    <h4>{{ localized.headline.howDoIOpenTheJavaScriptConsole | raw }}</h4>
+                    <h5>{{ localized.headline.howDoIOpenTheJavaScriptConsoleMACOS | raw }}</h5>
+                    <p>
+                        {{ localized.text.howDoIOpenTheJavaScriptConsoleMACOSA | raw }}<br>
+                        {{ localized.text.howDoIOpenTheJavaScriptConsoleMACOSB | raw }}
+                    </p>
+                    <h5>{{ localized.headline.howDoIOpenTheJavaScriptConsoleWindows | raw }}</h5>
+                    <p>
+                        {{ localized.text.howDoIOpenTheJavaScriptConsoleWindowsA | raw }}<br>
+                        {{ localized.text.howDoIOpenTheJavaScriptConsoleWindowsB | raw }}
+                    </p>
+                    <h4>{{ localized.headline.howDoITestMyWebsite | raw }}</h4>
+                    <p>{{ localized.text.howDoITestMyWebsite | raw }}</p>
+                    <p class="text-center">
+                        <a href="{{ localized.url.support | raw }}" rel="nofollow noopener noreferrer" target="_blank">{{ localized.text.clickHereForSupport | raw }}
+                            <i class="fas fa-external-link-alt"></i></a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="mb-4 px-3 pt-3 pb-4 rounded bg-light shadow-sm">
+            <h3 class="border-bottom mb-3">{{ localized.headline.commonProblems | raw }}</h3>
+            <div>
+                <div>
+                    <h4>{{ localized.headline.cookieBoxAppearsRepeatedly | raw }}</h4>
+                    <p>{{ localized.text.cookieBoxAppearsRepeatedly | raw }}</p>
+                    <h4>{{ localized.headline.cookieBoxDoesNotClose | raw }}</h4>
+                    <p>{{ localized.text.cookieBoxDoesNotClose | raw }}</p>
+                    <h4>{{ localized.headline.cookieBoxIsNotDisplayed | raw }}</h4>
+                    <p>{{ localized.text.cookieBoxIsNotDisplayedA | raw }}</p>
+                    <p>{{ localized.text.cookieBoxIsNotDisplayedB | raw }}</p>
+                    <p>{{ localized.text.cookieBoxIsNotDisplayedC | raw }}</p>
+                    <p class="text-center">
+                        <a href="{{ localized.url.support | raw }}" rel="nofollow noopener noreferrer" target="_blank">{{ localized.text.clickHereForSupport | raw }}
+                            <i class="fas fa-external-link-alt"></i></a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        {{ template.systemCheck | raw }}
+    </div>
+</div>

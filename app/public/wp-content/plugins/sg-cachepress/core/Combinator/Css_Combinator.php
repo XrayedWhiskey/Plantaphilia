@@ -61,7 +61,7 @@ class Css_Combinator extends Abstract_Combinator {
 	 *
 	 * @since 5.6.3
 	 *
-	 * @var array Array of excldued urls.
+	 * @var array Array of excluded URLs.
 	 */
 	public $excluded_urls = array();
 
@@ -93,18 +93,18 @@ class Css_Combinator extends Abstract_Combinator {
 	/**
 	 * Combine styles included in header and footer
 	 *
-	 * @param  string $html The page html.
+	 * @param  string $html The page HTML.
 	 *
-	 * @return string       Modified html with combined styles tag.
+	 * @return string       Modified HTML with combined styles tag.
 	 *
 	 * @since  5.5.2
 	 */
 	public function run( $html ) {
-		// Prepaare the localized styles.
+		// Prepare the localized styles.
 		$this->prepare_excluded_styles();
-		// Hide comments from html.
+		// Hide comments from HTML.
 		$html_without_comments = $this->hide_comments( $html );
-		// Get styles from the html.
+		// Get styles from the HTML.
 		$styles = $this->get_items( $html_without_comments );
 
 		// Bail if there are no styles to combine.
@@ -137,11 +137,11 @@ class Css_Combinator extends Abstract_Combinator {
 
 		// Loop through all styles in the queue and check for excludes.
 		foreach ( $styles as $style ) {
-			// Bail if the sctyle is excluded.
+			// Bail if the style is excluded.
 			if ( $this->is_excluded( $style ) ) {
 				continue;
 			}
-			// Add the style url and tag.
+			// Add the style URL and tag.
 			$data[ $style[2] ] = $style[0];
 		}
 
@@ -181,8 +181,8 @@ class Css_Combinator extends Abstract_Combinator {
 				continue;
 			}
 
-			// Replace the site url and get the src.
-			$excluded[] = trim( str_replace( Helper_Service::get_site_url(), '', strtok( $wp_styles->registered[ $handle ]->src, '?' ) ), '/\\' );
+			// Remove the query stings and the host to get the source.
+			$excluded[] = $this->prepare_url_src( $wp_styles->registered[ $handle ]->src );
 		}
 
 		// Set the excluded urls.
@@ -207,8 +207,8 @@ class Css_Combinator extends Abstract_Combinator {
 			return true;
 		}
 
-		// Get the host from src..
-		$host = parse_url( $style[2], PHP_URL_HOST );
+		// Get the host from src.
+		$host = wp_parse_url( $style[2], PHP_URL_HOST );
 
 		// Bail if it's an external style.
 		if (
@@ -218,11 +218,11 @@ class Css_Combinator extends Abstract_Combinator {
 			return true;
 		}
 
-		// Remove query strings from the url.
-		$src  = Front_End_Optimization::remove_query_strings( $style[2] );
+		// Remove the query stings and the host to get the source.
+		$src = $this->prepare_url_src( $style[2] );
 
-		// Bail if the url is excluded.
-		if ( in_array( str_replace( trailingslashit( Helper_Service::get_site_url() ), '', $src ), $this->excluded_urls ) ) {
+		// Bail if the URL is excluded.
+		if ( in_array( $src, $this->excluded_urls ) ) {
 			return true;
 		}
 
@@ -230,14 +230,14 @@ class Css_Combinator extends Abstract_Combinator {
 	}
 
 	/**
-	 * Get combined css tag.
+	 * Get combined CSS tag.
 	 *
 	 * @since  5.5.2
 	 *
 	 * @param  string $html         The original page content.
 	 * @param  string $styles_data style data.
 	 *
-	 * @return string               Modified html.
+	 * @return string               Modified HTML.
 	 */
 	public function get_new_html( $html, $styles_data ) {
 		// Remove style tags.
@@ -260,15 +260,16 @@ class Css_Combinator extends Abstract_Combinator {
 	}
 
 	/**
-	 * Replace all url to full urls.
+	 * Replace all URL to full URLs.
 	 *
 	 * @since  5.1.0
 	 *
 	 * @param  string $contents Array with link to styles and style content.
 	 *
-	 * @return string       Content with replaced urls.
+	 * @return string       Content with replaced URLs.
 	 */
 	public function get_content_with_replacements( $contents ) {
+
 		// Set the new content var.
 		$new_content = array();
 
@@ -278,7 +279,7 @@ class Css_Combinator extends Abstract_Combinator {
 			$content = $this->check_for_imports( $content, $url );
 			// Change font-display to swap.
 			$content = $this->swap_font_display( $content );
-			// Remove source maps urls.
+			// Remove source maps URLs.
 			$content = preg_replace(
 				'~^(\/\/|\/\*)(#|@)\s(sourceURL|sourceMappingURL)=(.*)(\*\/)?$~m',
 				'',
@@ -293,9 +294,15 @@ class Css_Combinator extends Abstract_Combinator {
 
 			if ( ! empty( $matches ) ) {
 				foreach ( $matches[1] as $index => $match ) {
+
 					$match = trim( $match, " \t\n\r\0\x0B\"'" );
 
-					// Bail if the url is valid.
+					// Check if the relative URL stored in $match requires the domain as a prefix.
+					if ( strpos( $match, '/wp-content' ) === 0 ) {
+						$dir = untrailingslashit( get_site_url() );
+					}
+
+					// Bail if the URL is valid.
 					if ( false == preg_match( '~(http(?:s)?:)?\/\/(?:[\w-]+\.)*([\w-]{1,63})(?:\.(?:\w{2,}))(?:$|\/)~', $match ) ) {
 						$replacement = str_replace( $match, $dir . $match, $matches[0][ $index ] );
 
@@ -319,7 +326,7 @@ class Css_Combinator extends Abstract_Combinator {
 	 * @since  5.4.5
 	 *
 	 * @param  string $content The file content.
-	 * @param  string $url     The url to the file.
+	 * @param  string $url     The URL to the file.
 	 *
 	 * @return string          Original content + content from import clause.
 	 */
@@ -334,7 +341,7 @@ class Css_Combinator extends Abstract_Combinator {
 			return $content;
 		}
 
-		// Loop through all matches and get the imported css.
+		// Loop through all matches and get the imported CSS.
 		foreach ( $matches[1] as $match ) {
 			$import_content = $this->get_content_with_replacements(
 				array(
@@ -342,7 +349,7 @@ class Css_Combinator extends Abstract_Combinator {
 				)
 			);
 
-			// Replace the @import with the css.
+			// Replace the @import with the CSS.
 			$content = str_replace( $matches[0], $import_content, $content );
 		}
 
@@ -357,7 +364,7 @@ class Css_Combinator extends Abstract_Combinator {
 	 *
 	 * @param  string $content The file content.
 	 *
-	 * @return string          The content with swaped font-display.
+	 * @return string          The content with swapped font-display.
 	 */
 	public function swap_font_display( $content ) {
 		// Bail if Font Optimization is disabled.
@@ -368,14 +375,14 @@ class Css_Combinator extends Abstract_Combinator {
 		// Check for font-face in the style.
 		preg_match_all( '/@font-face\s*{([\s\S]*?)}/i', $content, $matches );
 
-		// Bail ifthere are no font-faces.
+		// Bail if there are no font-faces.
 		if ( empty( $matches ) ) {
 			return $content;
 		}
 
 		// Loop through all matches and swap the display property.
 		foreach ( $matches[1] as $match ) {
-			// Get all font display properies.
+			// Get all font display properties.
 			preg_match_all( '/font-display:.([a-zA-Z]+)/i', $match, $result );
 
 			// Add the swap display.

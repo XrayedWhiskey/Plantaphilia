@@ -31,6 +31,8 @@ function buildScripts(done) {
         './assets/dev/javascript/ajax.js',
         './assets/dev/javascript/placeholder.js',
         './assets/dev/javascript/helper.js',
+        './assets/dev/javascript/chart.js',
+        './assets/dev/javascript/filters/*.js',
         './assets/dev/javascript/components/*.js',
         './assets/dev/javascript/meta-box.js',
         './assets/dev/javascript/meta-box/*.js',
@@ -52,17 +54,29 @@ function buildScripts(done) {
     done()
 }
 
-// Gulp TinyMce Script
-function tineMCE(done) {
-    gulp.src(['./assets/dev/javascript/Tinymce/*.js'])
-        .pipe(concat('tinymce.min.js'))
-        .pipe(gulp.dest('./assets/js/')).pipe(babel({presets: ['@babel/env']})).pipe(replace("\\n", '')).pipe(replace("\\t", '')).pipe(replace("  ", '')).pipe(uglify()).pipe(gulp.dest('./assets/js/'));
+function buildBackgroundProcessTrackerScript(done) {
+    gulp.src([
+        './assets/dev/javascript/background-process-tracker.js',
+    ])
+        .pipe(uglify())
+        .pipe(concat('background-process-tracker.min.js'))
+        .pipe(insert.prepend('jQuery(document).ready(function ($) {'))
+        .pipe(insert.append('});'))
+        .pipe(gulp.dest('./assets/js/'))
+        .pipe(babel({presets: ['@babel/env']}))
+        .pipe(replace("\\n", ''))
+        .pipe(replace("\\t", ''))
+        .pipe(replace("  ", ''))
+        .pipe(uglify())
+        .pipe(gulp.dest('./assets/js/'));
     done()
 }
 
 // Gulp Frontend Script
 function frontScripts(done) {
     const jsFiles = [
+        './assets/dev/javascript/user-tracker.js',
+        './assets/dev/javascript/event-tracker.js',
         './assets/dev/javascript/tracker.js',
     ];
 
@@ -72,6 +86,7 @@ function frontScripts(done) {
         .pipe(replace("\\t", ''))
         .pipe(replace("  ", ''))
         .pipe(uglify())
+        .pipe(concat('tracker.js'))
         .pipe(gulp.dest('./assets/js/'));
 
     done()
@@ -142,6 +157,8 @@ function addEsnextSuffix(filePath) {
 
 function revertToES6(cb) {
     const jsFiles = [
+        './assets/js/user-tracker.js',
+        './assets/js/event-tracker.js',
         './assets/js/tracker.js',
     ];
 
@@ -157,6 +174,7 @@ function revertToES6(cb) {
 // Gulp Watch
 function watch() {
     gulp.watch('assets/dev/javascript/**/*.js', gulp.series(buildScripts));
+    gulp.watch('assets/dev/javascript/background-process-tracker.js', gulp.series(buildBackgroundProcessTrackerScript));
     gulp.watch('assets/dev/javascript/mini-chart.js', gulp.series(miniChart));
     gulp.watch('assets/dev/sass/**/*.scss', gulp.series(buildStyles));
     console.log(" - Development is ready...")
@@ -165,8 +183,8 @@ function watch() {
 // global Task
 exports.compileSass = buildStyles;
 exports.script = buildScripts;
+exports.backgroundProcessTrackerScript = buildBackgroundProcessTrackerScript;
 exports.chartScript = chartScripts;
-exports.mce = tineMCE;
 exports.frontScript = frontScripts;
 exports.miniChart = miniChart;
 exports.concatScripts = concatScripts;

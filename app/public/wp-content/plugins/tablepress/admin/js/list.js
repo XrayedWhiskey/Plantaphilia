@@ -7,60 +7,26 @@
  * @since 1.0.0
  */
 
-/* globals confirm, prompt, tb_show, ajaxurl */
-
 /**
  * WordPress dependencies.
  */
-import { __, _n } from '@wordpress/i18n';
+import { _n } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import { $ } from './common/functions';
-
-document.querySelector( '.tablepress-all-tables' ).addEventListener( 'click', ( event ) => {
-	if ( ! event.target ) {
-		return;
-	}
-
-	/**
-	 * Show a popup box with the table's Shortcode.
-	 *
-	 * @since 1.0.0
-	 */
-	if ( event.target.matches( '.shortcode a' ) ) {
-		prompt( __( 'To embed this table into a post or page, use this Shortcode:', 'tablepress' ), event.target.title );
-		event.preventDefault();
-		return;
-	}
-
-	/**
-	 * Load a Thickbox with a table preview.
-	 *
-	 * @since 1.0.0
-	 */
-	if ( event.target.matches( '.table-preview a' ) ) {
-		const width = window.innerWidth - 120;
-		const height = window.innerHeight - 120;
-		tb_show( event.target.title, `${ event.target.href }#TB_iframe=true&height=${ height }&width=${ width }`, false );
-		event.preventDefault();
-		return;
-	}
-} );
+import { initializeReactComponent } from './common/react-loader';
+import Screen from './list/screen';
 
 /**
  * Process links with an "ajax-link" class with AJAX.
  *
  * @since 1.0.0
  */
-$( '#tablepress-page' ).addEventListener( 'click', ( event ) => {
-	if ( ! event.target ) {
-		return;
-	}
-
-	if ( event.target.matches( '.ajax-link' ) ) {
-		fetch( `${ ajaxurl }?${ event.target.href.split('?')['1'] }` ) // Append original link's query string to AJAX endpoint.
+document.querySelectorAll( '#tablepress-page .ajax-link' ).forEach( ( link ) => {
+	link.addEventListener( 'click', ( event ) => {
+		fetch( `${ ajaxurl }?${ event.target.href.split( '?' )[1] }` ) // Append original link's query string to AJAX endpoint.
 		.then( ( response ) => response.text() )
 		.then( ( result ) => {
 			if ( '1' !== result ) {
@@ -69,13 +35,11 @@ $( '#tablepress-page' ).addEventListener( 'click', ( event ) => {
 
 			if ( 'hide_message' === event.target.dataset.action ) {
 				// Remove original message.
-				event.target.closest( 'div' ).remove();
+				event.target.closest( '.notice' ).remove();
 			}
 		} );
-
 		event.preventDefault();
-		return;
-	}
+	} );
 } );
 
 /**
@@ -89,14 +53,11 @@ const bulk_action_dropdown = $( '#doaction' );
 // The bulk action dropdown is only in the DOM if at least one table is shown in the list, thus an existence check is needed.
 if ( bulk_action_dropdown ) {
 	bulk_action_dropdown.addEventListener( 'click', ( event ) => {
+		// Set the ID of the bulk action dropdown in the global variable to the correct `name` attribute of the dropdown, as the default of `action` can not be used.
+		window.bulkActionObserverIds.bulk_action = 'bulk-action-selector-top';
+
 		const action = $( '#bulk-action-selector-top' ).value;
 		const num_selected = $( '.tablepress-all-tables tbody input:checked' ).length;
-
-		// Do nothing if no action or no tables were selected.
-		if ( '-1' === action || 0 === num_selected ) {
-			event.preventDefault();
-			return;
-		}
 
 		// Show AYS prompt when deleting tables.
 		if ( 'delete' === action ) {
@@ -107,3 +68,8 @@ if ( bulk_action_dropdown ) {
 		}
 	} );
 }
+
+initializeReactComponent(
+	'tablepress-list-screen',
+	<Screen />,
+);

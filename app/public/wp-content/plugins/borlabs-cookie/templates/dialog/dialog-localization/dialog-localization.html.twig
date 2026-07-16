@@ -1,0 +1,58 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    {{ displayModeSettingsToggle() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- Dialog Entrance -->
+        {% include "dialog/dialog-localization/partials/entrance-strings.html.twig" %}
+
+        <!-- Dialog Details -->
+        {% include "dialog/dialog-localization/partials/details-strings.html.twig" %}
+
+        <!-- Dialog Legal Information -->
+        {% include "dialog/dialog-localization/partials/legal-information-strings.html.twig" %}
+
+        <!-- Service Details Table -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-localization/partials/service-details-strings.html.twig" %}
+        </div>
+        <!-- Provider Details Table -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-localization/partials/provider-details-strings.html.twig" %}
+        </div>
+        <!-- Consent History Table -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-localization/partials/consent-history-strings.html.twig" %}
+        </div>
+        <!-- Accessibility -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-localization/partials/accessibility-strings.html.twig" %}
+        </div>
+        <!-- IAB TCF -->
+        {% include "dialog/dialog-localization/partials/iab-tcf-strings.html.twig" %}
+        <!-- IAB TCF - Vendor Details Table -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-localization/partials/iab-tcf-vendor-details-strings.html.twig" %}
+        </div>
+        <!-- IAB TCF - Accessibility -->
+        <div class="bc-w-2/3">
+            {% include "dialog/dialog-localization/partials/iab-tcf-accessibility-strings.html.twig" %}
+        </div>
+    </form>
+    <!-- Reset Dialog Localization -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.resetDialogLocalization,
+        hint: localized.hint.reset,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

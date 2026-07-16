@@ -1,0 +1,71 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.status | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.url | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.failureType | raw }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.pages.list is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        <td colspan="2"
+                            class="bc-py-4 bc-text-center bc-rounded-b-md">{{ localized.alert.noExternalResourceFound | raw }}
+                        </td>
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for page in config.pages.list %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/loading.html.twig" as loading_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if page.status == "finished" %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% elseif page.status == "failed" %}
+                                        <span class="bc-text-red-600">{{ x_circle_icon.component({}) }}</span>
+                                    {% elseif page.status == "scanning" %}
+                                        <span class="bc-text-orange-600">{{ loading_icon.component({}) }}</span>
+                                    {% else %}
+                                        <span class="bc-text-red-500">{{ x_circle_icon.component({}) }}</span>
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                                    <a class="bc-ml-2" href="{{ page.url }}" rel="nofollow noreferrer" target="_blank">
+                                        {{ page.url }}
+                                        {{ external_link_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% if page.failureType %}
+                                        {{ localized.api.alert[page.failureType.value] }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

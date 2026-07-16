@@ -1,0 +1,141 @@
+<div class="bc-full sm:bc-w-2/3">
+    {% if data.package.type.value == 'compatibility-patch' and data.package.components.compatibilityPatches.list is not empty and data.package.installedAt is empty %}
+        <div class="bc-my-6">
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning">
+                {{ localized.alert.compatibilityPatchInstallationNecessity | raw }}
+            </div>
+        </div>
+    {% endif %}
+
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.packageComponents,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% if data.package.components.compatibilityPatches.list is not empty %}
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.compatibilityPatches | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.compatibilityPatches,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-list-disc bc-text-left">
+                            {% for compatibilityPatch in data.package.components.compatibilityPatches.list %}
+                                <li>{{ compatibilityPatch.key }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if data.package.components.contentBlockers.list is not empty %}
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.contentBlockers | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.contentBlockers,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-list-disc bc-text-left">
+                            {% for contentBlocker in data.package.components.contentBlockers.list %}
+                                <li>{{ contentBlocker.name }} <em>({{ contentBlocker.key }})</em></li>
+                            {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if data.package.components.scriptBlockers.list is not empty %}
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.scriptBlockers | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.scriptBlockers,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-list-disc bc-text-left">
+                            {% for scriptBlocker in data.package.components.scriptBlockers.list %}
+                                <li>{{ scriptBlocker.name }} <em>({{ scriptBlocker.key }})</em></li>
+                            {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if data.package.components.services.list is not empty %}
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.services | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.services,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-list-disc bc-text-left">
+                            {% for service in data.package.components.services.list %}
+                                <li>{{ service.name }} <em>({{ service.key }})</em></li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if data.package.type.value == 'compatibility-patch' and data.package.components.compatibilityPatches.list is not empty %}
+                            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning">
+                                {{ localized.alert.compatibilityPatchServiceInformation | raw }}
+                            </div>
+                        {% endif %}
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+
+            {% if data.package.components.styleBlockers.list is not empty %}
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.styleBlockers | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.styleBlockers,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-list-disc bc-text-left">
+                            {% for styleBlocker in data.package.components.styleBlockers.list %}
+                                <li>{{ styleBlocker.name }} <em>({{ styleBlocker.key }})</em></li>
+                            {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+</div>

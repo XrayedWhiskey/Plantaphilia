@@ -1,0 +1,44 @@
+{% import "legacy-importer/macro/pre-import-metadata.html.twig" as pre_import_metadata %}
+
+<div class="bc-w-full lg:bc-w-2/3">
+    <div class="bc-bg-neutral-200 bc-shadow-inner bc-px-6 bc-pt-6 bc-rounded-md bc-mb-6">
+        <div class="bc-flex bc-items-center bc-justify-between bc-mb-2">
+            <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-0">{{ localized.headline.importDataPreview | raw }}</h3>
+        </div>
+
+        <div class="bc-flex bc-flex-col">
+            <!-- Pre Import Metadata Service Groups -->
+            {{ pre_import_metadata.component({
+                componentKey: 'serviceGroups',
+                data: {
+                    preImportMetadata: data.preImportMetadata.serviceGroups,
+                },
+            }, localized) }}
+
+            <!-- Pre Import Metadata Services -->
+            {{ pre_import_metadata.component({
+                componentKey: 'services',
+                data: {
+                    preImportMetadata: data.preImportMetadata.services,
+                },
+            }, localized) }}
+
+            <!-- Pre Import Metadata Content Blockers -->
+            {{ pre_import_metadata.component({
+                componentKey: 'contentBlockers',
+                data: {
+                    preImportMetadata: data.preImportMetadata.contentBlockers,
+                },
+            }, localized) }}
+
+            <!-- Pre Import Metadata Script Blockers -->
+            {{ pre_import_metadata.component({
+                componentKey: 'scriptBlockers',
+                data: {
+                    preImportMetadata: data.preImportMetadata.scriptBlockers,
+                },
+                showLanguageColumn: false,
+            }, localized) }}
+        </div>
+    </div>
+</div>

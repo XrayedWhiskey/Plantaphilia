@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-use \Vendidero\Germanized\Packages;
+use Vendidero\Germanized\Packages;
 
 if ( ! class_exists( 'WC_GZD_Install' ) ) :
 
@@ -19,37 +19,40 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 
 		/** @var array DB updates that need to be run */
 		private static $db_updates = array(
-			'1.0.4'  => 'updates/woocommerce-gzd-update-1.0.4.php',
-			'1.4.2'  => 'updates/woocommerce-gzd-update-1.4.2.php',
-			'1.4.6'  => 'updates/woocommerce-gzd-update-1.4.6.php',
-			'1.5.0'  => 'updates/woocommerce-gzd-update-1.5.0.php',
-			'1.6.0'  => 'updates/woocommerce-gzd-update-1.6.0.php',
-			'1.6.3'  => 'updates/woocommerce-gzd-update-1.6.3.php',
-			'1.8.0'  => 'updates/woocommerce-gzd-update-1.8.0.php',
-			'1.8.9'  => 'updates/woocommerce-gzd-update-1.8.9.php',
-			'1.9.2'  => 'updates/woocommerce-gzd-update-1.9.2.php',
-			'2.0.1'  => 'updates/woocommerce-gzd-update-2.0.1.php',
-			'2.2.5'  => 'updates/woocommerce-gzd-update-2.2.5.php',
-			'2.3.0'  => 'updates/woocommerce-gzd-update-2.3.0.php',
-			'3.0.0'  => 'updates/woocommerce-gzd-update-3.0.0.php',
-			'3.0.1'  => 'updates/woocommerce-gzd-update-3.0.1.php',
-			'3.0.6'  => 'updates/woocommerce-gzd-update-3.0.6.php',
-			'3.0.8'  => 'updates/woocommerce-gzd-update-3.0.8.php',
-			'3.1.6'  => 'updates/woocommerce-gzd-update-3.1.6.php',
-			'3.1.9'  => 'updates/woocommerce-gzd-update-3.1.9.php',
-			'3.3.4'  => 'updates/woocommerce-gzd-update-3.3.4.php',
-			'3.3.5'  => 'updates/woocommerce-gzd-update-3.3.5.php',
-			'3.4.0'  => 'updates/woocommerce-gzd-update-3.4.0.php',
-			'3.7.0'  => 'updates/woocommerce-gzd-update-3.7.0.php',
-			'3.8.0'  => 'updates/woocommerce-gzd-update-3.8.0.php',
-			'3.9.1'  => 'updates/woocommerce-gzd-update-3.9.1.php',
-			'3.9.3'  => 'updates/woocommerce-gzd-update-3.9.3.php',
-			'3.10.0' => 'updates/woocommerce-gzd-update-3.10.0.php',
-			'3.10.4' => 'updates/woocommerce-gzd-update-3.10.4.php',
-			'3.12.2' => 'updates/woocommerce-gzd-update-3.12.2.php',
-			'3.13.2' => 'updates/woocommerce-gzd-update-3.13.2.php',
-			'3.15.5' => 'updates/woocommerce-gzd-update-3.15.5.php',
-			'3.16.3' => 'updates/woocommerce-gzd-update-3.16.3.php',
+			'1.0.4'   => 'updates/woocommerce-gzd-update-1.0.4.php',
+			'1.4.2'   => 'updates/woocommerce-gzd-update-1.4.2.php',
+			'1.4.6'   => 'updates/woocommerce-gzd-update-1.4.6.php',
+			'1.5.0'   => 'updates/woocommerce-gzd-update-1.5.0.php',
+			'1.6.0'   => 'updates/woocommerce-gzd-update-1.6.0.php',
+			'1.6.3'   => 'updates/woocommerce-gzd-update-1.6.3.php',
+			'1.8.0'   => 'updates/woocommerce-gzd-update-1.8.0.php',
+			'1.8.9'   => 'updates/woocommerce-gzd-update-1.8.9.php',
+			'1.9.2'   => 'updates/woocommerce-gzd-update-1.9.2.php',
+			'2.0.1'   => 'updates/woocommerce-gzd-update-2.0.1.php',
+			'2.2.5'   => 'updates/woocommerce-gzd-update-2.2.5.php',
+			'2.3.0'   => 'updates/woocommerce-gzd-update-2.3.0.php',
+			'3.0.0'   => 'updates/woocommerce-gzd-update-3.0.0.php',
+			'3.0.1'   => 'updates/woocommerce-gzd-update-3.0.1.php',
+			'3.0.6'   => 'updates/woocommerce-gzd-update-3.0.6.php',
+			'3.0.8'   => 'updates/woocommerce-gzd-update-3.0.8.php',
+			'3.1.6'   => 'updates/woocommerce-gzd-update-3.1.6.php',
+			'3.1.9'   => 'updates/woocommerce-gzd-update-3.1.9.php',
+			'3.3.4'   => 'updates/woocommerce-gzd-update-3.3.4.php',
+			'3.3.5'   => 'updates/woocommerce-gzd-update-3.3.5.php',
+			'3.4.0'   => 'updates/woocommerce-gzd-update-3.4.0.php',
+			'3.7.0'   => 'updates/woocommerce-gzd-update-3.7.0.php',
+			'3.8.0'   => 'updates/woocommerce-gzd-update-3.8.0.php',
+			'3.9.1'   => 'updates/woocommerce-gzd-update-3.9.1.php',
+			'3.9.3'   => 'updates/woocommerce-gzd-update-3.9.3.php',
+			'3.10.0'  => 'updates/woocommerce-gzd-update-3.10.0.php',
+			'3.10.4'  => 'updates/woocommerce-gzd-update-3.10.4.php',
+			'3.12.2'  => 'updates/woocommerce-gzd-update-3.12.2.php',
+			'3.13.2'  => 'updates/woocommerce-gzd-update-3.13.2.php',
+			'3.15.5'  => 'updates/woocommerce-gzd-update-3.15.5.php',
+			'3.16.3'  => 'updates/woocommerce-gzd-update-3.16.3.php',
+			'3.19.12' => 'updates/woocommerce-gzd-update-3.19.12.php',
+			'3.19.13' => 'updates/woocommerce-gzd-update-3.19.13.php',
+			'3.20.0'  => 'updates/woocommerce-gzd-update-3.20.0.php',
 		);
 
 		/**
@@ -82,11 +85,19 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 					$note->dismiss();
 				}
 
+				$do_redirect = true;
+
+				if ( isset( $_GET['page'] ) && 'wc-gzd-about' === wc_clean( wp_unslash( $_GET['page'] ) ) ) {
+					$do_redirect = false;
+				}
+
 				delete_transient( '_wc_gzd_activation_redirect' );
 
-				// What's new redirect
-				wp_safe_redirect( esc_url_raw( admin_url( 'index.php?page=wc-gzd-about&wc-gzd-updated=true' ) ) );
-				exit;
+				if ( $do_redirect ) {
+					// What's new redirect
+					wp_safe_redirect( esc_url_raw( admin_url( 'index.php?page=wc-gzd-about&wc-gzd-updated=true' ) ) );
+					exit;
+				}
 			}
 
 			if ( get_transient( '_wc_gzd_setup_wizard_redirect' ) ) {
@@ -171,6 +182,346 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			}
 		}
 
+		public static function get_shiptastic_db_updates( $force_override = false, $is_downgrade = false ) {
+			global $wpdb;
+			$wpdb->hide_errors();
+
+			$db_updates      = array();
+			$existing_prefix = ! $is_downgrade ? 'gzd' : 'stc';
+			$new_prefix      = ! $is_downgrade ? 'stc' : 'gzd';
+
+			/**
+			 * Migrate tables
+			 */
+			$tables = array(
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipment_itemmeta" => array(
+					"{$existing_prefix}_shipment_item_id" => 'bigint(20) unsigned NOT NULL',
+				),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipment_items" => array(),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipments" => array(),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipmentmeta" => array(
+					"{$existing_prefix}_shipment_id" => 'bigint(20) unsigned NOT NULL',
+				),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipment_labels" => array(),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipment_labelmeta" => array(
+					"{$existing_prefix}_shipment_label_id" => 'bigint(20) unsigned NOT NULL',
+				),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_packaging" => array(),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_packagingmeta" => array(
+					"{$existing_prefix}_packaging_id" => 'bigint(20) unsigned NOT NULL',
+				),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipping_provider" => array(),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_shipping_providermeta" => array(
+					"{$existing_prefix}_shipping_provider_id" => 'bigint(20) unsigned NOT NULL',
+				),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_dhl_im_products" => array(),
+				"{$wpdb->prefix}woocommerce_{$existing_prefix}_dhl_im_product_services" => array(),
+			);
+
+			foreach ( $tables as $table => $columns ) {
+				$exists           = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+				$new_table_name   = str_replace( "woocommerce_{$existing_prefix}_", "woocommerce_{$new_prefix}_", $table );
+				$new_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $new_table_name ) ) );
+
+				if ( $exists && $exists === $table ) {
+					/**
+					 * Skip table if exists
+					 */
+					if ( ! $new_table_exists || $new_table_exists !== $new_table_name || $force_override ) {
+						if ( $force_override && strstr( $table, "woocommerce_{$existing_prefix}_" ) ) {
+							$db_updates[ $table ] = array(
+								'main'       => array(
+									"DROP TABLE IF EXISTS `{$new_table_name}`;",
+									"RENAME TABLE `{$table}` TO `{$new_table_name}`;",
+								),
+								'additional' => array(),
+							);
+						} else {
+							$db_updates[ $table ] = array(
+								'main'       => array( "RENAME TABLE `{$table}` TO `{$new_table_name}`;" ),
+								'additional' => array(),
+							);
+						}
+
+						foreach ( $columns as $column => $column_data_type ) {
+							$new_column_name = str_replace( "{$existing_prefix}_", "{$new_prefix}_", $column );
+
+							$db_updates[ $table ]['additional'][] = "ALTER TABLE `{$new_table_name}` CHANGE `{$column}` `{$new_column_name}` {$column_data_type};";
+						}
+
+						if ( "{$wpdb->prefix}woocommerce_{$existing_prefix}_shipments" === $table ) {
+							if ( ! $is_downgrade ) {
+								$db_updates[ $table ]['additional'][] = $wpdb->prepare( "UPDATE {$new_table_name} SET shipment_status = REPLACE(shipment_status, %s, %s);", 'gzd-', '' ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							} else {
+								$db_updates[ $table ]['additional'][] = $wpdb->prepare( "UPDATE {$new_table_name} SET shipment_status = CONCAT(%s, shipment_status);", 'gzd-' ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							}
+						} elseif ( "{$wpdb->prefix}woocommerce_{$existing_prefix}_shipping_providermeta" === $table ) {
+							/**
+							 * Migrate provider status hooks
+							 */
+							$provider_status_meta = array(
+								'_label_auto_shipment_status',
+								'_label_return_auto_shipment_status',
+							);
+
+							foreach ( $provider_status_meta as $meta_key ) {
+								if ( ! $is_downgrade ) {
+									$db_updates[ $table ]['additional'][] = $wpdb->prepare( "UPDATE {$new_table_name} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_key = %s;", 'gzd-', '', $meta_key ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+								} else {
+									$db_updates[ $table ]['additional'][] = $wpdb->prepare( "UPDATE {$new_table_name} SET meta_value = CONCAT(%s, meta_value) WHERE meta_key = %s;", 'gzd-', $meta_key ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+								}
+							}
+						}
+					}
+				} elseif ( $force_override && $new_table_exists && $new_table_exists === $new_table_name ) {
+					foreach ( $columns as $column => $column_data_type ) {
+						$old_column_exists = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM `{$new_table_name}` LIKE %s", $wpdb->esc_like( $column ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+						if ( $old_column_exists && $old_column_exists === $column ) {
+							$new_column_name   = str_replace( "{$existing_prefix}_", "{$new_prefix}_", $column );
+							$new_column_exists = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM `{$new_table_name}` LIKE %s", $wpdb->esc_like( $new_column_name ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+							if ( ! isset( $db_updates[ $new_table_name ] ) ) {
+								$db_updates[ $new_table_name ] = array(
+									'main'       => array(),
+									'additional' => array(),
+								);
+							}
+
+							if ( $new_column_exists && $new_column_name === $new_column_exists ) {
+								$db_updates[ $new_table_name ]['main'][] = "ALTER TABLE `{$new_table_name}` DROP COLUMN `{$new_column_name}`;";
+							}
+
+							$db_updates[ $new_table_name ]['additional'][] = "ALTER TABLE `{$new_table_name}` CHANGE `{$column}` `{$new_column_name}` {$column_data_type};";
+						}
+					}
+				}
+			}
+
+			if ( ! $is_downgrade ) {
+				/**
+				 * Do only try to rename options in case legacy options do still exist
+				 */
+				$legacy_options      = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( 'woocommerce_gzd_shipments_' ) . '%', $wpdb->esc_like( 'woocommerce_gzd_dhl_' ) . '%' ) );
+				$legacy_option_names = self::get_legacy_option_names( $legacy_options );
+
+				if ( ! empty( $legacy_option_names ) ) {
+					$legacy_options_in = "'" . implode( "','", $legacy_option_names ) . "'";
+
+					$db_updates[ $wpdb->options ] = array(
+						'main'       => array( "DELETE FROM {$wpdb->options} WHERE option_name IN ($legacy_options_in);" ),
+						'additional' => array(
+							$wpdb->prepare( "UPDATE {$wpdb->options} SET option_name = REPLACE(option_name, %s, %s);", 'woocommerce_gzd_dhl_', 'woocommerce_shiptastic_dhl_' ),
+							$wpdb->prepare( "UPDATE {$wpdb->options} SET option_name = REPLACE(option_name, %s, %s);", 'woocommerce_gzd_shipments_', 'woocommerce_shiptastic_' ),
+						),
+					);
+
+					$status_options = array(
+						'woocommerce_shiptastic_auto_default_status',
+					);
+
+					foreach ( $status_options as $option ) {
+						if ( in_array( $option, $legacy_option_names, true ) ) {
+							$db_updates[ $wpdb->options ]['additional'][] = $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = REPLACE(option_value, %s, %s) WHERE option_name = %s;", 'gzd-', '', $option );
+						}
+					}
+				}
+			} else {
+				/**
+				 * Do only try to rename options in case legacy options do still exist
+				 */
+				$legacy_options      = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'woocommerce_shiptastic_' ) . '%' ) );
+				$legacy_option_names = self::get_legacy_option_names( $legacy_options, true );
+
+				if ( ! empty( $legacy_option_names ) ) {
+					$legacy_options_in = "'" . implode( "','", $legacy_option_names ) . "'";
+
+					$db_updates[ $wpdb->options ] = array(
+						'main'       => array( "DELETE FROM {$wpdb->options} WHERE option_name IN ($legacy_options_in);" ),
+						'additional' => array(
+							$wpdb->prepare( "UPDATE {$wpdb->options} SET option_name = REPLACE(option_name, %s, %s);", 'woocommerce_shiptastic_dhl_', 'woocommerce_gzd_dhl_' ),
+							$wpdb->prepare( "UPDATE {$wpdb->options} SET option_name = REPLACE(option_name, %s, %s);", 'woocommerce_shiptastic_', 'woocommerce_gzd_shipments_' ),
+						),
+					);
+
+					$status_options = array(
+						'woocommerce_gzd_shipments_auto_default_status',
+					);
+
+					foreach ( $status_options as $option ) {
+						if ( in_array( $option, $legacy_option_names, true ) ) {
+							$db_updates[ $wpdb->options ]['additional'][] = $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = CONCAT(%s, option_value) WHERE option_name = %s;", 'gzd-', $option );
+						}
+					}
+				}
+			}
+
+			return $db_updates;
+		}
+
+		protected static function get_legacy_option_names( $legacy_options, $is_downgrade = false ) {
+			$option_names = array();
+
+			foreach ( $legacy_options as $legacy_row ) {
+				if ( $is_downgrade ) {
+					$new_option_name = str_replace( 'woocommerce_shiptastic_dhl_', 'woocommerce_gzd_dhl_', $legacy_row->option_name );
+					$new_option_name = str_replace( 'woocommerce_shiptastic_', 'woocommerce_gzd_shipments_', $new_option_name );
+				} else {
+					$new_option_name = str_replace( 'woocommerce_gzd_dhl_', 'woocommerce_shiptastic_dhl_', $legacy_row->option_name );
+					$new_option_name = str_replace( 'woocommerce_gzd_shipments_', 'woocommerce_shiptastic_', $new_option_name );
+				}
+
+				$option_names[] = $new_option_name;
+			}
+
+			return $option_names;
+		}
+
+		public static function get_shipments_legacy_upload_folder() {
+			add_filter(
+				'woocommerce_shiptastic_upload_dir_name',
+				function ( $upload_dir ) {
+					return str_replace( 'wc-shiptastic-', 'wc-gzd-shipments-', $upload_dir );
+				},
+				100
+			);
+			$legacy_dir = \Vendidero\Germanized\Shiptastic::get_upload_dir();
+			remove_all_filters( 'woocommerce_shiptastic_upload_dir_name' );
+
+			if ( @is_dir( $legacy_dir['basedir'] ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				return $legacy_dir;
+			}
+
+			return false;
+		}
+
+		public static function migrate_shipments_to_shiptastic( $force_override = false, $is_initial_migration = false ) {
+			global $wpdb;
+			$error = new WP_Error();
+			$wpdb->hide_errors();
+
+			if ( $queue = WC()->queue() ) {
+				$queue->cancel_all( 'woocommerce_gzd_shipments_daily_cleanup', array(), 'woocommerce_gzd_shipments' );
+			}
+
+			delete_option( 'woocommerce_gzd_shiptastic_migration_has_errors' );
+			delete_option( 'woocommerce_gzd_shiptastic_migration_errors' );
+
+			/**
+			 * Force delete the upload dir suffix which may be created
+			 * before running the check version hook.
+			 */
+			if ( get_option( 'woocommerce_gzd_shipments_upload_dir_suffix' ) ) {
+				delete_option( 'woocommerce_shiptastic_upload_dir_suffix' );
+			}
+
+			$wpdb->flush();
+
+			foreach ( self::get_shiptastic_db_updates( $force_override ) as $table => $db_updates ) {
+				$db_updates = wp_parse_args(
+					$db_updates,
+					array(
+						'main'       => array(),
+						'additional' => array(),
+					)
+				);
+
+				$exists         = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+				$has_main_error = false;
+
+				if ( $exists && $exists === $table ) {
+					if ( ! empty( $db_updates['main'] ) ) {
+						foreach ( $db_updates['main'] as $main_query ) {
+							$result = $wpdb->query( $main_query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+							if ( false === $result ) {
+								$last_error = $wpdb->last_error;
+								$error->add( 'main_query', sprintf( _x( 'Error while querying %1$s: %2$s', 'shipments-migration', 'woocommerce-germanized' ), $table, $last_error ) );
+								$has_main_error = true;
+								break;
+							}
+						}
+					}
+
+					// Do not run additional queries in case of error within main query.
+					if ( $has_main_error ) {
+						continue;
+					}
+
+					$mute_errors = false;
+
+					/**
+					 * Mute duplicate wp_options key errors on subsequent migration requests
+					 */
+					if ( $wpdb->options === $table && ! $is_initial_migration ) {
+						$mute_errors = true;
+					}
+
+					foreach ( $db_updates['additional'] as $db_query ) {
+						$result = $wpdb->query( $db_query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+						if ( false === $result && ! $mute_errors ) {
+							$last_error = $wpdb->last_error;
+							$error->add( 'additional_query', sprintf( _x( 'Error while running additional query on %1$s: %2$s', 'shipments-migration', 'woocommerce-germanized' ), $table, $last_error ) );
+						}
+					}
+				}
+			}
+
+			/**
+			 * Force reloading options, e.g. upload dir suffix
+			 */
+			$wpdb->flush();
+			wp_cache_delete( 'alloptions', 'options' );
+			wp_load_alloptions();
+
+			/**
+			 * Migrate packaging reports as this data is serialized
+			 */
+			if ( get_option( 'woocommerce_shiptastic_packaging_reports' ) ) {
+				$report_data     = (array) get_option( 'woocommerce_shiptastic_packaging_reports', array() );
+				$new_report_data = array();
+
+				foreach ( $report_data as $type => $reports ) {
+					$new_report_data[ $type ] = array();
+
+					foreach ( (array) $reports as $report_name ) {
+						$new_report_data[ $type ][] = str_replace( 'woocommerce_gzd_shipments_packaging_', 'woocommerce_shiptastic_packaging_', $report_name );
+					}
+				}
+
+				update_option( 'woocommerce_shiptastic_packaging_reports', $new_report_data, false );
+			}
+
+			$new_dir    = \Vendidero\Germanized\Shiptastic::get_upload_dir();
+			$legacy_dir = self::get_shipments_legacy_upload_folder();
+
+			if ( false !== $legacy_dir ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				if ( @is_dir( $new_dir['basedir'] ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					$tmp_new_name_folder = str_replace( 'wc-shiptastic', 'wc-shiptastic-' . wp_rand( 1, 1000 ), $new_dir['basedir'] );
+					@rename( $new_dir['basedir'], $tmp_new_name_folder ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.rename_rename
+				}
+
+				/**
+				 * Rename if new folder name does not yet exist
+				 */
+				if ( ! @is_dir( $new_dir['basedir'] ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+					$rename_result = @rename( $legacy_dir['basedir'], $new_dir['basedir'] ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.rename_rename
+
+					if ( false === $rename_result ) {
+						$error->add( 'folder_rename_failed', sprintf( _x( 'Could not rename %1$s to %2$s.', 'shipments-migration', 'woocommerce-germanized' ), $legacy_dir['basedir'], $new_dir['basedir'] ) );
+					}
+				}
+			}
+
+			if ( wc_gzd_wp_error_has_errors( $error ) ) {
+				update_option( 'woocommerce_gzd_shiptastic_migration_has_errors', 'yes', true );
+				update_option( 'woocommerce_gzd_shiptastic_migration_errors', $error->errors, false );
+			}
+
+			return wc_gzd_wp_error_has_errors( $error ) ? $error : true;
+		}
+
 		/**
 		 * Install WC_Germanized
 		 */
@@ -210,9 +561,12 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			/**
 			 * Enable logging in packages during installation
 			 */
-			add_filter( 'woocommerce_gzd_dhl_enable_logging', '__return_true', 5 );
-			add_filter( 'woocommerce_gzd_shipments_enable_logging', '__return_true', 5 );
+			add_filter( 'woocommerce_shiptastic_enable_logging', '__return_true', 5 );
 			add_filter( 'oss_woocommerce_enable_extended_logging', '__return_true', 5 );
+
+			if ( get_option( 'woocommerce_gzd_shipments_upload_dir_suffix' ) && ! is_null( $current_db_version ) && version_compare( $current_db_version, '3.19.0', '<' ) ) {
+				self::migrate_shipments_to_shiptastic( false, true );
+			}
 
 			self::install_packages();
 
@@ -230,28 +584,35 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			// Delete plugin header data for dependency check
 			delete_option( 'woocommerce_gzd_plugin_header_data' );
 
+			if ( ! \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() && \Vendidero\Germanized\Shiptastic::needs_shiptastic_standalone() ) {
+				update_option( 'woocommerce_gzd_is_shiptastic_standalone_update', 'yes' );
+			} else {
+				delete_option( 'woocommerce_gzd_is_shiptastic_standalone_update' );
+			}
+
+			if ( ! \Vendidero\Germanized\PluginsHelper::is_shiptastic_dhl_plugin_active() && \Vendidero\Germanized\Shiptastic::needs_shiptastic_dhl_standalone() ) {
+				update_option( 'woocommerce_gzd_is_shiptastic_standalone_update', 'yes' );
+				update_option( 'woocommerce_gzd_is_shiptastic_dhl_standalone_update', 'yes' );
+			} else {
+				delete_option( 'woocommerce_gzd_is_shiptastic_dhl_standalone_update' );
+			}
+
 			include_once WC_GERMANIZED_ABSPATH . 'includes/admin/class-wc-gzd-admin-notices.php';
 			$notices = WC_GZD_Admin_Notices::instance();
 
-			// Refresh notes
-			foreach ( $notices->get_notes() as $note ) {
-				$note->delete_note();
-			}
+			self::force_delete_notes();
 
 			// Recheck outdated templates
 			if ( $note = $notices->get_note( 'template_outdated' ) ) {
 				$note->reset();
 			}
 
-			// Show the importer
-			if ( $note = $notices->get_note( 'dhl_importer' ) ) {
+			// Recheck Shiptastic install
+			if ( $note = $notices->get_note( 'shiptastic_install' ) ) {
 				$note->reset();
 			}
 
-			// Show the importer
-			if ( $note = $notices->get_note( 'internetmarke_importer' ) ) {
-				$note->reset();
-			}
+			$add_redirect_transient = is_null( $current_version ) ? true : false;
 
 			// Queue messages and notices
 			if ( ! is_null( $current_version ) ) {
@@ -260,6 +621,8 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 
 				// Only on major update
 				if ( version_compare( $new_major_version, $major_version, '>' ) ) {
+					$add_redirect_transient = true;
+
 					if ( $note = $notices->get_note( 'pro' ) ) {
 						$note->reset();
 					}
@@ -267,10 +630,35 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 					if ( $note = $notices->get_note( 'theme_supported' ) ) {
 						$note->reset();
 					}
+
+					if ( $note = $notices->get_note( 'dhl_importer' ) ) {
+						$note->reset();
+					}
+
+					if ( $note = $notices->get_note( 'internetmarke_importer' ) ) {
+						$note->reset();
+					}
 				}
 
 				if ( version_compare( $current_version, '3.14.0', '<' ) && ( wc_gzd_current_theme_is_fse_theme() || wc_gzd_has_checkout_block() ) ) {
 					$notices->activate_blocks_note();
+				}
+			}
+
+			/**
+			 * Clear old shiptastic actions
+			 */
+			if ( version_compare( $current_version, '4.0.2', '<' ) && ! \Vendidero\Germanized\PluginsHelper::is_shiptastic_plugin_active() ) {
+				if ( function_exists( 'as_unschedule_all_actions' ) ) {
+					$hooks = array(
+						'woocommerce_gzd_shipments_daily_cleanup',
+						'woocommerce_shiptastic_daily_cleanup',
+						'woocommerce_shiptastic_shipments_tracking',
+					);
+
+					foreach ( $hooks as $hook ) {
+						as_unschedule_all_actions( $hook );
+					}
 				}
 			}
 
@@ -283,7 +671,7 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			 *
 			 */
 			if ( apply_filters( 'woocommerce_gzd_needs_db_update', self::needs_db_update() ) ) {
-				if ( apply_filters( 'woocommerce_gzd_enable_auto_update_db', false ) ) {
+				if ( apply_filters( 'woocommerce_gzd_enable_auto_update_db', true ) ) {
 					self::update();
 				} else {
 					if ( $note = $notices->get_note( 'update' ) ) {
@@ -308,7 +696,7 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			// Check if pages are needed - start setup
 			if ( wc_get_page_id( 'revocation' ) < 1 ) {
 				set_transient( '_wc_gzd_setup_wizard_redirect', 1, 60 * 60 );
-			} elseif ( ! defined( 'DOING_AJAX' ) ) {
+			} elseif ( ! defined( 'DOING_AJAX' ) && $add_redirect_transient ) {
 				// Redirect to welcome screen
 				set_transient( '_wc_gzd_activation_redirect', 1, 60 * 60 );
 			}
@@ -331,33 +719,32 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			}
 		}
 
-		public static function deactivate() {
-			// Clear Woo sessions to remove WC_GZD_Shipping_Rate instance
-			if ( class_exists( 'WC_REST_System_Status_Tools_Controller' ) ) {
-				$tools_controller = new WC_REST_System_Status_Tools_Controller();
-				$tools_controller->execute_tool( 'clear_sessions' );
-			}
+		/**
+		 * Use direct DB queries to delete WC admin notes as there may be invalid/duplicate notes stored within the DB.
+		 *
+		 * @return void
+		 */
+		public static function force_delete_notes() {
+			global $wpdb;
+			$wpdb->hide_errors();
 
-			/**
-			 * Remove notices.
-			 */
-			$notices = WC_GZD_Admin_Notices::instance();
+			$notes_table  = $wpdb->prefix . 'wc_admin_notes';
+			$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $notes_table ) ) );
 
-			foreach ( $notices->get_notes() as $note ) {
-				$note->delete_note();
-			}
+			if ( $table_exists && $table_exists === $notes_table ) {
+				$notes = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wc_admin_notes WHERE name LIKE '%-gzd%';" );
 
-			wp_clear_scheduled_hook( 'woocommerce_gzd_customer_cleanup' );
-
-			if ( function_exists( 'as_unschedule_all_actions' ) ) {
-				$hooks = array(
-					'woocommerce_gzd_shipments_daily_cleanup',
-				);
-
-				foreach ( $hooks as $hook ) {
-					as_unschedule_all_actions( $hook );
+				foreach ( $notes as $note ) {
+					$wpdb->delete( $wpdb->prefix . 'wc_admin_note_actions', array( 'note_id' => $note->note_id ) );
+					$wpdb->delete( $wpdb->prefix . 'wc_admin_notes', array( 'note_id' => $note->note_id ) );
 				}
 			}
+		}
+
+		public static function deactivate() {
+			self::force_delete_notes();
+
+			wp_clear_scheduled_hook( 'woocommerce_gzd_customer_cleanup' );
 		}
 
 		/**
@@ -397,7 +784,7 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 		/**
 		 * Handle updates
 		 */
-		private static function update() {
+		public static function update() {
 			$current_db_version = get_option( 'woocommerce_gzd_db_version', null );
 
 			if ( ! is_null( $current_db_version ) && ! empty( $current_db_version ) ) {
@@ -592,7 +979,6 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			 * @param array $pages Array containing page data.
 			 *
 			 * @since 1.0.0
-			 *
 			 */
 			$pages = apply_filters(
 				'woocommerce_gzd_create_pages',
@@ -667,7 +1053,7 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 		 */
 		public static function create_options() {
 			// Include settings so that we can run through defaults
-			include_once WC()->plugin_path() . '/includes/admin/settings/class-wc-settings-page.php';
+			include_once WC_ABSPATH . 'includes/admin/settings/class-wc-settings-page.php';
 
 			include_once WC_GERMANIZED_ABSPATH . 'includes/admin/settings/abstract-wc-gzd-settings-tab.php';
 			include_once WC_GERMANIZED_ABSPATH . 'includes/admin/class-wc-gzd-admin-legal-checkboxes.php';
@@ -676,7 +1062,7 @@ if ( ! class_exists( 'WC_GZD_Install' ) ) :
 			$settings = false;
 
 			if ( is_admin() ) {
-				include_once WC()->plugin_path() . '/includes/admin/class-wc-admin-settings.php';
+				include_once WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
 
 				foreach ( WC_Admin_Settings::get_settings_pages() as $page ) {
 					if ( is_a( $page, 'WC_GZD_Settings_Germanized' ) ) {

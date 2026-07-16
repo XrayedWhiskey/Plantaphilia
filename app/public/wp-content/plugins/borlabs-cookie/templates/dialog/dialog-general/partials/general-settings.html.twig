@@ -1,0 +1,149 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.generalSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/row/input.html.twig" as row_input %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/page-selection.html.twig" as row_page_selection %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+        {{ row_switch_button.component({
+            id: 'showDialog',
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showDialog,
+            label: localized.field.showDialog,
+            value: data.showDialog,
+        }) }}
+
+        {{ row_switch_button.component({
+            id: 'showDialogOnLoginPage',
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showDialogOnLoginPage,
+            label: localized.field.showDialogOnLoginPage,
+            value: data.showDialogOnLoginPage,
+        }) }}
+
+        {{ row_switch_button.component({
+            id: 'showDialogAfterUserInteraction',
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showDialogAfterUserInteraction,
+            label: localized.field.showDialogAfterUserInteraction,
+            value: data.showDialogAfterUserInteraction,
+        }) }}
+
+        {{ row_switch_button.component({
+            id: 'enableBackdrop',
+            hideInSimplifiedMode: true,
+            hint: localized.hint.enableBackdrop,
+            label: localized.field.enableBackdrop,
+            value: data.enableBackdrop,
+        }) }}
+
+        {{ row_page_selection.component({
+            hint: localized.hint.privacyPageId ~ ' ' ~ localized.hint.dialogIsHidden,
+            label: localized.field.privacyPageId,
+            pageSelectId: 'privacyPageId',
+            pagesList: options.pages.list,
+            pageSelectValue: data.privacyPageId,
+            urlInputId: 'privacyPageCustomUrl',
+            urlInputValue: data.privacyPageCustomUrl,
+        }) }}
+
+        {{ row_page_selection.component({
+            hint: localized.hint.imprintPageId ~ ' ' ~ localized.hint.dialogIsHidden,
+            label: localized.field.imprintPageId,
+            pageSelectId: 'imprintPageId',
+            pagesList: options.pages.list,
+            pageSelectValue: data.imprintPageId,
+            urlInputId: 'imprintPageCustomUrl',
+            urlInputValue: data.imprintPageCustomUrl,
+        }) }}
+
+        {{ row_textarea.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.hideDialogOnPages,
+            id: 'hideDialogOnPages',
+            isRequired: false,
+            label: localized.field.hideDialogOnPages,
+            value: data.hideDialogOnPages | join('\n'),
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.showBorlabsCookieBranding,
+            id: 'showBorlabsCookieBranding',
+            label: localized.field.showBorlabsCookieBranding,
+            value: data.showBorlabsCookieBranding,
+        }) }}
+
+        <!-- Synchronization Settings -->
+        {{ synchronizationSettingsFields(
+            languages,
+            {
+                collectionName: "languages",
+                hasRepository: false,
+                withOverwriteTranslationOption: false,
+            }
+        ) | raw }}
+
+        {{ row_save.component({
+            action: 'save',
+            nonce: wpNonceField("#{controllerId}-save"),
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionChangeConsent', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineHowToChangeConsent | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.howToChangeConsentA | raw }}</p>
+                        <p>
+                            <strong>{{ localized.thingsToKnow.howToChangeConsentB | raw }}</strong><span class="brlbs-cmpnt-code-example">[borlabs-cookie type="btn-consent-preferences" title="Lorem ipsum"/]</span>
+                        </p>
+                        <p>
+                            <strong>{{ localized.thingsToKnow.howToChangeConsentC | raw }}</strong><span class="brlbs-cmpnt-code-example">[borlabs-cookie type="btn-consent-preferences" title="Lorem ipsum" element="link"/]</span>
+                        </p>
+                        <p>
+                            <strong>{{ localized.thingsToKnow.howToChangeConsentD | raw }}</strong><span class="brlbs-cmpnt-code-example">&lt;span class=&quot;borlabs-cookie-open-dialog-preferences&quot; data-borlabs-cookie-title=&quot;Lorem ipsum&quot; &gt;&lt;/span&gt;</span>
+                        </p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionOptOut'} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineHowToOptOut | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.howToOptOutA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.howToOptOutB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionDisplayUserId'} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineHowToDisplayUserId | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.howToDisplayUserIdA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.howToDisplayUserIdB | raw }}</p>
+                        <p>{{ localized.thingsToKnow.howToDisplayUserIdC | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

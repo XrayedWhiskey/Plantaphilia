@@ -29,6 +29,7 @@ use Duplicator\Ajax\ServicesDashboard;
 use Duplicator\Ajax\ServicesEducation;
 use Duplicator\Ajax\ServicesExtraPlugins;
 use Duplicator\Ajax\ServicesTools;
+use Duplicator\Controllers\AboutUsController;
 use Duplicator\Controllers\EmailSummaryPreviewPageController;
 use Duplicator\Controllers\WelcomeController;
 use Duplicator\Core\Controllers\ControllersManager;
@@ -39,8 +40,7 @@ use Duplicator\Core\Notifications\Review;
 use Duplicator\Core\Views\TplMng;
 use Duplicator\Utils\CronUtils;
 use Duplicator\Utils\ExtraPlugins\CrossPromotion;
-use Duplicator\Utils\ExtraPlugins\ExtraPluginsMng;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 use Duplicator\Views\DashboardWidget;
 use Duplicator\Views\EducationElements;
 use Duplicator\Utils\UsageStatistics\StatsBootstrap;
@@ -59,7 +59,7 @@ class Bootstrap
         if (is_admin()) {
             add_action('plugins_loaded', array(__CLASS__, 'update'));
             add_action('plugins_loaded', array(__CLASS__, 'wpfrontIntegrate'));
-            add_action('plugins_loaded', array(__CLASS__, 'loadTextdomain'));
+            add_action('init', array(__CLASS__, 'loadTextdomain'));
 
             /* ========================================================
             * ACTIVATE/DEACTIVE/UPDATE HOOKS
@@ -85,8 +85,18 @@ class Bootstrap
             $GLOBALS['CTRLS_DUP_CTRL_Tools']   = new DUP_CTRL_Tools();
             $GLOBALS['CTRLS_DUP_CTRL_Package'] = new DUP_CTRL_Package();
 
+            if (is_multisite()) {
+                add_action('network_admin_menu', array(__CLASS__, 'menuInit'));
+                add_filter('network_admin_plugin_action_links', array(__CLASS__, 'manageLink'), 10, 2);
+                add_filter('network_admin_plugin_row_meta', array(__CLASS__, 'metaLinks'), 10, 2);
+            } else {
+                add_action('admin_menu', array(__CLASS__, 'menuInit'));
+                add_filter('plugin_action_links', array(__CLASS__, 'manageLink'), 10, 2);
+                add_filter('plugin_row_meta', array(__CLASS__, 'metaLinks'), 10, 2);
+            }
+
             add_action('admin_init', array(__CLASS__, 'adminInit'));
-            add_action('admin_menu', array(__CLASS__, 'menuInit'));
+            add_action('in_admin_footer', array(__CLASS__, 'pluginFooter' ));
             add_action('admin_footer', array(__CLASS__, 'adjustProMenuItemClass'));
             add_action('admin_enqueue_scripts', array(__CLASS__, 'adminEqueueScripts'));
 
@@ -97,8 +107,6 @@ class Bootstrap
             add_action('wp_ajax_duplicator_duparchive_package_build', 'duplicator_duparchive_package_build');
 
             add_filter('admin_body_class', array(__CLASS__, 'addBodyClass'));
-            add_filter('plugin_action_links', array(__CLASS__, 'manageLink'), 10, 2);
-            add_filter('plugin_row_meta', array(__CLASS__, 'metaLinks'), 10, 2);
 
             //Init Class
             DUP_Custom_Host_Manager::getInstance()->init();
@@ -191,7 +199,7 @@ class Bootstrap
         add_action('in_admin_header', array('Duplicator\\Views\\ViewHelper', 'adminLogoHeader'), 100);
 
         /* CSS */
-        wp_register_style('dup-jquery-ui', DUPLICATOR_PLUGIN_URL . 'assets/css/jquery-ui.css', null, "1.11.2");
+        wp_register_style('dup-jquery-ui', DUPLICATOR_PLUGIN_URL . 'assets/css/jquery-ui.css', null, "1.14.1");
         wp_register_style('dup-font-awesome', DUPLICATOR_PLUGIN_URL . 'assets/css/font-awesome/css/all.min.css', [], '6.4.2');
         wp_register_style('dup-plugin-global-style', DUPLICATOR_PLUGIN_URL . 'assets/css/global_admin_style.css', null, DUPLICATOR_VERSION);
         wp_register_style('dup-plugin-style', DUPLICATOR_PLUGIN_URL . 'assets/css/style.css', array('dup-plugin-global-style'), DUPLICATOR_VERSION);
@@ -263,8 +271,8 @@ class Bootstrap
         return array(
             array(
                 'parent_slug' => 'duplicator',
-                'page_title'  => __('Packages', 'duplicator'),
-                'menu_title'  => __('Packages', 'duplicator'),
+                'page_title'  => __('Backups', 'duplicator'),
+                'menu_title'  => __('Backups', 'duplicator'),
                 'capability'  => 'export',
                 'menu_slug'   => ControllersManager::MAIN_MENU_SLUG,
                 'callback'    => function () {
@@ -273,8 +281,8 @@ class Bootstrap
             ),
             array(
                 'parent_slug'            => 'duplicator',
-                'page_title'             => __('Import', 'duplicator'),
-                'menu_title'             => __('Import', 'duplicator'),
+                'page_title'             => __('Import Backups', 'duplicator'),
+                'menu_title'             => __('Import Backups', 'duplicator'),
                 'capability'             => 'export',
                 'menu_slug'              => ControllersManager::IMPORT_SUBMENU_SLUG,
                 'callback'               => function () {
@@ -284,8 +292,8 @@ class Bootstrap
             ),
             array(
                 'parent_slug'            => 'duplicator',
-                'page_title'             => __('Schedules', 'duplicator'),
-                'menu_title'             => __('Schedules', 'duplicator') . $dupMenuNew,
+                'page_title'             => __('Schedule Backups', 'duplicator'),
+                'menu_title'             => __('Schedule Backups', 'duplicator') . $dupMenuNew,
                 'capability'             => 'export',
                 'menu_slug'              => ControllersManager::SCHEDULES_SUBMENU_SLUG,
                 'callback'               => function () {
@@ -304,6 +312,17 @@ class Bootstrap
             ),
             array(
                 'parent_slug'            => 'duplicator',
+                'page_title'             => __('Staging', 'duplicator'),
+                'menu_title'             => __('Staging', 'duplicator'),
+                'capability'             => 'export',
+                'menu_slug'              => ControllersManager::STAGING_SUBMENU_SLUG,
+                'callback'               => function () {
+                    TplMng::getInstance()->render('mocks/staging/staging');
+                },
+                'enqueue_style_callback' => array(__CLASS__, 'mocksStyles')
+            ),
+            array(
+                'parent_slug'            => 'duplicator',
                 'page_title'             => __('Tools', 'duplicator'),
                 'menu_title'             => __('Tools', 'duplicator'),
                 'capability'             => 'manage_options',
@@ -311,7 +330,10 @@ class Bootstrap
                 'callback'               => function () {
                     include(DUPLICATOR_PLUGIN_PATH . 'views/tools/controller.php');
                 },
-                'enqueue_style_callback' => array(__CLASS__, 'mocksStyles')
+                'enqueue_style_callback' => function () {
+                    AboutUsController::enqueues();
+                    self::mocksStyles();
+                }
             ),
             array(
                 'parent_slug'            => 'duplicator',
@@ -337,7 +359,7 @@ class Bootstrap
                 'page_title'  => $proTitle,
                 'menu_title'  => $proTitle,
                 'capability'  => 'manage_options',
-                'menu_slug'   => Upsell::getCampaignUrl('admin-menu', 'Upgrade to Pro'),
+                'menu_slug'   => LinkManager::getCampaignUrl('admin-menu', 'Upgrade to Pro'),
                 'callback'    => null,
             )
         );
@@ -382,8 +404,11 @@ class Bootstrap
             'dup-one-click-upgrade-script',
             'dup_one_click_upgrade_script_data',
             array(
-                'nonce_one_click_upgrade' => wp_create_nonce('duplicator_one_click_upgrade_prepare'),
-                'ajaxurl'                 => admin_url('admin-ajax.php')
+                'nonce_generate_connect_oth' => wp_create_nonce('duplicator_generate_connect_oth'),
+                'ajaxurl'                   => admin_url('admin-ajax.php'),
+                'fail_notice_title'         => __('Failed to connect to Duplicator Pro.', 'duplicator'),
+                'fail_notice_message_label' => __('Message: ', 'duplicator'),
+                'fail_notice_suggestion'    => __('Please try again or contact support if the issue persists.', 'duplicator'),
             )
         );
 
@@ -450,6 +475,19 @@ class Bootstrap
     }
 
     /**
+     * Add the plugin footer
+     *
+     * @return void
+     */
+    public static function pluginFooter()
+    {
+        if (!ControllersManager::isDuplicatorPage()) {
+            return;
+        }
+        TplMng::getInstance()->render('parts/plugin-footer');
+    }
+
+    /**
      * Loads all required javascript libs/source for DupPro
      *
      * @return void
@@ -512,7 +550,7 @@ class Bootstrap
               array_unshift($links, $settings_link);
              */
             $upgrade_link = '<a style="color: #1da867;" class="dup-plugins-list-pro-upgrade" href="' .
-                esc_url(Upsell::getCampaignUrl('plugin-actions-link')) . '" target="_blank">' .
+                esc_url(LinkManager::getCampaignUrl('plugin-actions-link')) . '" target="_blank">' .
                 '<strong style="display: inline;">' .
                 esc_html__("Upgrade to Pro", 'duplicator') .
                 '</strong></a>';
@@ -534,7 +572,7 @@ class Bootstrap
         $plugin = plugin_basename(DUPLICATOR_LITE_FILE);
         // create link
         if ($file == $plugin) {
-            $links[] = '<a href="admin.php?page=duplicator" title="' . esc_attr__('Manage Packages', 'duplicator') . '" style="">' .
+            $links[] = '<a href="admin.php?page=duplicator" title="' . esc_attr__('Manage Backups', 'duplicator') . '" style="">' .
                 esc_html__('Manage', 'duplicator') .
                 '</a>';
             return $links;

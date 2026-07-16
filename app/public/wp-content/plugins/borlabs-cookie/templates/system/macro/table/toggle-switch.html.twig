@@ -1,0 +1,11 @@
+{% macro component(config) %}
+    {% import "system/macro/icons/switch-on.html.twig" as switch_on %}
+    {% import "system/macro/icons/switch-off.html.twig" as switch_off %}
+    <a href="{{ config.href | raw }}" class="bc-text-center">
+        {% if config.status %}
+        {{ switch_on.component({color: 'bc-text-green-600'}) }}
+        {% else %}
+        {{ switch_off.component({color: 'bc-text-black-50'}) }}
+        {% endif %}
+    </a>
+{% endmacro %}

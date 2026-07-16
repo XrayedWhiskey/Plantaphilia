@@ -22,11 +22,11 @@ defined("ABSPATH") || exit;
             <div class="left">
                 <a href="<?php echo esc_url($tplData['packageNonceUrl']); ?>"
                    class="dup-btn dup-btn-block dup-btn-lg dup-btn-orange">
-                    <?php esc_html_e('Create Your First Package', 'duplicator'); ?>
+                    <?php esc_html_e('Create Your First Backup', 'duplicator'); ?>
                 </a>
             </div>
             <div class="right">
-                <a href="<?php echo esc_url(\Duplicator\Utils\Upsell::getCampaignUrl('welcome-page', 'Upgrade to Duplicator Pro')); ?>"
+                <a href="<?php echo esc_url(\Duplicator\Utils\LinkManager::getCampaignUrl('welcome-page', 'Upgrade to Duplicator Pro')); ?>"
                    target="_blank"
                    rel="noopener noreferrer"
                    class="dup-btn dup-btn-block dup-btn-lg dup-btn-trans-green">

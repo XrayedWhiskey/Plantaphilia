@@ -1,0 +1,28 @@
+{% embed "system/embed/form-row.html.twig" %}
+    {% block label %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        <div class="bc-flex bc-items-center">
+            <span>{{ translation.label | raw }}</span>
+            {# Displays the hint icon. #}
+            <div class="bc-inline-block bc-pl-1">
+                {{ hint.component({
+                    hint: translation.hint,
+                }) }}
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block input %}
+        {% if translation.alertMessage is not empty %}
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error" id="{{ id }}-alert">{{ translation.alertMessage | raw }}</div>
+        {% endif %}
+
+        {% if translation.warningMessage is not empty %}
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning" id="{{ id }}-warning">{{ translation.warningMessage | raw }}</div>
+        {% endif %}
+
+        {% if translation.infoMessage is not empty %}
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info" id="{{ id }}-warning">{{ translation.infoMessage | raw }}</div>
+        {% endif %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,41 @@
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.scriptBlockerSettings,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% import "system/macro/row/input.html.twig" as row_input %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+            {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+            {{ row_input.component({
+                errorMessage: localized.validation.key,
+                hint: localized.hint.key,
+                id: 'key',
+                isDisabled: isCreateAction ? false : true,
+                isRequired: isCreateAction ? true : false,
+                label: localized.field.key,
+                value: data.key,
+            }) }}
+
+            {{ row_switch_button.component({
+                hint: localized.hint.status,
+                id: 'status',
+                label: localized.field.status,
+                value: data.status,
+            }) }}
+
+            {{ row_save.component({
+                action: 'save',
+                backLink: "?page=#{controllerId}",
+                nonce: wpNonceField("#{controllerId}-#{data.id}-save"),
+                value: data.id,
+            }, localized) }}
+        {% endblock %}
+    {% endembed %}
+</div>

@@ -2,7 +2,7 @@
 /**
  * Booster for WooCommerce - Core - Loader
  *
- * @version 6.0.3
+ * @version 7.9.0
  * @since   3.2.4
  * @author  Pluggabl LLC.
  * @package Booster_For_WooCommerce/core
@@ -21,7 +21,7 @@ if ( ! defined( 'WCJ_FREE_PLUGIN_PATH' ) ) {
 	/**
 	 * WCJ_FREE_PLUGIN_PATH.
 	 *
-	 * @version 5.6.1
+	 * @version 7.2.8
 	 * @since   3.2.4
 	 */
 	define( 'WCJ_FREE_PLUGIN_PATH', untrailingslashit( realpath( plugin_dir_path( WCJ_FREE_PLUGIN_FILE ) ) ) );
@@ -48,6 +48,14 @@ require_once 'wcj-constants.php';
 // Functions.
 require_once 'wcj-functions.php';
 
+// Quick Start Presets.
+require_once WCJ_FREE_PLUGIN_PATH . '/includes/wcj-quick-start-presets.php';
+
+// Quick Start Admin UI.
+if ( is_admin() ) {
+	require_once WCJ_FREE_PLUGIN_PATH . '/includes/admin/wcj-quick-start-admin.php';
+}
+
 // Classes.
 require_once WCJ_FREE_PLUGIN_PATH . '/includes/classes/class-wcj-module.php';
 require_once WCJ_FREE_PLUGIN_PATH . '/includes/classes/class-wcj-module-product-by-condition.php';
@@ -55,6 +63,10 @@ require_once WCJ_FREE_PLUGIN_PATH . '/includes/classes/class-wcj-module-shipping
 require_once WCJ_FREE_PLUGIN_PATH . '/includes/classes/class-wcj-invoice.php';
 require_once WCJ_FREE_PLUGIN_PATH . '/includes/classes/class-wcj-pdf-invoice.php';
 require_once WCJ_FREE_PLUGIN_PATH . '/includes/admin/class-wcj-welcome.php';
+require_once WCJ_FREE_PLUGIN_PATH . '/includes/class-wcj-product-variation-swatches-term-meta.php';
+
+// Upgrade Blocks.
+require_once WCJ_FREE_PLUGIN_PATH . '/includes/class-wcj-upgrade-blocks.php';
 
 // Mini Plugin.
 require_once WCJ_FREE_PLUGIN_PATH . '/includes/mini-plugin/wcj-mini-plugin.php';

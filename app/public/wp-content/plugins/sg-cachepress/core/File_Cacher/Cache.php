@@ -80,7 +80,7 @@ class Cache {
 		$url = empty( $url ) ? self::get_current_url() : $url;
 
 		// Parse the url.
-		$parsed_url = parse_url( $url );
+		$parsed_url = parse_url( $url ); // phpcs:ignore
 
 		// Prepare the path.
 		$path = $parsed_url['host'];
@@ -155,7 +155,7 @@ class Cache {
 			return;
 		}
 
-		$content = file_get_contents( $cache_file );
+		$content = file_get_contents( $cache_file ); //phpcs:ignore
 
 		// Check for non-existing data or non-existing file.
 		if ( empty( $content ) ) {

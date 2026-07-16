@@ -1,0 +1,27 @@
+{% embed "system/embed/card/card-with-title.html.twig" with { contentSpacing: false, hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.customCss,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {# <h3 class="border-bottom mb-3">{{ localized.headline.customCss | raw }}</h3> #}
+        <div class="bc-pt-2">
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'css',
+                id: 'customCss',
+                label: localized.field.customCss,
+                hint: localized.hint.customCss,
+                value: data.customCss,
+            }) }}
+        </div>
+        {{ row_save.component({
+            action: 'save',
+            nonce: wpNonceField("#{controllerId}-save"),
+        }, localized) }}
+    {% endblock %}
+{% endembed %}

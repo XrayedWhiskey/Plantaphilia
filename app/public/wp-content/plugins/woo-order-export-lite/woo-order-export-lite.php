@@ -2,38 +2,52 @@
 /**
  * Plugin Name: Advanced Order Export For WooCommerce
  * Plugin URI:
- * Description: Export orders from WooCommerce with ease (Excel/CSV/XML/JSON supported)
+ * Description: Export WooCommerce orders to Excel/CSV/XML/JSON/PDF/TSV
  * Author: AlgolPlus
  * Author URI: https://algolplus.com/
- * Version: 3.5.4
+ * Version: 4.0.7
  * Text Domain: woo-order-export-lite
  * Domain Path: /i18n/languages/
  * WC requires at least: 4.0.0
- * WC tested up to: 9.3
+ * WC tested up to: 10.6
  *
  * Copyright: (c) 2015 AlgolPlus LLC. (algol.plus@gmail.com)
  *
- * License: GNU General Public License v3.0
- * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ * License: GPLv3
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
  * @package     woo-order-export-lite
  * @author      AlgolPlus LLC
  * @Category    Plugin
  * @copyright   Copyright (c) 2015 AlgolPlus LLC
- * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
+ * @license     https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 } // Exit if accessed directly
 
+// declare compatibility on startup
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+		FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
+
+
 //Stop if another version is active!
 if ( class_exists( 'WC_Order_Export_Admin' ) ) {
 	add_action( 'admin_notices', function () {
 			?>
             <div class="notice notice-warning is-dismissible">
-                <p><?php _e( 'Please, <a href="plugins.php">deactivate</a> Free version of Advanced Order Export For WooCommerce!',
-						'woo-order-export-lite' ); ?></p>
+                <p><?php
+                    echo sprintf(
+					/* translators: href link to Plugins page */
+                    esc_html__( 'Please, %1$s deactivate %2$s Free version of Advanced Order Export For WooCommerce!','woo-order-export-lite' ),
+					 '<a href="plugins.php">', '</a>' );
+					?>
+				</p>
             </div>
 			<?php
 	});
@@ -41,11 +55,12 @@ if ( class_exists( 'WC_Order_Export_Admin' ) ) {
 }
 
 if ( ! defined( 'WOE_VERSION' ) ) {
-	define( 'WOE_VERSION', '3.5.4' );
+	define( 'WOE_VERSION', '4.0.7' );
+	define( 'WOE_MIN_PHP_VERSION', '7.4' );
 	define( 'WOE_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 	define( 'WOE_PLUGIN_BASEPATH', dirname( __FILE__ ) );
     define( 'WOE_PLUGIN_PATH', __FILE__  );
-}	
+}
 
 $extension_file = WOE_PLUGIN_BASEPATH.'/pro_version/pre-loader.php';
 if ( file_exists( $extension_file ) ) {

@@ -1,0 +1,83 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.providerInformation,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% import "provider/macro/component-form.html.twig" as form_fields %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <label>{{ localized.field.providerList }}</label>
+            {% endblock %}
+
+            {% block input %}
+                {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+                {% import "system/macro/form-component/select.html.twig" as select %}
+
+                <div class="{{ isCreateAction ? 'bc-flex bc-items-center bc-space-x-2 bc-pt-2 bc-w-3/4' : '' }}">
+                    {% if isCreateAction %}
+                        {{ checkbox.component({
+                            id: 'enableProviderId',
+                            name: 'enableProviderId',
+                            dataAttribute: 'data-brlbs-blurer="providerFormFields" data-brlbs-enable-target="providerId"',
+                            checked: data.provider is not empty ? false : true,
+                        }) }}
+                    {% endif %}
+
+                    {{ select.component({
+                        alertMessage: isProviderMismatch ? localized.alert.providerMismatch : '',
+                        hint: localized.hint.provider,
+                        id: 'providerId',
+                        isDisabled: data.provider is not empty and isCreateAction ? true : false,
+                        name: 'providerId',
+                        options: providers.list,
+                        value: data.providerId == '' ? '' : data.providerId,
+                    }) }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% if isCreateAction %}
+            <div id="providerFormFields" class="bc-flex bc-flex-col brlbs-cmpnt-blurable">
+                {{ form_fields.component({
+                    collectionName: 'provider',
+                    data: data.provider is not empty ? data.provider | merge ({ language: data.language }) : { language: data.language },
+                    languages: languages,
+                    isCreateAction: isCreateAction,
+                }, localized.provider | merge({ global: localized.global }) ) }}
+                <input type="hidden" name="provider[id]" value="-1">
+            </div>
+        {% endif %}
+
+        {{ row_save.component({
+            backLink: "?page=#{controllerId}",
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPurposeProvider', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlinePurposeProvider | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.purposeProviderExplainedA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.purposeProviderExplainedB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

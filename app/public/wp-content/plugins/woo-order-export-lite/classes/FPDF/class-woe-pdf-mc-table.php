@@ -194,19 +194,19 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 				'R',
 			) ) ? $this->footer_props['pagination'] : false;
 			if ( $align ) {
-				$this->Cell( 0, 10, sprintf( __('Page %s / %s', 'woo-order-export-lite'), $this->PageNo(), '{nb}' ) , 0, 0, $align );
+				/* translators: page numeration in PDF */
+				$this->Cell( 0, 10, sprintf( __('Page %1$s / %2$s', 'woo-order-export-lite'), $this->PageNo(), '{nb}' ) , 0, 0, $align );
 			}
 		}
 	}
 
 	public function addRow( $data, $widths = null, $h = null, $style = null ) {
 		$this->changeBrushToDraw( 'table_row' );
-		
+
 		$this->Row( $data, $widths, $h, $style );
 	}
 
 	public function isEnoughSpace( $data, $heights ) {
-		$image_height = floatval( $this->table_row_props['image_height'] );
 		$height       = floatval( 0 );
 
 		foreach ( $data as $index => $row ) {
@@ -214,6 +214,10 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
             $baseHeight   = $this->getRowHeight( $widths, $row );
 
 			$h = $baseHeight;
+
+			$image_height = floatval( $this->table_row_props['image_height'] );
+			if(!$image_height)
+				$image_height = $this->getMaxImageHeight($row, $widths);
 
 			if ( $image_height && $this->isRowWithImage( $row ) && $h < $image_height ) {
 				$h = $image_height;
@@ -243,15 +247,25 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 
 		$widths = ! $widths ? $this->getRowWidths( $data ) : $widths;
 		$h      = ! $h ? $this->getRowHeight( $widths, $data ) : $h;
-		
+
 		$image_height = floatval( $this->table_row_props['image_height'] );
+		if(!$image_height)
+			$image_height = $this->getMaxImageHeight($data, $widths);
+
 		if ( $image_height && $this->isRowWithImage( $data ) && $h < $image_height ) {
 			$h = $image_height;
 		}
 
 		//Issue a page break first if needed
 		$this->CheckPageBreak( $h );
-		
+
+		//re-apply style if after PageBreak !
+		if ( $style ) {
+			$this->SetFillColor( $style['background_color'][0], $style['background_color'][1], $style['background_color'][2] );
+			$this->SetTextColor( $style['text_color'][0], $style['text_color'][1], $style['text_color'][2] );
+			$this->SetFontSize( $style['size'] );
+		}
+
 		$columns_count = $this->getColumnCountInPage( $widths );
 		if ( $extra_data = array_slice( $data, $columns_count ) ) {
 			$this->stretch_buffer[]        = $extra_data;
@@ -279,6 +293,10 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 
 				/** move image to center if cell height larger than image height */
 				$y_offset = floatval( 0 );
+				if( !$image_height ) {
+					list( $real_width, $real_height, $type, $attr ) = getimagesize( $data[ $i ]['value'] );
+					$image_height = $w * $real_width/$real_height;
+				}
 				if ( $image_height && $image_height < $h ) {
 					$y_offset += ( $h - $image_height ) / 2;
 				} else {
@@ -306,7 +324,7 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 			} elseif ( ! is_array( $data[ $i ] ) ) {
 				if( apply_filters("woe_pdf_make_cell_bold", false,$i, $data[ $i ]) )
 					$this->changeBrushToDraw( 'table_header' );
-				//Print the text as it 
+				//Print the text as it
 				$this->MultiCell( $w, $h, $data[ $i ], 0, $horizontal_align, $vertical_align );
 				if( apply_filters("woe_pdf_make_cell_bold", false,$i, $data[ $i ]) )
 					$this->changeBrushToDraw( 'table_row' );
@@ -332,6 +350,23 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param array $data
+	 *
+	 * @return bool
+	 */
+	protected function getMaxImageHeight( $data, $widths) {
+		$image_height_max = 0;
+		foreach ( $data as $pos=>$cell) {
+			if ( $this->isImageCell( $cell) ) {
+				list( $real_width, $real_height, $type, $attr ) = getimagesize( $cell['value'] );
+				$img_height = round($widths[$pos]* $real_height/$real_width);
+				$image_height_max = max($img_height,$image_height_max);
+			}
+		}
+		return $image_height_max;
 	}
 
 	/**
@@ -458,7 +493,6 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 
 			$nb    = max( $nb, $this->NbLines( $widths[ $i ], $value ) );
 		}
-
 		return 5 * $nb;
 	}
 
@@ -514,7 +548,8 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 					header( 'Cache-Control: private, max-age=0, must-revalidate' );
 					header( 'Pragma: public' );
 				}
-				echo $output;
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $output;//ignore
 				break;
 			case 'D':
 				// Download file
@@ -522,19 +557,20 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 				header( 'Content-Disposition: attachment; ' . $this->_httpencode( 'filename', $name, $isUTF8 ) );
 				header( 'Cache-Control: private, max-age=0, must-revalidate' );
 				header( 'Pragma: public' );
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo $output;
 				break;
 			case 'F':
 				// Save to local file
 				if ( ! file_put_contents( $name, $output ) ) {
-					throw new WOE_FPDF_Exception( 'Unable to create output file: ' . $name );
+					throw new WOE_FPDF_Exception( 'Unable to create output file: ' . esc_html($name) );
 				}
 				break;
 			case 'S':
 				// Return as a string
 				return $output;
 			default:
-				throw new WOE_FPDF_Exception( 'Incorrect output destination: ' . $dest );
+				throw new WOE_FPDF_Exception( 'Incorrect output destination: ' . esc_html($dest) );
 		}
 
 		return '';
@@ -546,9 +582,9 @@ class WOE_PDF_MC_Table extends WOE_FPDF {
 			return $param . '="' . $value . '"';
 		}
 		if ( ! $isUTF8 ) {
-			$value = utf8_encode( $value );
+			$value = mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
 		}
-		if ( strpos( $_SERVER['HTTP_USER_AGENT'], 'MSIE' ) !== false ) {
+		if ( isset($_SERVER['HTTP_USER_AGENT']) AND strpos( sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])), 'MSIE' ) !== false ) {
 			return $param . '="' . rawurlencode( $value ) . '"';
 		} else {
 			return $param . "*=UTF-8''" . rawurlencode( $value );

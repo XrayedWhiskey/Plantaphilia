@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de" data-accent="amethyst" data-density="compact" data-viewport="desktop">
+<head>
+<meta charset="utf-8">
+<title>Lord Bute · Plantaphilia</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="ui_kits/web/styles.css">
+<link rel="stylesheet" href="product-page.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: var(--bg-deep); color: var(--creme); font-family: var(--sans-body); }
+  body { overflow-x: hidden; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="ui_kits/web/components.jsx"></script>
+  <script type="text/babel" src="product-page.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+
+  <script type="text/babel">
+    const {useState, useEffect} = React;
+    const {Header, NavPanel, CartDrawer, Footer} = window.PA;
+    const {Crumb, Gallery, Info, Steckbrief, Lore, Reviews, Related, PRODUCTS} = window.PDP;
+
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "auth": "buyer",
+      "viewport": "desktop"
+    }/*EDITMODE-END*/;
+
+    // Locked design choices — not tweakable anymore.
+    const LOCKED = {
+      plant: 'lord-bute',
+      accent: 'amethyst',
+      density: 'compact',
+      steckbrief: 'icons',
+      gallery: 'vertical',
+    };
+
+    function App() {
+      const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+      const [navOpen, setNavOpen] = useState(false);
+      const [cartOpen, setCartOpen] = useState(false);
+      const [cart, setCart] = useState([]);
+
+      // Reflect locked accent/density once on mount
+      useEffect(() => {
+        document.documentElement.setAttribute('data-accent', LOCKED.accent);
+        document.documentElement.setAttribute('data-density', LOCKED.density);
+      }, []);
+      // Reflect viewport tweak
+      useEffect(() => {
+        document.documentElement.setAttribute('data-viewport', t.viewport);
+      }, [t.viewport]);
+
+      // Cart-add events from PDP info column
+      useEffect(() => {
+        const onAdd = (ev) => {
+          const d = ev.detail;
+          const item = { name: d.name, latin: d.latin, price: d.price, priceN: d.priceN, img: d.img };
+          setCart((c) => [...c, ...Array.from({length: d.qty}, () => item)]);
+        };
+        window.addEventListener('pdp-add-to-cart', onAdd);
+        return () => window.removeEventListener('pdp-add-to-cart', onAdd);
+      }, []);
+
+      const product = PRODUCTS[LOCKED.plant];
+      const addRelated = (p) => setCart((c) => [...c, p]);
+
+      return (
+        <>
+          <Header
+            cartCount={cart.length}
+            onMenu={() => setNavOpen(true)}
+            onCart={() => setCartOpen(true)}
+            onSearch={() => {}}
+          />
+          <Crumb name={product.name} />
+
+          <section className="pdp-hero" data-screen-label="Produktseite — Hero">
+            <Gallery product={product} layout={LOCKED.gallery} />
+            <Info product={product} accent={LOCKED.accent} />
+          </section>
+
+          <Steckbrief product={product} variant={LOCKED.steckbrief} />
+
+          <Lore product={product} />
+
+          <Reviews product={product} auth={t.auth} />
+
+          <Related product={product} onAdd={addRelated} />
+
+          <Footer />
+
+          <NavPanel open={navOpen} onClose={() => setNavOpen(false)} />
+          <CartDrawer
+            open={cartOpen}
+            items={cart}
+            onClose={() => setCartOpen(false)}
+            onRemove={(i) => setCart(cart.filter((_, j) => j !== i))}
+          />
+
+          <TweaksPanel title="Tweaks">
+            <TweakSection label="Anzeige" />
+            <TweakRadio
+              label="Vorschau"
+              value={t.viewport}
+              options={['desktop','mobile']}
+              onChange={(v) => setTweak('viewport', v)}
+            />
+            <TweakSection label="Bewertungen · Login-Status" />
+            <TweakSelect
+              label="Nutzer:in"
+              value={t.auth}
+              options={[
+                {value:'guest', label:'Unangemeldet'},
+                {value:'user',  label:'Angemeldet'},
+                {value:'buyer', label:'Angemeldet · gekauft'},
+              ]}
+              onChange={(v) => setTweak('auth', v)}
+            />
+          </TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

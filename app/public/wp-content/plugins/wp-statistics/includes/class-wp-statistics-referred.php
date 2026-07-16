@@ -12,13 +12,6 @@ class Referred
     public static $top_referring_transient = 'wps_top_referring';
 
     /**
-     * Referrer Spam List
-     *
-     * @var string
-     */
-    public static $referrer_spam_link = 'https://cdn.jsdelivr.net/gh/matomo-org/referrer-spam-list@master/spammers.txt';
-
-    /**
      * Referred constructor.
      */
     public function __construct()
@@ -35,7 +28,17 @@ class Referred
     public static function getRefererURL()
     {
         if (Helper::is_rest_request() && isset($_REQUEST['referred'])) {
-            return sanitize_url(wp_unslash(urldecode($_REQUEST['referred'])));
+
+            $referred = $_REQUEST['referred'];
+
+            /**
+             * Decode the url if the request type is client-side tracking
+             */
+            if (Option::get('use_cache_plugin')) {
+                $referred = base64_decode($referred);
+            }
+
+            return sanitize_url(wp_unslash(urldecode($referred)));
         }
 
         return (isset($_SERVER['HTTP_REFERER']) ? sanitize_url(wp_unslash($_SERVER['HTTP_REFERER'])) : '');
@@ -100,6 +103,11 @@ class Referred
         // Remove Url prefixes
         $host_name = Helper::get_domain_name($base_url['host']);
 
+        // Special case for android-app
+        if ($base_url['host'] === 'android-app' && !empty($base_url['path'])) {
+            $host_name = $base_url['host'] . ':' . $base_url['path'];
+        }
+
         // Get Html Link
         return "<a class='wps-link-arrow' href='{$html_referrer}' title='{$title}'" . ($is_blank === true ? ' target="_blank"' : '') . "><span >{$host_name}</span></a>";
     }
@@ -152,69 +160,23 @@ class Referred
         if (count($time_rang) > 0 and !empty($time_rang)) {
             $time_sql = sprintf("AND `last_counter` BETWEEN '%s' AND '%s'", $time_rang[0], $time_rang[1]);
         }
-        $sql = $wpdb->prepare("SELECT " . ($type == 'number' ? 'COUNT(*)' : '*') . ", CAST(`version` AS SIGNED) AS `casted_version` FROM `" . DB::table('visitor') . "` WHERE `referred` REGEXP \"^(https?://|www\\.)[\.A-Za-z0-9\-]+\\.[a-zA-Z]{2,4}\" AND referred <> '' AND LENGTH(referred) >=12 AND (`referred` LIKE  %s OR `referred` LIKE %s OR `referred` LIKE %s OR `referred` LIKE %s) " . $time_sql . " ORDER BY `" . DB::table('visitor') . "`.`ID` DESC " . ($limit != null ? " LIMIT " . $limit : "") . "", 'https://www.' . $wpdb->esc_like($search_url) . '%', 'https://' . $wpdb->esc_like($search_url) . '%', 'http://www.' . $wpdb->esc_like($search_url) . '%', 'http://' . $wpdb->esc_like($search_url) . '%'); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared	
 
+        $sql = $wpdb->prepare(
+            "SELECT " . ($type == 'number' ? 'COUNT(*)' : '*') . "
+             FROM `" . DB::table('visitor') . "`
+             WHERE `referred` REGEXP \"^[A-Za-z0-9\\.-]+\\.[A-Za-z]{2,}\"
+               AND referred <> ''
+               AND (`referred` LIKE %s OR `referred` LIKE %s OR `referred` LIKE %s OR `referred` LIKE %s)
+               " . $time_sql . "
+             ORDER BY `" . DB::table('visitor') . "`.`ID` DESC " . ($limit != null ? " LIMIT " . $limit : ""),
+            'https://www.' . $wpdb->esc_like($search_url) . '%',
+            'https://' . $wpdb->esc_like($search_url) . '%',
+            'http://www.' . $wpdb->esc_like($search_url) . '%',
+            'http://' . $wpdb->esc_like($search_url) . '%'
+        ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        
         //Get Count
         return ($type == 'number' ? $wpdb->get_var($sql) : Visitor::prepareData($wpdb->get_results($sql))); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared	
-    }
-
-    /**
-     * Downloads the referrer spam database
-     *
-     * @see https://github.com/matomo-org/referrer-spam-blacklist.
-     * @return string
-     */
-    public static function download_referrer_spam()
-    {
-
-        if (Option::get('referrerspam') == false) {
-            return '';
-        }
-
-        // Download the file from MaxMind, this places it in a temporary location.
-        $response = wp_remote_get(self::$referrer_spam_link, array('timeout' => 60));
-        if (is_wp_error($response)) {
-            return false;
-        }
-        $referrerspamlist = wp_remote_retrieve_body($response);
-        if (is_wp_error($referrerspamlist)) {
-            return false;
-        }
-
-        if ($referrerspamlist != '' || Option::get('referrerspamlist') != '') {
-            Option::update('referrerspamlist', $referrerspamlist);
-        }
-
-        return true;
-    }
-
-    /**
-     * Get WebSite IP Server And Country Name
-     *
-     * @param $url string domain name e.g : wp-statistics.com
-     * @return array
-     * @throws \Exception
-     */
-    public static function get_domain_server($url)
-    {
-
-        //Create Empty Object
-        $result = array('ip' => '', 'country' => '');
-
-        //Get Ip by Domain
-        if (function_exists('gethostbyname')) {
-
-            // Get Host Domain
-            $ip = gethostbyname($url);
-
-            // Check Validate IP
-            if (filter_var($ip, FILTER_VALIDATE_IP)) {
-                $result['ip']      = $ip;
-                $result['country'] = GeoIP::getCountry($ip);
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -322,7 +284,11 @@ class Referred
         }
 
         // Return SQL
-        return "SELECT SUBSTRING_INDEX(REPLACE( REPLACE( referred, 'http://', '') , 'https://' , '') , '/', 1 ) as `domain`, count(referred) as `number` FROM " . DB::table('visitor') . " WHERE `referred` REGEXP \"^(https?://|www\\.)[\.A-Za-z0-9\-]+\\.[a-zA-Z]{2,4}\" AND referred <> '' AND LENGTH(referred) >=12 " . $where . " GROUP BY domain " . $extra;
+        return "SELECT referred AS `domain`, count(referred) AS `number`
+            FROM " . DB::table('visitor') . "
+            WHERE `referred` REGEXP \"^[\.A-Za-z0-9\-]+\\.[a-zA-Z]{2,4}\"
+            AND referred <> '' " . $where . "
+            GROUP BY `domain` " . $extra;
     }
 
     /**

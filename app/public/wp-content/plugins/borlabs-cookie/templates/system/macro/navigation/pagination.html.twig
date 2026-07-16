@@ -1,0 +1,80 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        isDetached: false,
+        isFollowedByInfoPanel: true,
+        query: "?page=#{config.controllerId}",
+    } | merge(config) %}
+
+    {% if config.isDetached == false and config.isFollowedByInfoPanel == true %}
+        {% set cssClasses = ['bc-border-t bc-border-solid bc-border-gray-200'] %}
+    {% elseif config.isDetached == false and config.isFollowedByInfoPanel == false %}
+        {% set cssClasses = ['bc-rounded-b-md bc-border-t bc-border-solid bc-border-gray-200'] %}
+    {% else %}
+        {% set cssClasses = ['bc-rounded-md bc-shadow bc-mb-6'] %}
+    {% endif %}
+
+    {% import "system/macro/icons/chevron-left.html.twig" as chevron_left_icon %}
+    {% import "system/macro/icons/chevron-double-left.html.twig" as chevron_double_left_icon %}
+    {% import "system/macro/icons/chevron-right.html.twig" as chevron_right_icon %}
+    {% import "system/macro/icons/chevron-double-right.html.twig" as chevron_double_right_icon %}
+
+    <div class="bc-flex bc-items-center bc-justify-between bc-bg-white bc-px-4 bc-py-3 sm:bc-px-6 {{ cssClasses | join(' ') }}">
+        <div class="bc-flex bc-flex-1 bc-justify-between sm:bc-hidden">
+            <a href="{{ "#{config.query}&#{config.pagination.previousPageQueryParameter}" }}" class="bc-relative bc-inline-flex bc-items-center bc-rounded-md bc-border bc-border-gray-300 bc-bg-white bc-px-4 bc-py-2 bc-text-sm bc-font-medium bc-text-gray-700 hover:bc-bg-gray-50">{{ localized.global.pagination.previous }}</a>
+            <a href="{{ "#{config.query}&#{config.pagination.nextPageQueryParameter}" }}" class="bc-relative bc-ml-3 bc-inline-flex bc-items-center bc-rounded-md bc-border bc-border-gray-300 bc-bg-white bc-px-4 bc-py-2 bc-text-sm bc-font-medium bc-text-gray-700 hover:bc-bg-gray-50">{{ localized.global.pagination.next }}</a>
+        </div>
+        <div class="bc-hidden sm:bc-flex sm:bc-flex-1 sm:bc-items-center sm:bc-justify-between">
+            <div>
+                <p class="bc-text-sm bc-text-gray-700">
+                    {{ localized.global.pagination.showing }}
+                    {{ ' ' }}
+                    <span class="bc-font-medium">{{ config.pagination.from }}</span>
+                    {{ ' ' }}
+                    {{ localized.global.pagination.to }}
+                    {{ ' ' }}
+                    <span class="bc-font-medium">{{ config.pagination.to }}</span>
+                    {{ ' ' }}
+                    {{ localized.global.pagination.of }}
+                    {{ ' ' }}
+                    <span class="bc-font-medium">{{ config.pagination.total }}</span>
+                    {{ ' ' }}
+                    {{ localized.global.pagination.results }}
+                </p>
+            </div>
+            <div>
+                <nav class="bc-isolate bc-inline-flex bc--space-x-px bc-rounded-md bc-shadow-sm">
+                    {% if config.pagination.firstPageQueryParameter %}
+                        <a href="{{ "#{config.query}&#{config.pagination.firstPageQueryParameter}" }}" class="bc-relative bc-inline-flex bc-items-center bc-rounded-l-md bc-px-2 bc-py-2 bc-text-gray-400 bc-ring-1 bc-ring-inset bc-ring-gray-300 hover:bc-bg-gray-50 focus:bc-z-20 focus:outline-offset-0">
+                            {{ chevron_double_left_icon.component({}) }}
+                        </a>
+                    {% else %}
+                        <span class="bc-relative bc-inline-flex bc-items-center bc-rounded-l-md bc-px-2 bc-py-2 bc-text-gray-400 bc-ring-1 bc-ring-inset bc-ring-gray-300">
+                            {{ chevron_double_left_icon.component({}) }}
+                        </span>
+                    {% endif %}
+                    {% for page in config.pagination.pages.list %}
+                        {% if page.isCurrent %}
+                            {% set cssClasses = 'bc-z-10 bc-bg-blue-600 bc-text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800' %}
+                        {% else %}
+                            {% set cssClasses = ' bc-text-gray-900 bc-ring-1 bc-ring-inset bc-ring-gray-300 hover:bc-bg-gray-50 focus:outline-offset-0' %}
+                        {% endif %}
+                        <a href="{{ "#{config.query}&#{page.queryParameter}" }}"
+                           class="bc-relative bc-inline-flex bc-items-center bc-px-4 bc-py-2 bc-text-sm {{ cssClasses }}"
+                        >
+                            {{ page.page }}
+                        </a>
+                    {% endfor %}
+                    {% if config.pagination.lastPageQueryParameter %}
+                        <a href="{{ "#{config.query}&#{config.pagination.lastPageQueryParameter}" }}" class="bc-relative bc-inline-flex bc-items-center bc-rounded-r-md bc-px-2 bc-py-2 bc-text-gray-400 bc-ring-1 bc-ring-inset bc-ring-gray-300 hover:bc-bg-gray-50 focus:bc-z-20 focus:outline-offset-0">
+                            {{ chevron_double_right_icon.component({}) }}
+                        </a>
+                    {% else %}
+                        <span class="bc-relative bc-inline-flex bc-items-center bc-rounded-r-md bc-px-2 bc-py-2 bc-text-gray-400 bc-ring-1 bc-ring-inset bc-ring-gray-300">
+                            {{ chevron_double_right_icon.component({}) }}
+                        </span>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endmacro %}

@@ -5,28 +5,25 @@
 	"icon": "miniCartAlt",
 	"description": "Display a button for shoppers to quickly view their cart.",
 	"category": "woocommerce",
-	"keywords": [
-		"WooCommerce"
-	],
+	"keywords": [ "WooCommerce" ],
 	"textdomain": "woocommerce",
 	"supports": {
 		"html": false,
 		"multiple": false,
 		"typography": {
 			"fontSize": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
 		}
 	},
 	"example": {
 		"attributes": {
-			"isPreview": true,
 			"className": "wc-block-mini-cart--preview"
 		}
 	},
 	"attributes": {
-		"isPreview": {
-			"type": "boolean",
-			"default": false
-		},
 		"miniCartIcon": {
 			"type": "string",
 			"default": "cart"
@@ -34,6 +31,10 @@
 		"addToCartBehaviour": {
 			"type": "string",
 			"default": "none"
+		},
+		"onCartClickBehaviour": {
+			"type": "string",
+			"default": "open_drawer"
 		},
 		"hasHiddenPrice": {
 			"type": "boolean",

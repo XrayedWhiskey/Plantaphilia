@@ -1,0 +1,185 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        collectionName: 'MISSING',
+        showOnExistColumn: true,
+        title: 'MISSING',
+    } | merge(config) %}
+
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+        {% block mainHeader %}
+            {{ card_heading.component({
+                title: config.title,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            {% embed "system/embed/table/table.html.twig" with { dataAttribute: "data-brlbs-table=\"#{config.collectionName}\"" } %}
+                {% block heading %}
+                    {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-1/12' } %}
+                        {% block content %}
+                            {{ localized.table.blockStatus | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-7/12' } %}
+                        {% block content %}
+                            {{ localized.table.tag | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-2/12' } %}
+                        {% block content %}
+                            {{ localized.table.phrase | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% if config.showOnExistColumn %}
+                        {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-2/12' } %}
+                            {% block content %}
+                                {{ localized.table.onExist | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endif %}
+                {% endblock %}
+
+                {% block body %}
+                    {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: false } %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with { attributes: config.showOnExistColumn ? 'colspan="4"' : 'colspan="3"', textAlign: 'bc-text-center' } %}
+                                {% block content %}
+                                    {{ localized.alert.noScanResult | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+
+            <script type="text/template" data-brlbs-row-template="{{ config.collectionName }}">
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+                            {% block content %}
+                                {{ switch_button.component({
+                                    dataAttribute: "data-brlbs-disable=\"#{config.collectionName}-##LOOP_INDEX##-phrase,#{config.collectionName}-##LOOP_INDEX##-onExist\" data-brlbs-disable-on=\"false\"",
+                                    id: "#{config.collectionName}-##LOOP_INDEX##-blockStatus",
+                                    name: "#{config.collectionName}[##LOOP_INDEX##][blockStatus]",
+                                    value: '0'
+                                }) }}
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% import "system/macro/form-component/codearea.html.twig" as codearea %}
+                            {% block content %}
+                                <div class="bc-flex bc-flex-wrap bc-items-center bc-space-x-2">
+                                {{ codearea.component({
+                                    cssClasses: ['bc-w-full'],
+                                    editorLanguage: 'html',
+                                    id: "#{config.collectionName}-##LOOP_INDEX##-tag",
+                                    name: "#{config.collectionName}[##LOOP_INDEX##][tag]",
+                                    value: '##TAG##'
+                                }) }}
+                                </div>
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {% block content %}
+                                {{ input.component({
+                                    dataAttribute: "data-brlbs-scan-result-phrase=\"#{config.collectionName}-##LOOP_INDEX##-tag\"",
+                                    hint: localized.hint.phrase,
+                                    hintPopupPosition: 'top-left',
+                                    id: "#{config.collectionName}-##LOOP_INDEX##-phrase",
+                                    isDisabled: true,
+                                    name: "#{config.collectionName}[##LOOP_INDEX##][phrase]",
+                                    type: 'text',
+                                    value: '##PHRASE##',
+                                    width: 'bc-min-w-[128px]'
+                                }) }}
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% if config.showOnExistColumn %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% import "system/macro/form-component/input.html.twig" as input %}
+                                {% block content %}
+                                    {{ input.component({
+                                        dataAttribute: "data-brlbs-scan-result-on-exist",
+                                        hint: localized.hint.onExist,
+                                        hintPopupPosition: 'top-left',
+                                        id: "#{config.collectionName}-##LOOP_INDEX##-onExist",
+                                        isDisabled: true,
+                                        isRequired: false,
+                                        name: "#{config.collectionName}[##LOOP_INDEX##][onExist]",
+                                        type: 'text',
+                                        validationRegex: '[$_a-zA-Z][$._a-zA-Z0-9]*',
+                                        value: '',
+                                        width: 'bc-min-w-[128px]'
+                                    }) }}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endif %}
+                    {% endblock %}
+                {% endembed %}
+            </script>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: "accordionTagsExplained#{config.collectionName | capitalize}", expanded: config.collectionName == 'unmatchedTags' ? false : true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineTagsExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            {% if config.type == 'script' %}
+                                <p>{{ localized.thingsToKnow.handlesJavaScriptTagsExplainedA | raw }}</p>
+                                <p>{{ localized.thingsToKnow.handlesTagsExplainedA | raw }}</p>
+                                <p>{{ localized.thingsToKnow.handlesTagsExplainedB | raw }}</p>
+                            {% else %}
+                                <p>{{ localized.thingsToKnow.handlesStyleTagsExplainedA | raw }}</p>
+                                <p>{{ localized.thingsToKnow.handlesTagsExplainedA | raw }}</p>
+                                <p>{{ localized.thingsToKnow.handlesTagsExplainedB | raw }}</p>
+                            {% endif %}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: "accordionInputFieldsExplained#{config.collectionName | capitalize}" } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineInputFieldsExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            {% if config.type == 'script' %}
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedJavaScriptPhrase | raw }}</p>
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedOnExistA | raw }}</p>
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedOnExistB | raw }}</p>
+                                <p><strong>{{ localized.thingsToKnow.inputFieldsExplainedOnExistExampleA | raw }}</strong></p>
+                                <code class="bc-mb-4 brlbs-cmpnt-code-example">
+                                    &lt;div id=&quot;external-calendar-container&quot;&gt;&lt;/div&gt;<br>
+                                    &lt;script src=&quot;https://external-service.tld/javascript/calendar-library.js&quot;&gt;&lt;/script&gt;<br>
+                                    &lt;script&gt;<br>
+                                        calendarLibrary.init({ customerId: &quot;123456&quot;, targetContainerId: &quot;external-calendar-container&quot; });<br>
+                                    &lt;/script&gt;
+                                </code>
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedOnExistExampleB | raw }}</p>
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedOnExistExampleC | raw }}</p>
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedOnExistExampleD | raw }}</p>
+                            {% else %}
+                                <p>{{ localized.thingsToKnow.inputFieldsExplainedStylePhrase | raw }}</p>
+                            {% endif %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

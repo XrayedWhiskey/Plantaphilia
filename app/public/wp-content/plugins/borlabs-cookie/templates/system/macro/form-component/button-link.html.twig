@@ -1,0 +1,43 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        additionalAttributes: [],
+        backgroundColor: 'bc-bg-blue-600',
+        backgroundColorHover: 'enabled:hover:bc-bg-blue-700',
+        border: 'bc-border bc-border-transparent',
+        dataAttribute: '',
+        focus: 'focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-offset-2',
+        focusColor: 'focus:bc-ring-blue-800',
+        fontWeight: '',
+        href: '',
+        id: '',
+        padding: 'bc-px-3 bc-py-1.5',
+        radius: 'bc-rounded',
+        textColor: 'bc-text-white',
+        width: ''
+    } | merge(config)
+    %}
+    {% set cssClasses = [
+        config.backgroundColor,
+        config.border,
+        config.fontWeight,
+        config.focus,
+        config.padding,
+        config.radius,
+        config.textColor,
+        config.width,
+        config.backgroundColorHover,
+        'bc-text-sm bc-text-center bc-shadow-sm bc-transition-all'
+    ] %}
+    {% set button = localized.global.button.send %}
+    {% if config.button is not empty %}
+        {% set button = config.button %}
+    {% endif %}
+    <a
+        class="{{ cssClasses | join(' ') }}"
+        {% if config.id is not empty %} id="{{ config.id }}"{% endif %}
+        {% if config.dataAttribute is not empty %} {{ config.dataAttribute | raw }}{% endif %}
+        href="{{ config.href | raw }}"
+        {% for additionalAttribute in config.additionalAttributes %}
+            {{ additionalAttribute | raw }}
+        {% endfor %}>{{ button | raw }}</a>
+{% endmacro %}

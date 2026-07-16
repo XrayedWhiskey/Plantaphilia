@@ -1,3 +1,4 @@
+<?php if (!defined('ABSPATH')) exit; // Exit if accessed directly ?>
 <div class="postbox-container" id="wps-big-postbox">
     <div class="metabox-holder">
         <div class="meta-box-sortables">
@@ -16,7 +17,7 @@
                                 $i++ ?>
                                 <tr>
                                     <td>
-                                        <img src="<?php echo esc_attr($item['flag']) ?>" title="<?php echo esc_attr($item['name']) ?>" alt="<?php echo esc_attr($item['name']) ?>" class="wps-flag wps-flag--first"/> <?php echo esc_html($item['name']) ?>
+                                        <img src="<?php echo esc_attr($item['flag']) ?>"  alt="<?php echo esc_attr($item['name']) ?>" class="wps-flag wps-flag--first"/> <?php echo esc_html($item['name']) ?>
                                     </td>
                                     <td>
                                         <a href="<?php echo esc_attr($item['link']) ?>" title="<?php echo esc_attr($item['name']) ?>" target="_blank"><?php echo number_format(esc_html($item['number'])) ?>

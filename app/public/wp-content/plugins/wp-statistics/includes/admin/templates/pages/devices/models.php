@@ -1,3 +1,11 @@
+<?php
+
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
+use WP_STATISTICS\Helper;
+
+?>
+
 <div class="postbox-container wps-postbox-full">
     <div class="metabox-holder">
         <div class="meta-box-sortables">
@@ -7,35 +15,35 @@
                         <div class="o-table-wrapper">
                             <table width="100%" class="o-table wps-new-table">
                                 <thead>
-                                    <tr>
-                                        <th class="wps-pd-l">
-                                            <?php esc_html_e('Model', 'wp-statistics'); ?>
-                                        </th>
-                                        <th class="wps-pd-l">
-                                            <?php esc_html_e('Visitor Count', 'wp-statistics'); ?>
-                                        </th>
-                                        <th class="wps-pd-l">
-                                            <?php esc_html_e('Percent Share', 'wp-statistics'); ?>
-                                        </th>
-                                    </tr>
+                                <tr>
+                                    <th class="wps-pd-l">
+                                        <?php esc_html_e('Model', 'wp-statistics'); ?>
+                                    </th>
+                                    <th class="wps-pd-l">
+                                        <span class="wps-order"><?php esc_html_e('Visitors', 'wp-statistics'); ?></span>
+                                    </th>
+                                    <th class="wps-pd-l">
+                                        %
+                                    </th>
+                                </tr>
                                 </thead>
 
                                 <tbody>
-                                    <?php foreach ($data['visitors'] as $item) : ?>
-                                        <tr>
-                                            <td class="wps-pd-l">
-                                                <span title="<?php echo esc_attr($item->model); ?>" class="wps-model-name">
-                                                    <?php echo esc_html($item->model); ?>
+                                <?php foreach ($data['visitors'] as $item) : ?>
+                                    <tr>
+                                        <td class="wps-pd-l">
+                                                <span title="<?php echo esc_attr(\WP_STATISTICS\Admin_Template::unknownToNotSet($item->model)); ?>" class="wps-model-name">
+                                                    <?php echo self::isUnknown($item->model) ? esc_html__('Unknown', 'wp-statistics') : esc_html($item->model); ?>
                                                 </span>
-                                            </td>
-                                            <td class="wps-pd-l">
-                                                <?php echo number_format($item->visitors); ?>
-                                            </td>
-                                            <td class="wps-pd-l">
-                                                <?php echo number_format(\WP_STATISTICS\Helper::divideNumbers($item->visitors, $data['visits'], 4) * 100, 2); ?>%
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                                        </td>
+                                        <td class="wps-pd-l">
+                                            <?php echo esc_html(number_format_i18n($item->visitors)); ?>
+                                        </td>
+                                        <td class="wps-pd-l">
+                                            <?php echo esc_html(Helper::calculatePercentage($item->visitors, $data['visits'])); ?>%
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -45,7 +53,7 @@
                         </div>
                     <?php endif; ?>
                 </div>
-                <?php echo isset($pagination) ? $pagination : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+                <?php echo isset($pagination) ? $pagination : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                 ?>
             </div>
         </div>

@@ -1,0 +1,25 @@
+{% set cssClasses = [] %}
+
+{% if gradient is empty %}
+    {% set cssClasses = ['bc-bg-gradient-to-tr bc-from-[#667eea] bc-to-[#764ba2] bc-text-white'] | merge(cssClasses) %}
+{% else %}
+    {% set cssClasses = gradient | merge(cssClasses) %}
+{% endif %}
+
+{% if isDetached == true %}
+    {% set cssClasses = ['bc-w-full bc-rounded-md bc-shadow'] | merge(cssClasses) %}
+{% else %}
+    {% if position is defined and position == 'bottom' %}
+        {% set cssClasses = ['bc-w-full bc-rounded-b-md'] | merge(cssClasses) %}
+    {% else %}
+        {% set cssClasses = ['md:bc-w-1/3 bc-rounded-br-md bc-rounded-bl-md md:bc-rounded-bl-none bc-rounded-tr-none md:bc-rounded-tr-md'] | merge(cssClasses) %}
+    {% endif %}
+{% endif %}
+<div class="{{ cssClasses | join(' ') }}">
+    <div class="bc-border-b bc-border-solid bc-border-white/50 bc-px-5 bc-py-3">
+        <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-white bc-mb-0">{% block header %}{% endblock %}</h3>
+    </div>
+    <div class="bc-px-3 bc-pb-5 bc-pt-2">
+        {% block content %}{% endblock %}
+    </div>
+</div>

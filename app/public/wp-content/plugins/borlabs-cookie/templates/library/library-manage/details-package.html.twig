@@ -1,0 +1,254 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {% set breadCrumbTitle = localized.breadcrumb.install %}
+    {% set formTitle = localized.headline.installation %}
+    {% set formButtonTitle = localized.button.install %}
+    {% set labelTitle = localized.field.installPackage %}
+    {% set updateAvailable = false %}
+
+    {% if data.package.installedAt is not empty and data.package.version == data.package.borlabsServicePackageVersion %}
+        {% set breadCrumbTitle = localized.breadcrumb.reinstall %}
+        {% set formTitle = localized.headline.reinstallation %}
+        {% set formButtonTitle = localized.button.reinstall %}
+        {% set labelTitle = localized.field.reinstallPackage %}
+    {% endif %}
+
+    {% if data.package.installedAt is not empty and isVersionGreater(data.package.borlabsServicePackageVersion, data.package.version) %}
+        {% set breadCrumbTitle = localized.breadcrumb.update %}
+        {% set formTitle = localized.headline.update %}
+        {% set formButtonTitle = localized.button.update %}
+        {% set labelTitle = localized.field.updatePackage %}
+        {% set updateAvailable = true %}
+    {% endif %}
+
+    {% if data.suggestion is empty %}
+        {{ breadcrumb.component({
+            items: [
+                [localized.breadcrumb.module, '?page=borlabs-cookie-library' ~ (data.additionalQueryParameters ? "&#{data.additionalQueryParameters}" : "")],
+                "#{breadCrumbTitle}: #{data.package.name}",
+            ]
+        }, localized) }}
+    {% else %}
+        {{ breadcrumb.component({
+            items: [
+                [localized.showScan.breadcrumb.module, '?page=borlabs-cookie-cloud-scan'],
+                [localized.showScan.breadcrumb.scanResults, wpNonceUrl("?page=borlabs-cookie-cloud-scan&action=details&id=#{data.suggestion.cloudScanId}", "borlabs-cookie-cloud-scan-#{data.suggestion.cloudScanId}-details")],
+                "#{breadCrumbTitle}: #{data.package.name}",
+            ]
+        }, localized) }}
+    {% endif %}
+
+    {{ messages() | raw }}
+
+    <!-- Package Information -->
+    {% include "library/library-manage/partials/package-information.html.twig" %}
+
+    <form data-brlbs-package-install class="needs-validation bc-group/form" novalidate>
+        <!-- Components -->
+        {% include "library/library-manage/partials/components.html.twig" %}
+
+        <div data-brlbs-package-card class="bc-w-full">
+            {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+                {% import "compatibility-patch/macro/compatibility-patch-table.html.twig" as compatibility_patch_table %}
+                {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+                {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+                {% block mainHeader %}
+                    {{ card_heading.component({
+                        title: formTitle,
+                    }) }}
+                {% endblock %}
+
+                {% block mainContent %}
+                    {% if data.package.components.contentBlockers.list is not empty or data.package.components.services.list is not empty %}
+                        <div data-brlbs-package-component-list class="bc-p-5">
+                            <!-- Configure Content Blocker / Service Components -->
+                            {% for language in data.languages.list %}
+                                <div class="bc-w-full {{ loop.last == false ? 'bc-mb-6' : '' }}">
+                                    {% include "library/library-manage/partials/language-specific-component-settings.html.twig" %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div data-brlbs-trigger>
+                        {% if isLicenseExpired() %}
+                            <div class="bc-flex bc-items-center bc-px-5 bc-py-2.5">
+                                {{ getLicenseAlertMessage('licenseExpiredFeatureNotAvailable') | raw }}
+                            </div>
+                        {% elseif isVersionGreater(data.package.requiredBorlabsCookieVersion, data.borlabsCookieVersion) %}
+                            <div class="bc-px-5 bc-py-5">
+                                <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error" role="alert">{{ localized.alert.requiredPluginVersion | raw }}</div>
+                            </div>
+                        {% else %}
+                            {% if data.job.plannedFor %}
+                                {% embed "system/embed/form-row.html.twig" %}
+                                    {% block label %}
+                                        <label>{{ localized.text.autoUpdatePlannedFor }}</label>
+                                    {% endblock %}
+                                    {% block input %}
+                                        {{ data.job.plannedFor ? data.job.plannedFor.format('Y-m-d H:i') : '-' | raw }} UTC+00:00
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endif %}
+
+                            {% embed "system/embed/form-row.html.twig" %}
+                                {% import "system/macro/form-component/button-sparkle.html.twig" as button_sparkle %}
+
+                                {% block label %}
+                                    <span class="brlbs-cmpnt-text">{{ labelTitle | raw }}</span>
+                                {% endblock %}
+
+                                {% block input %}
+                                    <input type="hidden" name="id" value="{{ data.package.id }}">
+                                    {{ button_sparkle.component({
+                                        backgroundColor: updateAvailable == true ? 'bc-bg-purple-600' : 'bc-bg-slate-950',
+                                        backgroundColorHover: updateAvailable == true ? 'enabled:hover:bc-bg-purple-700' : 'enabled:hover:bc-bg-slate-800',
+                                        button: formButtonTitle,
+                                        focusColor: updateAvailable == true ? 'focus:bc-ring-purple-800' : 'focus:bc-ring-blue-800',
+                                    }) }}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endif %}
+                    </div>
+                {% endblock %}
+
+                {% block infoPanelHeader %}
+                    {{ localized.global.headline.thingsToKnow | raw }}
+                {% endblock %}
+
+                {% block infoPanelContent %}
+                    {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                        {% block content %}
+                            {% if data.package.components.contentBlockers.list is not empty or data.package.components.services.list is not empty %}
+                                {% set expandFirstThingsToKnowEntry = true %}
+                            {% else %}
+                                {% set expandFirstThingsToKnowEntry = false %}
+                            {% endif %}
+
+                            {% embed "system/embed/accordion/accordion.html.twig" with { id: 'purposeServiceGroups', expanded: expandFirstThingsToKnowEntry } %}
+                                {% block title %}
+                                    {{ localized.thingsToKnow.headlineChangeSettings | raw }}
+                                {% endblock %}
+                                {% block content %}
+                                    <p>{{ localized.thingsToKnow.changeSettingsA | raw }}</p>
+                                    <p>{{ localized.thingsToKnow.changeSettingsB | raw }}</p>
+                                    <p>{{ localized.thingsToKnow.changeSettingsC | raw }}
+                                        {{ localized.thingsToKnow.changeSettingsD | raw }}</p>
+                                    <p>{{ localized.thingsToKnow.changeSettingsE | raw }}</p>
+                                    <ul class="bc-ml-4 bc-space-y-2 bc-list-disc bc-text-left">
+                                        <li>{{ localized.thingsToKnow.changeContentBlockerSettings | raw }}</li>
+                                        <li>{{ localized.thingsToKnow.changeServiceSettings | raw }}</li>
+                                    </ul>
+                                {% endblock %}
+                            {% endembed %}
+
+                            {% embed "system/embed/accordion/accordion.html.twig" with { id: 'symbolsExplained' } %}
+                                {% import "system/macro/icons/info.html.twig" as info_icon %}
+
+                                {% block title %}
+                                    {{ localized.thingsToKnow.headlineOverwriteSettingsExplained | raw }}
+                                {% endblock %}
+                                {% block content %}
+                                    <p>{{ localized.thingsToKnow.overwriteSettingsExplainedA | raw }}
+                                        {{ localized.thingsToKnow.overwriteSettingsExplainedB | raw }}</p>
+                                    <p>{{ localized.thingsToKnow.overwriteSettingsExplainedC | raw }}</p>
+                                    <p>{{ localized.thingsToKnow.overwriteSettingsExplainedD | raw }}</p>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="bc-w-2/3">
+            <div data-brlbs-progress class="bc-hidden">
+                {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+                    {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+                    {% import "system/macro/rest-client-error.html.twig" as rest_client_error %}
+                    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+                    {% block header %}
+                        {{ card_heading.component({
+                            title: localized.headline.progressAndResult,
+                        }) }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <div data-brlbs-loading>
+                            <div class="bc-flex bc-p-5 bc-justify-center">
+                                <img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin" style="width: 32px; height: 32px;">
+                            </div>
+                        </div>
+
+                        {{ rest_client_error.component({
+                            defaultErrorMessage: localized.alert.installationFailed,
+                        }, localized.restClient) }}
+
+                        <div data-brlbs-result class="bc-hidden">
+                            <table class="brlbs-cmpnt-table bc-min-w-full">
+                                <thead class="bc-bg-gray-100">
+                                <tr>
+                                    <th class="bc-w-24 bc-text-left" scope="col">{{ localized.table.status }}</th>
+                                    <th class="bc-text-left" scope="col">{{ localized.table.componentType }}</th>
+                                    <th class="bc-text-left" scope="col">{{ localized.table.name }}</th>
+                                </tr>
+                                </thead>
+                                <tbody data-brlbs-result-list></tbody>
+                            </table>
+                            <div class="bc-px-5 bc-py-5">
+                                {% set followUpDescription = translation('followUp', data.package.translations) %}
+
+                                {% if followUpDescription is not empty %}
+                                    <div class="bc-mb-6">
+                                        <h4 class="bc-text-base bc-font-medium bc-mb-2">{{ localized.headline.followUp }}</h4>
+                                        <p>{{ markdownToHtml(translation('followUp', data.package.translations)) | raw }}</p>
+                                    </div>
+                                {% endif %}
+
+                                {% if data.suggestion is empty %}
+                                    <div class="bc-text-right">
+                                        {{ anchor_button.component({
+                                            backgroundColor:'bc-bg-gray-600',
+                                            backgroundColorHover:'hover:bc-bg-gray-700',
+                                            href: "?page=borlabs-cookie-library" ~ (data.additionalQueryParameters ? "&#{data.additionalQueryParameters}" : ""),
+                                            linkText: localized.button.goBackToLibrary
+                                        }) }}
+                                    </div>
+                                {% else %}
+                                    <div class="bc-text-right">
+                                        {{ anchor_button.component({
+                                            backgroundColor:'bc-bg-gray-600',
+                                            backgroundColorHover:'hover:bc-bg-gray-700',
+                                            href: wpNonceUrl("?page=borlabs-cookie-cloud-scan&action=details&id=#{data.suggestion.cloudScanId}", "borlabs-cookie-cloud-scan-#{data.suggestion.cloudScanId}-details"),
+                                            linkText: localized.button.goBackToScanResult
+                                        }) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endblock %}
+                {% endembed %}
+            </div>
+        </div>
+    </form>
+
+    <!-- Auto Update Settings -->
+    {% if data.package.installedAt %}
+        <hr>
+        {% include "library/library-manage/partials/auto-update-settings.html.twig" %}
+
+        <!-- Uninstall -->
+        <hr>
+        {% include "library/library-manage/partials/uninstall.html.twig" %}
+    {% endif %}
+
+    <div class="bc-w-full lg:bc-w-2/3 bc-my-8 bc-p-4 bc-rounded-md bc-bg-neutral-200 bc-text-neutral-500 bc-shadow-inner bc-text-center bc-text-xxs">
+        <p class="bc-mb-4">{{ localized.alert.disclaimer }}</p>
+        <p>{{ localized.alert.copyrights }}</p>
+    </div>
+{% endif %}

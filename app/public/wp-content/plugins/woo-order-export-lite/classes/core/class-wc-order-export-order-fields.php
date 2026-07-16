@@ -9,6 +9,7 @@ class WC_Order_Export_Order_Fields {
      */
 	var $order;
 	var $order_type;
+	var $is_refund;
 	var $order_id;
 	var $parent_order;
 	var $main_order;
@@ -36,6 +37,25 @@ class WC_Order_Export_Order_Fields {
 
 		$order_data_store = WC_Data_Store::load( 'order' );
 		$this->order_type = $order_data_store->get_order_type( $this->order_id );
+		$this->is_refund = ( $this->order_type == 'shop_order_refund' );
+
+        //for refunds
+		$parent_order_id = method_exists( $this->order,
+			'get_parent_id' ) ? $this->order->get_parent_id() : $this->order->post->post_parent;
+		$this->parent_order    = $parent_order_id ? new WC_Order( $parent_order_id ) : false;
+		$this->post            = method_exists( $this->order, 'get_id' ) ? get_post( $this->order->get_id() ) : $this->order->post;
+
+		//fix if refund has NO parent!
+		//we need it as main_order calls functions from class WC_Order
+		if( $this->is_refund AND !$this->parent_order) {
+			$this->order = new WC_Order($this->order_id);
+		}
+
+		//address details from this order
+		if( $this->order_type == 'shop_subscription')
+			$this->main_order  = $this->order;
+		else
+			$this->main_order  = $this->parent_order ? $this->parent_order : $this->order;
 
 		// get order meta
 		$this->order_meta = array();
@@ -45,7 +65,7 @@ class WC_Order_Export_Order_Fields {
                 $meta_value = $meta_data->value;
                 if ( is_array($meta_value) OR is_object($meta_value) )
 					$meta_value = json_encode($meta_value);
-				if( !isset($this->order_meta[$meta_key]) )	
+				if( !isset($this->order_meta[$meta_key]) )
 					$this->order_meta[$meta_key] = $meta_value;
 				elseif (!apply_filters('woe_use_first_order_meta', false))
                      $this->order_meta[$meta_key] .= WC_Order_Export_Data_Extractor::$export_custom_fields_separator . $meta_value;
@@ -61,22 +81,16 @@ class WC_Order_Export_Order_Fields {
 
         // get billing email via wc method that needed for other fields, if it isn't in meta
 		if (!isset($this->order_meta['_billing_email'])) {
-            $this->order_meta['_billing_email'] = $this->order->get_billing_email();
+			if( $this->is_refund )
+				$this->order_meta['_billing_email'] =  $this->parent_order ? $this->parent_order->get_billing_email() : '';
+			else
+				$this->order_meta['_billing_email'] =  $this->order->get_billing_email();
         }
-        //for refunds
-		$parent_order_id = method_exists( $this->order,
-			'get_parent_id' ) ? $this->order->get_parent_id() : $this->order->post->post_parent;
-		$this->parent_order    = $parent_order_id ? new WC_Order( $parent_order_id ) : false;
-		$this->post            = method_exists( $this->order, 'get_id' ) ? get_post( $this->order->get_id() ) : $this->order->post;
-
-		//address details from this order
-		$this->main_order  = $this->parent_order ? $this->parent_order : $this->order;
 
 		// correct meta for child orders
 		if ( $parent_order_id ) {
 			// overwrite child values for refunds
-			$is_refund                  = ( $this->order_type == 'shop_order_refund' );
-			$overwrite_child_order_meta = apply_filters( 'woe_overwrite_child_order_meta', $is_refund );
+			$overwrite_child_order_meta = apply_filters( 'woe_overwrite_child_order_meta', $this->is_refund );
 
 			if ( !$legacy_mode ) { //HPOS
 				//reformat $parent_order_meta
@@ -84,7 +98,7 @@ class WC_Order_Export_Order_Fields {
 				foreach( $this->parent_order->get_meta_data() as $parent_meta) {
 					$key = $parent_meta->key;
 					$value = $parent_meta->value;
-					if( !is_string($value)) 
+					if( !is_string($value))
 						$value = json_encode($value);
 					if( !isset($formatted_order_meta[$key]) )
 						$formatted_order_meta[$key] = array($value);
@@ -105,7 +119,7 @@ class WC_Order_Export_Order_Fields {
 			}
 
 			//refund status
-			if ( $is_refund ) {
+			if ( $this->is_refund ) {
 				$this->order_status = 'refunded';
 			}
 		}
@@ -176,7 +190,7 @@ class WC_Order_Export_Order_Fields {
 	public function get_parent_order() {
 		return $this->parent_order;
 	}
-	
+
 	public function get_one_field($field) {
 		$row = array( $field=>'');
 		$row = $this->get($row, $field);
@@ -194,6 +208,7 @@ class WC_Order_Export_Order_Fields {
 
 			$key = substr( $field, 4 );
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$value = $wpdb->get_col( $wpdb->prepare(
 			"SELECT
 				itemmeta.meta_value
@@ -215,6 +230,7 @@ class WC_Order_Export_Order_Fields {
 
 			$key = substr( $field, 9 );
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$value = $wpdb->get_col( $wpdb->prepare(
 			"SELECT
 				itemmeta.meta_value
@@ -236,6 +252,7 @@ class WC_Order_Export_Order_Fields {
 
 			$key = substr( $field, 4 );
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$value = $wpdb->get_col( $wpdb->prepare(
 			"SELECT
 				SUM(itemmeta.meta_value)
@@ -287,34 +304,34 @@ class WC_Order_Export_Order_Fields {
 			$row[$field] = wc_round_tax_total( $this->order->get_subtotal() + floatval($this->order->get_cart_tax()) );
 		} elseif ( $field == 'order_subtotal_minus_discount' ) {
 			$row[$field] = $this->order->get_subtotal() - $this->order->get_total_discount();
-		} elseif ( $field == 'order_subtotal_refunded' ) {
+		} elseif ( $field == 'order_subtotal_refunded' AND !$this->is_refund ) {
 			$row[$field] = wc_round_tax_total( WC_Order_Export_Data_Extractor::get_order_subtotal_refunded( $this->order ) );
-		} elseif ( $field == 'order_subtotal_minus_refund' ) {
+		} elseif ( $field == 'order_subtotal_minus_refund' AND !$this->is_refund ) {
 			$row[$field] = wc_round_tax_total( $this->order->get_subtotal() - WC_Order_Export_Data_Extractor::get_order_subtotal_refunded( $this->order ) );
 			//order total
 		} elseif ( $field == 'order_total' ) {
 			$row[$field] = $this->order->get_total();
 		} elseif ( $field == 'order_total_no_tax' ) {
 			$row[$field] = $this->order->get_total() - $this->order->get_total_tax();
-		} elseif ( $field == 'order_refund' ) {
+		} elseif ( $field == 'order_refund'  AND !$this->is_refund) {
 			$row[$field] = $this->order->get_total_refunded();
-		} elseif ( $field == 'order_total_inc_refund' ) {
+		} elseif ( $field == 'order_total_inc_refund'  AND !$this->is_refund) {
 			$row[$field] = $this->order->get_total() - $this->order->get_total_refunded();
 			//shipping
 		} elseif ( $field == 'order_shipping' ) {
 			$row[$field] = method_exists($this->order,"get_shipping_total") ? $this->order->get_shipping_total() : $this->order->get_total_shipping();
 		} elseif ( $field == 'order_shipping_plus_tax' ) {
 			$row[$field] = ( method_exists($this->order,"get_shipping_total") ? floatval($this->order->get_shipping_total()) : floatval( $this->order->get_total_shipping() ) ) + floatval( $this->order->get_shipping_tax() );
-		} elseif ( $field == 'order_shipping_refunded' ) {
+		} elseif ( $field == 'order_shipping_refunded' AND !$this->is_refund ) {
 			$row[$field] = $this->order->get_total_shipping_refunded();
-		} elseif ( $field == 'order_shipping_minus_refund' ) {
+		} elseif ( $field == 'order_shipping_minus_refund'  AND !$this->is_refund ) {
 			$row[$field] = floatval( method_exists($this->order,"get_shipping_total") ? $this->order->get_shipping_total() : $this->order->get_total_shipping() ) - $this->order->get_total_shipping_refunded();
 			//shipping tax
 		} elseif ($field == 'order_shipping_tax') {
             $row[$field] = $this->order->get_shipping_tax();
-        } elseif ( $field == 'order_shipping_tax_refunded' ) {
+        } elseif ( $field == 'order_shipping_tax_refunded'  AND !$this->is_refund ) {
 			$row[$field] = WC_Order_Export_Data_Extractor::get_order_shipping_tax_refunded( $this->order_id );
-		} elseif ( $field == 'order_shipping_tax_minus_refund' ) {
+		} elseif ( $field == 'order_shipping_tax_minus_refund' AND !$this->is_refund ) {
 			$row[$field] = floatval($this->order->get_shipping_tax()) - WC_Order_Export_Data_Extractor::get_order_shipping_tax_refunded( $this->order_id );
 			//order tax
 		} elseif ( $field == 'order_tax' ) {
@@ -325,9 +342,9 @@ class WC_Order_Export_Order_Fields {
 			}, $this->order->get_fees() ) );
 		} elseif ( $field == 'order_total_tax' ) {
 			$row[$field] = wc_round_tax_total( $this->order->get_total_tax() );
-		} elseif ( $field == 'order_total_tax_refunded' ) {
+		} elseif ( $field == 'order_total_tax_refunded' AND !$this->is_refund ) {
 			$row[$field] = wc_round_tax_total( $this->order->get_total_tax_refunded() );
-		} elseif ( $field == 'order_total_tax_minus_refund' ) {
+		} elseif ( $field == 'order_total_tax_minus_refund' AND !$this->is_refund ) {
 			$row[$field] = wc_round_tax_total( $this->order->get_total_tax() - $this->order->get_total_tax_refunded() );
 		} elseif ( $field == 'order_status' ) {
 			$status        = empty( $this->order_status ) ? $this->order->get_status() : $this->order_status;
@@ -339,11 +356,13 @@ class WC_Order_Export_Order_Fields {
 			$roles         = $wp_roles->roles;
 			if( $this->user ) {
 				$role = reset($this->user->roles); // take first role Name
-				$row[$field] =  isset( $roles[ $role ] ) ? $roles[ $role ]['name'] : $role; 
+				$row[$field] =  isset( $roles[ $role ] ) ? $roles[ $role ]['name'] : $role;
 				$row[$field] =  translate_user_role( $row[$field] );
 			}
 			else
 				$row[$field] =  "";
+		} elseif ( $field == 'returning_customer' ) {
+			$row[$field] = $this->get_returning_customer( $this->order_id );
 		} elseif ($field == 'customer_user') {
             $row[$field] = isset ($this->user->ID) ? $this->user->ID : 0;
         } elseif ( $field == 'customer_total_orders' ) {
@@ -434,7 +453,7 @@ class WC_Order_Export_Order_Fields {
                 $value +=  $item->get_quantity() * floatval($product->get_width()) * floatval($product->get_height()) * floatval($product->get_length());
             }
             $row[$field] = $value;
-		} elseif ( $field == 'customer_note' ) {
+		} elseif ( $field == 'customer_note' AND !$this->is_refund) {
 			$notes = array( $this->order->get_customer_note() );
 			if ( $this->options['export_refund_notes'] ) {
 				$refunds = $this->order->get_refunds();
@@ -445,9 +464,10 @@ class WC_Order_Export_Order_Fields {
 				}
 			}
 			$row[$field] = implode( "\n", array_filter( $notes ) );
-		} elseif ( $field == 'first_refund_date' ) {
+		} elseif ( $field == 'first_refund_date' AND !$this->is_refund) {
 			$value = '';
 			foreach ( $this->order->get_refunds() as $refund ) {
+				if(!$refund) continue;//bug -- we get null object?
 				$value = ! method_exists( $refund,
 					"get_date_created" ) ? $refund->date : ( $refund->get_date_created() ? gmdate( 'Y-m-d H:i:s',
 					$refund->get_date_created()->getOffsetTimestamp() ) : '' );
@@ -469,7 +489,7 @@ class WC_Order_Export_Order_Fields {
 			if ( $notes ) {
 				foreach ( $notes as $note ) {
 					if ( ! empty( $this->options['export_all_comments'] ) || $note->comment_author !== __( 'WooCommerce',
-							'woocommerce' ) ) { // skip system notes by default
+							'woo-order-export-lite' ) ) { // skip system notes by default
 						$comments[] = apply_filters( 'woe_get_order_notes', $note->comment_content, $note, $this->order );
 					}
 				}
@@ -488,27 +508,29 @@ class WC_Order_Export_Order_Fields {
 		} elseif ( $field == 'subscription_relationship' AND function_exists("wcs_order_contains_subscription")) {
 			//copied logic from class WC_Subscriptions_Order
 			if ( wcs_order_contains_subscription( $this->order_id, 'renewal' ) ) {
-				$row[$field] = __( 'Renewal Order', 'woocommerce-subscriptions' );
+				$row[$field] = __( 'Renewal Order', 'woo-order-export-lite' );
 			} elseif ( wcs_order_contains_subscription( $this->order_id, 'resubscribe' ) ) {
-				$row[$field] = __( 'Resubscribe Order', 'woocommerce-subscriptions' );
+				$row[$field] = __( 'Resubscribe Order', 'woo-order-export-lite' );
 			} elseif ( wcs_order_contains_subscription( $this->order_id, 'parent' ) ) {
-				$row[$field] = __( 'Parent Order', 'woocommerce-subscriptions' );
+				$row[$field] = __( 'Parent Order', 'woo-order-export-lite' );
 			} else {
 				$row[$field] = "";
 			}
 		} elseif ( $field == 'order_currency' ) {
 			$row[$field] = $this->order->get_currency();
 		} elseif( $field == 'order_currency_symbol' ){
-			$row[$field] = get_woocommerce_currency_symbol( $this->order->get_currency() );
+			$row[$field] = $this->get_woocommerce_currency_symbol( $this->order->get_currency() );
 		} elseif ($field == 'cart_discount') {
             $row[$field] = $this->order->get_discount_total();
+		} elseif ($field == 'cart_discount_inc_tax') {
+            $row[$field] = (float)$this->order->get_discount_total() + (float)$this->order->get_discount_tax();
         } elseif ($field == 'cart_discount_tax') {
             $row[$field] = $this->order->get_discount_tax();
         } elseif( method_exists( $this->order, 'get_' . $field ) ) {  // order_date...
 				if ( $this->order_type == 'shop_order_refund' AND $this->parent_order )
 					$row[$field] = $this->parent_order->{'get_' . $field}(); //use main order details for refund
 				else
-					$row[$field] = $this->order->{'get_' . $field}();			
+					$row[$field] = $this->order->{'get_' . $field}();
 		} elseif ( isset( $this->order_meta[ $field ] ) ) {
 			$field_data = array();
 			do_action( 'woocommerce_order_export_add_field_data', $field_data, $this->order_meta[ $field ], $field );
@@ -522,6 +544,196 @@ class WC_Order_Export_Order_Fields {
             $row[$field] = $this->order->get_meta('_' . $field);
 		}
 		return $row;
-		
+
+	}
+
+	function get_woocommerce_currency_symbol( $currency = '' ) {
+		if ( ! $currency ) {
+			$currency = get_woocommerce_currency();
+		}
+
+		$symbols = apply_filters( 'woocommerce_currency_symbols', array(
+			'AED' => 'د.إ',
+			'AFN' => '؋',
+			'ALL' => 'L',
+			'AMD' => 'AMD',
+			'ANG' => 'ƒ',
+			'AOA' => 'Kz',
+			'ARS' => '$',
+			'AUD' => '$',
+			'AWG' => 'ƒ',
+			'AZN' => 'AZN',
+			'BAM' => 'KM',
+			'BBD' => '$',
+			'BDT' => '৳ ',
+			'BGN' => 'лв.',
+			'BHD' => '.د.ب',
+			'BIF' => 'Fr',
+			'BMD' => '$',
+			'BND' => '$',
+			'BOB' => 'Bs.',
+			'BRL' => 'R$',
+			'BSD' => '$',
+			'BTC' => '฿',
+			'BTN' => 'Nu.',
+			'BWP' => 'P',
+			'BYR' => 'Br',
+			'BZD' => '$',
+			'CAD' => '$',
+			'CDF' => 'Fr',
+			'CHF' => 'CHF',
+			'CLP' => '$',
+			'CNY' => '¥',
+			'COP' => '$',
+			'CRC' => '₡',
+			'CUC' => '$',
+			'CUP' => '$',
+			'CVE' => '$',
+			'CZK' => 'Kč',
+			'DJF' => 'Fr',
+			'DKK' => 'DKK',
+			'DOP' => 'RD$',
+			'DZD' => 'د.ج',
+			'EGP' => 'EGP',
+			'ERN' => 'Nfk',
+			'ETB' => 'Br',
+			'EUR' => '€',
+			'FJD' => '$',
+			'FKP' => '£',
+			'GBP' => '£',
+			'GEL' => 'ლ',
+			'GGP' => '£',
+			'GHS' => '₵',
+			'GIP' => '£',
+			'GMD' => 'D',
+			'GNF' => 'Fr',
+			'GTQ' => 'Q',
+			'GYD' => '$',
+			'HKD' => '$',
+			'HNL' => 'L',
+			'HRK' => 'Kn',
+			'HTG' => 'G',
+			'HUF' => 'Ft',
+			'IDR' => 'Rp',
+			'ILS' => '₪',
+			'IMP' => '£',
+			'INR' => '₹',
+			'IQD' => 'ع.د',
+			'IRR' => '﷼',
+			'IRT' => 'تومان',
+			'ISK' => 'kr.',
+			'JEP' => '£',
+			'JMD' => '$',
+			'JOD' => 'د.ا',
+			'JPY' => '¥',
+			'KES' => 'KSh',
+			'KGS' => 'сом',
+			'KHR' => '៛',
+			'KMF' => 'Fr',
+			'KPW' => '₩',
+			'KRW' => '₩',
+			'KWD' => 'د.ك',
+			'KYD' => '$',
+			'KZT' => 'KZT',
+			'LAK' => '₭',
+			'LBP' => 'ل.ل',
+			'LKR' => 'රු',
+			'LRD' => '$',
+			'LSL' => 'L',
+			'LYD' => 'ل.د',
+			'MAD' => 'د.م.',
+			'MDL' => 'MDL',
+			'MGA' => 'Ar',
+			'MKD' => 'ден',
+			'MMK' => 'Ks',
+			'MNT' => '₮',
+			'MOP' => 'P',
+			'MRO' => 'UM',
+			'MUR' => '₨',
+			'MVR' => '.ރ',
+			'MWK' => 'MK',
+			'MXN' => '$',
+			'MYR' => 'RM',
+			'MZN' => 'MT',
+			'NAD' => '$',
+			'NGN' => '₦',
+			'NIO' => 'C$',
+			'NOK' => 'kr',
+			'NPR' => '₨',
+			'NZD' => '$',
+			'OMR' => 'ر.ع.',
+			'PAB' => 'B/.',
+			'PEN' => 'S/.',
+			'PGK' => 'K',
+			'PHP' => '₱',
+			'PKR' => '₨',
+			'PLN' => 'zł',
+			'PRB' => 'р.',
+			'PYG' => '₲',
+			'QAR' => 'ر.ق',
+			'RMB' => '¥',
+			'RON' => 'lei',
+			'RSD' => 'дин.',
+			'RUB' => '₽',
+			'RWF' => 'Fr',
+			'SAR' => 'ر.س',
+			'SBD' => '$',
+			'SCR' => '₨',
+			'SDG' => 'ج.س.',
+			'SEK' => 'kr',
+			'SGD' => '$',
+			'SHP' => '£',
+			'SLL' => 'Le',
+			'SOS' => 'Sh',
+			'SRD' => '$',
+			'SSP' => '£',
+			'STD' => 'Db',
+			'SYP' => 'ل.س',
+			'SZL' => 'L',
+			'THB' => '฿',
+			'TJS' => 'ЅМ',
+			'TMT' => 'm',
+			'TND' => 'د.ت',
+			'TOP' => 'T$',
+			'TRY' => '₺',
+			'TTD' => '$',
+			'TWD' => 'NT$',
+			'TZS' => 'Sh',
+			'UAH' => '₴',
+			'UGX' => 'UGX',
+			'USD' => '$',
+			'UYU' => '$',
+			'UZS' => 'UZS',
+			'VEF' => 'Bs F',
+			'VND' => '₫',
+			'VUV' => 'Vt',
+			'WST' => 'T',
+			'XAF' => 'Fr',
+			'XCD' => '$',
+			'XOF' => 'Fr',
+			'XPF' => 'Fr',
+			'YER' => '﷼',
+			'ZAR' => 'R',
+			'ZMW' => 'ZK',
+	) );
+
+		$currency_symbol = isset( $symbols[ $currency ] ) ? $symbols[ $currency ] : '';
+
+		return apply_filters( 'woocommerce_currency_symbol', $currency_symbol, $currency );
+	}
+
+	function get_returning_customer( $order_id ){
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$returning_customer = $wpdb->get_var(
+			$wpdb->prepare("SELECT returning_customer FROM {$wpdb->prefix}wc_order_stats WHERE order_id = %d",$order_id )
+		);
+		if ($returning_customer === "1")
+			$value = __( 'Returning', 'woo-order-export-lite' );
+		elseif ($returning_customer === "0")
+			$value = __( 'New', 'woo-order-export-lite' );
+		else
+			$value = __( 'Unknown', 'woo-order-export-lite' );
+		return $value;
 	}
 }

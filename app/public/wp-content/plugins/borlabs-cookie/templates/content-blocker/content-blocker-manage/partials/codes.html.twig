@@ -1,0 +1,71 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.javaScript,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {{ row_codearea.component({
+            clipboard: true,
+            editorLanguage: 'javascript',
+            hint: localized.hint.javaScriptGlobal,
+            id: 'javaScriptGlobal',
+            label: localized.field.javaScriptGlobal,
+            value: data.javaScriptGlobal,
+        }) }}
+
+        {{ row_codearea.component({
+            clipboard: true,
+            editorLanguage: 'javascript',
+            hint: localized.hint.javaScriptInitialization,
+            id: 'javaScriptInitialization',
+            label: localized.field.javaScriptInitialization,
+            value: data.javaScriptInitialization,
+        }) }}
+
+        {{ row_save.component({
+            backLink: "?page=#{controllerId}",
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionGlobalJavaScript', expanded: true } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineGlobalJavaScript | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.javaScriptGlobalA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.javaScriptGlobalB | raw }}</p>
+                        <p>{{ localized.thingsToKnow.javaScriptGlobalC | raw }}</p>
+                        <p class="brlbs-cmpnt-code-example">{{ localized.thingsToKnow.javaScriptGlobalD | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionInitializationJavaScript' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineInitializationJavaScript | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.javaScriptInitialization | raw }}</p>
+                        <p><strong>{{ localized.thingsToKnow.headlineForDevelopers | raw }}</strong></p>
+                        <p>{{ localized.thingsToKnow.forDevelopersA | raw }}</p>
+                        <p class="brlbs-cmpnt-code-example">{{ localized.thingsToKnow.forDevelopersB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

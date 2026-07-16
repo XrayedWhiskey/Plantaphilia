@@ -12,7 +12,7 @@ if ( !defined( 'ABSPATH' ) ) {
 }
 class AdminMenu {
     public function __construct() {
-        add_action( 'admin_menu', array($this, 'addMenu'), 20 );
+        add_action( 'admin_menu', [$this, 'addMenu'], 20 );
     }
 
     /**
@@ -30,7 +30,7 @@ class AdminMenu {
 						display: none;
 					}
 				</style>
-				<?php 
+					<?php 
             } );
         }
         add_submenu_page(
@@ -39,16 +39,16 @@ class AdminMenu {
             __( 'FiboSearch', 'ajax-search-for-woocommerce' ) . $menuSuffix,
             ( Helpers::shopManagerHasAccess() ? 'manage_woocommerce' : 'manage_options' ),
             'dgwt_wcas_settings',
-            array($this, 'settingsPage')
+            [$this, 'settingsPage']
         );
-        if ( !dgoraAsfwFs()->is_activation_mode() ) {
+        if ( !dgoraAsfwFs()->is_activation_mode() && Helpers::isDebugPage() ) {
             add_submenu_page(
-                'dgwt_wcas_settings',
+                'woocommerce',
                 'FiboSearch Debug',
-                'FiboSearch [Hidden]',
+                sprintf( '<span class="fs-submenu-item fs-sub">%s</span>', 'Debug' ),
                 'manage_options',
                 'dgwt_wcas_debug',
-                array($this, 'debugPage')
+                [$this, 'debugPage']
             );
         }
     }

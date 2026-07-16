@@ -68,6 +68,15 @@ registerBlockComponent( {
 } );
 
 registerBlockComponent( {
+    blockName: 'woocommerce-germanized/product-power-supply',
+    component: lazy( () =>
+        import(
+            /* webpackChunkName: "product-power-supply" */ './power-supply/frontend'
+            )
+    ),
+} );
+
+registerBlockComponent( {
     blockName: 'woocommerce-germanized/product-deposit-packaging-type',
     component: lazy( () =>
         import(
@@ -81,6 +90,33 @@ registerBlockComponent( {
     component: lazy( () =>
         import(
             /* webpackChunkName: "product-defect-description" */ './defect-description/frontend'
+            )
+    ),
+} );
+
+registerBlockComponent( {
+    blockName: 'woocommerce-germanized/product-manufacturer',
+    component: lazy( () =>
+        import(
+            /* webpackChunkName: "product-manufacturer" */ './manufacturer/frontend'
+            )
+    ),
+} );
+
+registerBlockComponent( {
+    blockName: 'woocommerce-germanized/product-safety-attachments',
+    component: lazy( () =>
+        import(
+            /* webpackChunkName: "product-safety-attachments" */ './product-safety-attachments/frontend'
+            )
+    ),
+} );
+
+registerBlockComponent( {
+    blockName: 'woocommerce-germanized/product-safety-instructions',
+    component: lazy( () =>
+        import(
+            /* webpackChunkName: "product-safety-instructions" */ './safety-instructions/frontend'
             )
     ),
 } );

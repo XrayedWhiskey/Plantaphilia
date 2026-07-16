@@ -1,0 +1,163 @@
+{% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            button: localized.serviceOption.button.addOption,
+            buttonDataAttribute: 'data-brlbs-add-table-row="serviceOptions"',
+            buttonId: 'addServiceOption',
+            buttonName: 'addServiceOption',
+            title: localized.serviceOption.headline.options,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: 'data-brlbs-table="serviceOptions"' } %}
+            {% block heading %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceOption.table.type | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceOption.table.description | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        #
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+
+            {% block body %}
+                {% if data.serviceOptions is not empty %}
+                    {% for serviceOption in data.serviceOptions %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/select.html.twig" as select %}
+                                        {{ select.component({
+                                            id: "serviceOptions-#{loop.index0}-type",
+                                            name: "serviceOptions[#{loop.index0}][type]",
+                                            options: enum.serviceOptions.list,
+                                            value: serviceOption.type,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceOptions-#{loop.index0}-description",
+                                            name: "serviceOptions[#{loop.index0}][description]",
+                                            spellcheck: false,
+                                            value: serviceOption.description,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "borlabsCookieServiceOptionModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "borlabsCookieServiceOptionModalDelete-#{loop.index0}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+                {% endif %}
+
+                {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: data.serviceOptions is not empty } %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: 'colspan="3"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.serviceOption.alert.noOptionConfigured | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        <script type="text/html" data-brlbs-row-template="serviceOptions">
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/select.html.twig" as select %}
+                            {{ select.component({
+                                id: "serviceOptions-##LOOP_INDEX##-type",
+                                name: "serviceOptions[##LOOP_INDEX##][type]",
+                                options: enum.serviceOptions.list,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceOptions-##LOOP_INDEX##-description",
+                                name: "serviceOptions[##LOOP_INDEX##][description]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                        {% block content %}
+                            <button data-brlbs-modal-target="{{ 'borlabsCookieServiceOptionModalDelete-##LOOP_INDEX##' }}" type="button">
+                                {{ trash_icon.component({}) }}
+                            </button>
+                                {% embed "system/embed/modal/modal.html.twig" with {
+                                    buttonText: localized.global.button.delete,
+                                    id: 'borlabsCookieServiceOptionModalDelete-##LOOP_INDEX##',
+                                    title: localized.global.headline.deleteSelection,
+                                } %}
+                                {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </script>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionOptionsExplained', expanded: true } %}
+                    {% block title %}
+                        {{ localized.serviceOption.thingsToKnow.headlineOptionsExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.serviceOption.thingsToKnow.optionsExplainedA | raw }}</p>
+                        <p>{{ localized.serviceOption.thingsToKnow.optionsExplainedB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

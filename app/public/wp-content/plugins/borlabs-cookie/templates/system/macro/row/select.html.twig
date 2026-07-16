@@ -1,0 +1,11 @@
+{% macro component(config) %}
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+    {% block label %}
+        <label for="{{ config.id }}">{{ config.label | raw }}</label>
+    {% endblock %}
+    {% block input %}
+        {% import "system/macro/form-component/select.html.twig" as select %}
+        {{ select.component(config) }}
+    {% endblock %}
+    {% endembed %}
+{% endmacro %}

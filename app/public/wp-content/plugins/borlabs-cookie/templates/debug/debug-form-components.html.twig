@@ -1,0 +1,491 @@
+<form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% block header %}
+            {{ card_heading.component({
+                title: 'Debug',
+            }) }}
+        {% endblock %}
+        {% block content %}
+            {% import "system/macro/row/checkbox-list.html.twig" as row_checkbox_list %}
+            {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+            {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+            {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+            {% import "system/macro/row/input.html.twig" as row_input %}
+            {% import "system/macro/row/input-group.html.twig" as row_input_group %}
+            {% import "system/macro/row/input-optional.html.twig" as row_input_optional %}
+            {% import "system/macro/row/language-name.html.twig" as row_language_name %}
+            {% import "system/macro/row/media-selection.html.twig" as row_media_selection %}
+            {% import "system/macro/row/orderable-list.html.twig" as row_orderable_list %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+            {% import "system/macro/row/select.html.twig" as row_select %}
+            {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+            {% import "system/macro/row/text.html.twig" as row_text %}
+            {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+            {% import "system/macro/row/textarea-optional.html.twig" as row_textarea_optional %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                {% block label %}
+                    Hints
+                {% endblock %}
+
+                {% block input %}
+                    <div class="bc-mb-4">
+                        {{ hint.component({
+                            hint: 'This is a hint - Default position',
+                        }) }}
+                    </div>
+
+                    <div class="bc-mb-4">
+                        {{ hint.component({
+                            hint: 'This is a hint - top-left',
+                            position: 'top-left',
+                        }) }}
+                    </div>
+
+                    <div class="bc-mb-4">
+                        {{ hint.component({
+                            hint: 'This is a hint - bottom-left',
+                            position: 'bottom-left',
+                        }) }}
+                    </div>
+
+                    <div class="bc-mb-4">
+                        {{ hint.component({
+                            hint: 'This is a hint - bottom-right',
+                            position: 'bottom-right',
+                        }) }}
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            {{ row_checkbox_list.component({
+                checkboxes: options.demoValues.list,
+                checkedKeys: data.demoValues,
+                hint: 'Checkbox List: This is a hint',
+                id: 'checkboxList',
+                title: 'Checkbox List',
+            }, localized) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'css',
+                hint: 'Codearea: This is a hint',
+                id: 'codeareaCss',
+                label: 'Codearea - CSS',
+                value: data.codeareaCss,
+            }) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'html',
+                hint: 'Codearea: This is a hint',
+                id: 'codeareaHtml',
+                label: 'Codearea - HTML',
+                value: data.codeareaHtml,
+            }) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'javascript',
+                hint: 'Codearea: This is a hint',
+                id: 'codeareaJavaScript',
+                label: 'Codearea - JavaScript',
+                value: data.codeareaJavaScript,
+            }) }}
+
+            {{ row_color_duo_selection.component({
+                colorA:
+                {
+                    id: 'colorDuoSelectionBackgroundColor',
+                    label: 'Background Color',
+                    value: data.colorDuoSelection.backgroundColor,
+                },
+                colorB:
+                {
+                    id: 'colorDuoSelectionTextColor',
+                    label: 'Text Color',
+                    value: data.colorDuoSelection.textColor
+                },
+                hint: 'Color Duo Selection: This is a hint',
+                title: 'Color Duo Selection',
+            }) }}
+
+            {{ row_color_selection.component({
+                hint: 'Color Selection: This is a hint',
+                id: 'colorSelection',
+                label: 'Color Selection',
+                value: data.colorSelection,
+            }) }}
+
+            {{ row_input.component({
+                clipboard: true,
+                errorMessage: 'This is an error message.',
+                hint: 'Input: This is a hint',
+                id: 'input',
+                label: 'Input',
+                value: data.input,
+            }) }}
+
+            {{ row_input.component({
+                clipboard: true,
+                errorMessage: 'This is an error message.',
+                hint: 'Input: This is a hint',
+                id: 'input',
+                infoMessage: 'This is an info message.',
+                label: 'Input - With Info Message',
+                value: data.input,
+            }) }}
+
+            {{ row_input.component({
+                alertMessage: 'This is an alert message.',
+                clipboard: true,
+                errorMessage: 'This is an error message.',
+                hint: 'Input: This is a hint',
+                id: 'inputWithAlertMessage',
+                label: 'Input - With Alert Message',
+                value: data.input,
+            }) }}
+
+            {{ row_input.component({
+                alertMessage: 'This is an alert message.',
+                clipboard: true,
+                errorMessage: 'This is an error message.',
+                hint: 'Input: This is a hint',
+                id: 'inputWithAlertMessage',
+                infoMessage: 'This is an info message.',
+                label: 'Input - With Alert Message & Info Message',
+                value: data.input,
+            }) }}
+
+            {{ row_input.component({
+                hint: 'Input: `append` can not be used directly with the `input` component. Use the `input-group` component instead.',
+                id: 'inputWithPlaceholder',
+                label: 'Input - With Placeholder',
+                placeholder: '`append` can not be used directly with row_input',
+                value: '',
+            }) }}
+
+            {{ row_input.component({
+                alertMessage: 'This is an alert message.',
+                clipboard: true,
+                hint: 'Input: This is a hint',
+                id: 'inputWithoutErrorMessage',
+                label: 'Input - Without Error Message',
+                value: data.input,
+            }) }}
+
+            {{ row_input_group.component({
+                alertMessage: 'Input Groups can not use `errorMessage`.',
+                append: 'px',
+                cssClasses: ['bc-pr-[35px]'],
+                errorMessage: 'This is an error message.',
+                hint: 'Input Group: This is a hint',
+                id: 'inputGroup',
+                label: 'Input Group',
+                min: '0',
+                type: 'number',
+                value: data.inputGroup,
+                width: 'bc-w-2/5'
+            }) }}
+
+            {{ row_input_group.component({
+                alertMessage: 'It\'s not recommended to use the `clipboard` option with `append`.',
+                append: 'px',
+                clipboard: true,
+                cssClasses: ['bc-pr-[35px]'],
+                errorMessage: 'This is an error message.',
+                hint: 'Input Group: This is a hint',
+                id: 'inputGroupWithClipboard',
+                label: 'Input Group - With Clipboard',
+                min: '0',
+                type: 'number',
+                value: data.inputGroup,
+                width: 'bc-w-2/5'
+            }) }}
+
+            {{ row_input_group.component({
+                alertMessage: 'This is an alert message.',
+                append: 'px',
+                errorMessage: 'This is an error message.',
+                hint: 'Input Group: This is a hint',
+                id: 'inputGroupWithTitle',
+                label: 'Input Group',
+                min: '0',
+                title: 'Input Group - With Title',
+                type: 'number',
+                value: data.inputGroup,
+                width: 'bc-w-3/5'
+            }) }}
+
+            {{ row_input_optional.component({
+                alertMessage: 'Input Optional can not use `errorMessage`.',
+                checked: false,
+                errorMessage: 'This is an error message.',
+                hint: 'Input Optional: This is a hint',
+                id: 'inputOptional',
+                label: 'Input Optional',
+                value: '',
+                placeholder: 'Placeholder'
+            }) }}
+
+            {{ row_input_optional.component({
+                alertMessage: 'This is an alert message.',
+                checked: true,
+                hint: 'Input Optional: This is a hint',
+                id: 'inputOptionalChecked',
+                label: 'Input Optional - Checked',
+                value: data.inputOptional,
+            }) }}
+
+            {{ row_language_name.component({
+                language: data.language,
+            }, localized) }}
+
+            {{ row_media_selection.component({
+                hint: 'Media Selection: This is a hint',
+                button: '`button`: Button Title',
+                id: 'mediaSelection',
+                label: 'Media Selection',
+                title: '`title`: Select or Upload a File',
+                value: '',
+            }) }}
+
+            {{ row_orderable_list.component({
+                hint: 'Orderable List: This is a hint',
+                id: 'orderableList',
+                items: options.demoValues.list,
+                label: 'Orderable List',
+                order: data.orderableList,
+            }) }}
+
+            {{ row_select.component({
+                alertMessage: 'This is an alert message.',
+                hint: 'Select: This is a hint',
+                id: 'select',
+                label: 'Select',
+                options: options.demoValues.list,
+                value: 'value-b',
+                warningMessage: 'This is a warning message.',
+            }) }}
+
+            {{ row_select.component({
+                hint: 'Select: This is a hint',
+                id: 'selectWithGroups',
+                label: 'Select - With Groups',
+                groups: [
+                    {
+                        value: 'Group A',
+                        options: options.demoValues.list,
+                    },
+                    {
+                        value: 'Group B',
+                        options: options.demoValuesB.list,
+                    },
+                ],
+                value: 'value-b',
+            }) }}
+
+            {{ row_switch_button.component({
+                alertMessage: 'This is an alert message.',
+                hint: 'Switch Button: This is a hint',
+                id: 'switchButton',
+                label: 'Switch Button - Off',
+                value: false,
+                warningMessage: 'This is a warning message.',
+            }) }}
+
+            {{ row_switch_button.component({
+                hint: 'Switch Button: This is a hint',
+                id: 'switchButtonOn',
+                label: 'Switch Button - On',
+                value: true,
+            }) }}
+
+            {{ row_switch_button.component({
+                hint: 'Switch Button: This is a hint',
+                id: 'switchButtonOn',
+                infoMessage: 'This is an info message.',
+                label: 'Switch Button - On & With Info Message',
+                value: true,
+            }) }}
+
+            {{ row_text.component({
+                label: 'Text',
+                value: data.text,
+            }) }}
+
+            {{ row_textarea.component({
+                errorMessage: 'This is an error message.',
+                hint: 'Textarea: This is a hint',
+                id: 'textarea',
+                label: 'Textarea',
+                value: data.textarea,
+            }) }}
+
+            {{ row_textarea.component({
+                hint: 'Textarea: This is a hint',
+                id: 'textareaNoErrorMessage',
+                label: 'Textarea - No error message',
+                value: data.textarea,
+            }) }}
+
+            {{ row_textarea.component({
+                hint: 'Textarea: This is a hint',
+                id: 'textareaWithInfoMessage',
+                infoMessage: 'This is an info message.',
+                label: 'Textarea - With Info Message',
+                value: data.textarea,
+            }) }}
+
+            {{ row_textarea_optional.component({
+                errorMessage: 'This is an error message.',
+                checked: false,
+                hint: 'Textarea: This is a hint',
+                id: 'textareaOptional',
+                label: 'Textarea Optional',
+                value: data.textarea,
+            }) }}
+
+            {{ row_textarea_optional.component({
+                checked: true,
+                hint: 'Textarea: This is a hint',
+                id: 'textareaOptionalChecked',
+                label: 'Textarea Optional - Checked',
+                value: data.textarea,
+            }) }}
+
+            {{ row_save.component({}, localized) }}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+
+                {% block label %}
+                    <span class="brlbs-cmpnt-text">Default Button</span>
+                {% endblock %}
+
+                {% block input %}
+                    {{ button.component({
+                        button: 'Save all settings',
+                    }, localized) }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+
+                {% block label %}
+                    <span class="brlbs-cmpnt-text">Delete/Reset/Uninstall Button</span>
+                {% endblock %}
+
+                {% block input %}
+                    {{ button.component({
+                        backgroundColor: 'bc-bg-red-600',
+                        backgroundColorHover: 'enabled:hover:bc-bg-red-700',
+                        button: 'Reset',
+                        focusColor: 'focus:bc-ring-red-800',
+                    }, localized) }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+
+                {% block label %}
+                    <span class="brlbs-cmpnt-text">Update Button</span>
+                {% endblock %}
+
+                {% block input %}
+                    {{ button.component({
+                        backgroundColor: 'bc-bg-purple-600',
+                        backgroundColorHover: 'enabled:hover:bc-bg-purple-700',
+                        button: 'Update',
+                        focusColor: 'focus:bc-ring-purple-800',
+                    }, localized) }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+
+                {% block label %}
+                    <span class="brlbs-cmpnt-text">Perform Action Button</span>
+                {% endblock %}
+
+                {% block input %}
+                    {{ button.component({
+                        backgroundColor: 'bc-bg-slate-950',
+                        backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                        button: 'Update Preview',
+                        focusColor: 'focus:bc-ring-slate-950',
+                    }, localized) }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+
+                {% block label %}
+                    <span class="brlbs-cmpnt-text">Anchor Button</span>
+                {% endblock %}
+
+                {% block input %}
+                    {{ anchor_button.component({
+                        backgroundColor:'bc-bg-gray-600',
+                        backgroundColorHover:'hover:bc-bg-gray-700',
+                        href: '#',
+                        linkText: 'Go back without saving',
+                    }) }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+
+                {% block label %}
+                    <span class="brlbs-cmpnt-text">All Buttons</span>
+                {% endblock %}
+
+                {% block input %}
+                    <div class="bc-flex bc-gap-2">
+                        {{ button.component({
+                            button: 'Save all settings',
+                        }, localized) }}
+
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-red-600',
+                            backgroundColorHover: 'enabled:hover:bc-bg-red-700',
+                            button: 'Reset',
+                            focusColor: 'focus:bc-ring-red-800',
+                        }, localized) }}
+
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-purple-600',
+                            backgroundColorHover: 'enabled:hover:bc-bg-purple-700',
+                            button: 'Update',
+                            focusColor: 'focus:bc-ring-purple-800',
+                        }, localized) }}
+
+                        {{ button.component({
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            button: 'Update Preview',
+                            focusColor: 'focus:bc-ring-slate-950',
+                        }, localized) }}
+
+                        {{ anchor_button.component({
+                            backgroundColor:'bc-bg-gray-600',
+                            backgroundColorHover:'hover:bc-bg-gray-700',
+                            href: '#',
+                            linkText: 'Go back without saving',
+                        }) }}
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+        {% endblock %}
+    {% endembed %}
+</form>

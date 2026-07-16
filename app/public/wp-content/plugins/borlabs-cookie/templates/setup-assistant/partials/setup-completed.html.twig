@@ -1,0 +1,47 @@
+<div class="bc-hidden" data-brlbs-setup-flow="setup-completed">
+    <div class="bc-opacity-0 bc-relative bc-flex bc-justify-center" data-brlbs-animate="brlbs-animate-bounce-in">
+        {% embed "system/embed/card/card.html.twig" with { noMarginBottom: true } %}
+            {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+            {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+
+            {% block cardContent %}
+                <div class="bc-relative bc-flex bc-flex-col sm:bc-flex-row bc-place-items-center bc-justify-center bc-p-6 bc-gap-x-16 bc-gap-y-6">
+                    <div class="bc-w-full sm:bc-w-3/5">
+                        <h4 class="bc-mb-2 bc-text-lg bc-font-medium bc-text-center brlbs-cmpnt-text">
+                            {{ localized.headline.setupComplete | raw }}
+                        </h4>
+
+                        <ol class="bc-mb-6 bc-px-6 bc-space-y-4 bc-list-outside bc-list-disc bc-text-sm bc-text-left brlbs-cmpnt-text">
+                            <li>{{ localized.text.setupCompleteA | raw }}</li>
+                            <li>{{ localized.text.setupCompleteB | raw }}</li>
+                            <li>{{ localized.text.setupCompleteC | raw }}</li>
+                            <li>{{ localized.text.setupCompleteD | raw }}</li>
+                            <li>{{ localized.text.setupCompleteE | raw }}</li>
+                            <li>{{ localized.text.setupCompleteF | format(localized.url.knowledgeBase) | raw }}</li>
+                        </ol>
+
+                        <div class="bc-text-center">
+                            {{ anchor_button.component({
+                                backgroundColor:'bc-bg-gray-600',
+                                backgroundColorHover:'hover:bc-bg-gray-700',
+                                href: '?page=borlabs-cookie',
+                                linkText: localized.button.gpToDashboard,
+                            }) }}
+                        </div>
+                    </div>
+                    <div class="bc-w-full sm:bc-w-2/5 bc-relative bc-place-items-center">
+                        {{ check_circle_icon.component({
+                            cssClasses: ['bc-absolute', 'bc-top-1/2', 'bc-left-1/2', 'bc--translate-x-1/2', 'bc--translate-y-1/2', 'bc-text-green-600'],
+                            width: 'bc-w-1/2',
+                            height: 'bc-h-1/2',
+                        }) }}
+                        <img class="bc-w-full bc-max-w-96 bc-rounded-md bc-shadow" id="BorlabsCookieLayoutThumbnail" src="{{ imageUrl('borlabs-cookie-layout-box-compact.png') }}" alt="{{ localized.option.layoutBoxCompact }}">
+                    </div>
+                    <canvas id="BorlabsCookieConfettiCanvasLeft" style="position: absolute; width: 100%; height: 100%; top:0; left:0; pointer-events: none; z-index: 100;"></canvas>
+                    <canvas id="BorlabsCookieConfettiCanvasRight" style="position: absolute; width: 100%; height: 100%; top:0; left:0; pointer-events: none; z-index: 100;"></canvas>
+                </div>
+            {% endblock %}
+        {% endembed %}
+    </div>
+    <audio class="bc-hidden" controls src="{{ soundUrl('borlabs-cookie-success.ogg') }}" preload="auto"></audio>
+</div>

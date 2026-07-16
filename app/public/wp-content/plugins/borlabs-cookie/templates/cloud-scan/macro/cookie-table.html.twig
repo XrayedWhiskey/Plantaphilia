@@ -1,0 +1,120 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.name | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.hostname | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.path | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.lifetime | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.suggestedPackage | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/details.html.twig" as details_icon %}
+                {% block content %}
+                    {{ details_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.cookies is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        <td colspan="6"
+                            class="bc-py-4 bc-text-center bc-rounded-b-md">{{ localized.alert.noCookieFound | raw }}
+                        </td>
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for cookie in config.cookies %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ cookie.name }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                                    <a class="bc-ml-2" href="https://{{ cookie.hostname }}" rel="nofollow noreferrer" target="_blank">
+                                        {{ cookie.hostname }}
+                                        {{ external_link_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ cookie.path }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% set lifetime = (cookie.lifetime / 86400) | round(0, 'ceil') %}
+                                    {% if lifetime > 1 %}
+                                        {{ lifetime }} {{ localized.text.days | raw }}
+                                    {% else %}
+                                        {{ localized.text.session | raw }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% if config.packages is not empty and cookie.borlabsServicePackageKey is not empty %}
+                                        {% set package = findObject(config.packages, 'borlabsServicePackageKey', cookie.borlabsServicePackageKey) %}
+                                        {% if package %}
+                                            <a class="brlbs-cmpnt-link" data-brlbs-anchor-link href="#package-{{ cookie.borlabsServicePackageKey }}">{{ package.name }}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/details.html.twig" as details_icon %}
+                                {% block content %}
+                                    <button
+                                        data-brlbs-modal-target="{{ 'borlabsModalCookieDetails-' ~ cookie.id }}">
+                                        {{ details_icon.component({}) }}
+                                    </button>
+                                    {% embed "system/embed/modal/modal.html.twig" with {
+                                        id: 'borlabsModalCookieDetails-' ~ cookie.id,
+                                        maxWidth: 'bc-max-w-2xl',
+                                        title: cookie.name,
+                                    } %}
+                                        {% block icon %}
+                                            {% import "system/macro/icons/details.html.twig" as details_icon %}
+                                            <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                                {{ details_icon.component({}) }}
+                                            </div>
+                                        {% endblock %}
+
+                                        {% block description %}
+                                            {% import "cloud-scan/macro/cookie-details.html.twig" as cookie_details %}
+                                            {{ cookie_details.component(cookie, localized) }}
+                                        {% endblock %}
+                                    {% endembed %}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

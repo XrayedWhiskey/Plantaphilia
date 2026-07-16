@@ -1,14 +1,16 @@
-<?php 
+<?php
 
 namespace WP_Statistics\Service\Admin\VisitorInsights;
 
+use WP_STATISTICS\Option;
 use WP_STATISTICS\Admin_Template;
-use WP_Statistics\Components\DateRange;
-use WP_Statistics\Models\OnlineModel;
+use WP_Statistics\Utils\Request;
 use WP_Statistics\Models\ViewsModel;
-use WP_Statistics\Models\VisitorsModel;
-use WP_STATISTICS\TimeZone;
+use WP_Statistics\Models\OnlineModel;
+use WP_Statistics\Components\DateRange;
 use WP_STATISTICS\Helper;
+use WP_Statistics\Models\VisitorsModel;
+use WP_Statistics\Service\Charts\ChartDataProviderFactory;
 
 class VisitorInsightsDataProvider
 {
@@ -16,75 +18,122 @@ class VisitorInsightsDataProvider
     protected $visitorsModel;
     protected $onlineModel;
     protected $viewsModel;
-    
+
+    protected $isTrackLoggedInUsersEnabled;
+
+    protected $chartData;
+
     public function __construct($args)
     {
         $this->args = $args;
+
+        $this->isTrackLoggedInUsersEnabled = Option::get('visitors_log') ? true : false;
 
         $this->visitorsModel = new VisitorsModel();
         $this->onlineModel   = new OnlineModel();
         $this->viewsModel    = new ViewsModel();
     }
 
-    public function getChartsData()
+    public function getOverviewData()
     {
+        $overviewChartData = $this->getOverviewChartsData();
+
+        $summary = ChartDataProviderFactory::summaryChart(['include_total' => true])->getData();
+        $online  = $this->onlineModel->countOnlines();
+
+        $visitors       = $this->visitorsModel->countVisitors();
+        $prevVisitors   = $this->visitorsModel->countVisitors(['date' => DateRange::getPrevPeriod()]);
+        $views          = $this->visitorsModel->countHits();
+        $prevViews      = $this->visitorsModel->countHits(['date' => DateRange::getPrevPeriod()]);
+
+        $loggedIn           = $this->visitorsModel->countVisitors(['logged_in' => true]);
+        $prevLoggedIn       = $this->visitorsModel->countVisitors(['logged_in' => true, 'date' => DateRange::getPrevPeriod()]);
+        $loggedInShare      = Helper::calculatePercentage($loggedIn, $visitors);
+        $prevLoggedInShare  = Helper::calculatePercentage($prevLoggedIn, $prevVisitors);
+
+        $referrers      = $this->visitorsModel->getReferrers(['decorate' => true, 'per_page' => 5]);
+        $topVisitors    = $this->visitorsModel->getVisitorsData(['order_by' => 'hits', 'order' => 'DESC', 'page' => 1, 'per_page' => 5]);
+        $entryPages     = $this->visitorsModel->getEntryPages(['per_page' => 5]);
+
+        $glance = [
+            'visitors'  => [
+                'value'     => $visitors,
+                'change'    => Helper::calculatePercentageChange($prevVisitors, $visitors)
+            ],
+            'views'     => [
+                'value'     => $views,
+                'change'    => Helper::calculatePercentageChange($prevViews, $views)
+            ],
+            'country'   => $overviewChartData['countries']['labels'][0] ?? '',
+            'referrer'  => isset($referrers[0]) ? $referrers[0]->getRawReferrer() : '',
+        ];
+
+        if ($this->isTrackLoggedInUsersEnabled) {
+            // Only show change if we have previous visitor data to calculate share from
+            $loggedInChange = ($prevVisitors == 0) ? null : ($loggedInShare - $prevLoggedInShare);
+            $glance['logged_in'] = [
+                'value'     => $loggedInShare . '%',
+                'change'    => $loggedInChange
+            ];
+        }
+
         return [
-            'traffic_chart_data' => $this->getTrafficChartData()
+            'glance'        => $glance,
+            'summary'       => $summary,
+            'online'        => $online,
+            'referrers'     => $referrers,
+            'entry_pages'   => $entryPages,
+            'map_chart'     => $overviewChartData['map'],
+            'visitors'      => $topVisitors,
         ];
     }
 
-    public function getTrafficChartData()
+    public function getOverviewChartsData()
     {
-        $result = [
-            'data'          => ['labels' => [], 'visitors' => [], 'views' => []],
-            'previousData'  => ['labels' => [], 'visitors' => [], 'views' => []]
+        if (!empty($this->chartData)) {
+            return $this->chartData;
+        }
+
+        $platformsChart = ChartDataProviderFactory::platformCharts();
+        $countryChart   = ChartDataProviderFactory::countryChart();
+        $trafficChart   = ChartDataProviderFactory::trafficChart();
+        $mapChart       = ChartDataProviderFactory::mapChart();
+
+        $this->chartData = [
+            'devices'   => $platformsChart->getDeviceData(),
+            'browsers'  => $platformsChart->getBrowserData(),
+            'countries' => $countryChart->getData(),
+            'traffic'   => $trafficChart->getData(),
+            'map'       => $mapChart->getData()
         ];
 
-        // If range is set, use it, otherwise, get from usermeta
-        $thisPeriod = isset($this->args['date']) ? $this->args['date'] : DateRange::get();
-        $prevPeriod = isset($this->args['date']) ? DateRange::getPrevPeriod($this->args['date']) : DateRange::getPrevPeriod();
-
-        $currentDates   = array_keys(TimeZone::getListDays($thisPeriod));
-        $prevDates      = array_keys(TimeZone::getListDays($prevPeriod));
-
-        $currentVisitors = $this->visitorsModel->countDailyVisitors($this->args);
-        $currentVisitors = wp_list_pluck($currentVisitors, 'visitors', 'date');
-        $currentViews    = $this->viewsModel->countDailyViews(array_merge($this->args, ['ignore_post_type' => true]));
-        $currentViews    = wp_list_pluck($currentViews, 'views', 'date');
-        
-        $prevVisitors   = $this->visitorsModel->countDailyVisitors(array_merge($this->args, ['date' => $prevPeriod]));
-        $prevVisitors   = wp_list_pluck($prevVisitors, 'visitors', 'date');
-        $prevViews      = $this->viewsModel->countDailyViews(array_merge($this->args, ['date' => $prevPeriod]));
-        $prevViews      = wp_list_pluck($prevViews, 'views', 'date');
-
-        foreach ($currentDates as $date) {
-            $result['data']['labels'][]   = [
-                'date' => date_i18n(Helper::getDefaultDateFormat(false, true, true), strtotime($date)),
-                'day'  => date_i18n('l', strtotime($date))
-            ];
-            $result['data']['visitors'][] = isset($currentVisitors[$date]) ? intval($currentVisitors[$date]) : 0;
-            $result['data']['views'][]    = isset($currentViews[$date]) ? intval($currentViews[$date]) : 0;
+        if ($this->isTrackLoggedInUsersEnabled) {
+            $this->chartData['logged_in_users'] = ChartDataProviderFactory::loggedInUsers()->getData();
         }
 
-        foreach ($prevDates as $date) {
-            $result['previousData']['labels'][]   = [
-                'date' => date_i18n(Helper::getDefaultDateFormat(false, true, true), strtotime($date)),
-                'day'  => date_i18n('l', strtotime($date))
-            ];
-            $result['previousData']['visitors'][] = isset($prevVisitors[$date]) ? intval($prevVisitors[$date]) : 0;
-            $result['previousData']['views'][]    = isset($prevViews[$date]) ? intval($prevViews[$date]) : 0;
-        }
+        return $this->chartData;
+    }
 
-        return $result;
+    public function getViewsChartsData()
+    {
+        return [
+            'traffic_chart_data' => ChartDataProviderFactory::trafficChart($this->args)->getData()
+        ];
+    }
+
+    public function getLoggedInChartsData()
+    {
+        return [
+            'logged_in_chart_data' => ChartDataProviderFactory::usersTrafficChart($this->args)->getData()
+        ];
     }
 
     public function getVisitorsData()
     {
         return [
             'data'  => $this->visitorsModel->getVisitorsData(array_merge($this->args, [
-                'page_info' => true,
                 'user_info' => true,
-                'order_by'  => 'date',
+                'order_by'  => 'visitor.ID',
                 'order'     => 'DESC',
                 'page'      => Admin_Template::getCurrentPaged(),
                 'per_page'  => Admin_Template::$item_per_page,
@@ -93,12 +142,21 @@ class VisitorInsightsDataProvider
         ];
     }
 
+    public function getViewsData()
+    {
+        return [
+            'data'  => $this->viewsModel->getViewsData(array_merge($this->args, [
+                'page'      => Admin_Template::getCurrentPaged(),
+                'per_page'  => Admin_Template::$item_per_page,
+            ])),
+            'total' => $this->viewsModel->countViewRecords($this->args)
+        ];
+    }
+
     public function getOnlineVisitorsData()
     {
         return [
-            'data'  => $this->onlineModel->getOnlineVisitorsData(array_merge($this->args, [
-                'order_by'  => 'date',
-                'order'     => 'DESC',
+            'data'  => $this->onlineModel->getOnlineVisitors(array_merge($this->args, [
                 'page'      => Admin_Template::getCurrentPaged(),
                 'per_page'  => Admin_Template::$item_per_page
             ])),
@@ -110,7 +168,6 @@ class VisitorInsightsDataProvider
     {
         return [
             'data'  => $this->visitorsModel->getVisitorsData(array_merge($this->args, [
-                'page_info' => true,
                 'user_info' => true,
                 'order_by'  => 'hits',
                 'order'     => 'DESC',
@@ -123,14 +180,48 @@ class VisitorInsightsDataProvider
 
     public function getVisitorData()
     {
-        $visitorInfo    = $this->visitorsModel->getVisitorData($this->args);
-        $userInfo       = !empty($visitorInfo->user_id) ? new \WP_User($visitorInfo->user_id) : [];
-        $visitorJourney = $this->visitorsModel->getVisitorJourney($this->args);
+        $visitor  = $this->visitorsModel->getVisitorData($this->args);
+        $journey  = $this->visitorsModel->getVisitorJourney($this->args);
+        $sessions = [];
+
+        if (!$visitor->isAnonymous()) {
+            $args = [
+                'ignore_date' => true,
+                'exclude_ids' => [$visitor->getId()],
+                'page'        => 1,
+                'per_page'    => 50
+            ];
+
+            if (!empty($visitor->getUser())) {
+                $args['user_id'] = $visitor->getUserId();
+            } else {
+                $args['ip'] = $visitor->getIP();
+            }
+
+            $sessions = $this->visitorsModel->getVisitorsData($args);
+        }
 
         return [
-            'visitor_info'      => $visitorInfo,
-            'visitor_journey'   => $visitorJourney,
-            'user_info'         => $userInfo
+            'visitor'  => $visitor,
+            'journey'  => $journey,
+            'sessions' => $sessions
+        ];
+    }
+
+    public function getLoggedInUsersData()
+    {
+        return [
+            'data'  => $this->visitorsModel->getVisitorsData(array_merge($this->args, [
+                'logged_in' => true,
+                'order_by'  => 'visitor.ID',
+                'order'     => 'DESC',
+                'page'      => Admin_Template::getCurrentPaged(),
+                'per_page'  => Admin_Template::$item_per_page,
+            ])),
+            'total' => $this->visitorsModel->countVisitors(array_merge($this->args, [
+                'logged_in' => true,
+                'user_role' => Request::get('role', '')
+            ]))
         ];
     }
 }

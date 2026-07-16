@@ -15,7 +15,7 @@ class Helper {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.0.3';
+	const VERSION = '2.1.0';
 
 	public static function get_version() {
 		return self::VERSION;
@@ -29,7 +29,7 @@ class Helper {
 		if ( ! did_action( 'plugins_loaded' ) ) {
 			add_action(
 				'plugins_loaded',
-				function() {
+				function () {
 					self::load();
 				}
 			);
@@ -45,7 +45,7 @@ class Helper {
 	}
 
 	private static function load() {
-		$callback = function() {
+		$callback = function () {
 			if ( $queue = self::get_queue() ) {
 				if ( self::enable_tax_rate_observer() ) {
 					// Schedule once per day at 0:00 in local timezone
@@ -55,8 +55,6 @@ class Helper {
 						 * local timezone.
 						 */
 						$date = wc_string_to_datetime( 'tomorrow midnight' );
-						$date->modify( '+1 second' );
-
 						$queue->cancel_all( 'woocommerce_eu_tax_helper_rate_observer', array(), 'woocommerce_eu_tax_helper' );
 
 						/**
@@ -78,7 +76,7 @@ class Helper {
 
 		add_action(
 			'woocommerce_eu_tax_helper_rate_observer',
-			function() {
+			function () {
 				self::maybe_apply_tax_rate_changesets();
 			},
 			10
@@ -121,24 +119,22 @@ class Helper {
 
 							self::import_rates( $rates, $class, $tax_class_type, false );
 						}
-					} else {
-						if ( in_array( self::get_base_country(), $countries, true ) ) {
-							$eu_rates = self::get_eu_tax_rates( false );
+					} elseif ( in_array( self::get_base_country(), $countries, true ) ) {
+						$eu_rates = self::get_eu_tax_rates( false );
 
-							foreach ( $changeset as $country => $tax_rates ) {
-								$eu_rates[ $country ] = $tax_rates;
-							}
+						foreach ( $changeset as $country => $tax_rates ) {
+							$eu_rates[ $country ] = $tax_rates;
+						}
 
-							$tax_rates = self::generate_tax_rates( false, array(), $eu_rates, false );
+						$tax_rates = self::generate_tax_rates( false, array(), $eu_rates, false );
 
-							self::log( sprintf( 'New tax rates: %1$s', wc_print_r( $tax_rates, true ) ) );
+						self::log( sprintf( 'New tax rates: %1$s', wc_print_r( $tax_rates, true ) ) );
 
-							foreach ( $tax_rates as $tax_class_type => $tax_rate_data ) {
-								$class = $tax_rate_data['tax_class'];
-								$rates = $tax_rate_data['rates'];
+						foreach ( $tax_rates as $tax_class_type => $tax_rate_data ) {
+							$class = $tax_rate_data['tax_class'];
+							$rates = $tax_rate_data['rates'];
 
-								self::import_rates( $rates, $class, $tax_class_type );
-							}
+							self::import_rates( $rates, $class, $tax_class_type );
 						}
 					}
 
@@ -335,10 +331,10 @@ class Helper {
 		$order = is_a( $order, 'WC_Order' ) ? $order : wc_get_order( $order );
 
 		$taxable_address = array(
-			WC()->countries->get_base_country(),
-			WC()->countries->get_base_state(),
-			WC()->countries->get_base_postcode(),
-			WC()->countries->get_base_city(),
+			self::get_base_country(),
+			self::get_base_state(),
+			self::get_base_postcode(),
+			self::get_base_city(),
 		);
 
 		if ( ! $order ) {
@@ -390,10 +386,10 @@ class Helper {
 
 		if ( $is_admin_order_request ) {
 			$taxable_address = array(
-				WC()->countries->get_base_country(),
-				WC()->countries->get_base_state(),
-				WC()->countries->get_base_postcode(),
-				WC()->countries->get_base_city(),
+				self::get_base_country(),
+				self::get_base_state(),
+				self::get_base_postcode(),
+				self::get_base_city(),
 			);
 
 			if ( isset( $_POST['order_id'] ) && ( $order = wc_get_order( absint( $_POST['order_id'] ) ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -465,26 +461,24 @@ class Helper {
 				if ( $customer && is_callable( array( $customer, $getter ) ) ) {
 					$value = $customer->{ $getter }();
 				}
-			} else {
-				if ( isset( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					$posted = array();
+			} elseif ( isset( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$posted = array();
 
-					if ( is_string( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-						parse_str( $_POST['post_data'], $posted ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-						$posted = wc_clean( wp_unslash( $posted ) );
-					} elseif ( is_array( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-						$posted = wc_clean( wp_unslash( $_POST['post_data'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					}
+				if ( is_string( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					parse_str( $_POST['post_data'], $posted ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+					$posted = wc_clean( wp_unslash( $posted ) );
+				} elseif ( is_array( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					$posted = wc_clean( wp_unslash( $_POST['post_data'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				}
 
-					$value = isset( $posted[ $key ] ) ? $posted[ $key ] : null;
+				$value = isset( $posted[ $key ] ) ? $posted[ $key ] : null;
 
-					/**
-					 * Do only allow retrieving shipping-related data in case shipping address is activated
-					 */
-					if ( 'shipping_' === substr( $key, 0, 9 ) ) {
-						if ( ! isset( $posted['ship_to_different_address'] ) || ! $posted['ship_to_different_address'] || wc_ship_to_billing_address_only() ) {
-							return self::get_current_request_value( str_replace( 'shipping_', 'billing_', $key ) );
-						}
+				/**
+				 * Do only allow retrieving shipping-related data in case shipping address is activated
+				 */
+				if ( 'shipping_' === substr( $key, 0, 9 ) ) {
+					if ( ! isset( $posted['ship_to_different_address'] ) || ! $posted['ship_to_different_address'] || wc_ship_to_billing_address_only() ) {
+						return self::get_current_request_value( str_replace( 'shipping_', 'billing_', $key ) );
 					}
 				}
 			}
@@ -532,10 +526,8 @@ class Helper {
 			if ( $order = wc_get_order( absint( $_POST['order_id'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 				$is_vat_exempt = apply_filters( 'woocommerce_order_is_vat_exempt', 'yes' === $order->get_meta( 'is_vat_exempt' ), $order );
 			}
-		} else {
-			if ( WC()->customer && WC()->customer->is_vat_exempt() ) {
+		} elseif ( WC()->customer && WC()->customer->is_vat_exempt() ) {
 				$is_vat_exempt = true;
-			}
 		}
 
 		return apply_filters( 'woocommerce_eu_tax_helper_current_request_has_vat_exempt', $is_vat_exempt );
@@ -543,10 +535,42 @@ class Helper {
 
 	public static function get_base_country() {
 		if ( WC()->countries ) {
-			return WC()->countries->get_base_country();
+			$base_country = WC()->countries->get_base_country();
 		} else {
-			return wc_get_base_location()['country'];
+			$base_country = wc_get_base_location()['country'];
 		}
+
+		return apply_filters( 'woocommerce_eu_tax_helper_base_country', $base_country );
+	}
+
+	public static function get_base_postcode() {
+		$base_postcode = '';
+
+		if ( WC()->countries ) {
+			$base_postcode = WC()->countries->get_base_postcode();
+		}
+
+		return apply_filters( 'woocommerce_eu_tax_helper_base_postcode', $base_postcode );
+	}
+
+	public static function get_base_state() {
+		$base_state = '';
+
+		if ( WC()->countries ) {
+			$base_state = WC()->countries->get_base_state();
+		}
+
+		return apply_filters( 'woocommerce_eu_tax_helper_base_state', $base_state );
+	}
+
+	public static function get_base_city() {
+		$base_city = '';
+
+		if ( WC()->countries ) {
+			$base_city = WC()->countries->get_base_city();
+		}
+
+		return apply_filters( 'woocommerce_eu_tax_helper_base_city', $base_city );
 	}
 
 	/**
@@ -857,7 +881,26 @@ class Helper {
 	}
 
 	public static function get_tax_type_by_country_rate( $rate_percentage, $country ) {
-		$country = strtoupper( $country );
+		$tax_type = self::find_tax_type_by_rate( self::get_eu_tax_rates(), $country, $rate_percentage );
+
+		/**
+		 * Fallback to older tax rates without applying changesets
+		 */
+		if ( '' === $tax_type ) {
+			$tax_type = self::find_tax_type_by_rate( self::get_eu_tax_rates( false ), $country, $rate_percentage );
+		}
+
+		if ( '' === $tax_type ) {
+			$tax_type = 'standard';
+		}
+
+		return apply_filters( 'woocommerce_eu_tax_helper_country_rate_tax_type', $tax_type, $country, $rate_percentage );
+	}
+
+	protected static function find_tax_type_by_rate( $eu_rates, $country, $rate_percentage ) {
+		$tax_type        = '';
+		$rate_percentage = (float) $rate_percentage;
+		$country         = strtoupper( $country );
 
 		/**
 		 * Map northern ireland to GB
@@ -866,16 +909,15 @@ class Helper {
 			$country = 'GB';
 		}
 
-		$eu_rates        = self::get_eu_tax_rates();
-		$tax_type        = 'standard';
-		$rate_percentage = (float) $rate_percentage;
-
 		if ( array_key_exists( $country, $eu_rates ) ) {
 			$rates = $eu_rates[ $country ];
 
 			foreach ( $rates as $rate ) {
 				foreach ( $rate as $tax_rate_type => $tax_rate_percent ) {
-					if ( ( is_array( $tax_rate_percent ) && in_array( $rate_percentage, $tax_rate_percent, true ) ) || (float) $tax_rate_percent === $rate_percentage ) {
+					/**
+					 * Do not use strict for in array as some rates may be stored as integer instead of floats.
+					 */
+					if ( ( is_array( $tax_rate_percent ) && in_array( $rate_percentage, $tax_rate_percent ) ) || (float) $tax_rate_percent === $rate_percentage ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict
 						$tax_type = $tax_rate_type;
 						break;
 					}
@@ -883,7 +925,7 @@ class Helper {
 			}
 		}
 
-		return apply_filters( 'woocommerce_eu_tax_helper_country_rate_tax_type', $tax_type, $country, $rate_percentage );
+		return $tax_type;
 	}
 
 	public static function get_eu_tax_rate_changesets( $apply_postcode_exempts = true ) {
@@ -908,6 +950,58 @@ class Helper {
 						'standard'      => 17,
 						'reduced'       => array( 8 ),
 						'super-reduced' => 3,
+					),
+				),
+			),
+			'2024-09-01' => array(
+				'FI' => array(
+					array(
+						'standard' => 25.5,
+						'reduced'  => array( 10, 14 ),
+					),
+				),
+			),
+			'2025-01-01' => array(
+				'SK' => array(
+					array(
+						'standard' => 23,
+						'reduced'  => array( 19 ),
+					),
+				),
+				'EE' => array(
+					array(
+						'standard' => 22,
+						'reduced'  => array( 9, 13 ),
+					),
+				),
+			),
+			'2025-07-01' => array(
+				'EE' => array(
+					array(
+						'standard' => 24,
+						'reduced'  => array( 9, 13 ),
+					),
+				),
+			),
+			'2025-08-01' => array(
+				'RO' => array(
+					array(
+						'standard' => 21,
+						'reduced'  => array( 11 ),
+					),
+				),
+			),
+			'2026-01-01' => array(
+				'LT' => array(
+					array(
+						'standard' => 21,
+						'reduced'  => array( 5, 12 ),
+					),
+				),
+				'FI' => array(
+					array(
+						'standard' => 25.5,
+						'reduced'  => array( 10, 13.5 ),
 					),
 				),
 			),
@@ -974,7 +1068,7 @@ class Helper {
 			'EE' => array(
 				array(
 					'standard' => 22,
-					'reduced'  => array( 9 ),
+					'reduced'  => array( 9, 13 ),
 				),
 			),
 			'GR' => array(
@@ -992,7 +1086,7 @@ class Helper {
 			),
 			'FI' => array(
 				array(
-					'standard' => 24,
+					'standard' => 25.5,
 					'reduced'  => array( 10, 14 ),
 				),
 			),
@@ -1078,7 +1172,7 @@ class Helper {
 					// Madeira
 					'postcode' => array( '90*', '91*', '92*', '93*', '94*' ),
 					'standard' => 22,
-					'reduced'  => array( 5, 12 ),
+					'reduced'  => array( 4, 12 ),
 					'name'     => _x( 'Madeira', 'tax-helper', 'one-stop-shop-woocommerce' ),
 				),
 				array(
@@ -1113,8 +1207,8 @@ class Helper {
 			),
 			'SK' => array(
 				array(
-					'standard' => 20,
-					'reduced'  => array( 10 ),
+					'standard' => 23,
+					'reduced'  => array( 19 ),
 				),
 			),
 			'GB' => array(

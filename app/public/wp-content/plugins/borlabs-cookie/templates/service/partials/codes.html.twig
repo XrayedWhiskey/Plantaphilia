@@ -1,0 +1,46 @@
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.htmlAndJavascript,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'html',
+                hint: localized.hint.optInCode,
+                id: 'optInCode',
+                label: localized.field.optInCode,
+                value: data.optInCode,
+            }) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'html',
+                hint: localized.hint.optOutCode,
+                id: 'optOutCode',
+                label: localized.field.optOutCode,
+                value: data.optOutCode,
+            }) }}
+
+            {{ row_codearea.component({
+                clipboard: true,
+                editorLanguage: 'html',
+                hint: localized.hint.fallbackCode,
+                id: 'fallbackCode',
+                label: localized.field.fallbackCode,
+                value: data.fallbackCode,
+            }) }}
+
+            {{ row_save.component({
+                backLink: "?page=#{controllerId}",
+            }, localized) }}
+        {% endblock %}
+    {% endembed %}
+</div>

@@ -28,7 +28,7 @@ class TablePress_Evaluate_PHPSpreadsheet {
 	 */
 	public function __construct() {
 		// Load PHPSpreadsheet via its autoloading mechanism.
-		TablePress::load_file( 'autoload.php', 'libraries' );
+		TablePress::load_file( 'autoload.php', 'libraries/vendor' );
 	}
 
 	/**
@@ -111,7 +111,10 @@ class TablePress_Evaluate_PHPSpreadsheet {
 										$cell_content = "<a href=\"{$url}\">{$cell_content}</a>";
 									}
 								}
-							} catch ( \TablePress\PhpOffice\PhpSpreadsheet\Calculation\Exception $exception ) {
+
+								// Sanitize the output of the evaluated formula.
+								$cell_content = wp_kses_post( $cell_content ); // Equals wp_filter_post_kses(), but without the unnecessary slashes handling.
+							} catch ( \Throwable $exception ) {
 								$message = str_replace( 'Worksheet!', '', $exception->getMessage() );
 								$cell_content = "!ERROR! {$message}";
 							}
@@ -124,7 +127,7 @@ class TablePress_Evaluate_PHPSpreadsheet {
 			// Save PHP memory.
 			$spreadsheet->disconnectWorksheets();
 			unset( $cell_collection, $worksheet, $spreadsheet );
-		} catch ( \TablePress\PhpOffice\PhpSpreadsheet\Calculation\Exception $exception ) {
+		} catch ( \Throwable $exception ) {
 			$message = str_replace( 'Worksheet!', '', $exception->getMessage() );
 			$table_data = array( array( "!ERROR! {$message}" ) );
 		}

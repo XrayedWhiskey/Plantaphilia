@@ -1,0 +1,23 @@
+{% macro component(config, localized) %}
+    {% set cssClasses = ['bc-w-24 bc-inline-block bc-rounded-md bc-px-3 bc-py-1.5 bc-text-sm bc-text-center'] %}
+
+    {% if config.level.value == 'alert' %}
+        {% set cssClasses = ['bc-w-full bc-bg-red-600 bc-text-white bc-font-semibold'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'critical' %}
+        {% set cssClasses = ['bc-w-full bc-bg-red-500 bc-text-white bc-font-semibold'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'debug' %}
+        {% set cssClasses = ['bc-bg-white bc-text-blue-500 bc-border-2 bc-border-solid bc-border-blue-700'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'emergency' %}
+        {% set cssClasses = ['bc-w-full bc-bg-red-700 bc-text-white bc-font-semibold'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'error' %}
+        {% set cssClasses = ['bc-bg-red-500 bc-text-white'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'info' %}
+        {% set cssClasses = ['bc-bg-blue-500 bc-text-white'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'notice' %}
+        {% set cssClasses = ['bc-bg-gray-300 bc-text-gray-700'] | merge (cssClasses)%}
+    {% elseif config.level.value == 'warning' %}
+        {% set cssClasses = ['bc-bg-orange-500 bc-text-white'] | merge (cssClasses)%}
+    {% endif %}
+
+    <span class="{{ cssClasses | join (' ') }}">{{ config.level.key }}</span>
+{% endmacro %}

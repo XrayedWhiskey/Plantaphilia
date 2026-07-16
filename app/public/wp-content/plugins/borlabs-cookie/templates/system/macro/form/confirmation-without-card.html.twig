@@ -1,0 +1,59 @@
+{% macro component(config, localized) %}
+    {% set config = {id:'default', action:'reset'} | merge(config) %}
+    {% set button = localized.global.button.reset %}
+    {% if config.button is not empty %}
+        {% set button = config.button %}
+    {% endif %}
+    {% set label = localized.global.field.confirmed %}
+    {% if config.label is not empty %}
+        {% set label = config.label %}
+    {% endif %}
+    {% set title = localized.global.field.confirmReset %}
+    {% if config.title is not empty %}
+        {% set title = config.title %}
+    {% endif %}
+    <form action="{{ config.route }}" method="post">
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+            {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+            {% block label %}
+                {{ title | raw }}
+            {% endblock %}
+
+            {% block input %}
+                <div class="bc-flex bc-items-center">
+                    {{ checkbox.component({
+                        id: config.action ~'Confirmation-'~ config.id,
+                        dataAttribute: 'data-brlbs-enable-target="'~ config.action ~'Execute-'~ config.id ~ '"'
+                    }) }}
+
+                    <label class="bc-mr-2 bc-pl-2"
+                           for="{{ config.action }}Confirmation-{{ config.id }}">{{ label | raw }}</label>
+                    <div class="bc-inline-block">
+                        {% if config.hint is not empty %}
+                            {{ hint.component({
+                                hint: config.hint,
+                            }) }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" with {transparent: true} %}
+            {% block input %}
+                {% import "system/macro/form-component/button-danger.html.twig" as button_danger %}
+                {{ config.nonce | raw }}
+                <input type="hidden" name="action"
+                       value="{{ config.action }}{% if config.id != 'default' %}-{{ config.id }}{% endif %}">
+                {{ button_danger.component({
+                    focusColor: 'focus:bc-ring-red-800',
+                    button: button,
+                    isDisabled: true,
+                    id: config.action ~ 'Execute-' ~ config.id,
+                }, localized) }}
+            {% endblock %}
+        {% endembed %}
+    </form>
+{% endmacro %}

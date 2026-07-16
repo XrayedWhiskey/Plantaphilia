@@ -1,0 +1,96 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.uid | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.cookieVersion | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.serviceConsents | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.iabTcfConsent | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.stamp | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                {% block content %}
+                    {{ identification_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.consentLogs is empty %}
+                <tr>
+                    <td colspan="5" class="bc-py-4 bc-text-center">
+                        {{ localized.alert.noConsentLogs | raw }}
+                    </td>
+                </tr>
+            {% else %}
+                {% for item in config.consentLogs %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ item.uid | upper | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ item.cookieVersion }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% set numberOfConsents = 0 %}
+                                    {% for serviceGroupConsents in item.consents.list %}
+                                        {% set numberOfConsents = numberOfConsents + serviceGroupConsents.services | length %}
+                                    {% endfor %}
+                                    {{ numberOfConsents }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if item.iabTcfTCString %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        {{ x_circle_icon.component({}) }}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ adjustTimezone(item.stamp).format('Y-m-d H:i:s') | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/identification.html.twig" as identification_icon %}
+                                {% block content %}
+                                    <a href="{{ wpNonceUrl("?page=#{config.controllerId}&action=details&id=#{item.id}", "#{config.controllerId}-#{item.id}-details") | raw }}">
+                                        {{ identification_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

@@ -1,41 +1,56 @@
 <?php
 
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
 use WP_STATISTICS\Admin_Template;
+use WP_Statistics\Components\View;
 use WP_STATISTICS\Helper;
 use WP_STATISTICS\Option;
+use WP_Statistics\Service\Admin\LicenseManagement\LicenseHelper;
 
-$isDataPlusActive = Helper::isAddOnActive('data-plus');
+$isLicenseValid     = LicenseHelper::isPluginLicenseValid('wp-statistics-data-plus');
+$isDataPlusActive   = Helper::isAddOnActive('data-plus');
+?>
+    <h2 class="wps-settings-box__title">
+        <span><?php esc_html_e('Data Plus', 'wp-statistics'); ?></span>
+        <a href="<?php echo esc_url(WP_STATISTICS_SITE_URL . '/resources-category/data-plus/?utm_source=wp-statistics&utm_medium=link&utm_campaign=settings') ?>" target="_blank"><?php esc_html_e('View Guide', 'wp-statistics'); ?></a>
+    </h2>
+    <?php
 
 if (!$isDataPlusActive) echo Admin_Template::get_template(
     'layout/partials/addon-premium-feature',
     [
-        'addon_slug'        => esc_url(WP_STATISTICS_SITE_URL . '/product/wp-statistics-data-plus/?utm_source=wp-statistics&utm_medium=link&utm_campaign=plugin-settings'),
-        'addon_title'       => __('DataPlus Add-On', 'wp-statistics'),
-        'addon_description' => __('The settings on this page are part of the DataPlus add-on, which enhances WP Statistics by expanding tracking capabilities and providing detailed visitor insights.', 'wp-statistics'),
-        'addon_features'    => [
+        'addon_slug'         => esc_url(WP_STATISTICS_SITE_URL . '/add-ons/wp-statistics-data-plus/?utm_source=wp-statistics&utm_medium=link&utm_campaign=data-plus'),
+        'addon_title'        => __('DataPlus Add-on', 'wp-statistics'),
+        'addon_modal_target' => 'wp-statistics-data-plus',
+        'addon_description'  => __('The settings on this page are part of the DataPlus add-on, which enhances WP Statistics by expanding tracking capabilities and providing detailed visitor insights.', 'wp-statistics'),
+        'addon_features'     => [
             __('Track custom post types and taxonomies.', 'wp-statistics'),
             __('Use advanced filtering for specific query parameters and UTM tags.', 'wp-statistics'),
             __('Monitor outbound link clicks and downloads.', 'wp-statistics'),
             __('Compare weekly traffic and view hourly visitor patterns.', 'wp-statistics'),
             __('Analyze individual content pieces with detailed widgets.', 'wp-statistics'),
         ],
-        'addon_info'        => 'Unlock deeper insights into your website\'s performance with DataPlus.',
-    ],
-    true
-);
-?>
+        true
+    ]);
+
+
+    if ($isDataPlusActive && !$isLicenseValid) {
+        View::load("components/lock-sections/notice-inactive-license-addon");
+    }
+    ?>
     <div class="postbox">
         <table class="form-table <?php echo !$isDataPlusActive ? 'form-table--preview' : '' ?>">
             <tbody>
-            <tr valign="top">
+            <tr class="wps-settings-box_head">
                 <th scope="row" colspan="2">
                     <h3><?php esc_html_e('Event Tracking', 'wp-statistics'); ?></h3>
                 </th>
             </tr>
 
-            <tr valign="top">
+            <tr data-id="link_tracker_tr">
                 <th scope="row">
-                    <label for="wps_addon_settings[data_plus][link_tracker]"><?php esc_html_e('Link Tracker', 'wp-statistics'); ?></label>
+                    <span class="wps-setting-label"><?php esc_html_e('Link Tracker', 'wp-statistics'); ?></span>
                 </th>
 
                 <td>
@@ -46,9 +61,9 @@ if (!$isDataPlusActive) echo Admin_Template::get_template(
                 </td>
             </tr>
 
-            <tr valign="top">
+            <tr data-id="download_tracker_tr">
                 <th scope="row">
-                    <label for="wps_addon_settings[data_plus][download_tracker]"><?php esc_html_e('Download Tracker', 'wp-statistics'); ?></label>
+                    <span class="wps-setting-label"><?php esc_html_e('Download Tracker', 'wp-statistics'); ?></span>
                 </th>
 
                 <td>
@@ -65,15 +80,15 @@ if (!$isDataPlusActive) echo Admin_Template::get_template(
     <div class="postbox">
         <table class="form-table <?php echo !$isDataPlusActive ? 'form-table--preview' : '' ?>">
             <tbody>
-            <tr valign="top">
+            <tr class="wps-settings-box_head">
                 <th scope="row" colspan="2">
                     <h3><?php esc_html_e('User Interface Preferences', 'wp-statistics'); ?></h3>
                 </th>
             </tr>
 
-            <tr valign="top">
+            <tr data-id="latest_visitors_in_editor_tr">
                 <th scope="row">
-                    <label for="wps_addon_settings[data_plus][latest_visitors_metabox]"><?php esc_html_e('Latest Visitors in Editor', 'wp-statistics'); ?></label>
+                    <span class="wps-setting-label"><?php esc_html_e('Latest Visitors in Editor', 'wp-statistics'); ?></span>
                 </th>
 
                 <td>
@@ -89,6 +104,6 @@ if (!$isDataPlusActive) echo Admin_Template::get_template(
 
 <?php
 if ($isDataPlusActive) {
-    submit_button(__('Update', 'wp-statistics'), 'primary', 'submit', '', array('OnClick' => "var wpsCurrentTab = getElementById('wps_current_tab'); wpsCurrentTab.value='data-plus-settings'"));
+    submit_button(__('Update', 'wp-statistics'), 'wps-button wps-button--primary', 'submit', '', array('id' => 'data_plus_submit', 'OnClick' => "var wpsCurrentTab = getElementById('wps_current_tab'); wpsCurrentTab.value='data-plus-settings'"));
 }
 ?>

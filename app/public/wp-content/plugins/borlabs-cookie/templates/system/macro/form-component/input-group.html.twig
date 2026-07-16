@@ -1,0 +1,23 @@
+{% macro component(config) %}
+    {% import "system/macro/form-component/input.html.twig" as input %}
+    {# Merge overwrite default config with given config. #}
+    {% set config = {isDisabled: false, spellcheck: true, type:'text'} | merge(config) %}
+    {# Sets a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    <div class="bc-relative {{ config.width }}">
+        {% set inputConfig = config|merge({ alertMessage: null, width: 'bc-w-full' }) %}
+
+        {{ input.component(inputConfig) }}
+    </div>
+    {# Displays the message if the field is required and is empty or does not match the pattern. #}
+    {% if config.errorMessage is not empty %}
+        <div class="bc-hidden bc-pt-2 group-[.was-validated]/form:peer-invalid:bc-block bc-text-red-600">{{ config.errorMessage | raw }}</div>
+    {% endif %}
+    {# Displays the alert message if alert status is true. #}
+    {% if config.alertMessage is not empty %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error">{{ config.alertMessage | raw }}</div>
+    {% endif %}
+{% endmacro %}

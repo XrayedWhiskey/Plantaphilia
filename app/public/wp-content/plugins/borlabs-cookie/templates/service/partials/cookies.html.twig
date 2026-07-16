@@ -1,0 +1,350 @@
+{% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            button: localized.serviceCookie.button.addCookie,
+            buttonDataAttribute: 'data-brlbs-add-table-row="serviceCookies"',
+            buttonId: 'addServiceCookie',
+            buttonName: 'addServiceCookie',
+            title: localized.serviceCookie.headline.cookies,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: 'data-brlbs-table="serviceCookies"' } %}
+            {% block heading %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.name | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.hostname | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.path | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.lifetime | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.purpose | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.type | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.serviceCookie.table.description | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        #
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+
+            {% block body %}
+                {% if data.serviceCookies is not empty %}
+                    {% for serviceCookie in data.serviceCookies %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceCookies-#{loop.index0}-name",
+                                            name: "serviceCookies[#{loop.index0}][name]",
+                                            spellcheck: false,
+                                            value: serviceCookie.name,
+                                            width: 'bc-w-24',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceCookies-#{loop.index0}-hostname",
+                                            isRequired: false,
+                                            name: "serviceCookies[#{loop.index0}][hostname]",
+                                            spellcheck: false,
+                                            value: serviceCookie.hostname,
+                                            width: 'bc-w-32',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceCookies-#{loop.index0}-path",
+                                            isRequired: false,
+                                            name: "serviceCookies[#{loop.index0}][path]",
+                                            spellcheck: false,
+                                            value: serviceCookie.path,
+                                            width: 'bc-w-24',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "serviceCookies-#{loop.index0}-lifetime",
+                                            name: "serviceCookies[#{loop.index0}][lifetime]",
+                                            spellcheck: false,
+                                            value: serviceCookie.lifetime,
+                                            width: 'bc-w-24',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/select.html.twig" as select %}
+                                        {{ select.component({
+                                            id: "serviceCookies-#{loop.index0}-purpose",
+                                            name: "serviceCookies[#{loop.index0}][purpose]",
+                                            options: enum.cookiePurposes.list,
+                                            value: serviceCookie.purpose,
+                                            width: 'bc-w-32',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/select.html.twig" as select %}
+                                        {{ select.component({
+                                            id: "serviceCookies-#{loop.index0}-type",
+                                            name: "serviceCookies[#{loop.index0}][type]",
+                                            options: enum.cookieTypes.list,
+                                            value: serviceCookie.type,
+                                            width: 'bc-w-32',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/textarea.html.twig" as textarea %}
+                                        {{ textarea.component({
+                                            id: "serviceCookies-#{loop.index0}-description",
+                                            isRequired: false,
+                                            name: "serviceCookies[#{loop.index0}][description]",
+                                            value: serviceCookie.description,
+                                            width: 'bc-w-96',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "borlabsCookieServiceCookieModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "borlabsCookieServiceCookieModalDelete-#{loop.index0}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+                {% endif %}
+
+                {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: data.serviceCookies is not empty } %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: 'colspan="8"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.serviceCookie.alert.noCookieConfigured | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        <script type="text/template" data-brlbs-row-template="serviceCookies">
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceCookies-##LOOP_INDEX##-name",
+                                name: "serviceCookies[##LOOP_INDEX##][name]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-24',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceCookies-##LOOP_INDEX##-hostname",
+                                isRequired: false,
+                                name: "serviceCookies[##LOOP_INDEX##][hostname]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-32',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceCookies-##LOOP_INDEX##-path",
+                                isRequired: false,
+                                name: "serviceCookies[##LOOP_INDEX##][path]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-24',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "serviceCookies-##LOOP_INDEX##-lifetime",
+                                name: "serviceCookies[##LOOP_INDEX##][lifetime]",
+                                spellcheck: false,
+                                value: '',
+                                width: 'bc-w-24',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/select.html.twig" as select %}
+                            {{ select.component({
+                                id: "serviceCookies-##LOOP_INDEX##-purpose",
+                                name: "serviceCookies[##LOOP_INDEX##][purpose]",
+                                options: enum.cookiePurposes.list,
+                                value: '',
+                                width: 'bc-w-32',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/select.html.twig" as select %}
+                            {{ select.component({
+                                id: "serviceCookies-##LOOP_INDEX##-type",
+                                name: "serviceCookies[##LOOP_INDEX##][type]",
+                                options: enum.cookieTypes.list,
+                                value: '',
+                                width: 'bc-w-32',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/textarea.html.twig" as textarea %}
+                            {{ textarea.component({
+                                id: "serviceCookies-##LOOP_INDEX##-description",
+                                isRequired: false,
+                                name: "serviceCookies[##LOOP_INDEX##][description]",
+                                value: '',
+                                width: 'bc-w-96',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                        {% block content %}
+                            <button data-brlbs-modal-target="{{ 'borlabsCookieServiceCookieModalDelete-##LOOP_INDEX##' }}" type="button">
+                                {{ trash_icon.component({}) }}
+                            </button>
+                                {% embed "system/embed/modal/modal.html.twig" with {
+                                    buttonText: localized.global.button.delete,
+                                    id: 'borlabsCookieServiceCookieModalDelete-##LOOP_INDEX##',
+                                    title: localized.global.headline.deleteSelection,
+                                } %}
+                                {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </script>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionCookiesExplained', expanded: true } %}
+                    {% block title %}
+                        {{ localized.serviceCookie.thingsToKnow.headlineCookiesExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.serviceCookie.thingsToKnow.cookiesExplained | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionInputFieldsExplained' } %}
+                    {% block title %}
+                        {{ localized.serviceCookie.thingsToKnow.headlineInputFieldsExplained | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedDeveloperTools | raw }}</p>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedName | raw }}</p>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedHostname | raw }}</p>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedPath | raw }}</p>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedLifetime | raw }}</p>
+                        <ul class="bc-ml-4 bc-mb-4 bc-space-y-2 bc-list-disc bc-text-left">
+                            <li>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedLifetimeSession | raw }}</li>
+                            <li>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedLifetimeDate | raw }}</li>
+                        </ul>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedPurpose | raw }}</p>
+                        <ul class="bc-ml-4 bc-mb-4 bc-space-y-2 bc-list-disc bc-text-left">
+                            <li>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedPurposeFunctional | raw }}</li>
+                            <li>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedPurposeTracking | raw }}</li>
+                        </ul>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedType | raw }}</p>
+                        <p>{{ localized.serviceCookie.thingsToKnow.inputFieldsExplainedDescription | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

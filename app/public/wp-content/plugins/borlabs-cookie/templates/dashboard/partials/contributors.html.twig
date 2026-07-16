@@ -1,0 +1,51 @@
+{% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.contributors,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <div class="bc-flex bc-items-center">
+                    <span>{{ localized.text.developerAndInfrastructure | raw }}</span>
+                </div>
+            {% endblock %}
+
+            {% block input %}
+                Benjamin A. Bornschein, Dr. Ulrich T. Gabor, Constantin Graf, Malte Rabenseifner, Alexander Schörghuber, Gregor Vostrak
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <div class="bc-flex bc-items-center">
+                    <span>{{ localized.text.furtherContributors | raw }}</span>
+                </div>
+            {% endblock %}
+
+            {% block input %}
+                Ilaria Panzeri, Sven J. Scheuerle, Nick Schönwald
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <div class="bc-flex bc-items-center">
+                    <span>{{ localized.text.localization | raw }}</span>
+                </div>
+            {% endblock %}
+
+            {% block input %}
+                Emeline Damois (FR), Erman Gultop (NL), Małgorzata Kurowska (PL), Mayra León (ES), Sune &#216;stergaard (DA), Ilaria Panzeri (IT)
+            {% endblock %}
+        {% endembed %}
+
+        <div class="bc-flex bc-items-center bc-py-2.5 odd:bc-bg-white even:bc-bg-gray-50  bc-px-5 last:bc-rounded-b-md">
+            <div class="bc-w-full bc-text-center bc-italic">
+                {{ localized.text.inMemoryOfSergiiKovalenko | raw }}
+            </div>
+        </div>
+    {% endblock %}
+{% endembed %}

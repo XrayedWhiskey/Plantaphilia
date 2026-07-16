@@ -36,7 +36,7 @@ class Controller extends GenericController implements ExportableInterface {
 	protected $rest_base = 'reports/taxes';
 
 	/**
-	 * Get data from `'taxes'` Query.
+	 * Get data from `'taxes'` GenericQuery.
 	 *
 	 * @override GenericController::get_datastore_data()
 	 *
@@ -195,15 +195,17 @@ class Controller extends GenericController implements ExportableInterface {
 	public function get_collection_params() {
 		$params                       = parent::get_collection_params();
 		$params['orderby']['default'] = 'tax_rate_id';
-		$params['orderby']['enum']    = array(
-			'name',
-			'tax_rate_id',
-			'tax_code',
-			'rate',
-			'order_tax',
-			'total_tax',
-			'shipping_tax',
-			'orders_count',
+		$params['orderby']['enum']    = $this->apply_custom_orderby_filters(
+			array(
+				'name',
+				'tax_rate_id',
+				'tax_code',
+				'rate',
+				'order_tax',
+				'total_tax',
+				'shipping_tax',
+				'orders_count',
+			)
 		);
 		$params['taxes']              = array(
 			'description'       => __( 'Limit result set to items assigned one or more tax rates.', 'woocommerce' ),
@@ -224,7 +226,7 @@ class Controller extends GenericController implements ExportableInterface {
 	 * @return array Key value pair of Column ID => Label.
 	 */
 	public function get_export_columns() {
-		return array(
+		$export_columns = array(
 			'tax_code'     => __( 'Tax code', 'woocommerce' ),
 			'rate'         => __( 'Rate', 'woocommerce' ),
 			'total_tax'    => __( 'Total tax', 'woocommerce' ),
@@ -232,6 +234,14 @@ class Controller extends GenericController implements ExportableInterface {
 			'shipping_tax' => __( 'Shipping tax', 'woocommerce' ),
 			'orders_count' => __( 'Orders', 'woocommerce' ),
 		);
+
+		/**
+		 * Filter to add or remove column names from the taxes report for export.
+		 *
+		 * @since 10.7.0
+		 * @param array $export_columns Key value pair of column ID and label.
+		 */
+		return apply_filters( 'woocommerce_report_taxes_export_columns', $export_columns );
 	}
 
 	/**
@@ -241,13 +251,31 @@ class Controller extends GenericController implements ExportableInterface {
 	 * @return array Key value pair of Column ID => Row Value.
 	 */
 	public function prepare_item_for_export( $item ) {
-		return array(
-			'tax_code'     => \WC_Tax::get_rate_code( $item['tax_rate_id'] ),
+		$export_item = array(
+			'tax_code'     => \WC_Tax::get_rate_code(
+				(object) array(
+					'tax_rate_id'       => $item['tax_rate_id'],
+					'tax_rate_country'  => $item['country'],
+					'tax_rate_state'    => $item['state'],
+					'tax_rate_name'     => $item['name'],
+					'tax_rate_priority' => $item['priority'],
+				)
+			),
 			'rate'         => $item['tax_rate'],
 			'total_tax'    => self::csv_number_format( $item['total_tax'] ),
 			'order_tax'    => self::csv_number_format( $item['order_tax'] ),
 			'shipping_tax' => self::csv_number_format( $item['shipping_tax'] ),
 			'orders_count' => $item['orders_count'],
 		);
+
+		/**
+		 * Filter to prepare extra columns in the export item for the taxes
+		 * report.
+		 *
+		 * @since 10.7.0
+		 * @param array $export_item Key value pair of column ID and row value.
+		 * @param array $item        The original report item.
+		 */
+		return apply_filters( 'woocommerce_report_taxes_prepare_export_item', $export_item, $item );
 	}
 }

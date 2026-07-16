@@ -1,0 +1,15 @@
+{% if columnWidth is not empty %}
+    {% set cssColumnWidthClass = columnWidth %}
+{% else %}
+    {% set cssColumnWidthClass = 'bc-w-auto' %}
+{% endif %}
+
+{% if textAlign is not empty %}
+    {% set cssTextAlignClass = textAlign %}
+{% else %}
+    {% set cssTextAlignClass = 'bc-text-left' %}
+{% endif %}
+
+<th class="first:bc-pl-5 bc-px-3 bc-py-3 bc-font-semibold {{ cssColumnWidthClass }} {{ cssTextAlignClass }}" {{ attributes | raw }}>
+    {% block content %}{% endblock %}
+</th>

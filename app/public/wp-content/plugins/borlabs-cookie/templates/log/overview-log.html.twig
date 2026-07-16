@@ -1,0 +1,39 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{{ breadcrumb.component({
+    items: [localized.breadcrumb.module]}, localized)
+}}
+
+{{ messages() | raw }}
+
+{% embed "system/embed/card/card-with-title.html.twig" %}
+    {% import "log/macro/log-table.html.twig" as log_table %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/navigation/pagination.html.twig" as pagination %}
+
+    {% block header %}
+        <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+            {{ card_heading.component({
+                title: localized.headline.logs,
+                searchNonce: wpNonceField("#{controllerId}-search"),
+                searchPlaceholder: localized.placeholder.search,
+                searchTerm: data.searchTerm ? data.searchTerm : '',
+                showSearch: true,
+            }, localized) }}
+        </form>
+    {% endblock %}
+
+    {% block content %}
+        {{ log_table.component({
+            controllerId: controllerId,
+            logs: data.logs.data,
+        }, localized) }}
+
+        {{ pagination.component({
+            controllerId: controllerId,
+            isFollowedByInfoPanel: false,
+            pagination: data.logs,
+        }, localized) }}
+    {% endblock %}
+
+{% endembed %}

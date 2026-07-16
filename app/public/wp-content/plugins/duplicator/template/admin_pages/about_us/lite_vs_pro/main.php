@@ -10,7 +10,7 @@
 defined('ABSPATH') || exit;
 
 use Duplicator\Controllers\AboutUsController;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 /**
  * Variables
@@ -24,7 +24,7 @@ use Duplicator\Utils\Upsell;
         <h1 class="centered">
             <?php
             echo wp_kses(
-                esc_html__(
+                __(
                     '<strong>Lite</strong> vs <strong>Pro</strong>',
                     'duplicator'
                 ),
@@ -99,7 +99,7 @@ use Duplicator\Utils\Upsell;
                 <?php
                 printf(
                     '<a href="%s" target="_blank" rel="noopener noreferrer">',
-                    esc_url(Upsell::getCampaignUrl('about_duplicator_lite_vs_pro', 'Get Duplicator Pro Today'))
+                    esc_url(LinkManager::getCampaignUrl('about_duplicator_lite_vs_pro', 'Get Duplicator Pro Today'))
                 );
                 _e('Get Duplicator Pro Today and Unlock all the Powerful Features', 'duplicator')
                 ?>

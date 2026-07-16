@@ -8,6 +8,7 @@ use Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema;
 use Vendidero\Germanized\Blocks\PaymentGateways\DirectDebit;
 use Vendidero\Germanized\Blocks\PaymentGateways\Invoice;
 use Vendidero\Germanized\Package;
+use Vendidero\Germanized\Utilities\CartCheckout;
 
 final class Checkout {
 
@@ -22,7 +23,7 @@ final class Checkout {
 	private function register_filters() {
 		add_filter(
 			'woocommerce_gzd_checkout_checkbox_is_checked',
-			function( $is_checked, $checkbox_id ) {
+			function ( $is_checked, $checkbox_id ) {
 				if ( WC_germanized()->is_rest_api_request() ) {
 					$checked = WC()->session ? WC()->session->get( 'checkout_checkboxes_checked', array() ) : array();
 
@@ -41,7 +42,7 @@ final class Checkout {
 
 		add_filter(
 			'woocommerce_gzd_checkout_checkbox_is_visible',
-			function( $is_visible, $checkbox_id ) {
+			function ( $is_visible, $checkbox_id ) {
 				if ( 'photovoltaic_systems' === $checkbox_id ) {
 					if ( has_block( 'woocommerce/checkout' ) || ( WC()->session && WC_Germanized()->is_rest_api_request() && WC()->session->get( 'gzd_is_checkout_checkout', false ) ) ) {
 						$is_visible = true;
@@ -56,8 +57,8 @@ final class Checkout {
 
 		add_filter(
 			'woocommerce_get_item_data',
-			function( $item_data, $item ) {
-				$needs_price_labels = has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) || WC()->is_rest_api_request();
+			function ( $item_data, $item ) {
+				$needs_price_labels = CartCheckout::uses_checkout_block() || CartCheckout::uses_cart_block() || WC()->is_rest_api_request();
 
 				if ( apply_filters( 'woocommerce_gzd_cart_checkout_needs_block_price_labels', $needs_price_labels ) ) {
 					$labels = wc_gzd_get_checkout_shopmarks();
@@ -71,6 +72,10 @@ final class Checkout {
 					$label_item_data = array();
 
 					foreach ( $labels as $label ) {
+						if ( ! $label->is_enabled() ) {
+							continue;
+						}
+
 						$callback  = $label->get_callback();
 						$arg_count = $label->get_number_of_params();
 
@@ -120,7 +125,7 @@ final class Checkout {
 	private function adjust_markup() {
 		add_filter(
 			'render_block',
-			function( $content, $block ) {
+			function ( $content, $block ) {
 				/**
 				 * Whether to disable the (structural) adjustments applied to the WooCommerce checkout block.
 				 *
@@ -130,14 +135,38 @@ final class Checkout {
 				 */
 				if ( 'woocommerce/checkout' === $block['blockName'] ) {
 					if ( ! apply_filters( 'woocommerce_gzd_disable_checkout_block_adjustments', false ) ) {
-						$content = str_replace( 'wp-block-woocommerce-checkout ', 'wp-block-woocommerce-checkout wc-gzd-checkout ', $content );
+						$content               = str_replace( 'wp-block-woocommerce-checkout ', 'wp-block-woocommerce-checkout wc-gzd-checkout ', $content );
+						$has_custom_gzd_submit = false;
 
-						// Find the last 2 closing divs of the checkout block and replace them with our custom submit wrap.
-						preg_match( '/<\/div>(\s*)<\/div>$/', $content, $matches );
+						preg_match( '/<\/div>(\s*)<div[^<]*?data-block-name="woocommerce\/checkout-fields-block"/', $content, $matches );
 
+						/**
+						 * Latest Woo Checkout Block version inserts the total blocks before checkout fields
+						 */
 						if ( ! empty( $matches ) ) {
-							$replacement = '<div class="wc-gzd-checkout-submit"><div data-block-name="woocommerce/checkout-order-summary-block" class="wp-block-woocommerce-checkout-order-summary-block"></div><div data-block-name="woocommerce/checkout-actions-block" class="wp-block-woocommerce-checkout-actions-block"></div></div></div></div>';
-							$content     = preg_replace( '/<\/div>(\s*)<\/div>$/', $replacement, $content );
+							$content               = str_replace( 'wc-gzd-checkout ', 'wc-gzd-checkout wc-gzd-checkout-v2 ', $content );
+							$replacement           = '<div class="wc-gzd-checkout-submit"><div data-block-name="woocommerce/checkout-order-summary-block" class="wp-block-woocommerce-checkout-order-summary-block"></div><div data-block-name="woocommerce/checkout-actions-block" class="wp-block-woocommerce-checkout-actions-block"></div></div>' . $matches[0];
+							$content               = preg_replace( '/<\/div>(\s*)<div[^<]*?data-block-name="woocommerce\/checkout-fields-block"/', $replacement, $content );
+							$has_custom_gzd_submit = true;
+						} else {
+							/**
+							 * Older Woo versions used to insert the total block as last item.
+							 * Allow additional, optional whitespace at the end of the block content.
+							 */
+							preg_match( '/<\/div>(\s*)<\/div>(\s*)$/', $content, $matches );
+
+							if ( ! empty( $matches ) ) {
+								$replacement           = '<div class="wc-gzd-checkout-submit"><div data-block-name="woocommerce/checkout-order-summary-block" class="wp-block-woocommerce-checkout-order-summary-block"></div><div data-block-name="woocommerce/checkout-actions-block" class="wp-block-woocommerce-checkout-actions-block"></div></div></div></div>';
+								$content               = preg_replace( '/<\/div>(\s*)<\/div>(\s*)$/', $replacement, $content );
+								$has_custom_gzd_submit = true;
+							}
+						}
+
+						/**
+						 * Do only hide Woo submit button in case we've successfully placed the custom button.
+						 */
+						if ( $has_custom_gzd_submit ) {
+							$content = str_replace( 'wc-gzd-checkout ', 'wc-gzd-checkout wc-gzd-checkout-has-custom-submit ', $content );
 						}
 					}
 
@@ -161,14 +190,14 @@ final class Checkout {
 	private function register_integrations() {
 		add_action(
 			'woocommerce_blocks_checkout_block_registration',
-			function( $integration_registry ) {
+			function ( $integration_registry ) {
 				$integration_registry->register( new \Vendidero\Germanized\Blocks\Integrations\Checkout() );
 			}
 		);
 
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
-			function( $payment_method_registry ) {
+			function ( $payment_method_registry ) {
 				$payment_method_registry->register(
 					Package::container()->get( Invoice::class )
 				);
@@ -185,7 +214,7 @@ final class Checkout {
 			array(
 				'endpoint'        => CartSchema::IDENTIFIER,
 				'namespace'       => 'woocommerce-germanized',
-				'data_callback'   => function() {
+				'data_callback'   => function () {
 					return $this->get_cart_data();
 				},
 				'schema_callback' => function () {
@@ -207,21 +236,10 @@ final class Checkout {
 		woocommerce_store_api_register_update_callback(
 			array(
 				'namespace' => 'woocommerce-germanized-checkboxes',
-				'callback'  => function( $data ) {
+				'callback'  => function ( $data ) {
 					$checkboxes = isset( $data['checkboxes'] ) ? (array) wc_clean( wp_unslash( $data['checkboxes'] ) ) : array();
 
 					$this->parse_checkboxes( $checkboxes );
-				},
-			)
-		);
-
-		woocommerce_store_api_register_update_callback(
-			array(
-				'namespace' => 'woocommerce-germanized-set-payment-method',
-				'callback'  => function( $data ) {
-					$active_method = isset( $data['active_method'] ) ? wc_clean( wp_unslash( $data['active_method'] ) ) : '';
-
-					WC()->session->set( 'wc_gzd_blocks_chosen_payment_method', $active_method );
 				},
 			)
 		);
@@ -237,14 +255,14 @@ final class Checkout {
 
 		add_action(
 			$hook_name,
-			function( $errors, $fields, $group ) {
-				if ( 'never' !== get_option( 'woocommerce_gzd_checkout_validate_street_number' ) && function_exists( 'wc_gzd_split_shipment_street' ) ) {
+			function ( $errors, $fields, $group ) {
+				if ( 'never' !== get_option( 'woocommerce_gzd_checkout_validate_street_number' ) && function_exists( 'wc_stc_split_shipment_street' ) ) {
 					if ( 'billing' === $group && ! apply_filters( 'woocommerce_gzd_checkout_validate_billing_street_number', true ) ) {
 						return $errors;
 					}
 
-					$country   = isset( $fields['country'] ) ? $fields['country'] : $fields[ "{$group}_country" ];
-					$address_1 = isset( $fields['address_1'] ) ? $fields['address_1'] : $fields[ "{$group}_address_1" ];
+					$country   = isset( $fields['country'] ) ? $fields['country'] : ( isset( $fields[ "{$group}_country" ] ) ? $fields[ "{$group}_country" ] : '' );
+					$address_1 = isset( $fields['address_1'] ) ? $fields['address_1'] : ( isset( $fields[ "{$group}_address_1" ] ) ? $fields[ "{$group}_address_1" ] : '' );
 
 					/**
 					 * Somehow Woo calls the filter differently on my account address save action
@@ -269,8 +287,8 @@ final class Checkout {
 						$is_valid = true;
 
 						if ( in_array( $country, $countries, true ) ) {
-							$address_parts = wc_gzd_split_shipment_street( $address_1 );
-							$is_valid      = empty( $address_parts['number'] ) ? false : true;
+							$address_parts = wc_stc_split_shipment_street( $address_1 );
+							$is_valid      = '' === $address_parts['number'] ? false : true;
 						}
 
 						if ( ! apply_filters( 'woocommerce_gzd_checkout_is_valid_street_number', $is_valid, $fields ) ) {
@@ -288,12 +306,32 @@ final class Checkout {
 			3
 		);
 
+		add_action(
+			'woocommerce_store_api_checkout_update_customer_from_request',
+			function ( $customer, $request ) {
+				if ( 'never' !== get_option( 'woocommerce_gzd_checkout_validate_street_number' ) ) {
+					$billing  = $request['billing_address'];
+					$shipping = $request['shipping_address'];
+
+					if ( ! empty( $billing['address_1'] ) ) {
+						$customer->set_billing_address_1( \WC_GZD_Checkout::instance()->format_address_1( $billing['address_1'] ) );
+					}
+
+					if ( ! empty( $shipping['address_1'] ) ) {
+						$customer->set_shipping_address_1( \WC_GZD_Checkout::instance()->format_address_1( $shipping['address_1'] ) );
+					}
+				}
+			},
+			10,
+			2
+		);
+
 		/**
 		 * This hook does not contain any request data, therefor has only limited value.
 		 */
 		add_action(
 			'woocommerce_store_api_checkout_update_order_meta',
-			function( $order ) {
+			function ( $order ) {
 				\WC_GZD_Checkout::instance()->order_meta( $order );
 			},
 			5
@@ -301,7 +339,7 @@ final class Checkout {
 
 		add_action(
 			'woocommerce_store_api_checkout_update_order_from_request',
-			function( $order, $request ) {
+			function ( $order, $request ) {
 				$this->validate( $order, $request );
 
 				\WC_GZD_Checkout::instance()->order_store_checkbox_data( $order );
@@ -448,7 +486,7 @@ final class Checkout {
 				'label'                    => $checkbox->get_label(),
 				'wrapper_classes'          => array_diff( $checkbox->get_html_wrapper_classes(), array( 'validate-required', 'form-row' ) ),
 				'custom_styles'            => $checkbox->get_html_style(),
-				'error_message'            => $checkbox->get_error_message( true ),
+				'error_message'            => apply_filters( 'woocommerce_gzd_checkout_block_checkbox_show_inline_error_message', true, $checkbox ) ? $checkbox->get_error_message() : '',
 				'html_id'                  => $checkbox->get_html_id(),
 				'has_checkbox'             => ! $checkbox->hide_input(),
 				'show_for_payment_methods' => $checkbox->get_show_for_payment_methods(),
@@ -492,10 +530,10 @@ final class Checkout {
 		);
 	}
 
-	private function get_checkboxes( $context = 'view' ) {
+	private function get_checkboxes() {
 		add_filter(
 			'woocommerce_gzd_get_checkout_value',
-			function( $value, $key ) {
+			function ( $value, $key ) {
 				$getter   = "get_{$key}";
 				$customer = wc()->customer;
 
@@ -563,9 +601,9 @@ final class Checkout {
 		if ( $this->has_checkout_data( 'checkboxes', $request ) ) {
 			$checkboxes_checked = $this->parse_checkboxes( $data['checkboxes'] );
 
-			foreach ( $this->get_checkboxes( 'validate' ) as $id => $checkbox ) {
+			foreach ( $this->get_checkboxes() as $id => $checkbox ) {
 				if ( ! $checkbox->validate( in_array( $id, $checkboxes_checked, true ) ? 'yes' : '' ) ) {
-					throw new RouteException( "checkbox_{$id}", $checkbox->get_error_message(), 400 );
+					throw new RouteException( esc_html( "checkbox_{$id}" ), wp_kses_post( $checkbox->get_error_message() ), 400 );
 				}
 			}
 		}
@@ -583,7 +621,7 @@ final class Checkout {
 	 * @return array
 	 */
 	private function get_checkout_data_from_request( $request ) {
-		$data = array_filter( (array) wc_clean( $request['extensions']['woocommerce-germanized'] ) );
+		$data = array_filter( isset( $request['extensions']['woocommerce-germanized'] ) ? (array) wc_clean( $request['extensions']['woocommerce-germanized'] ) : array() );
 
 		$data = wp_parse_args(
 			$data,

@@ -1,111 +1,211 @@
-=== Booster for WooCommerce ===
-Contributors: pluggabl
-Tags: woocommerce customization, woocommerce bundle, woocommerce product addon, woocommerce integration, ecommerce plugin
+=== Booster for WooCommerce – PDF Invoices, Abandoned Cart, Variation Swatches & 100+ Tools ===
+Contributors: pluggabl, ronyp, gravid7
+Donate link: https://booster.io/
+Tags: woocommerce, abandoned cart, cart recovery, swatches, woocommerce pdf invoices, variation swatches, woocommerce multi currency, woocommerce dynamic pricing, woocommerce checkout fields, woocommerce product addons, woocommerce product feed, currency switcher
 Requires at least: 5.8
-Tested up to: 6.6.1
+Tested up to: 6.9.4
 Requires PHP: 7.2
-Stable tag: 7.2.3
+Stable tag: 8.0.0
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-One plugin to replace them all. Upgrade your WooCommerce site with 110+ features for ultimate customization. Supercharge functionality, boost sales.
+Supercharge WooCommerce with FREE Abandoned Cart Recovery, Product Variation Swatches, PDF Invoices & 100+ tools. Boost sales & save time.
 
 == Description ==
 
-**The only WooCommerce bundle you’ll ever need.**
-Replace all those WooCommerce plugins with one single plugin that does the job of them all, and then some! Booster combines everything you need to fully customize your site's functionality into a single WooCommerce bundle, with 110 features and counting. With zero coding needed and easy setup options, Booster makes customization simple for everyone. 
+Supercharge WooCommerce with powerful **PDF Invoices**, smart **Dynamic Pricing**, visual **Product Variation Swatches**, global **Multi-Currency** support, a flexible **Checkout Field Editor**, versatile **Product Addons**, and over 100+ more essential tools – all in one plugin! Booster offers a comprehensive suite, replacing dozens of individual extensions without the bloat. Activate only the modules you need, keeping your store fast, lean, and feature-rich. Many core features are completely free.
 
-Discover why <strong>100,000+ websites</strong> rely on Booster to expand the possibilities of your website. Increase your sales with a multitude of features with the <strong>#1 all-in-one WooCommerce plugin</strong>. Stop relying on multiple WordPress product plugins today!
+Trusted by more than **100,000 WooCommerce stores worldwide** — including **40,000+ active installations** of the free version on WordPress.org and **tens of thousands of Booster Elite customers** — Booster for WooCommerce is the **#1 all‑in‑one toolkit** for your store. Need branded PDF invoices that rival standalone solutions? Automatic multi‑currency with live FX? Advanced dynamic pricing rules and discounts? Or a drag‑and‑drop checkout‑field editor? Booster empowers you with single-click activation for each powerful, speed-optimized module.
 
-**100+ WooCommerce addons in one single package.**
-Multiple WordPress WooCommerce plugins are a thing of the past! Boost the functionality of your Woocommerce website with just one plugin. Here’s what you get with Booster:
+### Why Store‑Owners & Agencies Choose Booster’s Free & Elite Versions
+* **Comprehensive Toolkit:** One install gives access to 110+ features – stop stacking $79 add‑ons.
+* **Zero Coding Needed:** Clean UI, granular toggles, ready in minutes for everyone.
+* **Modular & Performant:** Disabled modules never load, ensuring your site stays fast. (We encourage you to check out performance benchmarks on Booster.io!)
+* **Reliable & Supported:** Regular updates & < 24 hr WordPress.org support forum replies.
 
-**Maximum Features:** Add customized functionality to your WooCommerce business quickly with more than one hundred modules. Create a seamless customer experience on the front end and equip yourself with robust admin and reporting tools on the backend.
+### New in 7.4.0 – Guided onboarding for faster wins
 
-**Zero Coding:** Booster is for everyone. It’s easy to set up and entirely flexible for maximum customization with just a few clicks. No coding required.
+Spin up common store setups in minutes with **4 new one-click goals** (Professional invoices • Boost conversions • Better checkout • Store essentials). A clear **3-step progress bar** guides you, and the **success screen** points you to the next best action—no hunting through settings. It’s fully keyboard accessible and mobile friendly. 
 
-**Maximum Savings:** Save time and money by installing one plugin that will customize your website like no other. Increase your sales with a host of additional features for the perfect shopping experience.
+**What the new goals do (free tier):**
 
-**Zero Bloat:** Booster has a modular architecture, so you can enable only what you need. With just one plugin, you’re automatically boosting your website speed.
+* **Professional invoices (starter):** turns on PDF **Invoice** generation (invoice only).
+* **Boost conversions:** enables **Product Add-ons (single)** and **Related Products**.
+* **Better checkout (basics):** enables **Checkout Core Fields** and **More Button Labels**.
+* **Store essentials:** enables **Sequential Order Numbers** and **Product Tabs (single)**.
 
-**Key Features of Booster for WooCommerce**
-<ul>
-<li><a href="https://booster.io/woocommerce-pdf-invoicing-and-packing-slips/"><strong>PDF Invoicing and Packing slips:</strong></a> Streamline WooCommerce orders and paperwork by adding professional WooCommerce PDF invoices and offline packing docs. </li>
-<li><a href="https://booster.io/features/woocommerce-product-input-fields/"><strong>Product Input fields:</strong></a> Add additional custom input fields on all products or per product and allow customers to add more information for the perfect custom product. If you’re selling customized products, this is a must! </li>
-<li><a href="https://booster.io/category/features/prices-currencies/"><strong>Prices and Currencies:</strong></a> Attract international customers to your site by displaying their currency with automatic exchange rates.  Define price rules with WooCommerce Dynamic Pricing and offer global discounts. </li>
-<li><a href="https://booster.io/category/features/cart-checkout/"><strong>Cart and Checkout:</strong></a> Customize the shopping cart and checkout experience for your customers. Create and add custom fields, coupons, additional fees, buttons, and more. Customize the checkout experience with WooCommerce custom fields, like VAT for EU countries, coupon codes, and checkout fees. Reduce cart abandonment with WooCommerce One Page Checkout.</li> 
-<li><a href="https://booster.io/features/woocommerce-product-addons/"><strong>Product Addons:</strong></a> Use the WooCommerce Product Addons module to customize any product, such as setting product labels and prices for each addon or creating automatic discounts. Addons can be added globally or per product.</li> 
-<li><a href="https://booster.io/features/woocommerce-free-price-labels/" ><strong>Button and Price labels:</strong></a> Change price labels and create custom buttons of your choice. Add customized buttons and price labels to your products. The WooCommerce Free Price Labels module lets you set automatic prices for products with an empty price field.</li> 
-<li><a href="https://booster.io/category/features/payment-gateways/"><strong>Payment gateways:</strong></a> Set up custom WooCommerce payment gateways based on currency, shipping method, or location. Set up a multi-currency converter, and add min/max amounts for payment gateways to show up.</li> 
-<li><a href="https://booster.io/category/features/emails-misc/"><strong>Emails, reporting, and Administrative tools:</strong></a> Add custom emails, additional recipients, and basic WPML support. Generate various reports (sales, customers, etc.), track users, and include verification for increased security.Key Features of Booster for WooCommerce.</li>
-</ul>
+### New in 7.5.0 – Blueprints: real outcomes, faster
 
-**Need more? Check out paid Booster bundles**
-paid Booster bundles are paid upgrade of Booster that unlocks more functionalities. Boost your business with all the best WooCommerce features and get access to additional administrative tools and reports.
+Skip the guesswork. **Blueprints** apply a sensible, free-tier setup in one click, then point you to the next best action:
 
-* *PDF Invoicing and Packing:* Create proforma invoices, credit notes, and packing slips
-* *Cart and Checkout:* Add multiple custom fields, custom info blocks, check out file uploads.
-* *Prices and Currencies:* Add an unlimited number of currencies to WooCommerce.
-* *Add to Cart:* Customize add to cart messages, button labels with multiple category groups allowed.
-* *Empty Cart:* Customize empty cart button text, different button positions on your cart page, and more.
-* *Mini Cart:* Add more custom information options.
-* *Export options:* Enable additional fields.
-* *Configuration options:* Include additional payments and shipping options.
+* **Recover Lost Sales:** turn on Cart Abandonment (Lite: single email) and send a test; suggested next step—add a 10% coupon.
+* **Boost AOV:** enable Product Add-ons (single) and tune Related Products to increase basket size.
+* **Sell Internationally:** prep your store with essentials + checkout basics, then guided steps to add EU/UK shipping, taxes, and payments.
 
-Paid Booster bundles have all of these additional features and more. Discover what Booster has to offer now:
-<a href="https://booster.io/booster-woocommerce-free-vs-plus/"><strong>Compare Booster Free and paid Booster bundles</strong></a>
+What you’ll notice:
 
-Paid Booster bundles comes with a 30-day no-questions-asked money-back guarantee. If you’re not completely satisfied, we will give you 100% of your money back!
-<a href="https://booster.io/buy-booster/"><strong>Upgrade Now</strong></a>
+* **Quick Setup ⇄ Blueprints** switcher in onboarding.
+* A clear **Choose → Review → Complete** path with **Next Steps** and **deep-link** buttons.
+* **“Applied”** badges and a dedicated **Undo** that only reverts what was changed.
+* Smoother mobile and keyboard navigation with accessible status announcements.
+
+All changes stay within Free limits; no paid features are toggled.
+
+== Key Free Features You Can Use Today ==
+
+Unlock a wealth of functionality for your WooCommerce store with Booster's powerful free modules. Here are some of the core solutions you can implement immediately:
+
+=== Professional PDF Invoicing & Packing Slips (Free Core Functionality) ===
+Automatically generate and attach customizable PDF invoices and packing slips to WooCommerce emails. Our free tools provide robust options for customization to match your brand, as powerful as many dedicated PDF invoice plugins!
+<em>Pro Tip: Upgrade to Booster Elite for proforma invoices, credit notes, and more advanced templating.</em>
+Learn more: <a href="https://booster.io/woocommerce-pdf-invoicing-and-packing-slips/">PDF Invoicing & Packing Slips</a>
+
+=== Advanced Prices and Currencies (Free Foundational Tools) ===
+Attract a global audience by displaying prices in different currencies with our basic multi-currency display. Set up site-wide global discounts and manage product price labels effectively. Need a bulk price editor? Booster has you covered.
+<em>Pro Tip: Booster Elite unlocks unlimited currencies, automatic exchange rate updates, and dynamic pricing by user role or country.</em>
+Learn more: <a href="https://booster.io/category/features/prices-currencies/">Prices and Currencies</a>
+
+=== Customizable Cart and Checkout (Free Essentials) ===
+Enhance the shopping cart and checkout experience. Add crucial custom checkout fields (e.g., for EU VAT numbers), manage basic additional fees, add custom buttons, and tailor the checkout flow with our free checkout field editor options to improve conversions.
+<em>Pro Tip: Get advanced conditional logic for checkout fields, file uploads, and more with Booster Elite.</em>
+Learn more: <a href="https://booster.io/category/features/cart-checkout/">Cart and Checkout Customization</a>
+
+=== Basic Abandoned Cart Recovery (Free) ===
+Start recovering lost sales! Our free tool tracks recently abandoned WooCommerce carts and allows you to send **one automated email reminder** after a user-selectable fixed time (e.g., 1, 3, or 24 hours) to encourage customers to complete their purchase. See a simple list of abandoned carts and identify which ones get recovered. A great way to experience the power of cart recovery!
+Learn more: <a href="https://booster.io/features/woocommerce-cart-abandonment/">Abandoned Cart Recovery for WooCommerce</a>
+
+=== Product Input Fields & Addons (Free Basic Options) ===
+Add essential custom input fields to your products, either globally or per-product. Offer simple product customizations with basic product addons. Allow customers to provide more information for personalized items.
+<em>Pro Tip: Booster Elite offers more addon types, conditional logic, and advanced input field options.</em>
+Learn more: <a href="https://booster.io/features/woocommerce-product-input-fields/">Product Input Fields</a> & <a href="https://booster.io/features/woocommerce-product-addons/">Product Addons</a>
+
+#### Product Variation Swatches (Free Lite Version)
+Replace standard WooCommerce dropdowns with basic button swatches. Our free "Swatches Lite" lets you enable this for **up to 2 global product attributes** (e.g., Color, Size), making product selection more visual and intuitive for your customers.
+> **Pro Tip:** To unlock powerful **Image Swatches**, **Color Swatches**, and advanced customization options, consider upgrading to **Booster Elite**.
+> *Learn more: [Product Variation Swatches](https://booster.io/features/woocommerce-product-variation-swatches/)*
+
+=== Basic Product Wishlist (Free) ===
+Allow your customers to save their favorite products for later! Our free Wishlist Lite enables users to add items to a personal wishlist from product pages, easily accessible via their "My Account" page. A simple way to boost engagement and encourage return visits. 
+Learn more: <a href="https://booster.io/features/woocommerce-wishlist/">Wish List for WooCommerce</a> 
+
+=== Custom Button and Price Labels (Free) ===
+Take control over your store's calls to action and pricing display. Change default price labels and create custom buttons. The included WooCommerce Free Price Labels module lets you easily set custom labels for products without a price.
+Learn more: <a href="https://booster.io/features/woocommerce-free-price-labels/">Custom Button and Price Labels</a>
+
+=== Payment Gateways (Free Basic Setup) ===
+Our foundational gateway tools allow you to set up basic custom WooCommerce payment gateways. Define visibility based on currency, shipping method, or location, and set minimum/maximum cart totals for gateways to appear.
+Learn more: <a href="https://booster.io/category/features/payment-gateways/">Payment Gateways</a>
+
+=== Emails, Reporting & Admin Tools (Free Core Utilities) ===
+Improve your store administration with essential tools. Add custom emails and additional recipients for WooCommerce notifications. Generate basic sales and customer reports, and utilize user tracking features. Basic WPML support is also included for multilingual sites.
+Learn more: <a href="https://booster.io/category/features/emails-misc/">Emails, Reporting & Admin Tools</a>
+
+=== Basic Sales Notifications (Free) ===
+Show simple “recent purchase” pop-ups from confirmed orders (Completed by default; optional Processing). Fixed template and timing; choose bottom-left or bottom-right. Great for quick social proof.
+Learn more: <a href="https://booster.io/features/woocommerce-sales-notifications/">Sales Notifications</a>
+
+=== Basic Pre-Orders (Free for Limited Products) ===
+Turn on pre-orders for up to 3 selected products (default 1). Fixed button text/message; orders flow through WooCommerce normally. A low-friction way to gauge demand.
+Learn more: <a href="https://booster.io/features/woocommerce-pre-orders/">Pre-Orders</a>
+
+### Why Upgrade to Booster Elite?
+While the free version of Booster provides a massive toolkit, **Booster Elite** unlocks the full potential of your WooCommerce store, helping you increase sales, improve customer experience, and streamline operations.
+
+* **Unlock All 110+ Elite Features:** Get advanced functionalities like unlimited currencies with auto-exchange rates, powerful conditional logic for checkout fields, proforma invoices, credit notes, automated PayPal tracking sync, and much more.
+* **Save Money:** Replace 5-10+ individual premium plugins (each costing $49-$99+) with one comprehensive, affordable solution.
+* **Premium Support:** Get faster, dedicated support from our expert team.
+* **Peace of Mind:** One trusted, well-maintained plugin reduces compatibility issues and simplifies updates.
+
+### [Compare Booster Free vs. Elite Features](https://booster.io/free-vs-elite)
+**Booster Elite** comes with a 30-day no-questions-asked money-back guarantee. If you’re not completely satisfied, we will give you 100% of your money back!
+
+### [Upgrade to Booster Elite Now & Grow Your Store!](https://booster.io/buy-booster)
 
 == Screenshots ==
 
-1. Booster for WooCommerce - Dashboard.
-2. Booster for WooCommerce - Prices & Currencies.
-3. Booster for WooCommerce - Button & Price Labels.
-4. Booster for WooCommerce - Products.
-5. Booster for WooCommerce - Cart & Checkout.
-6. Booster for WooCommerce - Payment Gateways.
-7. Booster for WooCommerce - Shipping & Orders.
-8. Booster for WooCommerce - PDF Invoicing & Packing Slips.
-9. Booster for WooCommerce - Emails & Misc.
+1. Booster for WooCommerce - PDF Invoice Example.
+2. Booster for WooCommerce - Currency Switcher in Action.
+3. Booster for WooCommerce - Bulk Price Editor Interface.
+4. Booster for WooCommerce - Checkout Field Editor.
+5. Booster for WooCommerce - Dynamic Pricing Rule Setup.
+6. Booster for WooCommerce - Dashboard Overview.
+7. Booster for WooCommerce - Product Addons Example.
+8. Booster for WooCommerce - Payment Gateway Configuration.
+9. Booster for WooCommerce - Shipping Options.
+10. Booster for WooCommerce - Cart Abandonment.
+11. Booster for WooCommerce - Product Variation Swatches.
 
 == Frequently Asked Questions ==
 
 = How to install Booster for WooCommerce (free version)? =
+The easiest way to install Booster is via your site’s Dashboard. Please follow these instructions:
+1. Log in to your site’s Dashboard (e.g. www.yourdomain.com/wp-admin).
+2. Click on the “Plugins” tab in the left panel, then click “Add New”.
+3. Search for “Booster for WooCommerce”.
+4. Install it by clicking the “Install Now” link.
+5. When installation finishes, click “Activate Plugin”.
+You’re done! Explore the modules at WooCommerce > Booster Settings.
 
-The easiest way to install Booster is via your site’s Dashboard. Please follow these instructions to install and connect Booster:
-
-Log in to your site’s Dashboard (e.g. http://www.yourdomain.com/wp-admin)
-
-Click on the “Plugins” tab in the left panel, then click “Add New”.
-Search for “Booster for WooCommerce” and the latest version will appear at the top of the list of results.
-Install it by clicking the “Install Now” link.
-When installation finishes, click “Activate Plugin”.
-You’re done!
+= What’s the difference between Booster Free and Booster Elite? =
+The free version offers a powerful set of core tools to enhance your WooCommerce store. **Booster Elite** unlocks all 110+ modules, providing advanced customization, powerful sales-driving features (like full Abandoned Cart recovery and Variation Swatches), and priority support. It's designed for professionals and store owners who want to maximize their revenue and efficiency.
+Check out our detailed <a href="https://booster.io/free-vs-elite/">feature comparison</a> to see which version is best for you.
 
 = Do I need any coding skills to use Booster? =
+Absolutely not! You can configure everything Booster has to offer without any coding knowledge. Our interface is designed to be user-friendly, with clear options and toggles for each of the 110+ modules.
 
-Absolutely not! You can configure everything Booster has to offer without any coding knowledge.
+= What makes Booster the best all-in-one WooCommerce plugin? =
+Booster for WooCommerce is the most comprehensive WooCommerce enhancement toolkit, combining <strong>110+ powerful modules</strong> that often replace the need for multiple, expensive standalone plugins. Our all-in-one solution provides essential tools to <strong>boost sales and streamline operations</strong>, from professional <strong>PDF invoices</strong> and <strong>multi-currency support</strong> to flexible <strong>dynamic pricing</strong> and <strong>checkout field customization</strong>.
 
-= What’s the difference between Booster and Paid Booster bundles? =
+= How does this WooCommerce toolkit enhance my store's functionality? =
+Our WooCommerce <strong>toolkit (Booster)</strong> adds advanced capabilities like <strong>global multi-currency selling</strong>, sophisticated <strong>dynamic pricing rules</strong>, streamlined <strong>checkout optimization</strong>, automated <strong>PDF invoicing</strong>, and versatile <strong>product addons</strong>. All these features are integrated into a single, performance-optimized plugin, allowing you to <strong>enhance your store without bloat</strong> and potentially replace 10+ individual plugins with one comprehensive solution.
 
-The free version of Booster for WooCommerce offers 68 amazing features.  But, if you’re looking for greater functionality and even more customization options – Booster Plus is the ultimate WooCommerce product bundle for you. Booster Plus is packed with 196 features and counting. 
+= Is Booster bloated or will it slow down my site (even with 110+ modules)? =
+No! Performance is a top priority for Booster. Our plugin is highly <strong>modular</strong>, meaning <strong>only the code for the modules you activate is loaded</strong>. Disabled modules have zero impact on your site's speed. We continuously optimize our code to ensure Booster runs efficiently, allowing you to add powerful features like PDF invoices or dynamic pricing without sacrificing performance. We have performance benchmarks available on Booster.io.
 
-Check out our [feature comparison](https://booster.io/booster-woocommerce-free-vs-plus/) and decide which version is best for you.
+= Is Booster for WooCommerce easy to use, even with so many features? =
+Absolutely! Booster is designed with a user-friendly interface. Each of the 110+ modules can be enabled or disabled with a single click, and settings are clearly organized within each module. You only interact with the features you choose to use, making it easy to manage without feeling overwhelmed.
 
-= Why should I choose paid Booster bundles over other plugins? =
+= What if I only need one or two features from Booster, like PDF Invoices or a Price Editor? Is it still worth installing? =
+Yes, definitely! Because Booster is modular, you can activate only the specific features you need (e.g., just <strong>PDF Invoices</strong> or the <strong>Bulk Price Editor</strong>). The other 100+ modules will not load any code or impact your site's performance. This way, you get the exact functionality you require without any unnecessary overhead, and you have the option to explore other features like <strong>currency switching</strong> or <strong>product addons</strong> later if your needs grow.
 
-Implementing just a few modules from the Booster paid Booster bundles suite is more cost-effective than using multiple individual plugins, often priced at $79-$99 each. Stacking your WooCommerce site with a lot of different plugins can slow it down too. All those individual plugins may not necessarily be compatible with one another.
-paid Booster bundles solves all of these problems with over 100 compatible modules in a single package for easy WooCommerce integration. You get multiple custom features for the cost of one WordPress product plugin and the benefit of zero bloat.
+= Can Booster replace my current PDF invoice plugin / currency switcher plugin / checkout field editor / etc.? =
+In many cases, yes! Booster's free core modules for features like <strong>PDF Invoicing</strong>, <strong>Currency Switching</strong>, and <strong>Checkout Field Editing</strong> are very robust and often provide comparable or even more functionality than many standalone free plugins. For advanced needs, <strong>Booster Elite</strong> frequently offers more comprehensive features than specialized premium plugins, all at a fraction of the total cost. We recommend trying the free module first and checking our feature comparison for Elite capabilities.
 
-= Do you offer refunds? =
+= Is Booster compatible with the latest WooCommerce, WordPress, and features like HPOS? =
+Yes, Booster is <strong>regularly updated and fully compatible</strong> with the latest WordPress and WooCommerce versions. This includes seamless integration with modern WooCommerce architecture like <strong>High-Performance Order Storage (HPOS)</strong> for improved scalability, as well as <strong>WooCommerce Blocks</strong>, ensuring our toolkit stays current and performs optimally with all platform advancements.
 
-If you are not completely satisfied with paid Booster bundles, you can request a refund within the first 30 days, and we will give you 100% of your money back – no questions asked.
+= Why should I choose Booster Elite over other individual premium plugins? =
+Implementing just a few premium modules from the Booster Elite suite is typically more **cost-effective** than buying multiple individual plugins (often priced at $49-$99 each). Stacking your WooCommerce site with many different plugins can also lead to slower performance and compatibility conflicts. **Booster Elite** solves these problems with over 110 compatible modules in a single, optimized package, simplifying your plugin management and saving you money.
 
-= How to unlock those some features settings that are locked? =
+= Do you offer refunds for Booster Elite? =
+Yes! We offer a <strong>30-day no-questions-asked money-back guarantee</strong> for Booster Elite. If you are not completely satisfied with your purchase, you can request a refund within the first 30 days, and we will give you 100% of your money back.
 
-To unlock all Booster for WooCommerce features, please install additional paid Booster bundles(https://booster.io/buy-booster/) plugin.
+= How do I unlock features that are marked as Elite? =
+To unlock all Booster Elite features, please <a href="https://booster.io/buy-booster/">purchase and install the Booster Elite plugin</a> from our website. Once activated, the Elite features will be available within the existing module settings.
+
+= Where can I find documentation for a specific module, like PDF Invoicing or Dynamic Pricing? =
+You can find links to documentation for each module within the Booster settings dashboard in your WordPress admin (WooCommerce > Booster Settings). Each module typically has a "Module Documentation" link. You can also visit our main documentation hub at <a href="https://booster.io/docs/">booster.io/docs/</a> for comprehensive guides on all features, including <strong>PDF Invoicing</strong>, <strong>Dynamic Pricing</strong>, <strong>Multi-Currency</strong>, and more.
+
+= Will onboarding overwrite my settings? =
+When you apply a goal, Booster uses safe defaults scoped to that goal. You can review changes first and adjust later from each module’s settings. You can also apply another goal after completion. 
+
+= Can I apply more than one goal? =
+Yes. Use <strong>Pick another goal</strong> on the success screen to stack quick wins.
+
+= Are you tracking my site externally? =
+No. Onboarding logs <strong>basic, local-only</strong> events (e.g., goal applied/undone) to help improve the experience. No external services are called. 
+
+= What’s the difference between a Goal and a Blueprint? =
+Goals enable a small set of features for a quick win. Blueprints bundle goals into an outcome (e.g., Recover Lost Sales) and guide your next steps. 
+
+= Will this overwrite my existing settings? =
+No. Each apply uses safe defaults scoped to the goal/blueprint. You can review changes first and Undo restores only what we changed.
+
+= Can I stack multiple blueprints/goals? =
+Yes. Apply one, then use Pick another to layer more quick wins. 
+
+= Are you sending any data off my site? =
+No. Onboarding analytics are local-only (apply/undo/mode views) to improve the experience. No external services are called.
 
 == Detailed List of Features ==
 
@@ -115,7 +215,7 @@ To unlock all Booster for WooCommerce features, please install additional paid B
 * Subscriptions - Manage subscriptions, allow cancellation, change payment dates, and more. (Paid feature)
 
 **Marketing**
-* Sales Notifications - Increase sales with proof of sales notifications. (Paid feature)
+* Sales Notifications - Display basic recent purchase notifications (fixed template; 2 positions; fixed timing) (Free). Elite unlocks full text/images, multiple statuses, styling, sounds, device rules, and precise timing.
 
 **Prices & Currencies**
 * Best Price - Customers suggest prices. (Paid feature)
@@ -172,7 +272,7 @@ To unlock all Booster for WooCommerce features, please install additional paid B
 * Tax Display - Customize tax display.
 * Upsells - Customize upsell products display.
 * User Products - Allow users to add products from the frontend.
-* Product Variation Swatches - Allow product variant selection.
+* Product Variation Swatches - Display Color or Image swatches for 1-2 global attributes on product pages (Free). Button/Label swatches, unlimited attributes, advanced styling, and display on shop pages available in Booster Elite.
 
 **Cart & Checkout**
 * Cart Abandoned Reminder - Send reminders for abandoned carts.
@@ -217,6 +317,7 @@ To unlock all Booster for WooCommerce features, please install additional paid B
 * Shipping Methods by City/Date/Amount/Products/Users - Customize shipping methods visibility.
 * Shipping Options - Hide shipping when free shipping is available.
 * Shipping Time - Add delivery time estimations.
+* Pre-Orders – Enable basic pre-orders on up to 3 products (default 1) (Free). Elite unlocks unlimited products, mixed-cart control, fees/deposits, special shipping, dedicated emails, roles/categories, dates, and custom UI.
 
 **PDF Invoicing & Packing Slips**
 * PDF Invoicing - Generate invoices, credit notes, and packing slips.
@@ -246,7 +347,220 @@ To unlock all Booster for WooCommerce features, please install additional paid B
 
 == Changelog ==
 
-== Changelog ==
+= 8.0.0 - 15/04/2026 =
+* Feature - WooCommerce Blocks: Checkout Custom Fields — radio fields automatically converted to select dropdowns on Blocks checkout. Batch option loading eliminates N+1 queries during field registration.
+* Feature - WooCommerce Blocks: Checkout Fees module now applies simple fees (fixed and percentage) on Blocks checkout via Store API. Checkout-field-conditional fees remain classic-only.
+* Enhancement - HPOS: Checkout Files Upload module refactored to use consolidated HPOS helper methods in email attachments, order display, and file-to-order paths. Store API hook added for Blocks-placed orders.
+* Enhancement - Performance: Added request-scope caching for checkout fee configuration to reduce repeated option lookups during cart calculation.
+* Enhancement - Performance: Added cart product and category ID caching in checkout custom fields visibility checks, reducing redundant cart iteration on classic checkout.
+* Note - Visibility conditions (product/category/cart-amount show/hide) and placement sections remain classic-checkout-only. WC Blocks API does not support cart-conditional field registration.
+* Security - Hardening: Strengthened Sales Notifications AJAX validation and access control.
+* WooCommerce 10.6.2 Tested
+* WordPress 6.9.4 Tested
+
+= 7.11.5 - 01/04/2026 =
+* Feature - WooCommerce Blocks: Added support for Checkout Custom Fields (Text, Select, and Checkbox) via the WC Additional Checkout Fields API.
+* Enhancement - Performance: Optimized Admin JS loading; wcj-admin.js is now scoped strictly to Booster and WooCommerce Order pages.
+* Fix - HPOS Compatibility: Updated Store Exporter and Order Display to use WC CRUD API for custom fields when High-Performance Order Storage is enabled.
+* Fix - Blocks Integration: Implemented a meta bridge to ensure Block-based checkout data is correctly mapped to Booster's legacy format (label-based storage).
+* Fix - HPOS: Removed redundant legacy get_post_meta calls when viewing orders in HPOS mode.
+* WooCommerce 10.6.1 Tested
+* WordPress 6.9.4 Tested
+
+= 7.11.4 - 18/03/2026 =
+* Normalized in-plugin upsell routing so generic compare-first prompts route to /free-vs-elite/ while explicit buy/pricing CTAs stay on /buy-booster/.
+* Kept upgrade-block comparison buttons and other ambiguous/tag-first docs/features/about assists on their current destinations while separating account, support, update, and download routes from generic sales flows.
+* Normalized Booster in-plugin source and UTM tagging across the scoped admin surfaces.
+* Confirmed no direct-checkout plugin CTA was introduced in this release candidate.
+* WooCommerce 10.6.1 Tested
+* WordPress 6.9.1 Tested
+
+= 7.11.3 - 11/03/2026 =
+* Improved goal discovery and blueprint selection flow for a faster setup experience.
+* Added clearer next-step instructions and goal-specific metadata for cart recovery and completion states.
+* Improved keyboard navigation and ARIA semantics for onboarding modals and interactive tiles.
+* Added enhanced lifecycle event logging and metadata payloads for better local product-quality analysis.
+* Refined modal interaction behavior, focus handling, and state restoration during apply/undo transitions.
+* WooCommerce 10.5.3 Tested
+* WordPress 6.9.1 Tested
+
+= 7.11.2 - 27/02/2026 =
+* Security hardening update across key request and file-handling flows.
+* Improved authorization and validation checks in checkout-related file actions.
+* Improved data-handling safeguards for product input processing.
+* Improved verification-flow safeguards and internal hardening in core free functions.
+* WooCommerce 10.5.2 Tested
+* WordPress 6.9 Tested
+
+= 7.11.1 - 28/01/2026 =
+* Fixed - wcj-free-functions file not loading issue
+
+= 7.11.0 - 28/01/2026 =
+* **New - One-Click Presets**: Set up your store in seconds, not hours. Choose what you want to accomplish and we configure everything for you:
+  - **PDF Invoicing**: Start generating professional invoices immediately
+  - **Multicurrency**: Let customers shop in their local currency
+  - **Product Addons**: Add gift wrapping, engraving, and custom options to products
+  - **Checkout Customization**: Streamline your checkout experience
+* **New - Getting Started Hub**: A friendly welcome panel on your dashboard pointing you to the most popular features
+* **New - Smart Module Filters**: Find modules faster with All, Recommended, Active, and Recently Used filters
+* Fixed - Multicurrency no longer shows PHP error when price filters are empty
+* Fixed - Variable products with 100+ variations no longer cause memory issues with Order Quantities
+* Improved - Better admin performance by only loading onboarding assets on Booster pages
+* WooCommerce 10.4.3 Tested
+* WordPress 6.9 Tested
+
+= 7.10.0 - 24/12/2025 =
+* Added - Activation redirect to Getting Started page for new installs
+* Added - Search box in onboarding modal for quick goal discovery
+* Added - "Re-open Onboarding" button on Getting Started page
+* Added - First-win celebration message after applying first goal
+* Added - Success toast notification after saving module settings
+* Added - Quick Start presets for PDF Invoicing, Order Numbers, Wishlist, Checkout Fields, Related Products
+* Added - Help text tooltips for 20+ settings across key modules
+* Added - Upgrade comparison blocks for Multicurrency, PDF Invoicing, Product Add-ons, Pre-orders, Sales Notifications
+* Improved - Onboarding modal now only appears on Booster admin pages
+
+= 7.9.0 - 11/12/2025 =
+
+* **Onboarding Phase 7 – Lite → Elite upgrade blocks (Phase 5 EPIC 3)**. Added contextual “Upgrade to Booster Elite” panels inside key Lite modules so you can see exactly what you get if you decide to upgrade.
+  - **Clear Lite vs Elite side-by-side**: Abandoned Cart Lite, Wishlist Lite, and Variation Swatches Lite now show what’s included today and what extra power you unlock with Booster Elite.
+  - **Inline, in-context upsells**: Upgrade blocks live directly on the module settings screens, with short, plain-English benefit lists and links to learn more or go to the pricing page.
+  - **Config-driven and reusable**: A central config now defines copy, benefits, and URLs per module so we can add or adjust upgrade messaging without touching core module logic.
+  - **WordPress.org-friendly**: No full-screen takeovers or blocked settings—everything stays fully usable even if you ignore the upgrade panel.
+  - **Fully backward compatible**: Modules without an upgrade config look and behave exactly as before. If no upgrade block is defined, nothing new is shown.
+
+* WooCommerce 10.3.6 Tested  
+* WordPress 6.9 Tested
+
+= 7.8.0 - 03/12/2025 =
+
+* **Onboarding Phase 6 – Quick Start presets (Phase 5 EPIC 2)**. Introduced a reusable “Quick Start” box at the top of selected module settings so you can get to a working setup in one click.
+  - **One-click “Balanced (recommended)” presets:** Abandoned Cart / Abandoned Cart Lite, Sales Notifications, and Product Add-ons now ship with safe, sensible starting configurations you can apply instantly.
+  - **Pre-filled, not auto-saved:** Clicking a Quick Start button fills in the most important options for that module, but nothing is saved until you review everything and press Save changes.
+  - **Continuous onboarding inside modules:** Quick Start lives directly on the settings screen, guiding you from “I don’t know where to start” to “ready to go live” without leaving the page or digging through docs.
+  - **Continuous onboarding:** Help is now built into the settings screens themselves, reducing guesswork, setup friction, and support requests.
+  - **Reusable preset system:**  Quick Start is powered by a central preset schema so we can roll out more module presets over time without changing their core logic.
+  - **Fully backward compatible**: Modules without presets look and behave exactly as before. If no presets are defined for a module, the Quick Start box does not appear.
+* WooCommerce 10.3.5 Tested
+* WordPress 6.8.3 Tested
+
+= 7.7.0 - 26/11/2025 =
+
+* **Onboarding Phase 5 – contextual inline help**. Introduced a new help-text and tooltip system across Booster settings so you can see what each option does, when to change it, and safe defaults without leaving the page.
+  - **Help tooltips (ⓘ)** next to supported settings show short, plain-English explanations right where you’re working.
+  - **Friendly labels** make technical options easier to understand while keeping existing behavior unchanged.
+  - **7 key modules enhanced first**: Abandoned Cart / Abandoned Cart Lite, One Page Checkout, PDF Invoices, Sales Notifications, Product Add-ons, Wishlist, and Multi Currency now include guided help for their most important settings.
+  - **Continuous onboarding**: Help is now built into the settings screens themselves, reducing guesswork, setup friction, and support requests.
+  - **Fully backward compatible**: If no help text is defined, the settings pages look and behave exactly as before. More modules will be added over time.
+* FIXED - Corrected translation call by replacing _e() with __() inside price-offers message to avoid immediate echo (PR#113).
+* WooCommerce 10.3.5 Tested
+* WordPress 6.8.3 Tested
+
+= 7.6.0 - 17/11/2025 =
+
+* **Onboarding Phase 4**: Added **five new goals** to enhance performance and streamline integration.
+  - **B2B Store**: Enable wholesale pricing, role-based control, and flexible tax settings.
+  - **INTL Store**: Set up multicurrency and country-based pricing for global sales.
+  - **Merchant getting started**: Simplify setup with custom product and checkout options.
+  - **Merchant AOV increase**: Boost sales with smart coupons and promotional tools.
+  - **Merchant run their store efficiently**: Streamline store management with admin and reporting tools.
+* FIXED- Fixed text-domain issues in Bulk and Quick Edit visibility labels to ensure proper localization. (PR #96)
+* WooCommerce 10.3.5 Tested
+* WordPress 6.8.3 Tested
+
+= 7.5.0 - 05/11/2025 =
+
+* **Onboarding Phase 3 – Blueprints for faster outcomes.** Added **one-click Blueprints** that bundle the right free modules so new stores get real results in under a minute: **Recover Lost Sales, Boost AOV, Sell Internationally.**
+* **Scoped Undo + “Applied” badges.** See what’s live at a glance and roll back just the changes made by a goal/blueprint.
+* **Quick Setup ⇄ Blueprints switcher.** A simple toggle in the onboarding modal lets you choose “quick wins” (goals) or “outcomes” (blueprints).
+* **Smarter success screen.** Clear **Next Steps** with **deep-link** CTAs that jump straight to the setting you just enabled (e.g., invoice template, cart-abandonment sender/test).
+* **Accessibility & mobile polish (more).** Single-column tiles on phones, larger tap targets, improved keyboard/focus, and ARIA status for screen readers.
+* **Lightweight, local analytics (extended).** We now record **blueprint apply/undo + mode views (stored locally only) and show a simple summary on Getting Started.
+* FIXED - Resolved a security vulnerability in the coupon code generation feature.
+* WooCommerce 10.3.3 Tested
+* WordPress 6.8.3 Tested
+
+= 7.4.0 - 30/10/2025 =
+
+* **Onboarding Phase 2 – faster first win**. Added **4 new one-click goals** you can apply right after activation:
+  - **Professional invoices (starter), Boost conversions, Better checkout (basics), Store essentials**. Each goal enables a small set of free modules with sensible defaults so you see value immediately. 
+  - **Clear progress bar**. New 3-step progress indicator (Choose Goal → Review → Complete) so setup feels guided, not guessing.
+  - **Actionable success screen**. After applying a goal you’ll see a concise “what happens next” checklist and a primary link to the most relevant settings page. 
+  - **Pick another goal**. You can apply a goal, then bounce back to choose another—great for stacking quick wins.  
+  - **Accessibility & mobile polish**. Improved ARIA labels, focus trapping, and compact mobile layout for small screens.   
+  - **Lightweight, local analytics**. We now log basic “goal applied/undone” events locally to help us improve onboarding over time (no external services). A simple stats summary appears on Getting Started.   
+* FIXED - Resolved an XSS vulnerability in the shortcode functionality.
+* WooCommerce 10.3.3 Tested
+* WordPress 6.8.3 Tested
+
+= 7.3.2 - 25/10/2025 =
+
+* New: Instant 1-Click Onboarding — Right after activation, Booster guides you to the right modules and enables them in one click, so you launch faster, skip the settings maze, and start selling sooner.
+* WooCommerce 10.3.3 Tested
+* WordPress 6.8.3 Tested
+
+= 7.3.1 - 25/09/2025 =
+
+* NEW – Sales Notifications (Lite): Displays simple “recent purchase” popups from confirmed orders with a fixed template and two positions. Advanced text, images, multiple statuses, styling, sounds, device rules, and full timing are Elite.
+* NEW – Pre-Orders (Lite): Enables basic pre-orders on up to 3 products (default 1) with fixed button text and a standard message. Mixed-cart control, deposits/fees, special shipping, dedicated emails, role/category rules, dates, and UI customization are Elite.
+* ENHANCEMENT – Settings UX: Clear “Lite/Elite” labels and cleaner descriptions across modules. Small accessibility improvements for better navigation.
+* WooCommerce 10.2.1 Tested
+* WordPress 6.8.2 Tested
+
+= 7.3.0 - 27/08/2025 =
+
+* NEW - "Wishlist Lite" - New free module for basic product wishlist functionality.
+* FIXED - Fixed the Elementor conflict for Shop Managers when saving edits. Compatibility is now restored.
+* ENHANCEMENT - Updated and unified all in-plugin "Upgrade to Elite" links for a clearer and more informative user experience.
+* WooCommerce 10.1.1 Tested
+* WordPress 6.8.2 Tested
+
+= 7.2.9 - 30/07/2025 =
+
+* ENHANCEMENT - Updated and unified all in-plugin "Upgrade to Elite" links for a clearer and more informative user experience.
+* WooCommerce 10.0.4 Tested
+* WordPress 6.8.2 Tested
+
+= 7.2.8 16/07/2025 =
+
+* NEW FEATURE - PRODUCTS - Product Variation Swatches Lite - New free module for basic color/image variation swatches for limited attributes.
+* WooCommerce 10.0.2 Tested
+* WordPress 6.8.1 Tested
+
+= 7.2.7 18/06/2025 =
+
+* NEW FEATURE - "Abandoned Cart Lite" - New free module to track abandoned carts and send a single automated recovery email.
+* WooCommerce 9.9.4 Tested
+* WordPress 6.8.1 Tested
+
+= 7.2.6 12/05/2025 =
+
+* FIXED - PRODUCTS - User Products - Resolved an XSS vulnerability by sanitizing input fields.
+* WooCommerce 9.8.4 Tested
+* WordPress 6.8.1 Tested
+
+= 7.2.5 27/03/2025 =
+
+* FIXED - SHIPPING & ORDERS - Order Quantities - Min Qty - Exclude products from the minimum order quantity restriction.
+* FIXED - PDF Invoice - Bulk Actions for HPOS order listing issue for HPOS as well.
+* FIXED - PDF Invoice - Renumerate Invoices Report issue for HPOS.
+* FIXED - Fix security vulnerability related to malicious file type.
+* FIXED - Fix security vulnerability related to malicious scripted tag.
+* WooCommerce 9.7.1 Tested
+* WordPress 6.7.2 Tested
+
+= 7.2.4 13/11/2024 =
+
+* FIXED - Uncaught Error: round(): Argument #2 ($precision) must be of type int, string given in includes/shortcodes/class-wcj-orders-shortcodes.php...
+* FIXED - Fatal error: Call to a member function get() on null in includes/functions/wcj-functions-users.php...
+* FIXED - Fatal error: Call to a member function get_tax_totals() on null in includes/class-wcj-eu-vat-number.php...
+* FIXED - Fatal error: Call to a member function get_customer_ip_address() on null in includes/functions/class-wcj-eu-vat-number.php...
+* FIXED - Fatal error: Unsupported operand types: float + string in includes/reports/class-wcj-reports-stock.php...
+* FIXED - Fatal error: Unsupported operand types: int + string in includes/reports/class-wcj-reports-stock.php...
+* FIXED - Fix security vulnerability related to add_query_arg & remove_query_arg functions.
+* FIXED - Fix security vulnerability related to get_post_meta() function.
+* WooCommerce 9.3.3 Tested
+* WordPress 6.6.2 Tested
 
 = 7.2.3 11/09/2024 =
 
@@ -4057,6 +4371,13 @@ To unlock all Booster for WooCommerce features, please install additional paid B
 * Initial Release.
 
 == Upgrade Notice ==
+
+= 7.5.0 = 
+
+Onboarding Phase 3: Blueprints (Recover Lost Sales, Boost AOV, Sell Internationally), scoped Undo with Applied badges, deeper Next Steps with direct links, plus more accessibility/mobile polish and local-only analytics.
+
+= 7.4.0 = 
+Onboarding Phase 2: four new one-click goals, a guided progress bar, an actionable success screen, and accessibility/mobile improvements for a faster path to first value.
 
 = 1.0.0 =
 This is the first release of the plugin.

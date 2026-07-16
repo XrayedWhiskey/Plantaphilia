@@ -1,0 +1,15 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+{{ messages() | raw }}
+
+<!-- Legacy Settings -->
+{% include "legacy-importer/partials/settings.html.twig" %}
+
+<!-- Import Legacy Data -->
+<hr>
+{% include "legacy-importer/partials/import-legacy-data.html.twig" %}
+
+<!-- Preview -->
+{% include "legacy-importer/partials/preview.html.twig" %}

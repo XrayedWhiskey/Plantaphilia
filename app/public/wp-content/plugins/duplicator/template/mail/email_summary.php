@@ -9,8 +9,7 @@
 
 defined("ABSPATH") or die("");
 
-use Duplicator\Installer\Utils\LinkManager;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 use Duplicator\Utils\Email\EmailHelper;
 use Duplicator\Utils\Email\EmailSummary;
 
@@ -112,7 +111,7 @@ use Duplicator\Utils\Email\EmailSummary;
                                                             '%s and %s are opening and closing link tags to the pricing page.',
                                                             'duplicator'
                                                         ),
-                                                        '<a href="' . Upsell::getCampaignUrl('email-summary', 'Upgrade to PRO') . '" style="'
+                                                        '<a href="' . LinkManager::getCampaignUrl('email-summary', 'Upgrade to PRO') . '" style="'
                                                         . EmailHelper::getStyle('inline-link') . '">',
                                                         '</a>'
                                                     );

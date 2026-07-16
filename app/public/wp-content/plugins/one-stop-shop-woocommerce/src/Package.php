@@ -16,7 +16,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.6.2';
+	const VERSION = '1.8.4';
 
 	/**
 	 * Init the package
@@ -57,7 +57,7 @@ class Package {
 
 			add_action(
 				'oss_woocommerce_' . $id,
-				function( $args ) use ( $type ) {
+				function ( $args ) use ( $type ) {
 					Queue::next( $type, $args );
 				},
 				10,
@@ -102,11 +102,9 @@ class Package {
 				}
 
 				$running[] = $report_id;
-			} else {
-				if ( $report = self::get_report( $report_id ) ) {
-					if ( 'completed' !== $report->get_status() ) {
-						$report->delete();
-					}
+			} elseif ( $report = self::get_report( $report_id ) ) {
+				if ( 'completed' !== $report->get_status() ) {
+					$report->delete();
 				}
 			}
 		}
@@ -150,7 +148,7 @@ class Package {
 					continue;
 				}
 
-				$year = $observer->get_date_start()->format( 'Y' );
+				$year = $observer->get_date_start()->date_i18n( 'Y' );
 
 				/**
 				 * Delete orphan observer reports (reports not linked as a main observer for a certain year).
@@ -165,7 +163,7 @@ class Package {
 		 * In case the current observer report does not exist - delete the option
 		 */
 		if ( self::enable_auto_observer() ) {
-			$year      = date( 'Y' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+			$year      = date_i18n( 'Y' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 			$report_id = get_option( 'oss_woocommerce_observer_report_' . $year );
 
 			if ( ! empty( $report_id ) ) {
@@ -222,6 +220,23 @@ class Package {
 		return \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
 	}
 
+	public static function get_assets_build_url( $script_or_style ) {
+		$assets_url = self::get_url() . '/build';
+		$is_debug   = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG;
+		$is_style   = '.css' === substr( $script_or_style, -4 );
+		$is_static  = strstr( $script_or_style, 'static/' );
+
+		if ( $is_style && ! strstr( $script_or_style, '-styles' ) ) {
+			$script_or_style = str_replace( '.css', '-styles.css', $script_or_style );
+		}
+
+		if ( $is_debug && $is_static && ! $is_style ) {
+			$assets_url = self::get_url() . '/assets/js';
+		}
+
+		return trailingslashit( $assets_url ) . $script_or_style;
+	}
+
 	public static function get_delivery_threshold_left() {
 		$net_total = 0;
 
@@ -260,7 +275,7 @@ class Package {
 	 */
 	public static function get_observer_report( $year = null ) {
 		if ( is_null( $year ) ) {
-			$year = date( 'Y' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+			$year = date_i18n( 'Y' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 		}
 
 		$report_id = get_option( 'oss_woocommerce_observer_report_' . $year );
@@ -278,9 +293,8 @@ class Package {
 
 		if ( $observer = self::get_observer_report() ) {
 			$date_end = $observer->get_date_end();
-			$now      = new \WC_DateTime();
-
-			$diff = $now->diff( $date_end );
+			$now      = self::string_to_datetime( 'now' );
+			$diff     = $now->diff( $date_end );
 
 			if ( $diff->days <= 1 ) {
 				$is_outdated = false;
@@ -290,22 +304,49 @@ class Package {
 		return $is_outdated;
 	}
 
-	public static function string_to_datetime( $time_string ) {
+	public static function local_time_to_gmt( $time_string ) {
 		if ( is_string( $time_string ) && ! is_numeric( $time_string ) ) {
-			$time_string = strtotime( $time_string );
+			// The date string should be in local site timezone. Convert to UTC
+			$time_string = wc_string_to_timestamp( get_gmt_from_date( $time_string ) );
 		}
 
-		$date_time = $time_string;
+		$datetime = $time_string;
 
-		if ( is_numeric( $date_time ) ) {
-			$date_time = new \WC_DateTime( "@{$date_time}", new \DateTimeZone( 'UTC' ) );
+		if ( is_numeric( $datetime ) ) {
+			$datetime = new \WC_DateTime( "@{$time_string}", new \DateTimeZone( 'UTC' ) );
 		}
 
-		if ( ! is_a( $date_time, 'WC_DateTime' ) ) {
+		if ( ! is_a( $datetime, 'WC_DateTime' ) ) {
 			return null;
 		}
 
-		return $date_time;
+		return $datetime;
+	}
+
+	public static function string_to_datetime( $time_string ) {
+		if ( is_string( $time_string ) && ! is_numeric( $time_string ) ) {
+			// The date string should be in local site timezone. Convert to UTC
+			$time_string = wc_string_to_timestamp( get_gmt_from_date( $time_string ) );
+		}
+
+		$datetime = $time_string;
+
+		if ( is_numeric( $datetime ) ) {
+			$datetime = new \WC_DateTime( "@{$time_string}", new \DateTimeZone( 'UTC' ) );
+
+			// Set local timezone or offset.
+			if ( get_option( 'timezone_string' ) ) {
+				$datetime->setTimezone( new \DateTimeZone( wc_timezone_string() ) );
+			} else {
+				$datetime->set_utc_offset( wc_timezone_offset() );
+			}
+		}
+
+		if ( ! is_a( $datetime, 'WC_DateTime' ) ) {
+			return null;
+		}
+
+		return $datetime;
 	}
 
 	/**
@@ -328,17 +369,17 @@ class Package {
 			$parts,
 			array(
 				'type'       => 'daily',
-				'date_start' => date( 'Y-m-d' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-				'date_end'   => date( 'Y-m-d' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+				'date_start' => date_i18n( 'Y-m-d' ),
+				'date_end'   => date_i18n( 'Y-m-d' ),
 			)
 		);
 
 		if ( is_a( $parts['date_start'], 'WC_DateTime' ) ) {
-			$parts['date_start'] = $parts['date_start']->format( 'Y-m-d' );
+			$parts['date_start'] = $parts['date_start']->date_i18n( 'Y-m-d' );
 		}
 
 		if ( is_a( $parts['date_end'], 'WC_DateTime' ) ) {
-			$parts['date_end'] = $parts['date_end']->format( 'Y-m-d' );
+			$parts['date_end'] = $parts['date_end']->date_i18n( 'Y-m-d' );
 		}
 
 		return 'oss_' . $parts['type'] . '_report_' . $parts['date_start'] . '_' . $parts['date_end'];
@@ -429,6 +470,7 @@ class Package {
 				'limit'            => -1,
 				'offset'           => 0,
 				'orderby'          => 'date_start',
+				'order'            => 'DESC',
 				'include_observer' => false,
 			)
 		);
@@ -447,15 +489,19 @@ class Package {
 			$reports_sorted[] = self::get_report_data( $id );
 		}
 
-		if ( array_key_exists( $args['orderby'], array( 'date_start', 'date_end' ) ) ) {
+		if ( in_array( $args['orderby'], array( 'date_start', 'date_end' ), true ) ) {
 			usort(
 				$reports_sorted,
-				function( $a, $b ) use ( $args ) {
+				function ( $a, $b ) use ( $args ) {
 					if ( $a[ $args['orderby'] ] === $b[ $args['orderby'] ] ) {
 						return 0;
 					}
 
-					return $a[ $args['orderby'] ] < $b[ $args['orderby'] ] ? -1 : 1;
+					if ( 'ASC' === $args['order'] ) {
+						return $a[ $args['orderby'] ] < $b[ $args['orderby'] ] ? -1 : 1;
+					} else {
+						return $a[ $args['orderby'] ] > $b[ $args['orderby'] ] ? -1 : 1;
+					}
 				}
 			);
 		}
@@ -508,6 +554,7 @@ class Package {
 
 	public static function load_plugin_textdomain() {
 		add_filter( 'plugin_locale', array( __CLASS__, 'support_german_language_variants' ), 10, 2 );
+		add_filter( 'load_translation_file', array( __CLASS__, 'force_load_german_language_variant' ), 10, 2 );
 
 		if ( function_exists( 'determine_locale' ) ) {
 			$locale = determine_locale();
@@ -518,14 +565,44 @@ class Package {
 
 		$locale = apply_filters( 'plugin_locale', $locale, 'one-stop-shop-woocommerce' );
 
-		unload_textdomain( 'one-stop-shop-woocommerce' );
 		load_textdomain( 'one-stop-shop-woocommerce', trailingslashit( WP_LANG_DIR ) . 'one-stop-shop-woocommerce/one-stop-shop-woocommerce-' . $locale . '.mo' );
 		load_plugin_textdomain( 'one-stop-shop-woocommerce', false, plugin_basename( self::get_path() ) . '/i18n/languages/' );
 	}
 
+	/**
+	 * Use a tweak to force loading german language variants in WP 6.5
+	 * as WP does not allow using the plugin_locale filter to load a plugin-specific locale any longer.
+	 *
+	 * @param $file
+	 * @param $domain
+	 *
+	 * @return mixed
+	 */
+	public static function force_load_german_language_variant( $file, $domain ) {
+		if ( 'one-stop-shop-woocommerce' === $domain && function_exists( 'determine_locale' ) && class_exists( 'WP_Translation_Controller' ) ) {
+			$locale     = determine_locale();
+			$new_locale = self::get_german_language_variant( $locale );
+
+			if ( $new_locale !== $locale ) {
+				$i18n_controller = \WP_Translation_Controller::get_instance();
+				$i18n_controller->load_file( $file, $domain, $locale ); // Force loading the determined file in the original locale.
+			}
+		}
+
+		return $file;
+	}
+
+	protected static function get_german_language_variant( $locale ) {
+		if ( apply_filters( 'oss_woocommerce_force_de_language', in_array( $locale, array( 'de_CH', 'de_CH_informal', 'de_AT' ), true ) ) ) {
+			$locale = apply_filters( 'oss_woocommerce_german_language_variant_locale', 'de_DE' );
+		}
+
+		return $locale;
+	}
+
 	public static function support_german_language_variants( $locale, $domain ) {
-		if ( 'one-stop-shop-woocommerce' === $domain && apply_filters( 'oss_woocommerce_force_de_language', in_array( $locale, array( 'de_CH', 'de_AT' ), true ) ) ) {
-			$locale = 'de_DE';
+		if ( 'one-stop-shop-woocommerce' === $domain ) {
+			$locale = self::get_german_language_variant( $locale );
 		}
 
 		return $locale;
@@ -543,8 +620,8 @@ class Package {
 		return $emails;
 	}
 
-	protected static function sanitize_email_class( $class ) {
-		return 'oss_woocommerce_' . sanitize_key( str_replace( __NAMESPACE__ . '\\', '', $class ) );
+	protected static function sanitize_email_class( $classname ) {
+		return 'oss_woocommerce_' . sanitize_key( str_replace( __NAMESPACE__ . '\\', '', $classname ) );
 	}
 
 	public static function observer_report_needs_notification() {
@@ -602,7 +679,7 @@ class Package {
 
 			$days = (int) self::get_observer_backdating_days();
 
-			$date_start = new \WC_DateTime();
+			$date_start = self::string_to_datetime( 'now' );
 			$date_start->modify( "-{$days} day" . ( $days > 1 ? 's' : '' ) );
 
 			Queue::start( 'observer', $date_start );

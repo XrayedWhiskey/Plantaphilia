@@ -6,7 +6,7 @@
  * @copyright (c) 2023, Snap Creek LLC
  */
 
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -20,7 +20,7 @@ defined("ABSPATH") || exit;
 <div id="duplicator-did-you-know">
     <i class="fas fa-info-circle"></i>
     <?php printf(__('Did you know Duplicator Pro has: %s?', 'duplicator'), $tplData['feature']);?>
-    <a href="<?php echo Upsell::getCampaignUrl('scan_did-you-know', $tplData['feature']) ?>" target="_blank">
+    <a href="<?php echo LinkManager::getCampaignUrl('scan_did-you-know', $tplData['feature']) ?>" target="_blank">
         <?php esc_html_e('Upgrade To Pro', 'duplicator'); ?>
     </a>
 </div>

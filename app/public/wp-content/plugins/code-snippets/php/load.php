@@ -44,13 +44,31 @@ const CACHE_GROUP = 'code_snippets';
 const REST_API_NAMESPACE = 'code-snippets/v';
 
 // Load dependencies with Composer.
-require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+$code_snippets_autoloader = require dirname( __DIR__ ) . '/vendor/autoload.php';
+
+// Remove all original (non-prefixed) vendor namespace mappings to prevent collisions with other plugins.
+// Since Imposter rewrites namespaces to Code_Snippets\Vendor\*, we need to remove the original PSR-4
+// mappings that Composer generates so other plugins can load their own copies of these libraries.
+if ( $code_snippets_autoloader instanceof \Composer\Autoload\ClassLoader ) {
+	$prefixes = $code_snippets_autoloader->getPrefixesPsr4();
+	$our_prefix = 'Code_Snippets\\Vendor\\';
+	
+	foreach ( $prefixes as $namespace => $paths ) {
+		// Remove any non-Code_Snippets namespace that has a corresponding prefixed version
+		if ( strpos( $namespace, $our_prefix ) === false ) {
+			$prefixed_namespace = $our_prefix . $namespace;
+			if ( isset( $prefixes[ $prefixed_namespace ] ) ) {
+				$code_snippets_autoloader->setPsr4( $namespace, [] );
+			}
+		}
+	}
+}
 
 /**
  * Retrieve the instance of the main plugin class.
  *
- * @since 2.6.0
  * @return Plugin
+ * @since 2.6.0
  */
 function code_snippets(): Plugin {
 	static $plugin;
@@ -63,6 +81,3 @@ function code_snippets(): Plugin {
 }
 
 code_snippets()->load_plugin();
-
-// Execute the snippets once the plugins are loaded.
-add_action( 'plugins_loaded', __NAMESPACE__ . '\execute_active_snippets', 1 );

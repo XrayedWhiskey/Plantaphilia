@@ -1,147 +1,185 @@
 <?php
 /*
-Plugin Name: Borlabs Cookie - Cookie Opt-in
+Plugin Name: Borlabs Cookie
 Plugin URI: https://borlabs.io/
-Description: Borlabs Cookie is an easy to use cookie opt-in and content block solution for WordPress. Create detailed descriptions for cookies and sort them in customizable 'Cookie Groups'. Create specific 'Content Blockers' and block everything from YouTube media to Facebook posts. Let your visitors choose which cookies they want to allow and what content they want to see. Borlabs Cookie helps you to make your website ready for GDPR & ePrivacy regulations.
+Description: Borlabs Cookie helps you make your website GDPR compliant by providing an opt-in option to its visitors.
 Author: Borlabs GmbH
 Author URI: https://borlabs.io
-Version: 2.3
+Version: 3.4
 Text Domain: borlabs-cookie
 Domain Path: /languages
 Requires at least: 4.7
 Requires PHP: 7.4
 */
 
-$borlabsCookieWPLANG = get_option('WPLANG', 'en_US');
+$borlabsCookieLocale = get_locale();
 
-if (empty($borlabsCookieWPLANG) || strlen($borlabsCookieWPLANG) <= 1) {
-    $borlabsCookieWPLANG = 'en';
+if (empty($borlabsCookieLocale) || strlen($borlabsCookieLocale) <= 1) {
+    $borlabsCookieLocale = 'en_US';
 }
 
-define('BORLABS_COOKIE_VERSION', '2.3');
-define('BORLABS_COOKIE_BUILD', '240917');
+define('BORLABS_COOKIE_VERSION', '3.4');
+define('BORLABS_COOKIE_BUILD', '260206');
 define('BORLABS_COOKIE_BASENAME', plugin_basename(__FILE__));
 define('BORLABS_COOKIE_SLUG', basename(BORLABS_COOKIE_BASENAME, '.php'));
-define('BORLABS_COOKIE_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('BORLABS_COOKIE_PLUGIN_URL', plugin_dir_url(__FILE__));
-
-if (defined('BORLABS_COOKIE_IGNORE_ISO_639_1') === false) {
-    define('BORLABS_COOKIE_DEFAULT_LANGUAGE', substr($borlabsCookieWPLANG, 0, 2));
-} else {
-    define('BORLABS_COOKIE_DEFAULT_LANGUAGE', $borlabsCookieWPLANG);
-}
-
-// Improving Docker performance on macOS during development
-if (BORLABS_COOKIE_BUILD === '000000' && !defined('DISABLE_WP_CRON')) {
-    define('DISABLE_WP_CRON', true);
-}
+define('BORLABS_COOKIE_PLUGIN_PATH', rtrim(plugin_dir_path(__FILE__), '/'));
+define('BORLABS_COOKIE_PLUGIN_URL', rtrim(plugin_dir_url(__FILE__), '/'));
+define('BORLABS_COOKIE_DEFAULT_LANGUAGE', $borlabsCookieLocale);
 
 // Prevent direct access
 if (! defined('ABSPATH')) {
     exit;
 }
 
-if (version_compare(phpversion(), '7.2', '>=')) {
-    include_once plugin_dir_path(__FILE__) . 'classes/Autoloader.php';
-
-    $Autoloader = new \BorlabsCookie\Autoloader();
-    $Autoloader->register();
-    $Autoloader->addNamespace('BorlabsCookie', realpath(plugin_dir_path(__FILE__) . '/classes'));
-
-    register_activation_hook(__FILE__, array(\BorlabsCookie\Cookie\Init::getInstance(), 'pluginActivated'));
-    register_deactivation_hook(__FILE__, array(\BorlabsCookie\Cookie\Init::getInstance(), 'pluginDeactivated'));
-
-    /* Init plugin */
-    if (is_admin()) {
-        /* Backend */
-        \BorlabsCookie\Cookie\Init::getInstance()->initBackend();
-    } else {
-        /* Frontend */
-        \BorlabsCookie\Cookie\Init::getInstance()->initFrontend();
-    }
-
-    /* Update*/
-    \BorlabsCookie\Cookie\Init::getInstance()->initUpdateHooks();
-
-    /* Call after upgrade process is complete */
-    add_action(
-        'upgrader_process_complete',
-        function ($upgraderObject, $options) use ($Autoloader) {
-            if (
-                file_exists(rtrim(BORLABS_COOKIE_PLUGIN_PATH, '/').'/classes/Cookie/Container/Container.php')
-                && file_exists(rtrim(BORLABS_COOKIE_PLUGIN_PATH, '/').'/classes/Cookie/Container/ApplicationContainer.php')
-                && file_exists(rtrim(BORLABS_COOKIE_PLUGIN_PATH, '/').'/classes/Cookie/System/Updater/Updater.php')
-                && !class_exists('\Borlabs\Cookie\Container\Container')
-                && !class_exists('\Borlabs\Cookie\Container\ApplicationContainer')
-                && !class_exists('\Borlabs\Cookie\System\Updater\Updater')) {
-                require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor/autoload.php';
-                require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor-prefixed/symfony/polyfill-ctype/bootstrap.php';
-                require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor-prefixed/symfony/polyfill-mbstring/bootstrap.php';
-                require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor-prefixed/symfony/polyfill-php80/bootstrap.php';
-
-                spl_autoload_unregister([$Autoloader, 'loadClass']);
-
-                $container = new \Borlabs\Cookie\Container\Container;
-                \Borlabs\Cookie\Container\ApplicationContainer::init($container);
-                $container->add(
-                    \Borlabs\Cookie\HttpClient\HttpClientInterface::class,
-                    \Borlabs\Cookie\HttpClient\HttpClient::class
-                );
-                $language = $container->get(\Borlabs\Cookie\System\Language\Language::class);
-                $language->setInitializationSignal();
-                $language->init();
-                $language->loadTextDomain();
-
-                $container->get(\Borlabs\Cookie\System\WordPressGlobalFunctions\WordpressGlobalFunctionService::class)->register();
-                $container->get(\Borlabs\Cookie\System\Updater\Updater::class)->fileUpdateComplete($upgraderObject, $options);
-
-                return;
-            }
-
-            \BorlabsCookie\Cookie\Update::getInstance()->upgradeComplete($upgraderObject, $options);
-        },
-        10,
-        2
-    );
-
-    /* Fallback if the upgrade of Borlabs Cookie was not initiated via the upgrade process but replaced manually or even worse: via Composer */
-    add_action('plugins_loaded', function () {
-        $lastVersion = get_option('BorlabsCookieLegacyVersion', false);
-
-        if (!$lastVersion) {
-            $lastVersion = get_option('BorlabsCookieVersion', false);
-        }
-
-        /* If no last version exists, an upgrade is not needed */
-        if ($lastVersion === false) {
-            return;
-        }
-
-        if (defined('BORLABS_COOKIE_VERSION') && version_compare(BORLABS_COOKIE_VERSION, $lastVersion, '>')) {
-            \BorlabsCookie\Cookie\Update::getInstance()->processUpgrade();
-        }
-    });
-
-    /* Third Party Developer Helper Class Shortcut Function - fun fact: in german this would be a single noun! */
-    if (! function_exists('BorlabsCookieHelper')) {
-        function BorlabsCookieHelper()
-        {
-            return \BorlabsCookie\Cookie\ThirdPartyHelper::getInstance();
-        }
-    }
-} else {
+if (!version_compare(phpversion(), '7.4', '>=')) {
     //! Fallback for very old php version
     add_action('admin_notices', function () {
         ?>
         <div class="notice notice-error">
             <p><?php
                 _ex(
-                    'Your PHP version is <a href="http://php.net/supported-versions.php" rel="nofollow noopener noreferrer" target="_blank">outdated</a> and not supported by Borlabs Cookie. Please disable Borlabs Cookie, upgrade to PHP 7.2 or higher, and enable Borlabs Cookie again. It is necessary to follow these steps in the exact order described.',
+                    'Your PHP version is <a href="http://php.net/supported-versions.php" rel="nofollow noreferrer" target="_blank">outdated</a> and not supported by Borlabs Cookie. Please disable Borlabs Cookie, upgrade to PHP 7.4 or higher, and enable Borlabs Cookie again. It is necessary to follow these steps in the exact order described.',
                     'Backend / Global / Alert Message',
                     'borlabs-cookie'
                 ); ?></p>
         </div>
         <?php
     });
+
+    return;
 }
-?>
+
+require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor/autoload.php';
+require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor-prefixed/symfony/polyfill-ctype/bootstrap.php';
+require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor-prefixed/symfony/polyfill-mbstring/bootstrap.php';
+require_once BORLABS_COOKIE_PLUGIN_PATH . '/vendor-prefixed/symfony/polyfill-php80/bootstrap.php';
+
+if (defined('BORLABS_COOKIE_DEV_MODE_DISABLE_SSL_VERIFY')
+    && constant('BORLABS_COOKIE_DEV_MODE_DISABLE_SSL_VERIFY') === true
+) {
+    // Allow self-signed certificates
+    add_filter('https_ssl_verify', '__return_false');
+    // Allow local hosts
+    add_filter('http_request_host_is_external', '__return_true');
+}
+
+$container = new \Borlabs\Cookie\Container\Container;
+\Borlabs\Cookie\Container\ApplicationContainer::init($container);
+
+/* Start registration of Borlabs Cookie components. */
+$container->get(\Borlabs\Cookie\System\WordPressGlobalFunctions\WordPressGlobalFunctionService::class)->register();
+
+if (defined('BORLABS_COOKIE_DEV_MODE_ENABLE_HTTP_MOCK_CLIENT')) {
+    $container->add(
+        \Borlabs\Cookie\HttpClient\HttpClientInterface::class,
+        \Borlabs\Cookie\HttpClient\HttpMockClient::class
+    );
+} else {
+    $container->add(
+        \Borlabs\Cookie\HttpClient\HttpClientInterface::class,
+        \Borlabs\Cookie\HttpClient\HttpClient::class
+    );
+}
+
+register_activation_hook(
+    __FILE__,
+    function () use ($container) {
+        $container->get(\Borlabs\Cookie\System\Installer\Install::class)->pluginActivated();
+    }
+);
+
+register_deactivation_hook(
+    __FILE__,
+    function () use ($container) {
+        $container->get(\Borlabs\Cookie\ScheduleEvent\ScheduleEventManager::class)->deregister();
+    }
+);
+
+/* Init plugin */
+if (is_admin()) {
+    /* Backend */
+    add_action(
+        'init',
+        function () use ($container) {
+            $container->get(\Borlabs\Cookie\System\WordPressAdminDriver\WordPressAdminInit::class)->register();
+        }
+    );
+} else {
+    /* Frontend */
+    add_action(
+        'init',
+        function () use ($container) {
+            $container->get(\Borlabs\Cookie\System\WordPressFrontendDriver\WordPressFrontendInit::class)->register();
+        }
+    );
+}
+
+/* PHP API for third-party develeoper */
+if (!function_exists('borlabsCookieApi')) {
+    /**
+     * This function can be used by third-party developers to access the PHP API of Borlabs Cookie.
+     * It becomes available after the WordPress `init` hook is triggered.
+     * If the function is called before the `init` hook, it will return null.
+     * If you need to use the function on the `init` hook, you may need to set the priority of your `init` hook registration to `11`.
+     *
+     * @see \Borlabs\Cookie\Command\CommandInit::init() If you are looking for WP CLI commands, please use the `borlabs-cookie` command.
+     *
+     *@return \Borlabs\CookieApi\PhpApi\PhpApi|null
+     *
+     */
+    function borlabsCookieApi(): ?\Borlabs\CookieApi\PhpApi\PhpApi {
+        return isset($GLOBALS['BorlabsCookieApiFunction']) ? $GLOBALS['BorlabsCookieApiFunction']() : null;
+    }
+
+    add_action(
+        'init',
+        function () use ($container) {
+            $GLOBALS['BorlabsCookieApiFunction'] = function() use ($container) {
+                return $container->get(\Borlabs\CookieApi\PhpApi\PhpApi::class);
+            };
+        }
+    );
+}
+
+/* Init scheduled events */
+add_action(
+    'init',
+    function () use ($container) {
+        $container->get(\Borlabs\Cookie\ScheduleEvent\ScheduleEventManager::class)->register();
+    }
+);
+
+/* Register REST endpoints */
+add_action(
+    'rest_api_init',
+    function () use ($container) {
+        $container->get(\Borlabs\Cookie\RestEndpoint\RestEndpointManager::class)->register();
+    }
+);
+
+/* Update*/
+$container->get(\Borlabs\Cookie\System\Updater\Updater::class)->register();
+
+/* Check if the update should be disabled. */
+add_filter(
+    'auto_update_plugin',
+    function (?bool $update = null, $itemUpdateData = null) use ($container) {
+        return $container->get(\Borlabs\Cookie\System\Updater\Updater::class)->shouldApplyAutoUpdate($update, $itemUpdateData);
+    },
+    10,
+    2
+);
+
+/* Run once the plugin file update process is complete. */
+add_action(
+    'upgrader_process_complete',
+    function ($wpUpgraderInstance, $itemUpdateData) use ($container) {
+        $container->get(\Borlabs\Cookie\System\Updater\Updater::class)->fileUpdateComplete($wpUpgraderInstance, $itemUpdateData);
+    },
+    10,
+    2
+);
+
+if (defined('WP_CLI') && WP_CLI) {
+    $container->get(Borlabs\Cookie\Command\CommandInit::class)->init();
+}

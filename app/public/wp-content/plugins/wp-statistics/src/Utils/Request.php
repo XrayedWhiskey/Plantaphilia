@@ -20,17 +20,31 @@ class Request
 
         $value = $_REQUEST[$param];
 
-        switch ($return) {
-            case 'number':
-                return intval($value);
-            case 'text':
-                return sanitize_textarea_field($value);
-            case 'array':
-                return array_map('sanitize_text_field', $value);
-            case 'string':
-            default:
-                return sanitize_text_field($value);
+        if ($return === 'string') {
+            return sanitize_text_field($value);
         }
+
+        if ($return === 'url') {
+            return sanitize_url($value);
+        }
+
+        if ($return === 'number') {
+            return intval($value);
+        }
+
+        if ($return === 'text') {
+            return sanitize_textarea_field($value);
+        }
+
+        if ($return === 'bool') {
+            return boolval($value);
+        }
+
+        if ($return === 'array' && is_array($value)) {
+            return array_map('sanitize_text_field', $value);
+        }
+
+        return $value;
     }
 
 
@@ -231,4 +245,30 @@ class Request
         return true;
     }
 
+    /**
+     * Checks where the current request is coming from.
+     *
+     * @param string $type The type of request to check for. Can be 'admin', 'ajax', 'cron', 'wp-cli', or 'public'.
+     * @return bool True if the request is from the specified type, false otherwise.
+     */
+    public static function isFrom($type)
+    {
+        if ($type === 'admin') {
+            return is_admin();
+        }
+
+        if ($type === 'ajax') {
+            return defined('DOING_AJAX');
+        }
+
+        if ($type === 'cron') {
+            return defined('DOING_CRON');
+        }
+
+        if ($type === 'wp-cli') {
+            return defined('WP_CLI') && WP_CLI;
+        }
+
+        return false;
+    }
 }

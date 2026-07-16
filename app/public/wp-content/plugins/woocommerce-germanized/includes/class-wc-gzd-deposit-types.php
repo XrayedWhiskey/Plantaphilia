@@ -24,38 +24,44 @@ class WC_GZD_Deposit_Types extends WC_GZD_Taxonomy {
 		return parent::get_term_object( $key, $by );
 	}
 
-	/**
-	 * Returns a list of terms slug=>name
-	 *
-	 * @return string[] terms as array
-	 */
-	public function get_terms( $args = array() ) {
-		$args = wp_parse_args(
-			$args,
-			array(
-				'hide_empty' => false,
-				'as'         => 'slug=>name',
-			)
-		);
-
-		$list    = array();
-		$terms   = get_terms( $this->get_taxonomy(), array_diff_key( $args, array( 'as' => '' ) ) );
-		$as_data = array_map( 'trim', explode( '=>', $args['as'] ) );
-		$key     = isset( $as_data[0] ) ? $as_data[0] : 'slug';
-		$value   = isset( $as_data[1] ) ? $as_data[1] : 'name';
-
-		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-			foreach ( $terms as $term ) {
-				$term_value = 'name' === $value ? sprintf( _x( '%1$s (%2$s, %3$s)', 'deposit-type-title', 'woocommerce-germanized' ), $term->name, $this->get_packaging_type_title( $term ), wp_strip_all_tags( wc_price( $this->get_deposit( $term ) ) ) ) : ( isset( $term->{$value} ) ? $term->{$value} : $term->name );
-				$list[ ( isset( $term->{$key} ) ? $term->{$key} : $term->slug ) ] = $term_value;
-			}
+	protected function format_term_value( $value_to_extract, $term ) {
+		if ( 'name' === $value_to_extract ) {
+			$term_value = sprintf( _x( '%1$s (%2$s, %3$s)', 'deposit-type-title', 'woocommerce-germanized' ), $term->name, $this->get_packaging_type_title( $term ), wp_strip_all_tags( wc_price( $this->get_deposit( $term ) ) ) );
+		} else {
+			$term_value = parent::format_term_value( $value_to_extract, $term );
 		}
 
-		return $list;
+		return $term_value;
 	}
 
 	public function get_deposit_types( $args = array() ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'is_packaging' => '',
+				'meta_query'   => array(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			)
+		);
+
+		if ( ! empty( $args['is_packaging'] ) ) {
+			$args['meta_query'][] = array(
+				array(
+					'key'     => 'deposit_is_packaging',
+					'value'   => wc_bool_to_string( $args['is_packaging'] ),
+					'compare' => '=',
+				),
+			);
+		}
+
+		unset( $args['is_packaging'] );
+
 		return $this->get_terms( $args );
+	}
+
+	public function get_packaging_list( $args = array() ) {
+		$args['is_packaging'] = 'yes';
+
+		return $this->get_deposit_types( $args );
 	}
 
 	public function get_packaging_types() {
@@ -65,6 +71,13 @@ class WC_GZD_Deposit_Types extends WC_GZD_Taxonomy {
 				'reusable'   => _x( 'Reusable', 'deposit-packaging-type', 'woocommerce-germanized' ),
 				'disposable' => _x( 'Disposable', 'deposit-packaging-type', 'woocommerce-germanized' ),
 			)
+		);
+	}
+
+	public function get_tax_statuses() {
+		return array(
+			'taxable' => _x( 'Taxable', 'deposit-tax-status', 'woocommerce-germanized' ),
+			'none'    => _x( 'None', 'deposit-tax-status', 'woocommerce-germanized' ),
 		);
 	}
 
@@ -102,6 +115,24 @@ class WC_GZD_Deposit_Types extends WC_GZD_Taxonomy {
 		return apply_filters( 'woocommerce_gzd_deposit_packaging_type_title', $title, $type );
 	}
 
+	public function get_tax_status( $term ) {
+		$tax_status = 'taxable';
+
+		if ( ! is_a( $term, 'WP_Term' ) ) {
+			$term = $this->get_deposit_type_term( $term );
+		}
+
+		if ( $term ) {
+			$tax_status = get_term_meta( $term->term_id, 'deposit_tax_status', true );
+
+			if ( empty( $tax_status ) || ! in_array( $tax_status, array_keys( $this->get_tax_statuses() ), true ) ) {
+				$tax_status = 'taxable';
+			}
+		}
+
+		return $tax_status;
+	}
+
 	public function get_deposit( $term ) {
 		$deposit = 0;
 
@@ -120,5 +151,64 @@ class WC_GZD_Deposit_Types extends WC_GZD_Taxonomy {
 		}
 
 		return wc_format_decimal( $deposit, '' );
+	}
+
+	public function is_packaging( $term ) {
+		$is_packaging = false;
+
+		if ( ! is_a( $term, 'WP_Term' ) ) {
+			$term = $this->get_deposit_type_term( $term );
+		}
+
+		if ( ! $term ) {
+			return $is_packaging;
+		}
+
+		return wc_string_to_bool( get_term_meta( $term->term_id, 'deposit_is_packaging', true ) );
+	}
+
+	/**
+	 * @param $term
+	 *
+	 * @return false|WP_Term
+	 */
+	public function get_packaging( $term ) {
+		$packaging = false;
+
+		if ( ! is_a( $term, 'WP_Term' ) ) {
+			$term = $this->get_deposit_type_term( $term );
+		}
+
+		if ( ! $term ) {
+			return $packaging;
+		}
+
+		if ( ! $this->is_packaging( $term ) ) {
+			$packaging = get_term_meta( $term->term_id, 'deposit_packaging', true );
+
+			if ( ! empty( $packaging ) ) {
+				return $this->get_deposit_type_term( $packaging );
+			}
+		}
+
+		return $packaging;
+	}
+
+	public function get_packaging_number_of_contents( $term ) {
+		$number = 1;
+
+		if ( ! is_a( $term, 'WP_Term' ) ) {
+			$term = $this->get_deposit_type_term( $term );
+		}
+
+		if ( ! $term ) {
+			return $number;
+		}
+
+		if ( $this->is_packaging( $term ) ) {
+			$number = absint( get_term_meta( $term->term_id, 'deposit_packaging_number_contents', true ) );
+		}
+
+		return $number;
 	}
 }

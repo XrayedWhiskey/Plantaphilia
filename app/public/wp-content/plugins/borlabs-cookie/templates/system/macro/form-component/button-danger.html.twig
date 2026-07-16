@@ -1,0 +1,10 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/form-component/button.html.twig" as button %}
+    {% set config = {
+        backgroundColor: 'bc-bg-red-600',
+        backgroundColorHover: 'enabled:hover:bc-bg-red-700',
+        focusColor: 'focus:bc-ring-red-800',
+    } | merge(config)
+    %}
+    {{ button.component(config, localized) }}
+{% endmacro %}

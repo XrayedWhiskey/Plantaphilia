@@ -1,0 +1,137 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.dialogEntrance,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_input.component({
+            errorMessage: localized.validation.entranceHeadline,
+            id: 'entranceHeadline',
+            label: localized.field.entranceHeadline,
+            value: data.entranceHeadline,
+        }) }}
+
+        {{ row_textarea.component({
+            id: 'entranceDescription',
+            label: localized.field.entranceDescription,
+            value: data.entranceDescription,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.entranceSaveConsentButton,
+            id: 'entranceSaveConsentButton',
+            label: localized.field.entranceSaveConsentButton,
+            value: data.entranceSaveConsentButton,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.entranceAcceptAllButton,
+            id: 'entranceAcceptAllButton',
+            label: localized.field.entranceAcceptAllButton,
+            value: data.entranceAcceptAllButton,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.entranceAcceptOnlyEssential,
+            id: 'entranceAcceptOnlyEssential',
+            label: localized.field.entranceAcceptOnlyEssential,
+            value: data.entranceAcceptOnlyEssential,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.entrancePreferencesButton,
+            id: 'entrancePreferencesButton',
+            label: localized.field.entrancePreferencesButton,
+            value: data.entrancePreferencesButton,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.entrancePreferencesLink,
+            id: 'entrancePreferencesLink',
+            hideInSimplifiedMode: true,
+            label: localized.field.entrancePreferencesLink,
+            value: data.entrancePreferencesLink,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.imprintLink,
+            id: 'imprintLink',
+            hideInSimplifiedMode: true,
+            label: localized.field.imprintLink,
+            value: data.imprintLink,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.privacyLink,
+            id: 'privacyLink',
+            hideInSimplifiedMode: true,
+            label: localized.field.privacyLink,
+            value: data.privacyLink,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.entranceLanguageSwitcherLink,
+            id: 'entranceLanguageSwitcherLink',
+            hideInSimplifiedMode: true,
+            label: localized.field.entranceLanguageSwitcherLink,
+            value: data.entranceLanguageSwitcherLink,
+        }) }}
+
+        <!-- Synchronization Settings -->
+        {{ synchronizationSettingsFields(
+            languages,
+            {
+                collectionName: "languages",
+                hasRepository: false,
+            }
+        ) | raw }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionDialogEntrance', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineWhatIsTheDialogEntrance | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.whatIsTheDialogEntrance | raw }}</p>
+                        <p>
+                            <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalDialogEntrance" href="#" role="button">
+                                <img class="bc-w-48 bc-h-48 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-dialog-localization-entrance.png') }}" alt="">
+                            </a>
+                        </p>
+                        {% embed "system/embed/modal/modal.html.twig" with {
+                            id: 'borlabsModalDialogEntrance',
+                            maxWidth: 'bc-max-w-2xl',
+                            title: localized.headline.dialogEntrance,
+                        } %}
+                            {% block icon %}
+                                {% import "system/macro/icons/paint-brush.html.twig" as pain_brush_icon %}
+                                <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                    {{ pain_brush_icon.component({}) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block description %}
+                                <img src="{{ imageUrl('ttk-dialog-localization-entrance.png') }}" alt="">
+                                <p>{{ localized.thingsToKnow.whatIsTheDialogEntrance | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

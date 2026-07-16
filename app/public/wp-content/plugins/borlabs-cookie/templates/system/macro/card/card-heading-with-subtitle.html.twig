@@ -1,0 +1,34 @@
+{% macro component(config) %}
+    {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+    {% import "system/macro/form-component/button.html.twig" as button %}
+    {% set config = {
+        backgroundColor: 'bc-bg-slate-950',
+        backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+        focusColor: 'focus:bc-ring-slate-950',
+        textColor: 'bc-text-gray-900',
+    } | merge(config) %}
+    <div
+        class="bc-flex bc-justify-between bc-items-center">
+        <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-text-gray-900 bc-mb-0">
+            {{ config.title | raw }}<br>
+            <span class="bc-text-sm bc-font-normal bc-text-gray-400">{{ config.subtitle | raw }}</span>
+        </h3>
+
+        {% if config.buttonLink is not empty and config.buttonText is not empty %}
+            {{ anchor_button.component({ href: config.buttonLink, linkText: config.buttonText }) }}
+        {% endif %}
+
+        {% if config.button is not empty  %}
+            {{ button.component({
+                button: config.button,
+                backgroundColor: config.backgroundColor,
+                backgroundColorHover: config.backgroundColorHover,
+                dataAttribute: config.buttonDataAttribute,
+                focusColor: config.focusColor,
+                id: config.buttonId,
+                name: config.buttonName,
+                type: 'button'
+            }) }}
+        {% endif %}
+    </div>
+{% endmacro %}

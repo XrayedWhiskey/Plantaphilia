@@ -1,0 +1,37 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    {{ displayModeSettingsToggle() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- General Settings -->
+        {% include "dialog/dialog-general/partials/general-settings.html.twig" %}
+        <!-- Dialog Settings -->
+        {% include "dialog/dialog-general/partials/basic-dialog-settings.html.twig" %}
+        <!-- Accessibility Settings -->
+        {% include "dialog/dialog-general/partials/accessibility-settings.html.twig" %}
+        <!-- GeoIp Settings -->
+        {% include "dialog/dialog-general/partials/geo-ip.html.twig" %}
+        <!-- Language Switcher Settings -->
+        {% include "dialog/dialog-general/partials/language-switcher.html.twig" %}
+        <!-- Animation Settings -->
+        {% include "dialog/dialog-general/partials/animation-settings.html.twig" %}
+        <!-- Logo Settings -->
+        {% include "dialog/dialog-general/partials/logo-settings.html.twig" %}
+    </form>
+    <!-- Reset Dialog General Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        headline: localized.headline.resetDialogSettings,
+        hint: localized.hint.reset,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

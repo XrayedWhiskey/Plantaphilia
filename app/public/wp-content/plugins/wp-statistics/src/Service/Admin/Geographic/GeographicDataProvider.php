@@ -3,20 +3,64 @@
 namespace WP_Statistics\Service\Admin\Geographic;
 
 use WP_STATISTICS\Helper;
+use WP_STATISTICS\Country;
+use WP_Statistics\Components\DateRange;
 use WP_Statistics\Models\VisitorsModel;
-use WP_STATISTICS\TimeZone;
+use WP_Statistics\Service\Charts\ChartDataProviderFactory;
 
 class GeographicDataProvider
 {
     protected $args;
     protected $visitorsModel;
 
-
     public function __construct($args)
     {
         $this->args = $args;
 
         $this->visitorsModel = new VisitorsModel();
+    }
+
+    public function getOverviewData()
+    {
+        $args = array_merge($this->args, ['per_page' => 5, 'page' => 1]);
+
+        $countries     = $this->visitorsModel->getVisitorsGeoData($args);
+        $cities        = $this->visitorsModel->getVisitorsGeoData(array_merge($args, ['group_by' => ['city'], 'not_null' => 'visitor.city']));
+        $globalRegions = $this->visitorsModel->getVisitorsGeoData(array_merge($args, ['group_by' => ['region'], 'not_null' => 'visitor.region', 'per_page' => 1]));
+        $states        = $this->visitorsModel->getVisitorsGeoData(array_merge($args, ['country' => 'US', 'continent' => 'North America', 'group_by' => ['region'], 'not_null' => 'visitor.region']));
+
+        $data = [
+            'summary'   => [
+                'country'   => !empty($countries[0]->country) ? Country::getName($countries[0]->country) : '',
+                'region'    => $globalRegions[0]->region ?? '',
+                'city'      => $cities[0]->city ?? '',
+            ],
+            'countries' => $countries,
+            'cities'    => $cities,
+            'states'    => $states,
+        ];
+
+
+        // Add country region data, if user country is detected
+        $userCountry = Helper::getTimezoneCountry();
+        if ($userCountry) {
+            $data['regions'] = $this->visitorsModel->getVisitorsGeoData(array_merge($args, ['country' => $userCountry, 'group_by' => ['country', 'region'], 'not_null' => 'visitor.region']));
+        }
+
+        return $data;
+    }
+
+    public function getOverviewChartData()
+    {
+        $mapData        = ChartDataProviderFactory::mapChart()->getData();
+        $europeData     = ChartDataProviderFactory::countryChart(['continent' => 'Europe'])->getData();
+        $continentsData = ChartDataProviderFactory::continentChart()->getData();
+
+        return [
+            'map_chart_data'        => $mapData,
+            'europe_chart_data'     => $europeData,
+            'continent_chart_data'  => $continentsData
+        ];
     }
 
     public function getCountriesData()
@@ -98,8 +142,17 @@ class GeographicDataProvider
 
     public function getSingleCountryData()
     {
-        $visitorsGeoData = $this->visitorsModel->getVisitorsGeoData($this->args);
-        $stats           = reset($visitorsGeoData);
+        $geoData = $this->visitorsModel->getVisitorsGeoData($this->args);
+        $stats   = reset($geoData);
+
+        $prevGeoData = $this->visitorsModel->getVisitorsGeoData(array_merge($this->args, ['date' => DateRange::getPrevPeriod()]));
+        $prevStats   = reset($prevGeoData);
+
+        $visitors     = !empty($stats) ? $stats->visitors : 0;
+        $prevVisitors = !empty($prevStats) ? $prevStats->visitors : 0;
+
+        $views     = !empty($stats) ? $stats->views : 0;
+        $prevViews = !empty($prevStats) ? $prevStats->views : 0;
 
         $regions = $this->visitorsModel->getVisitorsGeoData(array_merge(
             $this->args,
@@ -134,43 +187,47 @@ class GeographicDataProvider
         $referrers = $this->visitorsModel->getReferrers($this->args);
 
         return [
-            'stats'     => [
-                'visitors' => !empty($stats) ? $stats->visitors : 0,
-                'views'    => !empty($stats) ? $stats->views : 0
+            'glance'     => [
+                'visitors' => [
+                    'value'  => $visitors,
+                    'change' => Helper::calculatePercentageChange($prevVisitors, $visitors)
+                ],
+                'views'    => [
+                    'value'  => $views,
+                    'change' => Helper::calculatePercentageChange($prevViews, $views)
+                ],
+                'region' => [
+                    'value' => !empty($regions) ? $regions[0]->region : ''
+                ],
+                'city' => [
+                    'value' => !empty($cities) ? $cities[0]->city : ''
+                ],
+                'referrer' => [
+                    'value' => !empty($referrers) ? $referrers[0]->referred : ''
+                ]
             ],
             'regions'   => $regions,
             'cities'    => [
                 'data'  => $cities,
                 'total' => $citiesTotal
             ],
-            'referrers' => $referrers,
+            'referrers' => $referrers
         ];
     }
 
     public function getSingleCountryChartsData()
     {
-        $platformData = $this->visitorsModel->getVisitorsPlatformData($this->args);
+        $platformDataProvider       = ChartDataProviderFactory::platformCharts($this->args);
+        $searchEngineDataProvider   = ChartDataProviderFactory::searchEngineChart($this->args);
+        $trafficTrendsDataProvider  = ChartDataProviderFactory::trafficChart($this->args);
 
         return [
-            'search_engine_chart_data' => $this->visitorsModel->getSearchEnginesChartData($this->args),
-            'os_chart_data'         => [
-                'labels'    => wp_list_pluck($platformData['platform'], 'label'),
-                'data'      => wp_list_pluck($platformData['platform'], 'visitors'),
-                'icons'     => wp_list_pluck($platformData['platform'], 'icon'),
-            ],
-            'browser_chart_data'    => [
-                'labels'    => wp_list_pluck($platformData['agent'], 'label'), 
-                'data'      => wp_list_pluck($platformData['agent'], 'visitors'),
-                'icons'     => wp_list_pluck($platformData['agent'], 'icon')
-            ],
-            'device_chart_data'        => [
-                'labels' => wp_list_pluck($platformData['device'], 'label'),
-                'data'   => wp_list_pluck($platformData['device'], 'visitors')
-            ],
-            'model_chart_data'         => [
-                'labels' => wp_list_pluck($platformData['model'], 'label'),
-                'data'   => wp_list_pluck($platformData['model'], 'visitors')
-            ],
+            'search_engine_chart_data'  => $searchEngineDataProvider->getData(),
+            'os_chart_data'             => $platformDataProvider->getOsData(),
+            'browser_chart_data'        => $platformDataProvider->getBrowserData(),
+            'device_chart_data'         => $platformDataProvider->getDeviceData(),
+            'model_chart_data'          => $platformDataProvider->getModelData(),
+            'traffic_chart_data'        => $trafficTrendsDataProvider->getData()
         ];
     }
 }

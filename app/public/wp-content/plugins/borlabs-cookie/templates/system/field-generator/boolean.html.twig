@@ -1,0 +1,9 @@
+{% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+{{ switch_button.component({
+    hint: translation.hint,
+    id: id,
+    infoMessage: translation.infoMessage,
+    label: translation.label,
+    name: name,
+    value: value != '' ? value : defaultValue,
+}) }}

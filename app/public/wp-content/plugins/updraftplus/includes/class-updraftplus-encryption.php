@@ -1,5 +1,6 @@
 <?php
-
+// phpcs:disable WordPress.WP.AlternativeFunctions.rename_rename -- rename() usage is intentional and safe within this context.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
 if (!defined('ABSPATH')) die('No direct access.');
 
 class UpdraftPlus_Encryption {
@@ -145,6 +146,7 @@ class UpdraftPlus_Encryption {
 		global $updraftplus;
 
 		if (!function_exists('mcrypt_encrypt') && !extension_loaded('openssl')) {
+			/* translators: %s: The name of the missing encryption module. */
 			$updraftplus->log(sprintf(__('Your web-server does not have the %s module installed.', 'updraftplus'), 'PHP/mcrypt / PHP/OpenSSL').' '.__('Without it, encryption will be a lot slower.', 'updraftplus'), 'warning', 'nocrypt');
 		}
 
@@ -333,7 +335,7 @@ class UpdraftPlus_Encryption {
 		
 		if ('' == $encryption) {
 			header('Content-type: text/plain');
-			echo __('Decryption failed.', 'updraftplus').' '.__('The database file is encrypted, but you have no encryption key entered.', 'updraftplus');
+			echo esc_html(__('Decryption failed.', 'updraftplus').' '.__('The database file is encrypted, but you have no encryption key entered.', 'updraftplus'));
 			$updraftplus->log('Decryption of database failed: the database file is encrypted, but you have no encryption key entered.', 'error');
 		} else {
 
@@ -351,7 +353,7 @@ class UpdraftPlus_Encryption {
 				unlink($decrypted_file['fullpath']);
 			} else {
 				header('Content-type: text/plain');
-				echo __('Decryption failed.', 'updraftplus').' '.__('The most likely cause is that you used the wrong key.', 'updraftplus').' '.__('The decryption key used:', 'updraftplus').' '.$encryption;
+				echo esc_html(__('Decryption failed.', 'updraftplus').' '.__('The most likely cause is that you used the wrong key.', 'updraftplus').' '.__('The decryption key used:', 'updraftplus').' '.$encryption);
 				
 			}
 		}

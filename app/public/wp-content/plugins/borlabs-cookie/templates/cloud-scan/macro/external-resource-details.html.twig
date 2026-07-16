@@ -1,0 +1,7 @@
+{% macro component(config, localized) %}
+    {% import "cloud-scan/macro/external-resource-details-table.html.twig" as external_resources_details_table %}
+
+    {{ external_resources_details_table.component({
+        examples: config.examples,
+    }, localized) }}
+{% endmacro %}

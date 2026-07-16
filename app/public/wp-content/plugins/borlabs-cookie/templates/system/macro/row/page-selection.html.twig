@@ -1,0 +1,35 @@
+{% macro component(config) %}
+    {% set pageSelectName = config.pageSelectId %}
+    {% if config.pageSelectName is not empty %}
+        {% set pageSelectName = config.pageSelectName %}
+    {% endif %}
+
+    {% set urlInputName = config.urlInputName %}
+    {% if config.urlInputName is not empty %}
+        {% set urlInputName = config.urlInputName %}
+    {% endif %}
+
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/form-component/page-selection.html.twig" as page_selection %}
+        {% block label %}
+            <label for="{{ config.pageSelectId }}" class="bc-flex bc-items-center bc-space-x-1">
+                <span>{{ config.label | raw }}</span>
+                {{ hint.component({
+                    hint: config.hint,
+                }) }}
+            </label>
+        {% endblock %}
+        {% block input %}
+            {{ page_selection.component({
+                pageSelectId: config.pageSelectId,
+                pageSelectName: config.pageSelectName,
+                pagesList: config.pagesList,
+                pageSelectValue: config.pageSelectValue,
+                urlInputId: config.urlInputId,
+                urlInputName: config.urlInputName,
+                urlInputValue: config.urlInputValue,
+            }) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

@@ -5,9 +5,8 @@
  * @copyright (c) 2022, Snap Creek LLC
  */
 
-use Duplicator\Installer\Utils\LinkManager;
 use Duplicator\Utils\Help\Help;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") or die("");
 
@@ -236,7 +235,7 @@ defined("ABSPATH") or die("");
                 <h3><?php esc_html_e("Get Support", "duplicator"); ?></h3>
                 <p><?php esc_html_e("Upgrade to Duplicator Pro to access our world class customer support.", "duplicator"); ?></p>
                 <a 
-                    href="<?php echo Upsell::getCampaignUrl('help-modal-footer', 'Get Support'); ?>"
+                    href="<?php echo LinkManager::getCampaignUrl('help-modal-footer', 'Get Support'); ?>"
                     rel="noopener noreferrer" 
                     target="_blank" 
                     class="button">

@@ -5,9 +5,6 @@
  * @package WPSEO\Admin
  */
 
-use Yoast\WP\SEO\Conditionals\Third_Party\Jetpack_Boost_Active_Conditional;
-use Yoast\WP\SEO\Conditionals\Third_Party\Jetpack_Boost_Not_Premium_Conditional;
-use Yoast\WP\SEO\Conditionals\WooCommerce_Conditional;
 use Yoast\WP\SEO\Editors\Application\Site\Website_Information_Repository;
 use Yoast\WP\SEO\Presenters\Admin\Alert_Presenter;
 use Yoast\WP\SEO\Presenters\Admin\Meta_Fields_Presenter;
@@ -55,7 +52,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 	/**
 	 * The Metabox post.
 	 *
-	 * @var WP_Post
+	 * @var WP_Post|null
 	 */
 	protected $post = null;
 
@@ -82,11 +79,8 @@ class WPSEO_Metabox extends WPSEO_Meta {
 		add_action( 'edit_attachment', [ $this, 'save_postdata' ] );
 		add_action( 'add_attachment', [ $this, 'save_postdata' ] );
 
-		$this->editor = new WPSEO_Metabox_Editor();
-		$this->editor->register_hooks();
-
-		$this->social_is_enabled            = WPSEO_Options::get( 'opengraph', false ) || WPSEO_Options::get( 'twitter', false );
-		$this->is_advanced_metadata_enabled = WPSEO_Capability_Utils::current_user_can( 'wpseo_edit_advanced_metadata' ) || WPSEO_Options::get( 'disableadvanced_meta' ) === false;
+		$this->social_is_enabled            = WPSEO_Options::get( 'opengraph', false, [ 'wpseo_social' ] ) || WPSEO_Options::get( 'twitter', false, [ 'wpseo_social' ] );
+		$this->is_advanced_metadata_enabled = WPSEO_Capability_Utils::current_user_can( 'wpseo_edit_advanced_metadata' ) || WPSEO_Options::get( 'disableadvanced_meta', null, [ 'wpseo' ] ) === false;
 
 		$this->seo_analysis                = new WPSEO_Metabox_Analysis_SEO();
 		$this->readability_analysis        = new WPSEO_Metabox_Analysis_Readability();
@@ -137,7 +131,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 				$post_type,
 				'normal',
 				apply_filters( 'wpseo_metabox_prio', 'high' ),
-				[ '__block_editor_compatible_meta_box' => true ]
+				[ '__block_editor_compatible_meta_box' => true ],
 			);
 		}
 	}
@@ -154,7 +148,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 			'<a href="https://www.mozilla.org/firefox/new/">',
 			'<a href="https://www.google.com/chrome/">',
 			'<a href="https://www.microsoft.com/windows/microsoft-edge">',
-			'</a>'
+			'</a>',
 		);
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output escaped above.
@@ -208,7 +202,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 			/* translators: 1: link open tag; 2: link close tag. */
 			__( 'The canonical URL that this page should point to. Leave empty to default to permalink. %1$sCross domain canonical%2$s supported too.', 'wordpress-seo' ),
 			'<a href="https://googlewebmastercentral.blogspot.com/2009/12/handling-legitimate-cross-domain.html" target="_blank" rel="noopener">',
-			WPSEO_Admin_Utils::get_new_tab_message() . '</a>'
+			WPSEO_Admin_Utils::get_new_tab_message() . '</a>',
 		);
 
 		WPSEO_Meta::$meta_fields['advanced']['redirect']['title']       = __( '301 Redirect', 'wordpress-seo' );
@@ -257,7 +251,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 				$post_type,
 				'normal',
 				apply_filters( 'wpseo_metabox_prio', 'high' ),
-				[ '__block_editor_compatible_meta_box' => true ]
+				[ '__block_editor_compatible_meta_box' => true ],
 			);
 		}
 	}
@@ -278,13 +272,13 @@ class WPSEO_Metabox extends WPSEO_Meta {
 	/**
 	 * Passes variables to js for use with the post-scraper.
 	 *
-	 * @return array<string,string|array<string|int|bool>|bool|int>
+	 * @return array<string, string|array<string|int|bool>|bool|int>
 	 */
 	public function get_metabox_script_data() {
 		$permalink = $this->get_permalink();
 
 		$post_formatter = new WPSEO_Metabox_Formatter(
-			new WPSEO_Post_Metabox_Formatter( $this->get_metabox_post(), [], $permalink )
+			new WPSEO_Post_Metabox_Formatter( $this->get_metabox_post(), [], $permalink ),
 		);
 
 		$values = $post_formatter->get_values();
@@ -428,7 +422,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 			$tabs[] = new WPSEO_Metabox_Section_React(
 				'schema',
 				'<span class="wpseo-schema-icon"></span>' . __( 'Schema', 'wordpress-seo' ),
-				''
+				'',
 			);
 		}
 
@@ -439,7 +433,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 				'',
 				[
 					'html_after' => '<div id="wpseo-section-social"></div>',
-				]
+				],
 			);
 		}
 
@@ -490,7 +484,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 					$tab['name'],
 					$tab['link_content'],
 					$tab['content'],
-					$options
+					$options,
 				);
 			}
 		}
@@ -501,7 +495,8 @@ class WPSEO_Metabox extends WPSEO_Meta {
 	/**
 	 * Adds a line in the meta box.
 	 *
-	 * @todo [JRF] Check if $class is added appropriately everywhere.
+	 * @deprecated 23.5
+	 * @codeCoverageIgnore
 	 *
 	 * @param string[] $meta_field_def Contains the vars based on which output is generated.
 	 * @param string   $key            Internal key (without prefix).
@@ -509,6 +504,8 @@ class WPSEO_Metabox extends WPSEO_Meta {
 	 * @return string
 	 */
 	public function do_meta_box( $meta_field_def, $key = '' ) {
+		_deprecated_function( __METHOD__, 'Yoast SEO 23.5' );
+
 		$content      = '';
 		$esc_form_key = esc_attr( WPSEO_Meta::$form_prefix . $key );
 		$meta_value   = WPSEO_Meta::get_value( $key, $this->get_metabox_post()->ID );
@@ -631,7 +628,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 
 		$html = '';
 		if ( $content === '' ) {
-			$content = apply_filters( 'wpseo_do_meta_box_field_' . $key, $content, $meta_value, $esc_form_key, $meta_field_def, $key );
+			$content = apply_filters_deprecated( 'wpseo_do_meta_box_field_' . $key, [ $content, $meta_value, $esc_form_key, $meta_field_def, $key ], 'Yoast SEO 23.5', '', 'do_meta_box is deprecated' );
 		}
 
 		if ( $content !== '' ) {
@@ -729,7 +726,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 			WPSEO_Meta::get_meta_field_defs( 'general', $post->post_type ),
 			WPSEO_Meta::get_meta_field_defs( 'advanced' ),
 			$social_fields,
-			WPSEO_Meta::get_meta_field_defs( 'schema', $post->post_type )
+			WPSEO_Meta::get_meta_field_defs( 'schema', $post->post_type ),
 		);
 
 		foreach ( $meta_boxes as $key => $meta_box ) {
@@ -808,19 +805,19 @@ class WPSEO_Metabox extends WPSEO_Meta {
 	public function enqueue() {
 		global $pagenow;
 
+		if ( $this->readability_analysis->is_enabled() ) {
+			$this->editor = new WPSEO_Metabox_Editor();
+			$this->editor->register_hooks();
+		}
+
 		$asset_manager = new WPSEO_Admin_Asset_Manager();
 
-		$is_editor = self::is_post_overview( $pagenow ) || self::is_post_edit( $pagenow );
-
 		if ( self::is_post_overview( $pagenow ) ) {
-			$asset_manager->enqueue_style( 'edit-page' );
-			$asset_manager->enqueue_script( 'edit-page' );
-
 			return;
 		}
 
 		/* Filter 'wpseo_always_register_metaboxes_on_admin' documented in wpseo-main.php */
-		if ( ( $is_editor === false && apply_filters( 'wpseo_always_register_metaboxes_on_admin', false ) === false ) || $this->display_metabox() === false ) {
+		if ( ( self::is_post_edit( $pagenow ) === false && apply_filters( 'wpseo_always_register_metaboxes_on_admin', false ) === false ) || $this->display_metabox() === false ) {
 			return;
 		}
 
@@ -837,7 +834,9 @@ class WPSEO_Metabox extends WPSEO_Meta {
 		}
 
 		$asset_manager->enqueue_style( 'metabox-css' );
-		$asset_manager->enqueue_style( 'scoring' );
+		if ( $this->readability_analysis->is_enabled() ) {
+			$asset_manager->enqueue_style( 'scoring' );
+		}
 		$asset_manager->enqueue_style( 'monorepo' );
 		$asset_manager->enqueue_style( 'ai-generator' );
 		$asset_manager->enqueue_style( 'ai-fix-assessments' );
@@ -879,35 +878,30 @@ class WPSEO_Metabox extends WPSEO_Meta {
 			'log_level'               => WPSEO_Utils::get_analysis_worker_log_level(),
 		];
 
-		$woocommerce_conditional = new WooCommerce_Conditional();
-		$woocommerce_active      = $woocommerce_conditional->is_met();
-		$addon_manager           = new WPSEO_Addon_Manager();
-		$woocommerce_seo_active  = is_plugin_active( $addon_manager->get_plugin_file( WPSEO_Addon_Manager::WOOCOMMERCE_SLUG ) );
+		$page_on_front    = (int) get_option( 'page_on_front' );
+		$homepage_is_page = get_option( 'show_on_front' ) === 'page';
+		$is_front_page    = $homepage_is_page && $page_on_front === (int) $post_id;
 
 		$script_data = [
 			'metabox'                    => $this->get_metabox_script_data(),
-			'userLanguageCode'           => WPSEO_Language_Utils::get_language( get_user_locale() ),
 			'isPost'                     => true,
 			'isBlockEditor'              => $is_block_editor,
 			'postId'                     => $post_id,
 			'postStatus'                 => get_post_status( $post_id ),
 			'postType'                   => get_post_type( $post_id ),
+			'isPage'                     => get_post_type( $post_id ) === 'page',
 			'usedKeywordsNonce'          => wp_create_nonce( 'wpseo-keyword-usage-and-post-types' ),
 			'analysis'                   => [
 				'plugins' => $plugins_script_data,
 				'worker'  => $worker_script_data,
 			],
-			'isJetpackBoostActive'       => ( $is_block_editor ) ? YoastSEO()->classes->get( Jetpack_Boost_Active_Conditional::class )->is_met() : false,
-			'isJetpackBoostNotPremium'   => ( $is_block_editor ) ? YoastSEO()->classes->get( Jetpack_Boost_Not_Premium_Conditional::class )->is_met() : false,
-			'isWooCommerceSeoActive'     => $woocommerce_seo_active,
-			'isWooCommerceActive'        => $woocommerce_active,
-			'woocommerceUpsell'          => get_post_type( $post_id ) === 'product' && ! $woocommerce_seo_active && $woocommerce_active,
+			'isFrontPage'                => $is_front_page,
 		];
 
 		/**
 		 * The website information repository.
 		 *
-		 * @var $repo Website_Information_Repository
+		 * @var Website_Information_Repository $repo
 		 */
 		$repo             = YoastSEO()->classes->get( Website_Information_Repository::class );
 		$site_information = $repo->get_post_site_information();
@@ -919,7 +913,6 @@ class WPSEO_Metabox extends WPSEO_Meta {
 		}
 
 		$asset_manager->localize_script( $post_edit_handle, 'wpseoScriptData', $script_data );
-		$asset_manager->enqueue_user_language_script();
 	}
 
 	/**
@@ -1108,7 +1101,7 @@ class WPSEO_Metabox extends WPSEO_Meta {
 			[
 				$meta->presentation->title,
 				$meta->presentation->meta_description,
-			]
+			],
 		);
 
 		preg_match_all( '/%%cf_([A-Za-z0-9_]+)%%/', $replace_vars_fields, $matches );

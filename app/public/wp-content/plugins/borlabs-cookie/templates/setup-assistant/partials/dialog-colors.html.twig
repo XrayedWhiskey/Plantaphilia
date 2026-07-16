@@ -1,0 +1,51 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="dialog-colors">
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/media-selection.html.twig" as media_selection %}
+        {% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+
+        {% block mainHeader %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.dialogColors,
+                subtitle: localized.headline.dialogAppearance,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            <fieldset class="bc-p-6">
+                <legend class="bc-pt-6 bc-text-lg bc-font-medium bc-text-center">{{ localized.headline.selectDialogColors | raw }}</legend>
+                <!-- Assistant -->
+                <div class="bc-bg-neutral-200 bc-shadow-inner bc-px-6 bc-pt-6 bc-rounded-md bc-mb-6">
+                    {% include "dialog/dialog-appearance/partials/color-assistant.html.twig" %}
+                </div>
+            </fieldset>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionDialogColors', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineColorAssistant | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.colorAssistantA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.colorAssistantB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 2 + (data.setupType == 'guided' ? 5 : 0),
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

@@ -1,0 +1,312 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    {{ displayModeSettingsToggle() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+    {% embed "system/embed/card/card-with-info-panel.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+        {% import "system/macro/row/color-selection.html.twig" as row_color_selection %}
+        {% import "system/macro/row/input-group.html.twig" as row_input_group %}
+        {% import "system/macro/row/input-optional.html.twig" as row_input_optional %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {% block mainHeader %}
+            {{ card_heading.component({
+                title: localized.headline.appearanceSettings,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            {{ row_input_optional.component({
+                checked: attribute(data, 'fontFamilyStatus'),
+                hint: localized.hint.fontFamily,
+                id: 'fontFamily',
+                name: 'fontFamily',
+                label: localized.field.fontFamily,
+                value: data.fontFamily is not empty and data.fontFamily != 'inherit' ? data.fontFamily : '',
+                placeholder: localized.placeholder.fontFamily
+            }, localized) }}
+
+            {{ row_input_group.component({
+                append: 'px',
+                hint: localized.hint.fontSize,
+                id: 'fontSize',
+                isRequired: false,
+                label: localized.field.fontSize,
+                min: '0',
+                type: 'number',
+                value: data.fontSize,
+            }) }}
+
+            {{ row_color_duo_selection.component({
+                colorA:
+                {
+                    id: 'backgroundColor',
+                    label: localized.field.backgroundColor,
+                    value: data.backgroundColor,
+                },
+                colorB:
+                {
+                    id: 'textColor',
+                    label: localized.field.textColor,
+                    value: data.textColor,
+                },
+                title: localized.field.contentBlocker,
+            }) }}
+
+            {{ row_input_group.component({
+                append: '%',
+                cssClasses: ['bc-pr-[35px]'],
+                hideInSimplifiedMode: true,
+                hint: localized.hint.backgroundOpacity,
+                id: 'backgroundOpacity',
+                isRequired: false,
+                label: localized.field.opacity,
+                min: '0',
+                type: 'number',
+                value: data.backgroundOpacity,
+                width: 'bc-w-1/5',
+            }) }}
+
+            {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: true } %}
+                {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+                {% block label %}
+                    <label>{{ localized.field.borderRadius | raw }}</label>
+                {% endblock %}
+                {% block input %}
+                    <div class="bc-relative bc-flex bc-gap-x-4">
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'borderRadiusTopLeft',
+                                min: 0,
+                                value: data.borderRadiusTopLeft,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="borderRadiusTopLeft">{{ localized.field.topLeft | raw }}</label>
+                        </div>
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'borderRadiusTopRight',
+                                min: 0,
+                                value: data.borderRadiusTopRight,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="borderRadiusTopRight">{{ localized.field.topRight | raw }}</label>
+                        </div>
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'borderRadiusBottomLeft',
+                                min: 0,
+                                value: data.borderRadiusBottomLeft,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="borderRadiusBottomLeft">{{ localized.field.bottomLeft | raw }}</label>
+                        </div>
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'borderRadiusBottomRight',
+                                min: 0,
+                                value: data.borderRadiusBottomRight,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="borderRadiusBottomRight">{{ localized.field.bottomRight | raw }}</label>
+                        </div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            {{ row_color_duo_selection.component({
+                colorA:
+                {
+                    id: 'buttonColor',
+                    label: localized.field.default,
+                    value: data.buttonColor,
+                },
+                colorB:
+                {
+                    id: 'buttonColorHover',
+                    label: localized.field.hover,
+                    value: data.buttonColorHover,
+                },
+                title: localized.field.buttonColor,
+            }) }}
+
+            {{ row_color_duo_selection.component({
+                colorA:
+                {
+                    id: 'buttonTextColor',
+                    label: localized.field.default,
+                    value: data.buttonTextColor,
+                },
+                colorB:
+                {
+                    id: 'buttonTextColorHover',
+                    label: localized.field.hover,
+                    value: data.buttonTextColorHover,
+                },
+                title: localized.field.buttonTextColor,
+            }) }}
+
+            {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: true } %}
+                {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+                {% block label %}
+                    <label>{{ localized.field.buttonBorderRadius | raw }}</label>
+                {% endblock %}
+                {% block input %}
+                    <div class="bc-relative bc-flex bc-gap-x-4">
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'buttonBorderRadiusTopLeft',
+                                min: 0,
+                                value: data.buttonBorderRadiusTopLeft,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="buttonBorderRadiusTopLeft">{{ localized.field.topLeft | raw }}</label>
+                        </div>
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'buttonBorderRadiusTopRight',
+                                min: 0,
+                                value: data.buttonBorderRadiusTopRight,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="buttonBorderRadiusTopRight">{{ localized.field.topRight | raw }}</label>
+                        </div>
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'buttonBorderRadiusBottomLeft',
+                                min: 0,
+                                value: data.buttonBorderRadiusBottomLeft,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="buttonBorderRadiusBottomLeft">{{ localized.field.bottomLeft | raw }}</label>
+                        </div>
+                        <div class="bc-w-1/4">
+                            {{ input_group.component({
+                                append: 'px',
+                                cssClasses: ['bc-pr-[28px]'],
+                                id: 'buttonBorderRadiusBottomRight',
+                                min: 0,
+                                value: data.buttonBorderRadiusBottomRight,
+                                type: 'number'
+                            }) }}
+                            <label class="bc-pt-2" for="buttonBorderRadiusBottomRight">{{ localized.field.bottomRight | raw }}</label>
+                        </div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            {{ row_color_duo_selection.component({
+                colorA:
+                {
+                    id: 'linkColor',
+                    label: localized.field.default,
+                    value: data.linkColor,
+                },
+                colorB:
+                {
+                    id: 'linkColorHover',
+                    label: localized.field.hover,
+                    value: data.linkColorHover,
+                },
+                title: localized.field.linkColor,
+            }) }}
+
+            {{ row_input_group.component({
+                append: 'px',
+                cssClasses: ['bc-pr-[35px]'],
+                hideInSimplifiedMode: true,
+                id: 'separatorWidth',
+                isRequired: false,
+                label: localized.field.separatorWidth,
+                min: '0',
+                type: 'number',
+                value: data.separatorWidth,
+                width: 'bc-w-1/5'
+            }) }}
+
+            {{ row_color_selection.component({
+                hideInSimplifiedMode: true,
+                id: 'separatorColor',
+                label: localized.field.separatorColor,
+                value: data.separatorColor,
+            }) }}
+
+            {{ row_switch_button.component({
+                hint: localized.hint.useIndividualStyles,
+                id: 'useIndividualStyles',
+                label: localized.field.useIndividualStyles,
+                value: data.useIndividualStyles,
+            }) }}
+
+            <!-- Synchronization Settings -->
+            {{ synchronizationSettingsFields(
+                languages,
+                {
+                    collectionName: "languages",
+                    hasRepository: false,
+                    withOverwriteTranslationOption: false,
+                }
+            ) | raw }}
+
+            {{ row_save.component({
+                action: 'save',
+                nonce: wpNonceField("#{controllerId}-save")
+            }, localized) }}
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionContentBlockerIndividualSettingsOne', expanded: true} %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineIndividualSettings | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.individualSettingsA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.individualSettingsB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+    </form>
+    <!-- Reset Content Blocker Appearance Settings -->
+    <hr>
+    {{ form_confirmation.component({
+        action: 'reset',
+        headline: localized.headline.reset,
+        hint: localized.hint.reset,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

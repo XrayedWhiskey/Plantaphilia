@@ -1,0 +1,161 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+{% import "system/macro/row/save.html.twig" as row_save %}
+{% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [localized.breadcrumb.module]}, localized)
+    }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% block mainHeader %}
+                {{ card_heading.component({
+                    title: localized.headline.generalSettings,
+                }) }}
+            {% endblock %}
+            {% block mainContent %}
+                {% import "system/macro/form-component/button.html.twig" as button %}
+                {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                {% import "system/macro/row/save.html.twig" as row_save %}
+                {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+                {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+
+                {{ row_switch_button.component({
+                    hint: localized.hint.iabTcfStatus,
+                    id: 'iabTcfStatus',
+                    label: localized.field.iabTcfStatus,
+                    value: data.iabTcfStatus,
+                }) }}
+
+                {{ row_switch_button.component({
+                    hint: localized.hint.compactLayout,
+                    id: 'compactLayout',
+                    label: localized.field.compactLayout,
+                    value: data.compactLayout,
+                }) }}
+
+                {{ row_textarea.component({
+                    hint: localized.hint.hostnamesForConsentAddition,
+                    id: 'hostnamesForConsentAddition',
+                    isRequired: false,
+                    label: localized.field.hostnamesForConsentAddition,
+                    value: data.hostnamesForConsentAddition | join('\n'),
+                }) }}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {% block label %}
+                        <div class="bc-flex bc-items-center bc-space-x-1">
+                            <span>{{ localized.field.thirdPartyHostnamesForConsentAdditionList | raw }}</span>
+                            {{ hint.component({
+                                hint: localized.hint.thirdPartyHostnamesForConsentAdditionList,
+                            }) }}
+                        </div>
+                    {% endblock %}
+
+                    {% block input %}
+                        <ul class="bc-ml-4 bc-list-disc bc-text-left">
+                            {% for thirdPartyHostnameForConsentAddition in data.thirdPartyHostnamesForConsentAddition %}
+                                <li>{{ thirdPartyHostnameForConsentAddition }}</li>
+                            {% else %}
+                                <li class="-bc-ml-4 bc-list-none">-</li>
+                            {% endfor %}
+                        </ul>
+                    {% endblock %}
+                {% endembed %}
+
+                {% if isLicenseExpired() %}
+                    <div class="bc-flex bc-items-center bc-px-5 bc-py-2.5">
+                        {{ getLicenseAlertMessage('licenseExpiredFeatureNotAvailable') | raw }}
+                    </div>
+                {% endif %}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% import "system/macro/form-component/button.html.twig" as button %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% import "system/macro/icons/arrow-path.html.twig" as arrow_path_icon %}
+
+                    {% block label %}
+                        <label for="gvlDownload">{{ localized.field.gvlStatus | raw }}</label>
+                    {% endblock %}
+
+                    {% block input %}
+                        <div>
+                            {{ status_indicator.component({
+                                id: 'gvlDownloaded',
+                                status: data.gvlImported,
+                                okText: localized.text.gvlDownloaded,
+                                errorText: localized.text.gvlNotDownloaded
+                            }, localized) }}
+                        </div>
+                        <div class="bc-mt-2">
+                            {{ button.component({
+                                backgroundColor: 'bc-bg-slate-950',
+                                backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                                button: "#{arrow_path_icon.component({ cssClasses: ['bc-relative', 'bc--top-0.5'], height: 'bc-h-4', width: 'bc-w-4', })}#{localized.button.updateGvl}",
+                                dataAttribute: 'data-brlbs-iab-tcf-gvl-download-button',
+                                focusColor: 'focus:bc-ring-slate-950',
+                                id: 'downloadGvl',
+                                isDisabled: data.iabTcfStatus == false,
+                                name: 'downloadGvl',
+                                value: '1',
+                            }, localized) }}
+                        </div>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/form-row.html.twig" %}
+                    {% block label %}
+                        {{ localized.text.gvlLastSyncAt }}
+                    {% endblock %}
+                    {% block input %}
+                        <span id="gvlLastSyncAt">{{ data.gvlLastSuccessfulCheckWithApiFormattedTime }}</span>
+                    {% endblock %}
+                {% endembed %}
+
+                <!-- Synchronization Settings -->
+                {{ synchronizationSettingsFields(
+                    languages,
+                    {
+                        collectionName: "languages",
+                        hasRepository: false,
+                        withOverwriteTranslationOption: false,
+                    }
+                ) | raw }}
+
+                {{ row_save.component({
+                    action: 'save',
+                    button: localized.global.button.save,
+                    nonce: wpNonceField("#{controllerId}-save"),
+                    value: data.id,
+                }, localized) }}
+            {% endblock %}
+
+            {% block infoPanelHeader %}
+                {{ localized.global.headline.thingsToKnow | raw }}
+            {% endblock %}
+
+            {% block infoPanelContent %}
+                {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                    {% block content %}
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionIabTcf', expanded: true} %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlineIabTcf | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <p>{{ localized.thingsToKnow.iabTcfDescription | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    </form>
+{% endif %}

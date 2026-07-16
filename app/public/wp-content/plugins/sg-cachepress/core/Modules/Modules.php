@@ -459,14 +459,14 @@ class Modules {
 	private function initialize_tabs() {
 		$this->tabs = array(
 			'supercacher' => array(
-				'title'   => __( 'SuperCacher Settings', 'sg-cachepress' ),
+				'title'   => 'SuperCacher Settings',
 				'modules' => array(
 					'dynamic_cache',
 					'memcached',
 				),
 			),
 			'environment' => array(
-				'title'   => __( 'Environment Optimization', 'sg-cachepress' ),
+				'title'   => 'Environment Optimization',
 				'modules' => array(
 					'ssl',
 					'hearbeat_control',
@@ -476,7 +476,7 @@ class Modules {
 				),
 			),
 			'frontend'    => array(
-				'title'   => __( 'Frontend Optimization', 'sg-cachepress' ),
+				'title'   => 'Frontend Optimization',
 				'modules' => array(
 					'html',
 					'javascript',
@@ -486,14 +486,14 @@ class Modules {
 				),
 			),
 			'images'      => array(
-				'title'   => __( 'Media Optimization', 'sg-cachepress' ),
+				'title'   => 'Media Optimization',
 				'modules' => array(
 					'optimize_images',
 					'lazyload_images',
 				),
 			),
 			'analytics'   => array(
-				'title' => __( 'Speed Test', 'sg-cachepress' ),
+				'title' => 'Speed Test',
 			),
 		);
 	}

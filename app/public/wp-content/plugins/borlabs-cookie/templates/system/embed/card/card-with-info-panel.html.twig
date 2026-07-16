@@ -1,0 +1,20 @@
+{% extends "system/embed/card/card.html.twig" %}
+
+{% block cardContent %}
+    <div class="md:bc-flex">
+        <div class="md:bc-w-2/3">
+            <div class="bc-border-b bc-border-solid bc-border-gray-200 bc-px-5 bc-py-3">
+                {% block mainHeader %}{% endblock %}
+            </div>
+            <div class="bc-w-full">
+                {% block mainContent %}{% endblock %}
+            </div>
+        </div>
+        {% set infoPanelHeader = block('infoPanelHeader') %}
+        {% set infoPanelContent = block('infoPanelContent') %}
+        {% embed "system/embed/info-panel.html.twig" with { gradient: infoPanelGradient is defined ? infoPanelGradient : null }  %}
+            {% block header %}{{ infoPanelHeader | raw }}{% endblock %}
+            {% block content %}{{ infoPanelContent | raw }}{% endblock %}
+        {% endembed %}
+    </div>
+{% endblock %}

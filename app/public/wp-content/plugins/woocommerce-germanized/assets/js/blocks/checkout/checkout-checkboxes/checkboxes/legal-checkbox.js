@@ -3,6 +3,7 @@ import classnames from "classnames";
 import { useSelect, useDispatch } from '@wordpress/data';
 import { VALIDATION_STORE_KEY } from '@woocommerce/block-data';
 import { CheckboxControl } from '@woocommerce/blocks-checkout';
+import { Icon, warning } from '@wordpress/icons';
 
 const LegalCheckbox = ({
    checkbox,
@@ -33,7 +34,7 @@ const LegalCheckbox = ({
         } else if ( checkbox.is_required ) {
             setValidationErrors( {
                 [ validationErrorId ]: {
-                    message: checkbox.error_message,
+                    message: checkbox.error_message ? checkbox.error_message : 'error_placeholder',
                     hidden: true,
                 },
             } );
@@ -62,6 +63,8 @@ const LegalCheckbox = ({
     if ( isHidden ) {
         return null;
     }
+
+    const showInlineErrorMessage = error?.hidden === false && error?.message && 'error_placeholder' !== error?.message;
 
     return (
         <div
@@ -101,6 +104,19 @@ const LegalCheckbox = ({
                             } }
                         />
                     </CheckboxControl>
+
+                    { showInlineErrorMessage && (
+                        <div className="wc-block-components-validation-error" role="alert">
+                            <p id={ validationErrorId }>
+                                <Icon icon={ warning } />
+                                <span
+                                    dangerouslySetInnerHTML={ {
+                                        __html: error?.message,
+                                    } }>
+                                </span>
+                            </p>
+                        </div>
+                    ) }
                 </>
             ) : (
                 <div className="wc-gzd-checkbox has-no-checkbox">

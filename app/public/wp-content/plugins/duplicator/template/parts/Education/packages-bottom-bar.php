@@ -6,7 +6,7 @@
  * @copyright (c) 2023, Snap Creek LLC
  */
 
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -30,7 +30,7 @@ defined("ABSPATH") || exit;
                 </p>
             </div>
             <div class="upsell">
-                <a href="<?php echo Upsell::getCampaignUrl('packages_bottom-bar', $tplData['feature']) ?>"
+                <a href="<?php echo LinkManager::getCampaignUrl('packages_bottom-bar', $tplData['feature']) ?>"
                    class="dup-btn dup-btn-md dup-btn-green"
                    target="_blank">
                     <?php esc_html_e('Upgrade Now & Save!', 'duplicator'); ?>

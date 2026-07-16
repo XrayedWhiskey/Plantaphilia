@@ -5,6 +5,7 @@ namespace WP_STATISTICS;
 use WP_Statistics\Components\AssetNameObfuscator;
 use WP_Statistics\Components\Singleton;
 use WP_Statistics\Service\Admin\NoticeHandler\Notice;
+use WP_Statistics\Service\Geolocation\GeolocationFactory;
 use WP_Statistics\Utils\Request;
 
 class settings_page extends Singleton
@@ -20,7 +21,7 @@ class settings_page extends Singleton
 
         // Check Access Level
         if (Menus::in_page('settings') and !User::Access('manage')) {
-            wp_die(__('You do not have sufficient permissions to access this page.')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped	
+            wp_die(__('You do not have sufficient permissions to access this page.')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
     }
 
@@ -32,6 +33,7 @@ class settings_page extends Singleton
 
         // Add Class inf
         $args['class'] = 'wp-statistics-settings';
+        $args['title'] = __('Settings', 'wp-statistics');
 
         // Check User Access To Save Setting
         $args['wps_admin'] = false;
@@ -42,9 +44,6 @@ class settings_page extends Singleton
             $args['wps_admin'] = 0;
         }
 
-        // Get Search List
-        $args['selist'] = SearchEngine::getList(true);
-
         // Get Permalink Structure
         $args['permalink'] = get_option('permalink_structure');
 
@@ -52,7 +51,7 @@ class settings_page extends Singleton
         $args['wp_statistics_options'] = Option::getOptions();
 
         // Load Template
-        Admin_Template::get_template(array('layout/header', 'layout/title-after', 'settings', 'layout/footer'), $args);
+        Admin_Template::get_template(array('layout/header', 'settings', 'layout/footer'), $args);
     }
 
     /**
@@ -79,7 +78,8 @@ class settings_page extends Singleton
                 'external',
                 'maintenance',
                 'notification',
-                'privacy'
+                'privacy',
+                'advanced'
             );
             foreach ($method_list as $method) {
                 $wp_statistics_options = self::{'save_' . $method . '_option'}($wp_statistics_options);
@@ -105,19 +105,6 @@ class settings_page extends Singleton
             // Get tab name for redirect to the current tab
             $tab = isset($_POST['tab']) && $_POST['tab'] ? sanitize_text_field($_POST['tab']) : 'general-settings';
 
-            // Update Referrer Spam
-            if (isset($_POST['update-referrer-spam'])) {
-                $status = Referred::download_referrer_spam();
-                if (is_bool($status)) {
-                    if ($status === false) {
-                        Notice::addFlashNotice(__("Error Encountered While Updating Spam Referrer Blacklist.", "wp-statistics"), "error");
-                    } else {
-                        Notice::addFlashNotice(__("Spam Referrer Blacklist Successfully Updated.", "wp-statistics"), "success");
-                    }
-                    self::$redirectAfterSave = false;
-                }
-            }
-
             if (self::$redirectAfterSave) {
                 // Redirect User To Save Setting
                 wp_redirect(add_query_arg(array(
@@ -138,6 +125,21 @@ class settings_page extends Singleton
         // Reset Setting
         if (isset($_GET['reset_settings'])) {
             Notice::addFlashNotice(__("All Settings Have Been Reset to Default.", "wp-statistics"), "success");
+        }
+
+        // Import Settings
+        if (Request::has('import')) {
+            $importStatus = Request::get('import');
+
+            switch ($importStatus) {
+                case 'success':
+                    Notice::addFlashNotice(esc_html__('Settings successfully imported.', 'wp-statistics'), 'success');
+                    break;
+
+                case 'failed':
+                    Notice::addFlashNotice(esc_html__('Settings could not be imported!', 'wp-statistics'), 'error');
+                    break;
+            }
         }
     }
 
@@ -165,9 +167,10 @@ class settings_page extends Singleton
             'wps_hash_ips',
             'wps_privacy_audit',
             'wps_store_ua',
-            'wps_consent_level_integration',
+            'wps_consent_integration',
             'wps_anonymous_tracking',
             'wps_do_not_track',
+            'wps_show_privacy_issues_in_report',
         );
 
         // If the IP hash's are enabled, disable storing the complete user agent.
@@ -233,7 +236,6 @@ class settings_page extends Singleton
     public static function save_maintenance_option($wp_statistics_options)
     {
         $wps_option_list = array(
-            'wps_schedule_dbmaint',
             'wps_schedule_dbmaint_days',
         );
         foreach ($wps_option_list as $option) {
@@ -254,36 +256,29 @@ class settings_page extends Singleton
 
         $wps_option_list = array(
             'wps_geoip_license_type',
+            'wps_geoip_location_detection_method',
             'wps_geoip_license_key',
+            'wps_geoip_dbip_license_key_option',
             'wps_update_geoip',
             'wps_schedule_geoip',
             'wps_auto_pop',
             'wps_private_country_code',
-            'wps_referrerspam',
-            'wps_schedule_referrerspam'
+            'wps_share_anonymous_data',
         );
 
         // For country codes we always use upper case, otherwise default to 000 which is 'unknown'.
         if (array_key_exists('wps_private_country_code', $_POST)) {
             $_POST['wps_private_country_code'] = trim(strtoupper(sanitize_text_field($_POST['wps_private_country_code'])));
         } else {
-            $_POST['wps_private_country_code'] = GeoIP::$private_country;
+            $_POST['wps_private_country_code'] = GeolocationFactory::getProviderInstance()->getDefaultPrivateCountryCode();
         }
 
         if ($_POST['wps_private_country_code'] == '') {
-            $_POST['wps_private_country_code'] = GeoIP::$private_country;
+            $_POST['wps_private_country_code'] = GeolocationFactory::getProviderInstance()->getDefaultPrivateCountryCode();
         }
 
         foreach ($wps_option_list as $option) {
             $wp_statistics_options[self::input_name_to_option($option)] = (isset($_POST[$option]) ? $_POST[$option] : '');
-        }
-
-        // Check Update Referrer Spam List
-        if (isset($_POST['wps_referrerspam'])) {
-            $status = Referred::download_referrer_spam();
-            if (is_bool($status) and $status === false) {
-                $wp_statistics_options['referrerspam'] = '';
-            }
         }
 
         return $wp_statistics_options;
@@ -304,18 +299,6 @@ class settings_page extends Singleton
             $wp_statistics_options[self::input_name_to_option($role_post)] = (isset($_POST[$role_post]) ? $_POST[$role_post] : '');
         }
 
-        // Save HoneyPot
-        if (isset($_POST['wps_create_honeypot'])) {
-            $my_post                      = array(
-                'post_type'    => 'page',
-                'post_title'   => __('WP Statistics - Honey Pot Page for Tracking', 'wp-statistics') . ' [' . TimeZone::getCurrentDate() . ']',
-                'post_content' => __('Do Not Delete: Honey Pot Page for WP Statistics Tracking.', 'wp-statistics'),
-                'post_status'  => 'publish',
-                'post_author'  => 1,
-            );
-            $_POST['wps_honeypot_postid'] = wp_insert_post($my_post);
-        }
-
         // Save Exclusion
         $wps_option_list = array(
             'wps_record_exclusions',
@@ -325,10 +308,7 @@ class settings_page extends Singleton
             'wps_exclude_loginpage',
             'wps_excluded_countries',
             'wps_included_countries',
-            'wps_excluded_hosts',
             'wps_robot_threshold',
-            'wps_use_honeypot',
-            'wps_honeypot_postid',
             'wps_exclude_feeds',
             'wps_excluded_urls',
             'wps_exclude_404s',
@@ -351,7 +331,13 @@ class settings_page extends Singleton
     {
         $wps_option_list = array('wps_read_capability', 'wps_manage_capability');
         foreach ($wps_option_list as $option) {
-            $wp_statistics_options[self::input_name_to_option($option)] = (isset($_POST[$option]) ? $_POST[$option] : '');
+            $capability = !empty($_POST[$option]) ? sanitize_text_field($_POST[$option]) : '';
+
+            if (!User::checkUserCapability($capability)) {
+                continue;
+            }
+
+            $wp_statistics_options[self::input_name_to_option($option)] = $capability;
         }
 
         return $wp_statistics_options;
@@ -396,18 +382,7 @@ class settings_page extends Singleton
      */
     public static function save_general_option($wp_statistics_options)
     {
-
-        $selist = SearchEngine::getList(true);
-
-        foreach ($selist as $se) {
-            $se_post     = 'wps_disable_se_' . $se['tag'];
-            $optionValue = isset($_POST[$se_post]) && sanitize_text_field($_POST[$se_post]) == '1' ? '' : '1';
-
-            $wp_statistics_options[self::input_name_to_option($se_post)] = $optionValue;
-        }
-
         $wps_option_list = array(
-            'wps_useronline',
             'wps_visits',
             'wps_visitors',
             'wps_visitors_log',
@@ -415,11 +390,14 @@ class settings_page extends Singleton
             'wps_bypass_ad_blockers',
             'wps_pages',
             'wps_use_cache_plugin',
+            'wps_attribution_model',
             'wps_show_hits',
             'wps_display_hits_position',
             'wps_menu_bar',
             'wps_coefficient',
-            'wps_hide_notices'
+            'wps_hide_notices',
+            'wps_charts_previous_period',
+            'wps_display_notifications'
         );
 
         foreach ($wps_option_list as $option) {
@@ -524,6 +502,25 @@ class settings_page extends Singleton
 
         // Update Option
         update_option(Option::$opt_name, $default_options);
+    }
+
+    public static function save_advanced_option($wp_statistics_options)
+    {
+        $wps_option_list = [
+            'wps_delete_data_on_uninstall',
+            'wps_word_count_analytics'
+        ];
+
+        // If word count was disabled before and enabled again, show background process notice
+        if (empty($wp_statistics_options['word_count_analytics']) && !empty($_POST['wps_word_count_analytics'])) {
+            Option::deleteOptionGroup('word_count_process_initiated', 'jobs');
+        }
+
+        foreach ($wps_option_list as $option) {
+            $wp_statistics_options[self::input_name_to_option($option)] = isset($_POST[$option]) ? true : false;
+        }
+
+        return $wp_statistics_options;
     }
 }
 

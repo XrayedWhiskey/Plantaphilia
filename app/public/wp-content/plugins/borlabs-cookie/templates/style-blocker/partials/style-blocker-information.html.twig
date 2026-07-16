@@ -1,0 +1,29 @@
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.styleBlockerInformation,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% import "system/macro/row/input.html.twig" as row_input %}
+
+            {{ row_input.component({
+                errorMessage: localized.validation.name,
+                hint: localized.hint.name,
+                id: 'name',
+                label: localized.field.name,
+                value: data.name,
+            }) }}
+
+            {{ row_save.component({
+                backLink: "?page=#{controllerId}",
+            }, localized) }}
+        {% endblock %}
+    {% endembed %}
+</div>
+

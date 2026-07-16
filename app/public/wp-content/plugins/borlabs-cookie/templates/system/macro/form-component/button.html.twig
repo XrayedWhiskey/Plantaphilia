@@ -1,0 +1,56 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        additionalAttributes: [],
+        backgroundColor: 'bc-bg-blue-600',
+        backgroundColorHover: 'enabled:hover:bc-bg-blue-700',
+        border: 'bc-border bc-border-transparent',
+        dataAttribute: '',
+        focus: 'focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-offset-2',
+        focusColor: 'focus:bc-ring-blue-800',
+        disabled: 'disabled:hover:bc-opacity-40 disabled:bc-opacity-40',
+        fontWeight: '',
+        id: '',
+        isDisabled: false,
+        modalTarget: '',
+        name: '',
+        padding: 'bc-px-3 bc-py-1.5',
+        radius: 'bc-rounded',
+        textColor: 'bc-text-white',
+        textSize: 'bc-text-sm',
+        type: 'submit',
+        value: '',
+        width: ''
+    } | merge(config)
+    %}
+    {% set cssClasses = [
+        config.backgroundColor,
+        config.border,
+        config.fontWeight,
+        config.focus,
+        config.focusColor,
+        config.disabled,
+        config.padding,
+        config.radius,
+        config.textColor,
+        config.textSize,
+        config.width,
+        config.backgroundColorHover,
+        'bc-text-center bc-shadow-sm bc-transition-all'
+    ] %}
+    {% set button = localized.global.button.send %}
+    {% if config.button is not empty %}
+        {% set button = config.button %}
+    {% endif %}
+    <button
+        class="{{ cssClasses | join(' ') }}"
+        {% if config.id is not empty %} id="{{ config.id }}"{% endif %}
+        {% if config.name is not empty %} name="{{ config.name }}"{% endif %}
+        {% if config.modalTarget is not empty %} data-brlbs-modal-target="{{ config.modalTarget }}"{% endif %}
+        {% if config.dataAttribute is not empty %} {{ config.dataAttribute | raw }}{% endif %}
+        {% if config.value is not empty %} value="{{ config.value }}"{% endif %}
+        type="{{ config.type }}"
+        {% for additionalAttribute in config.additionalAttributes %}
+            {{ additionalAttribute | raw }}
+        {% endfor %}
+    {% if config.isDisabled == true %} disabled{% endif %}>{{ button | raw }}</button>
+{% endmacro %}

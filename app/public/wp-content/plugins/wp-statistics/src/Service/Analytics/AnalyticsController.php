@@ -34,29 +34,6 @@ class AnalyticsController
     }
 
     /**
-     * Keeps user online when "Bypass Ad Blockers" is enabled.
-     *
-     * @return  void
-     */
-    public function online_check_action_callback()
-    {
-        if (!Helper::is_request('ajax')) {
-            return;
-        }
-
-        try {
-            $this->checkSignature();
-            Helper::validateHitRequest();
-
-            Hits::recordOnline();
-            wp_send_json(['status' => true]);
-
-        } catch (Exception $e) {
-            wp_send_json(['status' => false, 'data' => $e->getMessage()], $e->getCode());
-        }
-    }
-
-    /**
      * @return void
      * @doc https://wp-statistics.com/resources/managing-request-signatures/
      * @throws Exception
@@ -64,10 +41,10 @@ class AnalyticsController
     private function checkSignature()
     {
         if (Helper::isRequestSignatureEnabled()) {
-            $signature = sanitize_text_field($_REQUEST['signature']);
+            $signature = ! empty($_REQUEST['signature']) ? sanitize_text_field($_REQUEST['signature']) : '';
             $payload   = [
-                sanitize_text_field($_REQUEST['source_type']),
-                (int)sanitize_text_field($_REQUEST['source_id']),
+                ! empty($_REQUEST['source_type']) ? sanitize_text_field($_REQUEST['source_type']) : '',
+                ! empty($_REQUEST['source_id']) ? (int)sanitize_text_field($_REQUEST['source_id']) : 0,
             ];
 
             if (!Signature::check($payload, $signature)) {

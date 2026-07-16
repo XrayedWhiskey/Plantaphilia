@@ -1,0 +1,65 @@
+{% macro component(config) %}
+    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+    {# Merge overwrite default config with given config. #}
+    {% set config = {multiple: false, width:'bc-w-3/4'} | merge(config) %}
+    {# Sets a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    <div class="bc-flex bc-items-center bc-space-x-2 {{ config.width }}">
+        <select
+            class="bc-inline-block bc-max-w-full bc-w-full bc-rounded-md bc-border-gray-300 bc-py-1.5 bc-pl-3 bc-pr-8 bc-text-base focus:bc-border-blue-500 focus:bc-outline-none focus:bc-ring-blue-500 sm:bc-text-sm"
+            id="{{ config.id }}"
+            name="{{ name }}"
+            {% if config.isDisabled == true %}disabled{% endif %}
+            {% if config.dataAttribute is not empty %}{{ config.dataAttribute | raw }}{% endif %}
+            {% if config.multiple == true %}multiple{% endif %}
+        >
+            {# Select with option groups. #}
+            {% if config.groups is not empty %}
+                {% for group in config.groups %}
+                    <optgroup label="{{ group.value | raw }}">
+                        {% for option in group.options %}
+                            {% if config.multiple == true %}
+                                <option{% if option.key in config.value %} selected{% endif %}
+                                    value="{{ option.key }}">{{ option.value | raw }}</option>
+                            {% else %}
+                                <option{% if option.key == config.value %} selected{% endif %}
+                                    value="{{ option.key }}">{{ option.value | raw }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            {% endif %}
+            {# Select without option groups. #}
+            {% if config.options is not empty %}
+                {% for option in config.options %}
+                    {% if config.multiple == true %}
+                        <option{% if option.key in config.value %} selected{% endif %}
+                            value="{{ option.key }}">{{ option.value | raw }}</option>
+                    {% else %}
+                        <option{% if option.key == config.value %} selected{% endif %}
+                            value="{{ option.key }}">{{ option.value | raw }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </select>
+        {# Displays the hint icon. #}
+        {% if config.hint is not empty %}
+            <div>
+                {{ hint.component({
+                    hint: config.hint,
+                    position: config.hintPopupPosition
+                }) }}
+            </div>
+        {% endif %}
+    </div>
+    {# Displays the alert message if alert status is true. #}
+    {% if config.alertMessage is not empty %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error" id="{{ config.id }}-alert">{{ config.alertMessage | raw }}</div>
+    {% endif %}
+    {% if config.warningMessage is not empty %}
+        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning" id="{{ config.id }}-warning">{{ config.warningMessage | raw }}</div>
+    {% endif %}
+{% endmacro %}

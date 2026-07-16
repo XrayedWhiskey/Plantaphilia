@@ -1,66 +1,40 @@
-var oneClickUpgradeRemoteEndpoint = "https://connect.duplicator.com/upgrade-free-to-pro";
+// Endpoint to connect to Duplicator Pro
+var remoteEndpoint = "https://connect.duplicator.com/get-remote-url";
 
 jQuery(document).ready(function ($) {
-    if ($('#dup-settings-upgrade-license-key').length) {
-        function addErrorMessage(text) {
-            let msg = $('<div class="notice notice-error is-dismissible">' + 
-                '<p>' + 
-                    text + 
-                '</p>' + 
-                '<button type="button" class="notice-dismiss">' + 
-                    '<span class="screen-reader-text"></span>' + 
-                '</button>' + 
-                '</div>'
-            );
-            msg.insertAfter( ".dup-settings-pages > h1" );
-            msg.find('.notice-dismiss').on('click', function (event) {
-                event.stopPropagation();
-                msg.remove();
-            });
-        }
-        
-        // Client-side redirect to oneClickUpgradeRemoteEndpoint
-        function redirectToRemoteEndpoint(data) {
-            if (data["success"] != true) {
-                addErrorMessage(data["error_msg"]); 
-                return;
-            }
-            
-            $("#redirect-to-remote-upgrade-endpoint").attr("action", oneClickUpgradeRemoteEndpoint);
-            $("#form-oth").attr("value", data["oth"]);
-            $("#form-key").attr("value", data["license_key"]);
-            $("#form-version").attr("value", data["version"]);
-            $("#form-redirect").attr("value", data["redirect"]);
-            $("#form-endpoint").attr("value", data["endpoint"]);
-            $("#form-siteurl").attr("value", data["siteurl"]);
-            $("#form-homeurl").attr("value", data["homeurl"]);
-            $("#form-file").attr("value", data["file"]);
-            $("#redirect-to-remote-upgrade-endpoint").submit();
-        }
-        
+    if ($('#dup-settings-connect-btn').length) {
         $('#dup-settings-connect-btn').on('click', function (event) {
             event.stopPropagation();
-            var license_key = $('#dup-settings-upgrade-license-key').eq(0).val();
-            jQuery.ajax({
-                type: "POST",
-                url: dup_one_click_upgrade_script_data.ajaxurl,
-                dataType: "json",
-                data: {
-                    action: 'duplicator_one_click_upgrade_prepare',
-                    nonce: dup_one_click_upgrade_script_data.nonce_one_click_upgrade,
-                    license_key: license_key
+
+            // Generate OTH for secure redirect
+            Duplicator.Util.ajaxWrapper(
+                {
+                    action: 'duplicator_generate_connect_oth',
+                    nonce: dup_one_click_upgrade_script_data.nonce_generate_connect_oth
                 },
-                success: function (result, textStatus, jqXHR) {
-                    if (result.success) {
-                        redirectToRemoteEndpoint(result.data.funcData);                        
-                    } else {
-                        addErrorMessage(result.data.message);
-                    }
+                function (result, data, funcData, textStatus, jqXHR) {
+                    var redirectUrl = remoteEndpoint + "?" + new URLSearchParams({
+                        "oth": funcData.oth,
+                        "homeurl": window.location.origin,
+                        "redirect": funcData.redirect_url,
+                        "origin": window.location.href,
+                        "php_version": funcData.php_version,
+                        "wp_version": funcData.wp_version
+                    }).toString();
+
+                    window.location.href = redirectUrl;
                 },
-                error: function (result, textStatus, error) {
-                    console.log(result);
+                function (result, data, funcData, textStatus, jqXHR) {
+                    let errorMsg = `<p>
+                        <b>${dup_one_click_upgrade_script_data.fail_notice_title}</b>
+                    </p>
+                    <p>
+                        ${dup_one_click_upgrade_script_data.fail_notice_message_label} ${data.message}<br>
+                        ${dup_one_click_upgrade_script_data.fail_notice_suggestion}
+                    </p>`;
+                    Duplicator.addAdminMessage(errorMsg, 'error');
                 }
-            });
+            );
         });
     }
 });

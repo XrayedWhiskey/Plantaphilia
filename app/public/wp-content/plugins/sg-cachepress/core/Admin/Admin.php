@@ -42,6 +42,7 @@ class Admin {
 		'mks_shortcodes_simple_line_icons', // Meks Flexible Shortcodes.
 		'onthego-admin-styles', // Toolset Types
 		'foogra-icons', // Foogra Theme
+		'elegant', // Elegant Icons-set
 	);
 
 	/**

@@ -114,7 +114,7 @@ class WPSEO_Taxonomy {
 			'<a href="https://www.mozilla.org/firefox/new/">',
 			'<a href="https://www.google.com/chrome/">',
 			'<a href="https://www.microsoft.com/windows/microsoft-edge">',
-			'</a>'
+			'</a>',
 		);
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output escaped above.
 		echo new Alert_Presenter( $content );
@@ -138,18 +138,20 @@ class WPSEO_Taxonomy {
 		}
 
 		$asset_manager = new WPSEO_Admin_Asset_Manager();
-		$asset_manager->enqueue_style( 'scoring' );
 		$asset_manager->enqueue_style( 'monorepo' );
 
 		$tag_id = $this::get_tag_id();
 
 		if (
 			self::is_term_edit( $pagenow )
-			&& ! is_null( $tag_id )
+			&& $tag_id !== null
 		) {
 			wp_enqueue_media(); // Enqueue files needed for upload functionality.
 
 			$asset_manager->enqueue_style( 'metabox-css' );
+			if ( $this->analysis_readability->is_enabled() ) {
+				$asset_manager->enqueue_style( 'scoring' );
+			}
 			$asset_manager->enqueue_style( 'ai-generator' );
 			$asset_manager->enqueue_script( 'term-edit' );
 
@@ -182,17 +184,16 @@ class WPSEO_Taxonomy {
 					],
 				],
 				'metabox'               => $this->localize_term_scraper_script( $tag_id ),
-				'userLanguageCode'      => WPSEO_Language_Utils::get_language( get_user_locale() ),
 				'isTerm'                => true,
 				'postId'                => $tag_id,
-				'termType'              => $this->get_taxonomy(),
+				'postType'              => $this->get_taxonomy(),
 				'usedKeywordsNonce'     => wp_create_nonce( 'wpseo-keyword-usage' ),
 			];
 
 			/**
 			 * The website information repository.
 			 *
-			 * @var $repo Website_Information_Repository
+			 * @var Website_Information_Repository $repo
 			 */
 			$repo             = YoastSEO()->classes->get( Website_Information_Repository::class );
 			$term_information = $repo->get_term_site_information();
@@ -200,11 +201,11 @@ class WPSEO_Taxonomy {
 			$script_data = array_merge_recursive( $term_information->get_legacy_site_information(), $script_data );
 
 			$asset_manager->localize_script( 'term-edit', 'wpseoScriptData', $script_data );
-			$asset_manager->enqueue_user_language_script();
 		}
 
 		if ( self::is_term_overview( $pagenow ) ) {
 			$asset_manager->enqueue_script( 'edit-page' );
+			$asset_manager->enqueue_style( 'edit-page' );
 		}
 	}
 
@@ -298,7 +299,7 @@ class WPSEO_Taxonomy {
 		$taxonomy = get_taxonomy( $term->taxonomy );
 
 		$term_formatter = new WPSEO_Metabox_Formatter(
-			new WPSEO_Term_Metabox_Formatter( $taxonomy, $term )
+			new WPSEO_Term_Metabox_Formatter( $taxonomy, $term ),
 		);
 
 		return $term_formatter->get_values();

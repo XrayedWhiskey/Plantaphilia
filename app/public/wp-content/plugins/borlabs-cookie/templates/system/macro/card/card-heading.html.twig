@@ -1,0 +1,53 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+    {% import "system/macro/form-component/button.html.twig" as button %}
+    {% set config = {
+        backgroundColor: 'bc-bg-slate-950',
+        backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+        focusColor: 'focus:bc-ring-slate-950',
+        textColor: 'bc-text-gray-900',
+    } | merge(config) %}
+    <div class="bc-flex bc-justify-between bc-items-center">
+        <h3 class="bc-text-lg bc-font-medium bc-leading-6 {{ config.textColor }} bc-mb-0">{{ config.title | raw }}</h3>
+        <div class="bc-flex">
+            {% if config.showSearch %}
+                <div class="bc-flex bc-rounded bc-shadow-sm bc-mr-4">
+                    <div class="bc-flex bc-flex-grow bc-items-stretch">
+                        <input
+                            class="bc-py-1.5 bc-px-3 bc-border-l bc-border-y bc-border-r-0 bc-border-gray-300 bc-rounded-l bc-block bc-w-full bc-rounded-none placeholder:bc-text-gray-400 sm:bc-text-sm focus:bc-border-blue-500 focus:bc-ring-blue-500"
+                            type="text"
+                            name="{{ config.searchName ? config.searchName : 'searchTerm' }}"
+                            value="{{ config.searchTerm }}"
+                            id="{{ config.searchName ? config.searchName : 'searchTerm' }}"
+                            placeholder="{{ config.searchPlaceholder }}" />
+                    </div>
+                    {{ button.component({
+                        button: localized.global.button.search,
+                        name: 'action',
+                        radius: 'bc-rounded-r',
+                        value: config.searchAction ? config.searchAction : 'search',
+                        type: config.searchButtonType ? config.searchButtonType : 'submit'
+                    }) }}
+                    {{ config.searchNonce | raw }}
+                </div>
+            {% endif %}
+
+            {% if config.buttonLink is not empty or config.buttonText is not empty %}
+                {{ anchor_button.component({ href: config.buttonLink, linkText: config.buttonText }) }}
+            {% endif %}
+
+            {% if config.button is not empty  %}
+                {{ button.component({
+                    button: config.button,
+                    backgroundColor: config.backgroundColor,
+                    backgroundColorHover: config.backgroundColorHover,
+                    dataAttribute: config.buttonDataAttribute,
+                    focusColor: config.focusColor,
+                    id: config.buttonId,
+                    name: config.buttonName,
+                    type: 'button'
+                }) }}
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}

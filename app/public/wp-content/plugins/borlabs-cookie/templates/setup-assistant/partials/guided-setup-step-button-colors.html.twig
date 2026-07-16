@@ -1,0 +1,130 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="guide-button-colors">
+    {% embed "system/embed/card/card-with-title.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/icons/chevron-down.html.twig" as chevron_down_icon %}
+
+        {% block header %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.buttonColors,
+                subtitle: localized.headline.basics,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            <div class="bc-flex bc-flex-col bc-place-items-center bc-gap-y-6 bc-p-6">
+                <div class="bc-flex bc-flex-col bc-w-full sm:bc-w-3/5 xl:bc-w-2/5">
+                    <div>
+                        <h4 class="bc-opacity-0 bc-mb-2 bc-text-lg bc-font-medium bc-text-center" data-brlbs-animate="brlbs-animate-slide-in-down">
+                            {{ localized.headline.buttonColorsAndTheirActions | raw }}
+                        </h4>
+                        <p class="bc-opacity-0 bc-text-sm bc-text-center" data-brlbs-animate="brlbs-animate-slide-in-up">
+                            {{ localized.text.buttonColorsAndTheirActions | raw }}
+                        </p>
+                    </div>
+
+                    <hr class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                    <div class="bc-flex bc-gap-x-4 bc-items-center">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-left">
+                            {{ button.component({
+                                button: localized.button.button,
+                            }, localized) }}
+                        </div>
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-fade-in">
+                            <div class="bc-text-sm">{{ localized.text.blueButtonExplanation | raw }}</div>
+                        </div>
+                    </div>
+
+                    <hr class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                    <div class="bc-flex bc-gap-x-4 bc-items-center">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-left">
+                            {{ button.component({
+                                backgroundColor: 'bc-bg-slate-950',
+                                backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                                button: localized.button.button,
+                                focusColor: 'focus:bc-ring-slate-950',
+                            }, localized) }}
+                        </div>
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-fade-in">
+                            <div class="bc-text-sm">{{ localized.text.blackButtonExplanation | raw }}</div>
+                            <div class="bc-mt-2 bc-pt-2 bc-border-t bc-border-solid bc-border-gray-200 bc-text-gray-500 bc-text-xs">
+                                {{ localized.text.blackButtonUseCases | raw }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                    <div class="bc-flex bc-gap-x-4 bc-items-center">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-left">
+                            {{ button.component({
+                                backgroundColor: 'bc-bg-red-600',
+                                backgroundColorHover: 'enabled:hover:bc-bg-red-700',
+                                button: localized.button.button,
+                                focusColor: 'focus:bc-ring-red-800',
+                            }, localized) }}
+                        </div>
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-fade-in">
+                            <div class="bc-text-sm">{{ localized.text.redButtonExplanation | raw }}</div>
+                            <div class="bc-mt-2 bc-pt-2 bc-border-t bc-border-solid bc-border-gray-200 bc-text-gray-500 bc-text-xs">
+                                {{ localized.text.blackButtonUseCases | raw }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                    <div class="bc-flex bc-gap-x-4 bc-items-center">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-left">
+                            {{ button.component({
+                                backgroundColor: 'bc-bg-purple-600',
+                                backgroundColorHover: 'enabled:hover:bc-bg-purple-700',
+                                button: localized.button.button,
+                                focusColor: 'focus:bc-ring-purple-800',
+                            }, localized) }}
+                        </div>
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-fade-in">
+                            <div class="bc-text-sm">{{ localized.text.purpleButtonExplanation | raw }}</div>
+                            <div class="bc-mt-2 bc-pt-2 bc-border-t bc-border-solid bc-border-gray-200 bc-text-gray-500 bc-text-xs">
+                                {{ localized.text.purpleButtonUseCases | raw }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+
+                    <div class="bc-flex bc-gap-x-4 bc-items-center">
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-left">
+                            {{ button.component({
+                                backgroundColor:'bc-bg-gray-600',
+                                backgroundColorHover:'hover:bc-bg-gray-700',
+                                button: localized.button.button,
+                            }) }}
+                        </div>
+                        <div class="bc-opacity-0" data-brlbs-animate="brlbs-animate-fade-in">
+                            <div class="bc-text-sm">{{ localized.text.grayButtonExplanation | raw }}</div>
+                            <div class="bc-mt-2 bc-pt-2 bc-border-t bc-border-solid bc-border-gray-200 bc-text-gray-500 bc-text-xs">
+                                {{ localized.text.grayButtonUseCases | raw }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bc-w-full bc-flex bc-justify-end bc-gap-x-2 bc-opacity-0" data-brlbs-animate="brlbs-animate-slide-in-up">
+                    <span class="bc-text-sm bc-font-medium brlbs-cmpnt-text">{{ localized.text.pressNextToProceed | raw }}</span>
+                    <span class="bc-animate-bounce">{{ chevron_down_icon.component({ }) }}</span>
+                </div>
+            </div>
+
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 2,
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

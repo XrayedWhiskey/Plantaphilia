@@ -36,7 +36,7 @@ class Performance_Reports {
 			$cron_first_time,
 			array(
 				'recipients_option' => 'siteground_optimizer_performace_receipient',
-				'subject'           => __( 'Optimization Status Report for ', 'sg-cachepress' ) . Helper_Service::get_site_url(),
+				'subject'           => 'Optimization Status Report for ' . Helper_Service::get_site_url(),
 				'body_method'       => array( '\SiteGround_Optimizer\Performance_Reports\Performance_Reports', 'generate_message_body' ),
 				'from_name'         => 'Speed Optimizer by SiteGround Plugin',
 			)

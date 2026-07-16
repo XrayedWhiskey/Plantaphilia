@@ -1,0 +1,86 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+    {% import "system/macro/icons/clipboard.html.twig" as clipboard_icon %}
+    {% import "system/macro/icons/error.html.twig" as error_icon %}
+
+    {# Merge overwrite default config with given config. #}
+    {% set config = {clipboard: false, isDisabled: false, isRequired: true, spellcheck: true, type:'text', width:'lg:bc-w-3/4'} | merge(config) %}
+    {# Sets a default name by using the id. #}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    {% if config.cssClasses is not empty %}
+        {% set cssClasses = [] | merge(config.cssClasses) %}
+    {% else %}
+        {% set cssClasses = [] %}
+    {% endif %}
+
+    {% if config.append is not empty %}
+        {% set cssClasses = cssClasses | merge(['bc-pr-9']) %}
+    {% endif %}
+
+    <div class="bc-relative bc-flex bc-flex-wrap bc-items-center bc-gap-x-2 {{ config.width }}">
+        <input
+            class="bc-inline-block bc-w-full bc-flex-1 bc-min-w-lg bc-peer bc-py-1.5 bc-px-3 bc-rounded-md bc-border-gray-300 bc-shadow-sm focus:bc-border-blue-500 focus:bc-ring-blue-500 sm:bc-text-sm {{ cssClasses | join(' ') }}
+            group-[.was-validated]/form:invalid:bc-border-red-500 group-[.was-validated]/form:invalid:bc-text-red-600 group-[.was-validated]/form:invalid:focus:bc-border-red-500 group-[.was-validated]/form:focus:invalid:bc-ring-red-500"
+            id="{{ config.id }}"
+            name="{{ name }}"
+            type="{{ config.type }}"
+            value="{{ config.value }}"
+            {% if config.dataAttribute is not empty %}{{ config.dataAttribute | raw }}{% endif %}
+            {% if config.validationRegex is not empty %}pattern="{{ config.validationRegex | raw }}"{% endif %}
+            {% if config.type == 'text' %}
+                autocapitalize="off"
+                autocomplete="off"
+                spellcheck="{{ config.spellcheck }}"
+            {% elseif config.type == 'number' %}
+                {% if config.min is not empty %}
+                    min="{{ config.min }}"
+                {% endif %}
+                {% if config.step is not empty %}
+                    step="{{ config.step }}"
+                {% endif %}
+            {% endif %}
+            {% if config.placeholder is not empty %} placeholder="{{ config.placeholder }}" {% endif %}
+            {% if config.isRequired == true %} required{% endif %}
+            {% if config.isDisabled == true %} disabled{% endif %}
+        >
+        {% if config.append is not empty %}
+            {% set appendCssClasses = config.clipboard ? ['bc-pr-9'] : ['bc-pr-3'] %}
+            <div class="bc-pointer-events-none  {{ appendCssClasses | join(' ') }} bc-absolute bc-inset-y-0 bc-right-0 bc-flex bc-items-center group-[.was-validated]/form:peer-invalid:bc-pr-12">
+                <span class="bc-text-gray-500 sm:bc-text-sm">{{ config.append }}</span>
+            </div>
+        {% endif %}
+        {% if config.errorMessage is empty or config.append is not empty %}
+            <div class="bc-hidden group-[.was-validated]/form:peer-invalid:bc-block bc-text-red-600{% if config.hasToggle %} bc-pr-2 {% endif %}">{{ error_icon.component({}) }}</div>
+        {% endif %}
+        {% if config.clipboard == true %}
+            <button class="bc-text-gray-600" type="button" data-brlbs-clipboard="{{ config.id }}" data-bs-toggle="hint" title="{{ localized.global.hint.clipboard | raw }}">
+                {{ clipboard_icon.component({}) }}
+            </button>
+        {% endif %}
+        {# Displays the hint icon. #}
+        {% if config.hint is not empty %}
+            <div>
+                {{ hint.component({
+                    hint: config.hint,
+                    position: config.hintPopupPosition
+                }) }}
+            </div>
+        {% endif %}
+        {# Displays the message if the field is required and is empty or does not match the pattern. #}
+        {% if config.errorMessage is not empty and config.append is empty %}
+            <div class="bc-hidden bc-mt-2 bc-min-w-full group-[.was-validated]/form:peer-invalid:bc-block bc-text-red-600">{{ config.errorMessage | raw }}</div>
+        {% endif %}
+        {# Displays the alert message if alert status is true. #}
+        {% if config.alertMessage is not empty %}
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error bc-min-w-full">{{ config.alertMessage | raw }}</div>
+        {% endif %}
+        {# Displays the info message. #}
+        {% if config.infoMessage is not empty %}
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info bc-min-w-full">{{ config.infoMessage | raw }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}

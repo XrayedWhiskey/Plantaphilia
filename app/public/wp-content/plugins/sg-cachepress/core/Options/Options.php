@@ -8,6 +8,22 @@ use SiteGround_Optimizer\Supercacher\Supercacher;
  */
 class Options {
 	/**
+	 * The Database placeholder.
+	 * @since 7.6.8
+	 */
+	public $wpdb;
+
+	/**
+	 * The Constructor.
+	 * @since 7.6.8
+	 */
+	public function __construct() {
+		// Initialize the db.
+		global $wpdb;
+		$this->wpdb = $wpdb;
+	}
+
+	/**
 	 * Check if a single boolean setting is enabled.
 	 *
 	 * @since 5.0.0
@@ -192,28 +208,34 @@ class Options {
 	 * @since  5.0.0
 	 */
 	public function fetch_options() {
-		global $wpdb;
 		global $blog_id;
 
-		$prefix = $wpdb->get_blog_prefix( $blog_id );
+		$prefix = $this->wpdb->get_blog_prefix( $blog_id );
 
 		$options = array();
 
-		$site_options = $wpdb->get_results(
-			"
-			SELECT REPLACE( option_name, 'siteground_optimizer_', '' ) AS name, option_value AS value
-			FROM {$prefix}options
-			WHERE option_name LIKE '%siteground_optimizer_%'
-		"
+		$site_options = $this->wpdb->get_results(
+			$this->wpdb->prepare( //phpcs:ignore
+				"
+				SELECT REPLACE( option_name, 'siteground_optimizer_', '' ) AS name, option_value AS value
+				FROM " . esc_sql( $this->wpdb->options ) . '
+				WHERE option_name LIKE %s
+				',
+				'%siteground_optimizer_%'
+			)
 		);
 
 		if ( is_multisite() ) {
-			$sitemeta_options = $wpdb->get_results(
-				"
-				SELECT REPLACE( meta_key, 'siteground_optimizer_', '' ) AS name, meta_value AS value
-				FROM $wpdb->sitemeta 
-				WHERE meta_key LIKE '%siteground_optimizer_%'
-			"
+
+			$sitemeta_options = $this->wpdb->get_results(
+				$this->wpdb->prepare( //phpcs:ignore
+					"
+					SELECT REPLACE( meta_key, 'siteground_optimizer_', '' ) AS name, meta_value AS value
+					FROM " . esc_sql( $this->wpdb->sitemeta ) . ' 
+					WHERE meta_key LIKE %s
+					',
+					'%siteground_optimizer_%'
+				)
 			);
 
 			$site_options = array_merge(

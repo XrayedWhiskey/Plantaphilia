@@ -1,0 +1,109 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.exportSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/row/codearea.html.twig" as row_codearea %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+        {{ row_switch_button.component({
+            dataAttribute: 'data-brlbs-export-data-source="contentBlockerStyleConfigData" data-brlbs-export-data-target="exportData"',
+            id: 'contentBlockerStyleConfig',
+            label: localized.field.contentBlockerStyleConfig,
+            value: 0,
+        }) }}
+        <input
+            id="contentBlockerStyleConfigData"
+            name="contentBlockerStyleConfigData"
+            type="hidden"
+            value="{{ data.contentBlockerStyleConfig }}"
+        >
+
+        {{ row_switch_button.component({
+            dataAttribute: 'data-brlbs-export-data-source="dialogSettingsConfigData" data-brlbs-export-data-target="exportData"',
+            id: 'dialogSettingsConfig',
+            label: localized.field.dialogSettingsConfig,
+            value: 0,
+        }) }}
+        <input
+            id="dialogSettingsConfigData"
+            name="dialogSettingsConfigData"
+            type="hidden"
+            value="{{ data.dialogSettingsConfig }}"
+        >
+
+        {{ row_switch_button.component({
+            dataAttribute: 'data-brlbs-export-data-source="dialogStyleConfigData" data-brlbs-export-data-target="exportData"',
+            id: 'dialogStyleConfig',
+            label: localized.field.dialogStyleConfig,
+            value: 0,
+        }) }}
+        <input
+            id="dialogStyleConfigData"
+            name="dialogStyleConfigData"
+            type="hidden"
+            value="{{ data.dialogStyleConfig }}"
+        >
+
+        {{ row_switch_button.component({
+            dataAttribute: 'data-brlbs-export-data-source="dialogLocalizationData" data-brlbs-export-data-target="exportData"',
+            hint: localized.hint.dialogLocalization,
+            id: 'dialogLocalization',
+            label: localized.field.dialogLocalization,
+            value: 0,
+        }) }}
+        <input
+            id="dialogLocalizationData"
+            name="dialogLocalizationData"
+            type="hidden"
+            value="{{ data.dialogLocalization }}"
+        >
+
+        {{ row_switch_button.component({
+            dataAttribute: 'data-brlbs-export-data-source="widgetConfigData" data-brlbs-export-data-target="exportData"',
+            id: 'widgetConfig',
+            label: localized.field.widgetConfig,
+            value: 0,
+        }) }}
+        <input
+            id="widgetConfigData"
+            name="widgetConfigData"
+            type="hidden"
+            value="{{ data.widgetConfig }}"
+        >
+
+        {{ row_codearea.component({
+            clipboard: true,
+            editorLanguage: 'javascript',
+            id: 'exportData',
+            label: localized.field.exportData,
+        }) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionHowToExportSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineHowToExportSettings | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.howToExportSettings | raw }}</p>
+
+                        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning">
+                            {{ localized.thingsToKnow.noComponentExportA | raw }}
+                            {{ localized.thingsToKnow.noComponentExportB | raw }}
+                        </div>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

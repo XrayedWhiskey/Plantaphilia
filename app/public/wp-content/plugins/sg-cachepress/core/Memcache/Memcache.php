@@ -36,6 +36,16 @@ class Memcache {
 	const UNIX_SOCK_FILE = '/home/.tmp/memcached.sock';
 
 	/**
+	 * The WP Filesystem placeholder.
+	 */
+	public $wp_filesystem;
+
+	/**
+	 * The Database placeholder.
+	 */
+	public $wpdb;
+
+	/**
 	 * Check if the memcache connection is working
 	 * and reinitialize the dropin if not.
 	 *
@@ -142,7 +152,7 @@ class Memcache {
 		}
 
 		// Remove crashed dropin.
-		@unlink( WP_CONTENT_DIR . '/object-cache-crashed.php' );
+		wp_delete_file( WP_CONTENT_DIR . '/object-cache-crashed.php' );
 
 		if ( ! function_exists( 'wp_generate_password' ) ) {
 			require_once ABSPATH . '/wp-includes/pluggable.php';
@@ -232,17 +242,18 @@ class Memcache {
 	 */
 	public function prepare_memcache_excludes() {
 		global $wp_filesystem;
+		$this->wp_filesystem = $wp_filesystem;
 		// Bail if the crashed file doesn't exists.
-		if ( ! $wp_filesystem->exists( self::CRASHED_FILENAME ) ) {
+		if ( ! $this->wp_filesystem->exists( self::CRASHED_FILENAME ) ) {
 			return;
 		}
 
 		// Remove the error flag file.
-		$wp_filesystem->delete( self::CRASHED_FILENAME );
+		$this->wp_filesystem->delete( self::CRASHED_FILENAME );
 
 		// Create the excludes file if doesn't exists.
 		if ( ! file_exists( self::EXCLUDES_FILENAME ) ) {
-			$wp_filesystem->touch( self::EXCLUDES_FILENAME );
+			$this->wp_filesystem->touch( self::EXCLUDES_FILENAME );
 		}
 
 		// Get the content of the excludes file.
@@ -250,6 +261,7 @@ class Memcache {
 
 		// Load the wpdb.
 		global $wpdb;
+		$this->wpdb = $wpdb;
 
 		$autoload_values = array( 'yes' );
 
@@ -258,8 +270,8 @@ class Memcache {
 		}
 
 		// Get the biggest option from the database.
-		$result = $wpdb->get_results(
-			$wpdb->prepare(
+		$result = $this->wpdb->get_results(
+			$this->wpdb->prepare( //phpcs:ignore
 				sprintf("
 				SELECT option_name
 				FROM %s
@@ -270,7 +282,7 @@ class Memcache {
 				) . " )
 				ORDER BY LENGTH(option_value) DESC
 				LIMIT 1",
-				$wpdb->options,
+				$this->wpdb->options,
 				implode( ',', array_fill( 0, count( $autoload_values ), '%s' ) ) ),
 				$autoload_values
 			)

@@ -1,0 +1,28 @@
+<form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+    <div class="bc-full sm:bc-w-2/3">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+            {% import "system/macro/row/text.html.twig" as row_text %}
+
+            {% block header %}
+                {{ card_heading.component({
+                    title: localized.headline.refreshLibrary,
+                }) }}
+            {% endblock %}
+
+            {% block content %}
+                {{ row_text.component({
+                    label: localized.field.packageListLastUpdate,
+                    value: adjustTimezone(data.packageListLastUpdate).format('Y-m-d H:i:s') ?? '-',
+                }) }}
+
+                {{ row_save.component({
+                    action: 'refresh',
+                    button: localized.button.refreshLibrary,
+                    nonce: wpNonceField("#{controllerId}-refresh")
+                }, localized) }}
+            {% endblock %}
+        {% endembed %}
+    </div>
+</form>

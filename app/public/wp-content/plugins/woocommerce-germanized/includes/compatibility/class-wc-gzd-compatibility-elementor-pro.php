@@ -23,7 +23,7 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 		if ( ! empty( $_REQUEST['action'] ) && 'elementor' === $_REQUEST['action'] && is_admin() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			add_action(
 				'init',
-				function() {
+				function () {
 					if ( wc_gzd_checkout_adjustments_disabled() ) {
 						return;
 					}
@@ -36,7 +36,7 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 
 		add_filter(
 			'wc_gzd_checkout_params',
-			function( $params ) {
+			function ( $params ) {
 				if ( ! wc_gzd_checkout_adjustments_disabled() ) {
 					$params['custom_heading_container'] = apply_filters( 'woocommerce_gzd_elementor_pro_review_order_heading_container', '.e-checkout__order_review-2' );
 				}
@@ -46,9 +46,53 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 			10
 		);
 
+		/**
+		 * Use a tweak to reliably determine whether the current Woo checkout uses
+		 * the built-in elementor pro checkout widget. Move checkboxes if that's the case.
+		 */
+		add_action(
+			'woocommerce_checkout_before_customer_details',
+			function () {
+				if ( wc_gzd_checkout_adjustments_disabled() ) {
+					return;
+				}
+
+				global $wp_filter;
+				$filters              = isset( $wp_filter['woocommerce_checkout_before_customer_details'] ) ? $wp_filter['woocommerce_checkout_before_customer_details'] : array();
+				$has_elementor_widget = false;
+
+				if ( isset( $filters[5] ) ) {
+					foreach ( $filters[5] as $k => $filter ) {
+						if ( isset( $filter['function'][0] ) && is_a( $filter['function'][0], '\ElementorPro\Modules\Woocommerce\Widgets\Checkout' ) ) {
+							$has_elementor_widget = true;
+							break;
+						}
+					}
+				}
+
+				/**
+				 * Move checkboxes right before order summary in case the current checkout is built with Elementor Pro.
+				 *
+				 * Do not move the checkboxes in case of Shopengine Elementor addon is active as it does not execute the woocommerce_checkout_order_review hook.
+				 */
+				if ( apply_filters( 'woocommerce_gzd_elementor_pro_checkout_has_built_in_checkout_widget', $has_elementor_widget ) ) {
+					if ( apply_filters( 'woocommerce_gzd_elementor_pro_checkout_move_checkboxes', ! \Vendidero\Germanized\PluginsHelper::is_plugin_active( 'shopengine' ) ) ) {
+						if ( has_action( 'woocommerce_review_order_after_payment', 'woocommerce_gzd_template_render_checkout_checkboxes' ) ) {
+							$has_removed = remove_action( 'woocommerce_review_order_after_payment', 'woocommerce_gzd_template_render_checkout_checkboxes', 10 );
+
+							if ( $has_removed ) {
+								add_action( 'woocommerce_checkout_order_review', 'woocommerce_gzd_template_render_checkout_checkboxes', 19 );
+							}
+						}
+					}
+				}
+			},
+			1
+		);
+
 		add_action(
 			'woocommerce_checkout_init',
-			function() {
+			function () {
 				if ( wc_gzd_checkout_adjustments_disabled() ) {
 					return;
 				}
@@ -60,7 +104,7 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 					 */
 					add_action(
 						'woocommerce_checkout_before_order_review',
-						function() {
+						function () {
 							add_filter( 'wp_doing_ajax', array( $this, 'disable_ajax_callback' ), 1000 );
 						},
 						0
@@ -68,7 +112,7 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 
 					add_action(
 						'woocommerce_checkout_after_order_review',
-						function() {
+						function () {
 							remove_filter( 'wp_doing_ajax', array( $this, 'disable_ajax_callback' ), 1000 );
 						},
 						5000
@@ -76,20 +120,6 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 
 					if ( function_exists( 'woocommerce_gzd_checkout_load_ajax_relevant_hooks' ) ) {
 						woocommerce_gzd_checkout_load_ajax_relevant_hooks();
-					}
-				}
-
-				/**
-				 * Move checkboxes right before order summary in case the current
-				 * checkout is built with Elementor Pro.
-				 */
-				if ( ! wc_gzd_post_content_has_shortcode( 'woocommerce_checkout' ) ) {
-					if ( has_action( 'woocommerce_review_order_after_payment', 'woocommerce_gzd_template_render_checkout_checkboxes' ) ) {
-						$has_removed = remove_action( 'woocommerce_review_order_after_payment', 'woocommerce_gzd_template_render_checkout_checkboxes', 10 );
-
-						if ( $has_removed ) {
-							add_action( 'woocommerce_checkout_order_review', 'woocommerce_gzd_template_render_checkout_checkboxes', 19 );
-						}
 					}
 				}
 			},
@@ -102,6 +132,45 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 	}
 
 	public function load() {
+		/**
+		 * Dynamically adjust the purchase button selectors by replacing the very restrictive #payment parent
+		 * to allow previewing the pay now button added by Germanized.
+		 */
+		add_action(
+			'elementor/element/after_section_end',
+			function ( $element, $section_id, $args ) {
+				if ( is_a( $element, '\ElementorPro\Modules\Woocommerce\Widgets\Checkout' ) ) {
+					$control = $element->get_controls( 'purchase_button_padding' );
+
+					if ( $control ) {
+						$controls = $element->get_controls();
+
+						foreach ( $controls as $control_id => $control ) {
+							if ( strstr( $control_id, 'purchase_button' ) && array_key_exists( 'selectors', $control ) ) {
+								$new_selectors = $control['selectors'];
+
+								foreach ( $new_selectors as $k => $selector ) {
+									$new_k                   = str_replace( '#payment #place_order', '#place_order', $k );
+									$new_selectors[ $new_k ] = $selector;
+								}
+
+								if ( $new_selectors !== $control['selectors'] ) {
+									$element->update_control(
+										$control_id,
+										array(
+											'selectors' => $new_selectors,
+										)
+									);
+								}
+							}
+						}
+					}
+				}
+			},
+			10,
+			3
+		);
+
 		/*
 		 * Use a higher priority here to prevent other plugins (e.g. The Plus Addons for Elementor) from
 		 * de-registering our widgets.
@@ -113,7 +182,7 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 		 */
 		add_action(
 			'elementor/element/parse_css',
-			function( $post_css, $element ) {
+			function ( $post_css, $element ) {
 				if ( is_a( $element, '\ElementorPro\Modules\Woocommerce\Widgets\Checkout' ) ) {
 					$rules = $post_css->get_stylesheet()->get_rules();
 
@@ -164,9 +233,9 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 
 		add_action(
 			'elementor/frontend/after_enqueue_styles',
-			function() {
+			function () {
 				wp_add_inline_style(
-					'elementor-pro',
+					'elementor-frontend',
 					'
 				.elementor-widget-woocommerce-checkout-page .woocommerce table.woocommerce-checkout-review-order-table {
 				    margin: var(--sections-margin, 24px 0 24px 0);
@@ -229,6 +298,27 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 		);
 	}
 
+	public function get_widgets() {
+		return array(
+			'tax_notice'             => 'WC_GZD_Elementor_Widget_Product_Tax_Notice',
+			'shipping_notice'        => 'WC_GZD_Elementor_Widget_Product_Shipping_Notice',
+			'unit_price'             => 'WC_GZD_Elementor_Widget_Product_Unit_Price',
+			'units'                  => 'WC_GZD_Elementor_Widget_Product_Units',
+			'delivery_time'          => 'WC_GZD_Elementor_Widget_Product_Delivery_Time',
+			'defect_description'     => 'WC_GZD_Elementor_Widget_Product_Defect_Description',
+			'deposit'                => 'WC_GZD_Elementor_Widget_Product_Deposit',
+			'deposit_packaging_type' => 'WC_GZD_Elementor_Widget_Product_Deposit_Packaging_Type',
+			'food_nutrients'         => 'WC_GZD_Elementor_Widget_Product_Nutrients',
+			'food_ingredients'       => 'WC_GZD_Elementor_Widget_Product_Ingredients',
+			'food_allergenic'        => 'WC_GZD_Elementor_Widget_Product_Allergenic',
+			'food_nutri_score'       => 'WC_GZD_Elementor_Widget_Product_Nutri_Score',
+			'power_supply'           => 'WC_GZD_Elementor_Widget_Product_Power_Supply',
+			'manufacturer'           => 'WC_GZD_Elementor_Widget_Product_Manufacturer',
+			'safety_attachments'     => 'WC_GZD_Elementor_Widget_Product_Safety_Attachments',
+			'safety_instructions'    => 'WC_GZD_Elementor_Widget_Product_Safety_Instructions',
+		);
+	}
+
 	public function init_widgets( $widgets_manager ) {
 		if ( ! class_exists( 'ElementorPro\Modules\Woocommerce\Widgets\Products_Base' ) ) {
 			return;
@@ -236,20 +326,7 @@ class WC_GZD_Compatibility_Elementor_Pro extends WC_GZD_Compatibility {
 
 		include_once 'elementor/widgets/abstact-class-wc-gzd-elementor-widget.php';
 
-		$widgets = array(
-			'WC_GZD_Elementor_Widget_Product_Tax_Notice',
-			'WC_GZD_Elementor_Widget_Product_Shipping_Notice',
-			'WC_GZD_Elementor_Widget_Product_Unit_Price',
-			'WC_GZD_Elementor_Widget_Product_Units',
-			'WC_GZD_Elementor_Widget_Product_Delivery_Time',
-			'WC_GZD_Elementor_Widget_Product_Defect_Description',
-			'WC_GZD_Elementor_Widget_Product_Deposit',
-			'WC_GZD_Elementor_Widget_Product_Deposit_Packaging_Type',
-			'WC_GZD_Elementor_Widget_Product_Nutrients',
-			'WC_GZD_Elementor_Widget_Product_Ingredients',
-			'WC_GZD_Elementor_Widget_Product_Allergenic',
-			'WC_GZD_Elementor_Widget_Product_Nutri_Score',
-		);
+		$widgets = array_values( $this->get_widgets() );
 
 		foreach ( $widgets as $widget ) {
 			$classname = 'class-' . str_replace( '_', '-', strtolower( $widget ) ) . '.php';

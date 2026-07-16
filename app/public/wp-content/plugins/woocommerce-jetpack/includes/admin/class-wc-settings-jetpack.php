@@ -2,7 +2,7 @@
 /**
  * Booster for WooCommerce - Settings
  *
- * @version 7.0.0
+ * @version 7.3.0
  * @since   1.0.0
  * @author  Pluggabl LLC.
  * @package Booster_For_WooCommerce/admin
@@ -103,9 +103,20 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 			if ( 'woocommerce-jetpack.php' !== basename( WCJ_FREE_PLUGIN_FILE ) ) {
 				return;
 			}
-			$class = 'notice notice-info';
-			/* translators: %s: search term */
-			$message      = sprintf( __( 'You\'re using Booster free version. To unlock more features please consider <a target="_blank" href="%s">Upgrade Booster to unlock this feature</a>.', 'woocommerce-jetpack' ), 'https://booster.io/buy-booster/' );
+			$class   = 'notice notice-info';
+			$message = sprintf(
+				/* translators: %s: URL to Booster upgrade page */
+				__( 'You\'re using Booster free version. To unlock more features please consider <a target="_blank" href="%s">Upgrade Booster to unlock this feature</a>.', 'woocommerce-jetpack' ),
+				esc_url(
+					wcj_build_commercial_url(
+						'compare',
+						array(
+							'campaign' => 'generic_upsell',
+							'content'  => 'free_version_notice__compare',
+						)
+					)
+				)
+			);
 			$booster_icon = '<span class="wcj-booster-logo"></span>';
 			?>
 				<style>
@@ -141,7 +152,7 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 		/**
 		 * Create_pro_version_footer_review_notice.
 		 *
-		 * @version 5.6.2
+		 * @version 7.3.0
 		 * @since   5.3.1
 		 */
 		public function create_pro_version_footer_review_notice() {
@@ -171,9 +182,22 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 							</a>
 						</div>
 						<div class="sub-circle">
-							<a href="https://booster.io/my-account/booster-contact/" target="_blank">
+							<a href="
+							<?php
+							echo esc_url(
+								wcj_build_commercial_url(
+									'account',
+									array(
+										'path'     => 'my-account/booster-contact/',
+										'campaign' => 'account',
+										'content'  => 'premium_support_circle__account',
+									)
+								)
+							);
+							?>
+										" target="_blank">
 								<div class="form_label">
-									<label>Booster Plus Premium Support (4 hours - 24 hours response)</label>
+									<label>Booster Elite Premium Support (4 hours - 24 hours response)</label>
 									<div class="ic_list"><img src="<?php echo esc_url( $sec_link ); ?>/assets/images/support-24-h-w.png"></div>
 								</div>
 							</a>
@@ -205,6 +229,10 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 		 * @since   5.4.2
 		 */
 		public function enqueue_admin_script() {
+			$screen = get_current_screen();
+			if ( $screen && false === strpos( $screen->id, 'wcj' ) && false === strpos( $screen->id, 'woocommerce' ) && false === strpos( $screen->id, 'booster' ) && 'shop_order' !== $screen->id && 'woocommerce_page_wc-orders' !== $screen->id ) {
+				return;
+			}
 			wp_enqueue_script( 'wcj-admin-js', trailingslashit( wcj_plugin_url() ) . 'includes/js/wcj-admin.js', array( 'jquery' ), w_c_j()->version, true );
 			wp_localize_script( 'wcj-admin-js', 'admin_object', array( 'admin_object' ), false );
 		}
@@ -256,11 +284,11 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 				foreach ( $this->module_statuses as $module_status ) {
 					if ( isset( $module_status['id'] ) && isset( $module_status['default'] ) ) {
 						if ( 'yes' === wcj_get_option( $module_status['id'], $module_status['default'] ) ) {
-							$active++;
+							++$active;
 						} elseif ( wcj_is_module_deprecated( $module_status['id'], true ) ) {
 							continue;
 						}
-						$all++;
+						++$all;
 					}
 				}
 
@@ -629,7 +657,7 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 							continue;
 						}
 					}
-					$total_modules++;
+					++$total_modules;
 					$html .= '<tr id="' . $the_feature['id'] . '" class="' . $this->active( wcj_get_option( $the_feature['id'] ) ) . '">';
 					$html .= '<th scope="row" class="check-column">';
 					$html .= '<label class="screen-reader-text" for="' . $the_feature['id'] . '">' . $the_feature['desc'] . '</label>';
@@ -865,13 +893,12 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 					echo wp_kses_post( $lines . '<br>' );
 				}
 			}
-
 		}
 
 		/**
 		 * Dasboard_menu.
 		 *
-		 * @version 5.6.8
+		 * @version 7.3.0
 		 */
 		public function dasboard_menu() {
 			global $current_section;
@@ -929,7 +956,20 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 						</div>
 					</div>
 					<div class="wcj-btn-main">
-						<a href="https://booster.io/buy-booster/" class="wcj-button" target="_blank"><?php esc_html_e( 'Get Booster Plus', 'woocommerce-jetpack' ); ?></a>
+						<a href="
+						<?php
+						echo esc_url(
+							wcj_build_commercial_url(
+								'account',
+								array(
+									'path'     => 'my-account/',
+									'campaign' => 'account',
+									'content'  => 'my_account_header__account',
+								)
+							)
+						);
+						?>
+									" class="wcj-button" target="_blank"><?php esc_html_e( 'Get Booster Elite', 'woocommerce-jetpack' ); ?></a>
 					</div>
 				</div>
 				<div class="wcj-body-sec-part-main">
@@ -951,20 +991,20 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 							<div class="wcj-faq-body">
 								<div class="wcj-faq-sing-box">
 									<div class="wcj-accordion">
-										<h6><?php esc_html_e( 'Do I need to have coding skills to use Booster Plus?', 'woocommerce-jetpack' ); ?></h6>
+										<h6><?php esc_html_e( 'Do I need to have coding skills to use Booster Elite?', 'woocommerce-jetpack' ); ?></h6>
 										<span><img src="<?php echo esc_url( wcj_plugin_url() ) . '/assets/images/down-arw.png'; ?>"></span>
 									</div>
 									<div class="wcj-panel">
-										<p><?php esc_html_e( 'Absolutely not. You can configure pretty much everything Booster Plus has to offer without any coding knowledge.', 'woocommerce-jetpack' ); ?></p>
+										<p><?php esc_html_e( 'Absolutely not. You can configure pretty much everything Booster Elite has to offer without any coding knowledge.', 'woocommerce-jetpack' ); ?></p>
 									</div>
 								</div>
 								<div class="wcj-faq-sing-box">
 									<div class="wcj-accordion">
-										<h6><?php esc_html_e( 'Will Booster Plus slow down my website?', 'woocommerce-jetpack' ); ?></h6>
+										<h6><?php esc_html_e( 'Will Booster Elite slow down my website?', 'woocommerce-jetpack' ); ?></h6>
 										<span><img src="<?php echo esc_url( wcj_plugin_url() ) . '/assets/images/down-arw.png'; ?>"></span>
 									</div>
 									<div class="wcj-panel">
-										<p><?php esc_html_e( 'Absolutely not. Booster Plus is carefully built with performance in mind.', 'woocommerce-jetpack' ); ?></p>
+										<p><?php esc_html_e( 'Absolutely not. Booster Elite is carefully built with performance in mind.', 'woocommerce-jetpack' ); ?></p>
 									</div>
 								</div>
 								<div class="wcj-faq-sing-box">
@@ -973,16 +1013,16 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 										<span><img src="<?php echo esc_url( wcj_plugin_url() ) . '/assets/images/down-arw.png'; ?>"></span>
 									</div>
 									<div class="wcj-panel">
-										<p><?php esc_html_e( 'If you are not completely satisfied with Booster Plus within the fist 30 days, you can request a refund and we will give you 100% of your money back – no questions asked.', 'woocommerce-jetpack' ); ?></p>
+										<p><?php esc_html_e( 'If you are not completely satisfied with Booster Elite within the fist 30 days, you can request a refund and we will give you 100% of your money back – no questions asked.', 'woocommerce-jetpack' ); ?></p>
 									</div>
 								</div>
 								<div class="wcj-faq-sing-box">
 									<div class="wcj-accordion">
-										<h6><?php esc_html_e( 'Can I use Booster Plus on client sites?', 'woocommerce-jetpack' ); ?></h6>
+										<h6><?php esc_html_e( 'Can I use Booster Elite on client sites?', 'woocommerce-jetpack' ); ?></h6>
 										<span><img src="<?php echo esc_url( wcj_plugin_url() ) . '/assets/images/down-arw.png'; ?>"></span>
 									</div>
 									<div class="wcj-panel">
-										<p><?php esc_html_e( 'Yes, you can use Booster Plus on client sites. You can purchase the multiple sites license of Booster Plus.', 'woocommerce-jetpack' ); ?></p>
+										<p><?php esc_html_e( 'Yes, you can use Booster Elite on client sites. You can purchase the multiple sites license of Booster Elite.', 'woocommerce-jetpack' ); ?></p>
 									</div>
 								</div>
 								<div class="wcj-faq-sing-box">
@@ -996,20 +1036,33 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 								</div>
 								<div class="wcj-faq-sing-box">
 									<div class="wcj-accordion">
-										<h6><?php esc_html_e( 'Why should I choose the Booster Plus suite over other individual plugins?', 'woocommerce-jetpack' ); ?></h6>
+										<h6><?php esc_html_e( 'Why should I choose the Booster Elite suite over other individual plugins?', 'woocommerce-jetpack' ); ?></h6>
 										<span><img src="<?php echo esc_url( wcj_plugin_url() ) . '/assets/images/down-arw.png'; ?>"></span>
 									</div>
 									<div class="wcj-panel">
-										<p><?php esc_html_e( "Oh, that's an easy one! Implementing just a few modules from the Booster Plus suite is more cost-effective than using dozens of individual plugins often priced at $15-$30 each. On top of that, stacking your site with a lot of different plugins can make it bloated and slow. What's worse, all those individual plugins don't always play nice together. But Booster Plus is the solution to all that nonsense. The Booster Plus suite features over 100 compatible modules that allow you to add custom features and functionality to your WooCommerce site easily.", 'woocommerce-jetpack' ); ?></p>
+										<p><?php esc_html_e( "Oh, that's an easy one! Implementing just a few modules from the Booster Elite suite is more cost-effective than using dozens of individual plugins often priced at $15-$30 each. On top of that, stacking your site with a lot of different plugins can make it bloated and slow. What's worse, all those individual plugins don't always play nice together. But Booster Elite is the solution to all that nonsense. The Booster Elite suite features over 100 compatible modules that allow you to add custom features and functionality to your WooCommerce site easily.", 'woocommerce-jetpack' ); ?></p>
 									</div>
 								</div>
 								<div class="wcj-faq-sing-box">
 									<div class="wcj-accordion">
-										<h6><?php esc_html_e( 'What features does Booster Plus have?', 'woocommerce-jetpack' ); ?></h6>
+										<h6><?php esc_html_e( 'What features does Booster Elite have?', 'woocommerce-jetpack' ); ?></h6>
 										<span><img src="<?php echo esc_url( wcj_plugin_url() ) . '/assets/images/down-arw.png'; ?>"></span>
 									</div>
 									<div class="wcj-panel">
-										<p><?php esc_html_e( 'You can see all the features at ', 'woocommerce-jetpack' ); ?><a href="https://booster.io/about/" target="_blank"><?php esc_html_e( 'About Booster', 'woocommerce-jetpack' ); ?></a><?php esc_html_e( ' page.', 'woocommerce-jetpack' ); ?></p>
+										<p><?php esc_html_e( 'You can see all the features at ', 'woocommerce-jetpack' ); ?><a href="
+										<?php
+										echo esc_url(
+											wcj_build_commercial_url(
+												'assist',
+												array(
+													'path' => 'about/',
+													'campaign' => 'generic_upsell',
+													'content' => 'my_account_faq_features__assist',
+												)
+											)
+										);
+										?>
+											" target="_blank"><?php esc_html_e( 'About Booster', 'woocommerce-jetpack' ); ?></a><?php esc_html_e( ' page.', 'woocommerce-jetpack' ); ?></p>
 									</div>
 								</div>
 								<div class="wcj-additional-que">
@@ -1145,7 +1198,19 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 				<li><?php esc_html_e( '+ More configuration options for payments and shipping', 'woocommerce-jetpack' ); ?></li>
 			</ul>
 			<div class="wcj-btn-main">
-				<a href="https://booster.io/buy-booster/" class="wcj-button" target="_blank"><?php esc_html_e( 'Upgrade to Booster Plus', 'woocommerce-jetpack' ); ?></a>
+				<a href="
+					<?php
+					echo esc_url(
+						wcj_build_commercial_url(
+							'buy',
+							array(
+								'campaign' => 'dashboard_header',
+								'content'  => 'feature_promo_box__buy',
+							)
+						)
+					);
+					?>
+				" class="wcj-button" target="_blank"><?php esc_html_e( 'Upgrade to Booster Elite', 'woocommerce-jetpack' ); ?></a>
 			</div>
 		</div>
 	</div>
@@ -1153,7 +1218,6 @@ if ( ! class_exists( 'WC_Settings_Jetpack' ) ) :
 					<?php
 				}
 		}
-
 	}
 
 endif;

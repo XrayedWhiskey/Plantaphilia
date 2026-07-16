@@ -1,5 +1,63 @@
 == Changelog ==
 
+= 8.0.0 - 15/04/2026 =
+* Feature - WooCommerce Blocks: Checkout Custom Fields — radio fields automatically converted to select dropdowns on Blocks checkout. Batch option loading eliminates N+1 queries during field registration.
+* Feature - WooCommerce Blocks: Checkout Fees module now applies simple fees (fixed and percentage) on Blocks checkout via Store API. Checkout-field-conditional fees remain classic-only.
+* Enhancement - HPOS: Checkout Files Upload module refactored to use consolidated HPOS helper methods in email attachments, order display, and file-to-order paths. Store API hook added for Blocks-placed orders.
+* Enhancement - Performance: Added request-scope caching for checkout fee configuration to reduce repeated option lookups during cart calculation.
+* Enhancement - Performance: Added cart product and category ID caching in checkout custom fields visibility checks, reducing redundant cart iteration on classic checkout.
+* Note - Visibility conditions (product/category/cart-amount show/hide) and placement sections remain classic-checkout-only. WC Blocks API does not support cart-conditional field registration.
+* WooCommerce 10.6.2 Tested
+* WordPress 6.9.4 Tested
+
+= 7.11.5 - 01/04/2026 =
+* Feature - WooCommerce Blocks: Added support for Checkout Custom Fields (Text, Select, and Checkbox) via the WC Additional Checkout Fields API.
+* Enhancement - Performance: Optimized Admin JS loading; wcj-admin.js is now scoped strictly to Booster and WooCommerce Order pages.
+* Fix - HPOS Compatibility: Updated Store Exporter and Order Display to use WC CRUD API for custom fields when High-Performance Order Storage is enabled.
+* Fix - Blocks Integration: Implemented a meta bridge to ensure Block-based checkout data is correctly mapped to Booster's legacy format (label-based storage).
+* Fix - HPOS: Removed redundant legacy get_post_meta calls when viewing orders in HPOS mode.
+* WooCommerce 10.6.1 Tested
+* WordPress 6.9.4 Tested
+
+= 7.11.4 - 18/03/2026 =
+* Normalized in-plugin upsell routing so generic compare-first prompts route to /free-vs-elite/ while explicit buy/pricing CTAs stay on /buy-booster/.
+* Kept upgrade-block comparison buttons and other ambiguous/tag-first docs/features/about assists on their current destinations while separating account, support, update, and download routes from generic sales flows.
+* Normalized Booster in-plugin source and UTM tagging across the scoped admin surfaces.
+* Confirmed no direct-checkout plugin CTA was introduced in this release candidate.
+* WooCommerce 10.6.1 Tested
+* WordPress 6.9.1 Tested
+
+= 7.11.3 - 11/03/2026 =
+* Improved goal discovery and blueprint selection flow for a faster setup experience.
+* Added clearer next-step instructions and goal-specific metadata for cart recovery and completion states.
+* Improved keyboard navigation and ARIA semantics for onboarding modals and interactive tiles.
+* Added enhanced lifecycle event logging and metadata payloads for better local product-quality analysis.
+* Refined modal interaction behavior, focus handling, and state restoration during apply/undo transitions.
+* WooCommerce 10.5.3 Tested
+* WordPress 6.9.1 Tested
+
+= 7.11.2 27/02/2026 =
+
+* Security hardening update across key request and file-handling flows.
+* Improved authorization and validation checks in checkout-related file actions.
+* Improved data-handling safeguards for product input processing.
+* Improved verification-flow safeguards and internal hardening in core free functions.
+* WooCommerce 10.5.2 Tested
+* WordPress 6.9 Tested
+
+= 7.2.4 13/11/2024 =
+
+* FIXED - Uncaught Error: round(): Argument #2 ($precision) must be of type int, string given in includes/shortcodes/class-wcj-orders-shortcodes.php...
+* FIXED - Fatal error: Call to a member function get() on null in includes/functions/wcj-functions-users.php...
+* FIXED - Fatal error: Call to a member function get_tax_totals() on null in includes/class-wcj-eu-vat-number.php...
+* FIXED - Fatal error: Call to a member function get_customer_ip_address() on null in includes/functions/class-wcj-eu-vat-number.php...
+* FIXED - Fatal error: Unsupported operand types: float + string in includes/reports/class-wcj-reports-stock.php...
+* FIXED - Fatal error: Unsupported operand types: int + string in includes/reports/class-wcj-reports-stock.php...
+* FIXED - Fix security vulnerability related to add_query_arg & remove_query_arg functions.
+* FIXED - Fix security vulnerability related to get_post_meta() function.
+* WooCommerce 9.3.3 Tested
+* WordPress 6.6.2 Tested
+
 = 7.2.3 11/09/2024 =
 
 * WooCommerce 9.2.3 Tested

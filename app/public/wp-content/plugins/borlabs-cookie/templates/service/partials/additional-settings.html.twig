@@ -1,0 +1,52 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.additionalSettings,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {{ makeFields(data.settingsFields, 'settingsFields', 'settingsFields') | raw }}
+
+        {{ row_save.component({
+            backLink: "?page=#{controllerId}",
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionPrioritize', expanded: true } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlinePrioritize | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.prioritizeA | raw }}</p>
+                        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning">{{ localized.thingsToKnow.prioritizeB | raw }}</div>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionBlockCookiesBeforeConsent' } %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineBlockCookiesBeforeConsent | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.blockCookiesBeforeConsentExplainedA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.blockCookiesBeforeConsentExplainedB | raw }}</p>
+                        <p>{{ localized.thingsToKnow.blockCookiesBeforeConsentExplainedC | raw }}</p>
+                        <p>{{ localized.thingsToKnow.blockCookiesBeforeConsentExplainedD | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

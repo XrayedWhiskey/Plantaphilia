@@ -1,0 +1,69 @@
+{% embed "system/embed/table/responsive-table.html.twig" %}
+    {% block heading %}
+        {% embed "system/embed/table/table-header-element.html.twig" with { attributes: 'colspan="2"' }%}
+            {% block content %}
+                {{ localized.table.databaseSeeds | raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+    {% block body %}
+        {% set sections = {
+            'country': localized.table.defaultCountries,
+        } %}
+
+        {% for section, headerText in sections %}
+            {% set defaultEntryStatus =  attribute(data.status.nonLanguageSpecificEntry, section) %}
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-header-element.html.twig" %}
+                        {% block content %}
+                            {{ headerText | raw }}
+                        {% endblock %}
+                    {% endembed %}
+                    {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                        {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                        {% block content %}
+                            {{ status_indicator.component({
+                                cssClasses: ['bc-justify-end'],
+                                errorMessage: defaultEntryStatus.message,
+                                status: defaultEntryStatus.success,
+                            }, localized) }}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endfor %}
+
+        {% set sections = {
+            'contentBlocker': localized.table.defaultContentBlocker,
+            'country': localized.table.defaultCountries,
+            'provider': localized.table.defaultProviders,
+            'serviceGroup': localized.table.defaultServiceGroups,
+            'service': localized.table.defaultServices,
+        } %}
+
+        {% for section, headerText in sections %}
+            {% for languageCode, defaultLanguageEntryStatus in attribute(data.status.languageSpecificEntry, section) %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-header-element.html.twig" %}
+                            {% block content %}
+                                {{ headerText | raw }} <em>({{ languageCode }})</em>
+                            {% endblock %}
+                        {% endembed %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                            {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                            {% block content %}
+                                {{ status_indicator.component({
+                                    cssClasses: ['bc-justify-end'],
+                                    errorMessage: defaultLanguageEntryStatus.message,
+                                    status: defaultLanguageEntryStatus.success,
+                                }, localized) }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endfor %}
+        {% endfor %}
+    {% endblock %}
+{% endembed %}

@@ -509,7 +509,16 @@ class Loader {
 		if ( Options::is_enabled( 'siteground_optimizer_optimize_javascript' ) ) {
 			// Minify the js files.
 			add_action( 'wp_print_scripts', array( $this->minifier, 'minify_scripts' ), 20 );
-			add_action( 'wp_print_footer_scripts', array( $this->minifier, 'minify_scripts' ) );
+
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			if ( is_plugin_active( 'akismet/akismet.php' ) ) {
+				add_action( 'wp_print_footer_scripts', array( $this->minifier, 'minify_scripts' ), 9 );
+			} else {
+				add_action( 'wp_print_footer_scripts', array( $this->minifier, 'minify_scripts' ) );
+			}
 		}
 
 		if ( Options::is_enabled( 'siteground_optimizer_optimize_css' ) ) {

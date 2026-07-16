@@ -20,12 +20,18 @@ class PrivacyAuditController
      */
     public function getPrivacyStatus_action_callback()
     {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(esc_html__('Unauthorized.', 'wp-statistics'), 403);
+        }
+
         check_ajax_referer('wp_rest', 'wps_nonce');
 
         // Get the compliance, audit and faq list status
-        $response['compliance_status'] = $this->dataProvider->getComplianceStatus();
-        $response['audit_list']        = $this->dataProvider->getAuditsStatus();
-        $response['faq_list']          = $this->dataProvider->getFaqsStatus();
+        $response['compliance_status']  = $this->dataProvider->getComplianceStatus();
+        $response['recommended_audits'] = $this->dataProvider->getAuditsByStatus('recommended');
+        $response['passed_audits']      = $this->dataProvider->getAuditsByStatus('success');
+        $response['unpassed_audits']    = $this->dataProvider->getAuditsByStatus('warning');
+        $response['faq_list']           = $this->dataProvider->getFaqsStatus();
 
         // Send the response
         wp_send_json_success($response);
@@ -38,6 +44,10 @@ class PrivacyAuditController
      */
     public function updatePrivacyStatus_action_callback()
     {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(esc_html__('Unauthorized.', 'wp-statistics'), 403);
+        }
+
         try {
             check_ajax_referer('wp_rest', 'wps_nonce');
 
@@ -73,7 +83,7 @@ class PrivacyAuditController
 
     /**
      * Privacy compliance test result for WordPress site health.
-     * 
+     *
      * @return array $result
      */
     public function privacyComplianceTest()

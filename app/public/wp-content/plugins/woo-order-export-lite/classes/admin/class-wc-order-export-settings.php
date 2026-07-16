@@ -9,13 +9,16 @@ class WC_Order_Export_Main_Settings {
 
 		$settings = array(
 			'default_tab'                          => 'export',
+			'status_change_use_queue'              => false,
 			'cron_tasks_active'                    => true,
+			'dont_log_empty_cron_task'             => false,
 			'show_export_status_column'            => '1',
 			'show_export_actions_in_bulk'          => '1',
 			'show_export_in_status_change_job'     => '0',
 			'autocomplete_products_max'            => '10',
 			'show_all_items_in_filters'            => false,
 			'apply_filters_to_bulk_actions'        => false,
+			'unique_woe_exported_postfix'          => false,
 			'ajax_orders_per_step'                 => '30',
 			'limit_button_test'                    => '1',
 			'cron_key'                             => null,
@@ -25,7 +28,7 @@ class WC_Order_Export_Main_Settings {
 			'notify_failed_jobs_email_subject'     => '',
 			'notify_failed_jobs_email_recipients'  => '',
 
-			'zapier_api_key'                       => '12345678',
+			'zapier_api_key'                       => '',
 			'zapier_file_timeout'                  => 60,
 			'show_date_time_picker_for_date_range' => false,
 			'display_profiles_export_date_range'   => false,

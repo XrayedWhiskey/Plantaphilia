@@ -1,0 +1,27 @@
+{% macro component(config, localized) %}
+    {% set config = {isDisabled: false} | merge(config) %}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+    {% embed "system/embed/form-row.html.twig" %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% block label %}
+            <label for="{{ config.id }}" class="bc-flex bc-items-center">
+                {{ config.label | raw }}
+                {% if config.hint is not empty %}
+                    <div class="bc-inline-block bc-pl-1">
+                        {{ hint.component({
+                            hint: config.hint,
+                            position: config.hintPopupPosition
+                        }) }}
+                    </div>
+                {% endif %}
+            </label>
+        {% endblock %}
+        {% block input %}
+            {% import "system/macro/form-component/media-selection.html.twig" as media_selection %}
+            {{ media_selection.component(config, localized) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

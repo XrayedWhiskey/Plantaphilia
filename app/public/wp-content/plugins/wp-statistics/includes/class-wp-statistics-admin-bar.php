@@ -47,7 +47,7 @@ class AdminBar
 
             if ((is_single() || is_page() || is_front_page()) && !empty($object_id)) {
 
-                $view_type  = Pages::get_post_type($object_id);
+                $view_type  = get_post_type($object_id);
                 $view_title = __('Page Views', 'wp-statistics');
                 $footerText = __('View Page Performance', 'wp-statistics');
                 $footerLink = esc_url(Menus::admin_url('content-analytics', ['type' => 'single', 'post_id' => $object_id]));
@@ -67,8 +67,8 @@ class AdminBar
                 $footerLink = esc_url(Menus::admin_url('category-analytics', ['type' => 'single', 'term_id' => $object_id]));
 
             } elseif (is_tax()) {
-
-                $view_type  = 'tax';
+                $term       = get_queried_object();
+                $view_type  = 'tax_' . $term->taxonomy;
                 $view_title = __('Taxonomy Views', 'wp-statistics');
                 $footerText = __('View Taxonomy Performance', 'wp-statistics');
                 $footerLink = esc_url(Menus::admin_url('category-analytics', ['type' => 'single', 'term_id' => $object_id]));
@@ -87,13 +87,16 @@ class AdminBar
 
             }
 
-            if ($view_type && $view_title) {
-                $viewsModel = new ViewsModel();
-                $hit_number = $viewsModel->countViewsFromPagesOnly(['post_id' => $object_id, 'resource_type' => $view_type]);
+            if (!Helper::isAddOnActive('mini-chart') && $view_type && $view_title) {
+                $pageLink   = '';
+                $term       = get_term($object_id);
+                $taxonomies = ['category', 'post_tag'];
 
-                $pageLink = '';
-                if (in_array($view_type, ['category', 'post_tag', 'tax'])) {
-                    $term     = get_term($object_id);
+                if (!empty($term) && !is_wp_error($term)) {
+                    $taxonomies[] = "tax_$term->taxonomy";
+                }
+
+                if (in_array($view_type, $taxonomies)) {
                     $pageLink = get_term_link(intval($term->term_id), $term->taxonomy);
                     $pageLink = !is_wp_error($pageLink) ? $pageLink : '';
                 } else {
@@ -101,8 +104,12 @@ class AdminBar
                 }
                 $pageLink = wp_make_link_relative($pageLink);
 
-                $historicalModel = new HistoricalModel();
-                $hit_number      += $historicalModel->countUris(['page_id' => $object_id, 'uri' => $pageLink]);
+                $viewsModel = new ViewsModel();
+                $hit_number = $viewsModel->countViewsFromPagesOnly([
+                    'post_id'       => $object_id,
+                    'resource_type' => $view_type,
+                    'uri'           => $pageLink,
+                ]);
 
                 $menu_title .= sprintf('%s: %s', $view_title, number_format($hit_number));
                 $menu_title .= ' - ';
@@ -146,24 +153,26 @@ class AdminBar
                 ),
                 'wp-statistics-menu-page'             => array(
                     'parent' => 'wp-statistic-menu-global-data',
-                    'title'  => sprintf('<img src="%s"/><div><span class="wps-admin-bar__chart__unlock-button">%s</span><button>%s</button></div>',
+                    'title'  => sprintf('<img src="%s" alt="%s"/><div><span class="wps-admin-bar__chart__unlock-button">%s</span><button>%s</button></div>',
                         esc_url(WP_STATISTICS_URL . 'assets/images/mini-chart-lock.png'),
-                        __('Unlock full potential of Mini-chart', 'wp-statistics'),
-                        __('Upgrade Now', 'wp-statistics')
+                        __('Unlock the Full Power of WP Statistics', 'wp-statistics'),
+                        __('Unlock the Full Power of WP Statistics', 'wp-statistics'),
+                        __('Learn More', 'wp-statistics')
                     ),
-                    'href'   => 'https://wp-statistics.com/product/wp-statistics-mini-chart?utm_source=wp-statistics&utm_medium=link&utm_campaign=mini-chart',
+                    'href'   =>  esc_url(admin_url('admin.php?page=wps_plugins_page&type=locked-mini-chart')),
                     'meta'   => [
                         'target' => '_blank',
                     ],
                 ),
                 'wp-statistics-footer-page'           => array(
                     'parent' => 'wp-statistic-menu-global-data',
-                    'title'  => sprintf('<img src="%s"/>
+                    'title'  => sprintf('<img src="%s" alt="%s"/>
                         <a href="%s" target="_blank">
                         <span class="wps-admin-bar__chart__unlock-button">%s</span>
                         </a>'
                         ,
                         esc_url(WP_STATISTICS_URL . 'assets/images/mini-chart-logo.svg'),
+                        esc_attr__('Mini Chart Logo', 'wp-statistics'),
                         esc_url($footerLink),
                         __('Explore Details', 'wp-statistics')
                     ),
@@ -175,7 +184,7 @@ class AdminBar
                 'object_id'          => $object_id,
                 'view_type'          => $view_type,
                 'view_title'         => $view_title,
-                'hit_number'         => $hit_number,
+                'hit_number'         => isset($hit_number) ? intval($hit_number) : 0,
                 'footer_text'        => $footerText,
                 'footer_link'        => $footerLink,
                 'menu_href'          => Menus::admin_url('overview'),

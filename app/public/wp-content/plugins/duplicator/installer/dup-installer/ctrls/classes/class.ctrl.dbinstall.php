@@ -14,7 +14,7 @@ use Duplicator\Installer\Core\Params\Descriptors\ParamDescUsers;
 use Duplicator\Installer\Core\Deploy\Database\DbCleanup;
 use Duplicator\Installer\Core\Deploy\Database\DbUserMode;
 use Duplicator\Installer\Core\Deploy\Database\QueryFixes;
-use Duplicator\Installer\Utils\LinkManager;
+use Duplicator\Installer\Utils\InstallerLinkManager;
 use Duplicator\Installer\Utils\Log\Log;
 use Duplicator\Installer\Core\Params\PrmMng;
 use Duplicator\Libs\Snap\JsonSerialize\AbstractJsonSerializable;
@@ -504,7 +504,20 @@ class DUPX_DBInstall extends AbstractJsonSerializable
 
     protected function pingAndReconnect()
     {
-        if (!mysqli_ping($this->dbh)) {
+        if (!$this->dbh instanceof mysqli) {
+            $this->dbConnect(true);
+            return;
+        }
+
+        try {
+            $result = $this->dbh->query('/* ping */ DO 1');
+
+            if ($result instanceof mysqli_result) {
+                $result->free();
+            }
+        } catch (Throwable $e) {
+            Log::info('DB PING FAILED: ' . $e->getMessage());
+            Log::info('Attempting to reconnect');
             $this->dbConnect(true);
         }
     }
@@ -1057,7 +1070,7 @@ class DUPX_DBInstall extends AbstractJsonSerializable
                 'longMsgMode' => DUPX_NOTICE_ITEM::MSG_MODE_PRE,
                 'sections'    => 'database',
                 'faqLink'     => array(
-                    'url'   => LinkManager::getDocUrl(
+                    'url'   => InstallerLinkManager::getDocUrl(
                         'how-to-fix-database-errors-or-general-warnings-on-the-install-report',
                         'install',
                         'DB error notice'
@@ -1074,7 +1087,7 @@ class DUPX_DBInstall extends AbstractJsonSerializable
         if (($query_res = DUPX_DB::mysqli_query($this->dbh, $query)) === false) {
             $err    = mysqli_error($this->dbh);
             $errMsg = "DATABASE ERROR: '{$err}'\n\t[SQL=" . substr($query, 0, self::QUERY_ERROR_LOG_LEN) . "...]\n\n";
-            $url    = LinkManager::getDocUrl('how-to-fix-database-write-issues', 'install', 'DB error notice');
+            $url    = InstallerLinkManager::getDocUrl('how-to-fix-database-write-issues', 'install', 'DB error notice');
 
             if (DUPX_U::contains($err, 'Unknown collation')) {
                 $nManager->addNextStepNotice(array(

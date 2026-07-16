@@ -1,0 +1,165 @@
+{% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            button: localized.languageString.button.addLanguageString,
+            buttonDataAttribute: 'data-brlbs-add-table-row="languageStrings"',
+            buttonId: 'addLanguageString',
+            buttonName: 'addLanguageString',
+            title: localized.languageString.headline.languageStrings,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: 'data-brlbs-table="languageStrings"' } %}
+            {% block heading %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.languageString.table.key | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.languageString.table.text | raw }}
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        #
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+
+            {% block body %}
+                {% if data.languageStrings.list is not empty %}
+                    {% for languageString in data.languageStrings.list %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "languageStrings-#{loop.index0}-key",
+                                            name: "languageStrings[#{loop.index0}][key]",
+                                            spellcheck: false,
+                                            validationRegex: '^(?!(name|previewImage|serviceConsentButtonDisplayValue)$).*$',
+                                            value: languageString.key,
+                                            width: 'bc-w-36',
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% block content %}
+                                        {% import "system/macro/form-component/input.html.twig" as input %}
+                                        {{ input.component({
+                                            id: "languageStrings-#{loop.index0}-value",
+                                            name: "languageStrings[#{loop.index0}][value]",
+                                            spellcheck: true,
+                                            value: languageString.value,
+                                        }) }}
+                                    {% endblock %}
+                                {% endembed %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "borlabsCookieContentBlockerLanguageStringModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "borlabsCookieContentBlockerLanguageStringModalDelete-#{loop.index0}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+                {% endif %}
+                {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: data.languageStrings.list is not empty } %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" with { attributes: 'colspan="3"', textAlign: 'bc-text-center' } %}
+                            {% block content %}
+                                {{ localized.languageString.alert.noLanguageString | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        <script type="text/template" data-brlbs-row-template="languageStrings">
+            {% embed "system/embed/table/table-body-row.html.twig" %}
+                {% block rowContent %}
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "languageStrings-##LOOP_INDEX##-key",
+                                name: "languageStrings[##LOOP_INDEX##][key]",
+                                spellcheck: false,
+                                validationRegex: '^(?!(name|previewImage|serviceConsentButtonDisplayValue)$).*$',
+                                value: '##KEY##',
+                                width: 'bc-w-36',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% block content %}
+                            {% import "system/macro/form-component/input.html.twig" as input %}
+                            {{ input.component({
+                                id: "languageStrings-##LOOP_INDEX##-value",
+                                name: "languageStrings[##LOOP_INDEX##][value]",
+                                spellcheck: true,
+                                value: '##VALUE##',
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                        {% block content %}
+                            <button data-brlbs-modal-target="{{ 'borlabsCookieContentBlockerLanguageStringModalDelete-##LOOP_INDEX##' }}" type="button">
+                                {{ trash_icon.component({}) }}
+                            </button>
+                            {% embed "system/embed/modal/modal.html.twig" with {
+                                buttonText: localized.global.button.delete,
+                                id: 'borlabsCookieContentBlockerLanguageStringModalDelete-##LOOP_INDEX##',
+                                title: localized.global.headline.deleteSelection,
+                            } %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        </script>
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPurposeLanguageStrings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.languageString.thingsToKnow.headlinePurposeLanguageStrings | raw }}
+                    {% endblock %}
+
+                    {% block content %}
+                        <p>{{ localized.languageString.thingsToKnow.purposeLanguageStringsA | raw }}</p>
+                        <p>{{ localized.languageString.thingsToKnow.purposeLanguageStringsB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

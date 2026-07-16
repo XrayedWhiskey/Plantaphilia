@@ -2,14 +2,14 @@
 
 namespace WP_Statistics\Service\Admin\Posts;
 
+use WP_Statistics\Components\DateRange;
 use WP_STATISTICS\DB;
+use WP_STATISTICS\Helper;
 use WP_STATISTICS\Menus;
 use WP_Statistics\MiniChart\WP_Statistics_Mini_Chart_Settings;
-use WP_Statistics\Models\HistoricalModel;
 use WP_Statistics\Models\ViewsModel;
 use WP_Statistics\Models\VisitorsModel;
 use WP_STATISTICS\Option;
-use WP_STATISTICS\Pages;
 use WP_Statistics\Service\Admin\MiniChart\MiniChartHelper;
 use WP_STATISTICS\TimeZone;
 use WP_Statistics\Traits\ObjectCacheTrait;
@@ -28,6 +28,8 @@ class HitColumnHandler
      * @var MiniChartHelper
      */
     private $miniChartHelper;
+
+    private $initialPostDate;
 
     /**
      * Hits column name.
@@ -49,21 +51,28 @@ class HitColumnHandler
             $this->columnName = 'wp-statistics-tax-hits';
         }
 
+        $this->initialPostDate = Helper::getInitialPostDate();
+
         $this->miniChartHelper = new MiniChartHelper();
     }
 
     /**
      * Adds a custom column to posts/taxonomies lists for hits statistics.
      *
-     * @param array $columns
+     * @param array $columns Columns array.
+     * @param string $postType Post type.
      *
      * @return array
      *
      * @hooked action: `manage_{$type}_posts_columns` - 10
      * @hooked action: `manage_edit-{$tax}_columns` - 10
      */
-    public function addHitColumn($columns)
+    public function addHitColumn($columns, $postType = '')
     {
+        if (!empty($postType) && empty(is_post_type_viewable($postType))) {
+            return $columns;
+        }
+
         // Handle WooCommerce sortable UI
         if (isset($columns['handle'])) {
             $cols = [];
@@ -100,7 +109,7 @@ class HitColumnHandler
 
         // Initialize class attributes only once (since all posts in the list have the same post type)
         if (!$this->isCacheSet('postType')) {
-            $this->setCache('postType', Pages::get_post_type($postId));
+            $this->setCache('postType', get_post_type($postId));
         }
 
         $hitCount = $this->calculateHitCount($postId);
@@ -129,7 +138,7 @@ class HitColumnHandler
 
         // Initialize class attributes only once (since all terms in the list have the same taxonomy)
         if (!$this->isCacheSet('postType')) {
-            $this->setCache('postType', (($term instanceof \WP_Term) && ($term->taxonomy === 'category' || $term->taxonomy === 'post_tag')) ? $term->taxonomy : 'tax');
+            $this->setCache('postType', (($term instanceof \WP_Term) && ($term->taxonomy === 'category' || $term->taxonomy === 'post_tag')) ? $term->taxonomy : 'tax_' . $term->taxonomy);
         }
 
         $hitCount = $this->calculateHitCount($termId, $term);
@@ -279,12 +288,8 @@ class HitColumnHandler
         }
 
         $hitArgs = [
-            'post_id'       => $objectId,
-            'resource_type' => Pages::checkIfPageIsHome($objectId) ? 'home' : $this->getCache('postType'),
-            'date'          => [
-                'from' => date('Y-m-d', 0),
-                'to'   => date('Y-m-d'),
-            ],
+            'resource_type' => $this->getCache('postType'),
+            'ignore_date'   => true
         ];
 
         // Change `resource_type` parameter if it's a term
@@ -305,18 +310,17 @@ class HitColumnHandler
         $hitCount = 0;
         if ($this->miniChartHelper->getChartMetric() === 'visitors') {
             $visitorsModel = new VisitorsModel();
-            $hitCount      = $visitorsModel->countVisitors($hitArgs);
+            $hitCount      = $visitorsModel->countVisitors(array_merge($hitArgs, ['resource_id' => $objectId]));
         } else {
             $viewsModel = new ViewsModel();
-            $hitCount   = $viewsModel->countViewsFromPagesOnly($hitArgs);
+            $hitCount   = $viewsModel->countViewsFromPagesOnly(array_merge($hitArgs, ['post_id' => $objectId]));
 
             // Consider historical if `count_display` is equal to 'total'
             if ($this->miniChartHelper->getCountDisplay() === 'total') {
                 $uri = empty($term) ? get_permalink($objectId) : get_term_link(intval($term->term_id), $term->taxonomy);
                 $uri = !is_wp_error($uri) ? wp_make_link_relative($uri) : '';
 
-                $historicalModel = new HistoricalModel();
-                $hitCount       += $historicalModel->countUris(['page_id' => $objectId, 'uri' => $uri]);
+                $hitCount = $viewsModel->countViewsFromPagesOnly(array_merge($hitArgs, ['post_id' => $objectId, 'uri' => $uri, 'historical' => true]));
             }
         }
 
@@ -342,7 +346,7 @@ class HitColumnHandler
 
         if (!$this->isCacheSet('isCurrentPostTypeSelected')) {
             // Check if current post type is selected in Mini-chart add-on's options
-            $miniChartSettings               = class_exists(WP_Statistics_Mini_Chart_Settings::class) ? get_option(WP_Statistics_Mini_Chart_Settings::get_instance()->setting_name) : '';
+            $miniChartSettings = class_exists(WP_Statistics_Mini_Chart_Settings::class) ? get_option(WP_Statistics_Mini_Chart_Settings::get_instance()->setting_name) : '';
             $this->setCache('isCurrentPostTypeSelected', !empty($miniChartSettings) && !empty($miniChartSettings["active_mini_chart_{$actualPostType}"]));
         }
 
@@ -357,18 +361,21 @@ class HitColumnHandler
 
         // Display hit count only if it's a valid number
         if (is_numeric($hitCount)) {
+            $date = $this->getCache('hitArgs')['date'] ?? DateRange::get('30days');
+
             $analyticsUrl = Menus::admin_url('content-analytics', [
                 'post_id' => $objectId,
                 'type'    => 'single',
-                'from'    => Request::get('from', $this->getCache('hitArgs')['date']['from']),
-                'to'      => Request::get('to', $this->getCache('hitArgs')['date']['to']),
+                'from'    => $date['from'],
+                'to'      => $date['to']
             ]);
+
             if ($isTerm) {
                 $analyticsUrl = Menus::admin_url('category-analytics', [
                     'term_id' => $objectId,
                     'type'    => 'single',
-                    'from'    => Request::get('from', $this->getCache('hitArgs')['date']['from']),
-                    'to'      => Request::get('to', $this->getCache('hitArgs')['date']['to']),
+                    'from'    => $date['from'],
+                    'to'      => $date['to']
                 ]);
             }
 
@@ -395,10 +402,13 @@ class HitColumnHandler
     private function getPreviewChartUnlockHtml()
     {
         return sprintf(
-            '<div class="wps-admin-column__unlock"><a href="%s" target="_blank"><span class="wps-admin-column__unlock__text">%s</span>
-                <span class="wps-admin-column__unlock__lock"></span>
-                <span class="wps-admin-column__unlock__img"></span></a></div>',
-            'https://wp-statistics.com/product/wp-statistics-mini-chart?utm_source=wp-statistics&utm_medium=link&utm_campaign=mini-chart',
+            '<div class="wps-admin-column__unlock">
+                        <a href="%s">
+                            <span class="wps-admin-column__unlock__text">%s</span>
+                            <span class="wps-admin-column__unlock__img"></span>
+                        </a>
+                    </div>',
+            esc_url(admin_url('admin.php?page=wps_plugins_page&type=locked-mini-chart')),
             __('Unlock', 'wp-statistics')
         );
     }

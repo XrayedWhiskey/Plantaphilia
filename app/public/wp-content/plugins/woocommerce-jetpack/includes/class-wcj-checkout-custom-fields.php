@@ -2,7 +2,7 @@
 /**
  * Booster for WooCommerce - Module - Checkout Custom Fields
  *
- * @version 7.1.8
+ * @version 8.0.0
  * @author  Pluggabl LLC.
  * @package Booster_For_WooCommerce/includes
  */
@@ -16,7 +16,7 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 	/**
 	 * WCJ_Checkout_Custom_Fields.
 	 *
-	 * @version 7.1.6
+	 * @version 8.0.0
 	 */
 	class WCJ_Checkout_Custom_Fields extends WCJ_Module {
 
@@ -26,6 +26,20 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 		 * @var varchar $wcj_checkout_custom_fields_total_number Module.
 		 */
 		public $wcj_checkout_custom_fields_total_number;
+
+		/**
+		 * Request-scope cache for cart product IDs to avoid repeated cart iteration.
+		 *
+		 * @var array|null
+		 */
+		private $cart_product_ids_cache = null;
+
+		/**
+		 * Request-scope cache for cart category IDs to avoid repeated term queries.
+		 *
+		 * @var array|null
+		 */
+		private $cart_category_ids_cache = null;
 		/**
 		 * Constructor.
 		 *
@@ -98,6 +112,10 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 
 				// Update checkout fields from admin on a subscription order.
 				add_action( 'save_post_shop_subscription', array( $this, 'update_custom_checkout_fields_order_meta' ) );
+
+				// WooCommerce Blocks checkout integration.
+				require_once WCJ_FREE_PLUGIN_PATH . '/includes/class-wcj-checkout-custom-fields-blocks.php';
+				new WCJ_Checkout_Custom_Fields_Blocks( $this->wcj_checkout_custom_fields_total_number );
 			}
 		}
 
@@ -213,13 +231,30 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 		 * @param string $order_id defines the order_id.
 		 */
 		public function add_custom_fields_to_store_exporter_order( $order, $order_id ) {
-			$post_meta = get_post_meta( $order_id );
-			foreach ( $post_meta as $key => $values ) {
-				if ( false !== strpos( $key, 'wcj_checkout_field_' ) && isset( $values[0] ) ) {
-					if ( false !== strpos( $key, '_label_' ) ) {
-						continue;
+			if ( true === wcj_is_hpos_enabled() ) {
+				$wc_order = wcj_get_order( $order_id );
+				if ( $wc_order && false !== $wc_order ) {
+					foreach ( $wc_order->get_meta_data() as $meta_data_obj ) {
+						$meta_data_array = $meta_data_obj->get_data();
+						$key             = $meta_data_array['key'];
+						if ( false !== strpos( $key, 'wcj_checkout_field_' ) ) {
+							if ( false !== strpos( $key, '_label_' ) ) {
+								continue;
+							}
+							$meta_value  = $meta_data_array['value'];
+							$order->$key = is_array( $meta_value ) && isset( $meta_value['value'] ) ? $meta_value['value'] : $meta_value;
+						}
 					}
-					$order->$key = isset( $values[0]['value'] ) ? $values[0]['value'] : $values[0];
+				}
+			} else {
+				$post_meta = get_post_meta( $order_id );
+				foreach ( $post_meta as $key => $values ) {
+					if ( false !== strpos( $key, 'wcj_checkout_field_' ) && isset( $values[0] ) ) {
+						if ( false !== strpos( $key, '_label_' ) ) {
+							continue;
+						}
+						$order->$key = isset( $values[0]['value'] ) ? $values[0]['value'] : $values[0];
+					}
 				}
 			}
 
@@ -371,13 +406,14 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 		 * @param string $templates defines the templates.
 		 */
 		public function add_custom_fields_to_order_display( $order, string $section = null, $templates ) {
-			$post_meta = get_post_meta( wcj_get_order_id( $order ) );
 			if ( true === wcj_is_hpos_enabled() ) {
 				$post_meta = array();
 				foreach ( $order->get_meta_data() as $meta_data_obj ) {
 					$meta_data_array                      = $meta_data_obj->get_data();
 					$post_meta[ $meta_data_array['key'] ] = array( $meta_data_array['value'] );
 				}
+			} else {
+				$post_meta = get_post_meta( wcj_get_order_id( $order ) );
 			}
 			$final_output = '';
 			foreach ( $post_meta as $key => $values ) {
@@ -719,9 +755,52 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 		}
 
 		/**
+		 * Get cached cart product IDs to avoid repeated cart iteration.
+		 *
+		 * @version 8.0.0
+		 * @since   8.0.0
+		 * @return array
+		 */
+		private function get_cart_product_ids() {
+			if ( null !== $this->cart_product_ids_cache ) {
+				return $this->cart_product_ids_cache;
+			}
+			$this->cart_product_ids_cache = array();
+			if ( function_exists( 'WC' ) && null !== WC()->cart ) {
+				foreach ( WC()->cart->get_cart() as $values ) {
+					$this->cart_product_ids_cache[] = (string) $values['product_id'];
+				}
+			}
+			return $this->cart_product_ids_cache;
+		}
+
+		/**
+		 * Get cached cart category IDs to avoid repeated term queries.
+		 *
+		 * @version 8.0.0
+		 * @since   8.0.0
+		 * @return array
+		 */
+		private function get_cart_category_ids() {
+			if ( null !== $this->cart_category_ids_cache ) {
+				return $this->cart_category_ids_cache;
+			}
+			$this->cart_category_ids_cache = array();
+			$product_ids                   = $this->get_cart_product_ids();
+			foreach ( $product_ids as $product_id ) {
+				$categories = wp_get_post_terms( (int) $product_id, 'product_cat', array( 'fields' => 'ids' ) );
+				if ( ! is_wp_error( $categories ) ) {
+					$this->cart_category_ids_cache = array_merge( $this->cart_category_ids_cache, $categories );
+				}
+			}
+			$this->cart_category_ids_cache = array_unique( $this->cart_category_ids_cache );
+			return $this->cart_category_ids_cache;
+		}
+
+		/**
 		 * Is_visible.
 		 *
-		 * @version 5.6.2
+		 * @version 8.0.0
 		 * @since   2.6.0
 		 * @todo    add "user roles to include/exclude"
 		 * @param string $i defines the i.
@@ -733,29 +812,22 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 				return true;
 			}
 
+			// Use cached cart data to avoid re-iterating cart for each field.
+			$cart_product_ids  = $this->get_cart_product_ids();
+			$cart_category_ids = $this->get_cart_category_ids();
+
 			// Checking categories.
 			$categories_ex = wcj_get_option( 'wcj_checkout_custom_field_categories_ex_' . $i );
 			if ( ! empty( $categories_ex ) ) {
-				foreach ( WC()->cart->get_cart() as $cart_item_key => $values ) {
-					$product_categories = get_the_terms( $values['product_id'], 'product_cat' );
-					if ( empty( $product_categories ) ) {
-						continue;
-					}
-					foreach ( $product_categories as $product_category ) {
-						if ( in_array( (string) $product_category->term_id, $categories_ex, true ) ) {
-							return false;
-						}
+				foreach ( $cart_category_ids as $cat_id ) {
+					if ( in_array( (string) $cat_id, $categories_ex, true ) ) {
+						return false;
 					}
 				}
 			}
 			$categories_in = wcj_get_option( 'wcj_checkout_custom_field_categories_in_' . $i );
 			if ( ! empty( $categories_in ) ) {
-				$categories_in_cart = array();
-				foreach ( WC()->cart->get_cart() as $cart_item_key => $values ) {
-					$product_categories = wp_get_post_terms( $values['product_id'], 'product_cat', array( 'fields' => 'ids' ) );
-					$categories_in_cart = array_merge( $product_categories, $categories_in_cart );
-				}
-				if ( count( array_intersect( $categories_in, $categories_in_cart ) ) === 0 ) {
+				if ( count( array_intersect( $categories_in, array_map( 'strval', $cart_category_ids ) ) ) === 0 ) {
 					return false;
 				}
 			}
@@ -763,16 +835,16 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 			// Checking products.
 			$products_ex = wcj_get_option( 'wcj_checkout_custom_field_products_ex_' . $i );
 			if ( ! empty( $products_ex ) ) {
-				foreach ( WC()->cart->get_cart() as $cart_item_key => $values ) {
-					if ( in_array( (string) $values['product_id'], $products_ex, true ) ) {
+				foreach ( $cart_product_ids as $product_id ) {
+					if ( in_array( $product_id, $products_ex, true ) ) {
 						return false;
 					}
 				}
 			}
 			$products_in = wcj_get_option( 'wcj_checkout_custom_field_products_in_' . $i );
 			if ( ! empty( $products_in ) ) {
-				foreach ( WC()->cart->get_cart() as $cart_item_key => $values ) {
-					if ( in_array( (string) $values['product_id'], $products_in, true ) ) {
+				foreach ( $cart_product_ids as $product_id ) {
+					if ( in_array( $product_id, $products_in, true ) ) {
 						return true;
 					}
 				}
@@ -939,7 +1011,6 @@ if ( ! class_exists( 'WCJ_Checkout_Custom_Fields' ) ) :
 			}
 				return $value;
 		}
-
 	}
 
 endif;

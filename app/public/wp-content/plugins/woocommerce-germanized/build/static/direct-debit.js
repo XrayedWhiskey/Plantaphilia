@@ -1,1 +1,104 @@
-jQuery((function(e){var i={$checkoutForm:e("form.checkout, form#order_review"),params:{},init:function(){this.params=direct_debit_params,this.$checkoutForm.on("blur input change","#direct-debit-form input#direct-debit-account-holder",this.onValidateHolder),this.$checkoutForm.on("blur input change","#direct-debit-form input#direct-debit-account-iban",this.onValidateIBAN),this.$checkoutForm.on("blur input change","#direct-debit-form input#direct-debit-account-bic",this.onValidateSWIFT),this.$checkoutForm.on("blur input change","input, select",this.maybeShowCheckbox),e(document.body).on("updated_checkout",this.maybeShowCheckbox),e(document).on("click","a#show-direct-debit-trigger",this.onPrettyPhotoOpen),this.initPrettyPhoto()},onValidateIBAN:function(){var t=i,o=e(this).parents("p.form-row");t.isValidIBAN(e(this).val())?(o.addClass("woocommerce-validated"),o.removeClass("woocommerce-invalid woocommerce-invalid-required-field")):(o.removeClass("woocommerce-validated"),o.addClass("woocommerce-invalid woocommerce-invalid-required-field"))},onValidateSWIFT:function(){var t=i,o=e(this).parents("p.form-row");t.isValidSWIFT(e(this).val())?(o.addClass("woocommerce-validated"),o.removeClass("woocommerce-invalid woocommerce-invalid-required-field")):(o.removeClass("woocommerce-validated"),o.addClass("woocommerce-invalid woocommerce-invalid-required-field"))},onValidateHolder:function(){var i=e(this).parents("p.form-row");e(this).val()?(i.addClass("woocommerce-validated"),i.removeClass("woocommerce-invalid woocommerce-invalid-required-field")):(i.removeClass("woocommerce-validated"),i.addClass("woocommerce-invalid woocommerce-invalid-required-field"))},isValidIBAN:function(e){return window.hasOwnProperty("IBAN")?window.IBAN.isValid(e):window.germanized.static.iban.isValid(e)},isValidSWIFT:function(e){return/^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$/.test(e)},maybeShowCheckbox:function(){var t=i;e(".direct-debit-checkbox").hide(),e("#direct-debit-form").length&&e("#payment_method_direct-debit").is(":checked")&&e("input#direct-debit-account-holder").val()&&e("input#direct-debit-account-iban").val()&&e("input#direct-debit-account-bic").val()&&(e(".direct-debit-checkbox").show(),t.initPrettyPhoto())},onPrettyPhotoOpen:function(t){var o=i;t.preventDefault();var a=e(this).attr("href"),r={};e.each(o.params.mandate_fields,(function(i,t){e("input"+t+", select"+t).length>0?r[i]=e("input"+t+", select"+t).val():r[i]=""})),a+="&ajax=true&"+jQuery.param(r),e("#show-direct-debit-pretty").attr("href",a),e("#show-direct-debit-pretty").trigger("click")},initPrettyPhoto:function(){e("a#show-direct-debit-pretty").prettyPhoto({social_tools:!1,theme:"pp_woocommerce",horizontal_padding:20,opacity:.8,deeplinking:!1})}};i.init()})),((window.germanized=window.germanized||{}).static=window.germanized.static||{})["direct-debit"]={};
+/******/ (function() { // webpackBootstrap
+var __webpack_exports__ = {};
+jQuery(function ($) {
+  var wc_gzd_direct_debit = {
+    $checkoutForm: $('form.checkout, form#order_review'),
+    params: {},
+    init: function () {
+      this.params = direct_debit_params;
+      this.$checkoutForm.on('blur input change', '#direct-debit-form input#direct-debit-account-holder', this.onValidateHolder);
+      this.$checkoutForm.on('blur input change', '#direct-debit-form input#direct-debit-account-iban', this.onValidateIBAN);
+      this.$checkoutForm.on('blur input change', '#direct-debit-form input#direct-debit-account-bic', this.onValidateSWIFT);
+      this.$checkoutForm.on('blur input change', 'input, select', this.maybeShowCheckbox);
+      $(document.body).on('updated_checkout', this.maybeShowCheckbox);
+      $(document).on('click', 'a#show-direct-debit-trigger', this.onPrettyPhotoOpen);
+      this.initPrettyPhoto();
+    },
+    onValidateIBAN: function () {
+      var self = wc_gzd_direct_debit,
+        $wrapper = $(this).parents('p.form-row');
+      if (!self.isValidIBAN($(this).val())) {
+        $wrapper.removeClass('woocommerce-validated');
+        $wrapper.addClass('woocommerce-invalid woocommerce-invalid-required-field');
+      } else {
+        $wrapper.addClass('woocommerce-validated');
+        $wrapper.removeClass('woocommerce-invalid woocommerce-invalid-required-field');
+      }
+    },
+    onValidateSWIFT: function () {
+      var self = wc_gzd_direct_debit,
+        $wrapper = $(this).parents('p.form-row');
+      if (!self.isValidSWIFT($(this).val())) {
+        $wrapper.removeClass('woocommerce-validated');
+        $wrapper.addClass('woocommerce-invalid woocommerce-invalid-required-field');
+      } else {
+        $wrapper.addClass('woocommerce-validated');
+        $wrapper.removeClass('woocommerce-invalid woocommerce-invalid-required-field');
+      }
+    },
+    onValidateHolder: function () {
+      var self = wc_gzd_direct_debit,
+        $wrapper = $(this).parents('p.form-row');
+      if (!$(this).val()) {
+        $wrapper.removeClass('woocommerce-validated');
+        $wrapper.addClass('woocommerce-invalid woocommerce-invalid-required-field');
+      } else {
+        $wrapper.addClass('woocommerce-validated');
+        $wrapper.removeClass('woocommerce-invalid woocommerce-invalid-required-field');
+      }
+    },
+    isValidIBAN: function (iban) {
+      // Support legacy, non-bundled module loading
+      if (window.hasOwnProperty('IBAN')) {
+        return window.IBAN.isValid(iban);
+      } else {
+        return window.germanized.static.iban.isValid(iban);
+      }
+    },
+    isValidSWIFT: function (swift) {
+      var regSWIFT = /^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$/;
+      return regSWIFT.test(swift);
+    },
+    maybeShowCheckbox: function () {
+      var self = wc_gzd_direct_debit;
+
+      // Hide by default
+      $('.direct-debit-checkbox').hide();
+      if ($('#direct-debit-form').length) {
+        if ($('#payment_method_direct-debit').is(':checked') && $('input#direct-debit-account-holder').val() && $('input#direct-debit-account-iban').val() && $('input#direct-debit-account-bic').val()) {
+          $('.direct-debit-checkbox').show();
+          self.initPrettyPhoto();
+        }
+      }
+    },
+    onPrettyPhotoOpen: function (e) {
+      var self = wc_gzd_direct_debit;
+      e.preventDefault();
+      var url = $(this).attr('href');
+      var data = {};
+      $.each(self.params.mandate_fields, function (key, selector) {
+        if ($('input' + selector + ', select' + selector).length > 0) {
+          data[key] = $('input' + selector + ', select' + selector).val();
+        } else {
+          data[key] = '';
+        }
+      });
+      url += '&ajax=true&' + jQuery.param(data);
+      $('#show-direct-debit-pretty').attr('href', url);
+      $('#show-direct-debit-pretty').trigger('click');
+    },
+    initPrettyPhoto: function () {
+      $('a#show-direct-debit-pretty').prettyPhoto({
+        social_tools: false,
+        theme: 'pp_woocommerce',
+        horizontal_padding: 20,
+        opacity: 0.8,
+        deeplinking: false
+      });
+    }
+  };
+  wc_gzd_direct_debit.init();
+});
+((window.germanized = window.germanized || {})["static"] = window.germanized["static"] || {})["direct-debit"] = __webpack_exports__;
+/******/ })()
+;

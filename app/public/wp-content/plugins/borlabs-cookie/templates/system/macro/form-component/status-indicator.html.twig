@@ -1,0 +1,45 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        cssClasses: [],
+        errorMessage: '',
+        errorText: localized.status.error,
+        id: '',
+        okText: localized.status.ok,
+        status: false,
+        successMessage: '',
+    } | merge(config)
+    %}
+
+    {% if config.cssClasses is not empty %}
+        {% set cssClasses = config.cssClasses %}
+    {% else %}
+        {% set cssClasses = ['bc-items-center'] %}
+    {% endif %}
+
+    <div
+        data-brlbs-state="{{ config.status ? 'true' : 'false' }}"
+        {% if config.id is not empty %}data-brlbs-state-indicator="{{ config.id }}"{% endif %}>
+        <div class="bc-flex {{ cssClasses | join(' ') }} bc-space-x-2 ">
+            <div>
+                <svg data-brlbs-state="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="bc-w-5 bc-h-5 bc-inline-block bc-text-green-600 bc-flex-shrink-0">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                </svg>
+                <svg data-brlbs-state="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="bc-w-5 bc-h-5 bc-inline-block bc-text-red-600 bc-flex-shrink-0">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div>
+                <p class="bc-break-words bc-text-sm">
+                    <span data-brlbs-state="true">{{ config.okText | raw }}</span>
+                    <span data-brlbs-state="false">{{ config.errorText | raw }}</span>
+                </p>
+            </div>
+        </div>
+        <p class="bc-text-xxs bc-pt-1 bc-text-green-800" data-brlbs-state-success-message data-brlbs-state="true">
+            {{ config.successMessage | raw }}
+        </p>
+        <p class="bc-text-xxs bc-pt-1 bc-text-red-600" data-brlbs-state-error-message data-brlbs-state="false">
+            {{ config.errorMessage | raw }}
+        </p>
+    </div>
+{% endmacro %}

@@ -91,7 +91,7 @@
                         setTimeout( function() {
                             self.stopObserver( self, priceSelector );
 
-                            var priceData = self.getCurrentPriceData( self, priceSelector, priceArgs['is_total_price'], isPrimary, priceArgs['quantity_selector'] );
+                            var priceData = self.getCurrentPriceData( self, $price, priceArgs['is_total_price'], isPrimary, priceArgs['quantity_selector'] );
 
                             if ( priceData ) {
                                 self.refreshUnitPrice( self, priceData, priceSelector, isPrimary );
@@ -132,22 +132,28 @@
         return textWidth;
     };
 
-    GermanizedUnitPriceObserver.prototype.getPriceNode = function( self, priceSelector, isPrimarySelector ) {
+    GermanizedUnitPriceObserver.prototype.getPriceNode = function( self, priceSelector, isPrimarySelector, visibleOnly ) {
         isPrimarySelector = ( typeof isPrimarySelector === 'undefined' ) ? false : isPrimarySelector;
+        visibleOnly = ( typeof visibleOnly === 'undefined' ) ? true : visibleOnly;
+        let visibleSelector = visibleOnly ? ':visible' : '';
 
-        var $node = self.$wrapper.find( priceSelector + ':not(.price-unit):visible' ).not( '.variations_form .single_variation .price' ).first();
+        var $node = self.$wrapper.find( priceSelector + ':not(.price-unit)' + visibleSelector ).not( '.variations_form .single_variation .price' ).first();
 
         if ( isPrimarySelector && self.isVar && ( $node.length <= 0 || ! self.replacePrice ) ) {
-            $node = self.$wrapper.find( '.woocommerce-variation-price span.price:not(.price-unit):visible:last' );
+            $node = self.$wrapper.find( '.woocommerce-variation-price span.price:not(.price-unit):last' + visibleSelector );
         } else if ( isPrimarySelector && $node.length <= 0 ) {
-            $node = self.$wrapper.find( '.price:not(.price-unit):visible:last' );
+            $node = self.$wrapper.find( '.price:not(.price-unit):last' + visibleSelector );
+        }
+
+        if ( $node.length <= 0 && self.$wrapper.hasClass( 'wc-block-product' ) ) {
+            $node = self.$wrapper.find( '.wc-block-grid__product-price' );
         }
 
         return $node;
     };
 
     GermanizedUnitPriceObserver.prototype.getObserverNode = function( self, priceSelector, isPrimarySelector ) {
-        var $node = self.getPriceNode( self, priceSelector, isPrimarySelector );
+        var $node = self.getPriceNode( self, priceSelector, isPrimarySelector, false );
 
         if ( isPrimarySelector && self.isVar && ! self.replacePrice ) {
             $node = self.$wrapper.find( '.single_variation:last' );
@@ -161,17 +167,32 @@
             return [];
         }
 
+        var $element = [];
         var isSingleProductBlock = $price.parents( '.wp-block-woocommerce-product-price[data-is-descendent-of-single-product-template]' ).length > 0;
+        var isProductGridBlock = self.$wrapper.hasClass( 'wc-block-product' );
 
         if ( 'SPAN' === $price[0].tagName ) {
-            return self.$wrapper.find( '.price-unit' );
+            $element = self.$wrapper.find( '.price-unit' );
         } else {
             if ( isSingleProductBlock ) {
-                return self.$wrapper.find( '.wp-block-woocommerce-gzd-product-unit-price[data-is-descendent-of-single-product-template] .price-unit' );
+                $element = self.$wrapper.find( '.wp-block-woocommerce-gzd-product-unit-price[data-is-descendent-of-single-product-template] .price-unit' );
+            } else if ( isProductGridBlock ) {
+                $element = self.$wrapper.find( '.price-unit:not(.wc-gzd-additional-info-placeholder)' );
             } else {
-                return self.$wrapper.find( '.price-unit:not(.wc-gzd-additional-info-placeholder, .wc-gzd-additional-info-loop)' );
+                $element = self.$wrapper.find( '.price-unit:not(.wc-gzd-additional-info-placeholder, .wc-gzd-additional-info-loop)' );
             }
         }
+
+        /**
+         * Check whether the unit price is empty - prevent refreshing empty prices.
+         */
+        if ( $element.length > 0 ) {
+            if ( $element.is( ':empty' ) || $element.find( '.wc-gzd-additional-info-placeholder' ).is( ':empty' ) ) {
+                $element = [];
+            }
+        }
+
+        return $element;
     };
 
     GermanizedUnitPriceObserver.prototype.stopObserver = function( self, priceSelector ) {
@@ -190,7 +211,7 @@
             self.stopObserver( self, priceSelector );
 
             if ( $node.length > 0 ) {
-                observer.observe( $node[0], { childList: true, subtree: true, characterData: true } );
+                observer.observe( $node[0], { attributes: true, childList: true, subtree: true, characterData: true, attributeFilter: ['style'] } );
             }
 
             return true;
@@ -199,7 +220,7 @@
         return false;
     };
 
-    GermanizedUnitPriceObserver.prototype.initObservers = function(self ) {
+    GermanizedUnitPriceObserver.prototype.initObservers = function( self ) {
         if ( Object.keys( self.observer ).length !== 0 ) {
             return;
         }
@@ -209,10 +230,28 @@
                 $observerNode   = self.getObserverNode( self, priceSelector, isPrimary ),
                 currentObserver = false;
 
-            if ( $observerNode.length > 0 ) {
+            if ( $observerNode.length > 0 && $observerNode.is( ':visible' ) ) {
                 // Callback function to execute when mutations are observed
                 var callback = function( mutationsList, observer ) {
-                    var $node = self.getPriceNode( self, priceSelector, isPrimary );
+                    var $priceNode = self.getPriceNode( self, priceSelector, isPrimary );
+
+                    for ( let mutation of mutationsList ) {
+                        let $element = $( mutation.target );
+
+                        if ( $element.length > 0 ) {
+                            let $priceElement;
+
+                            if ( $element.is( priceSelector ) ) {
+                                $priceElement = $element;
+                            } else {
+                                $priceElement = $element.parents( priceSelector );
+                            }
+
+                            if ( $priceElement.length > 0 ) {
+                                $priceNode = $priceElement;
+                            }
+                        }
+                    }
 
                     /**
                      * Clear the timeout and abort open AJAX requests as
@@ -222,44 +261,51 @@
                         clearTimeout( self.timeout );
                     }
 
-                    if ( $node.length <= 0 ) {
+                    var $unitPrice   = self.getUnitPriceNode( self, $priceNode ),
+                        hasRefreshed = false;
+
+                    if ( $priceNode.length <= 0 ) {
                         return false;
                     }
-
-                    var $unitPrice   = self.getUnitPriceNode( self, $node ),
-                        hasRefreshed = false;
 
                     self.stopObserver( self, priceSelector );
 
                     if ( $unitPrice.length > 0 ) {
                         self.setUnitPriceLoading( self, $unitPrice );
-                    }
 
-                    /**
-                     * Need to use a tweak here to make sure our variation listener
-                     * has already adjusted the variationId (in case necessary).
-                     */
-                    self.timeout = setTimeout(function() {
-                        self.stopObserver( self, priceSelector );
+                        /**
+                         * Need to use a tweak here to make sure our variation listener
+                         * has already adjusted the variationId (in case necessary).
+                         */
+                        self.timeout = setTimeout(function() {
+                            self.stopObserver( self, priceSelector );
+                            $priceNode = self.getPriceNode( self, priceSelector, isPrimary ); // Refresh dom instance as the price element may change during timeout
 
-                        var priceData = self.getCurrentPriceData( self, priceSelector, priceArgs['is_total_price'], isPrimary, priceArgs['quantity_selector'] );
+                            if ( $priceNode.length > 0 ) {
+                                var priceData = self.getCurrentPriceData( self, $priceNode, priceArgs['is_total_price'], isPrimary, priceArgs['quantity_selector'] );
+                                var isVisible = $priceNode.is( ':visible' );
 
-                        if ( priceData ) {
-                            /**
-                             * Do only fire AJAX requests in case no other requests (e.g. from other plugins) are currently running.
-                             */
-                            if ( $.active <= 0 ) {
-                                hasRefreshed = true;
-                                self.refreshUnitPrice( self, priceData, priceSelector, isPrimary );
+                                if ( priceData ) {
+                                    if ( self.isRefreshingUnitPrice( self.getCurrentProductId( self ) ) ) {
+                                        self.abortRefreshUnitPrice( self.getCurrentProductId( self ) );
+                                    }
+
+                                    hasRefreshed = true;
+                                    self.refreshUnitPrice( self, priceData, priceSelector, isPrimary );
+                                }
+
+                                if ( ! hasRefreshed && $unitPrice.length > 0 ) {
+                                    self.unsetUnitPriceLoading( self, $unitPrice );
+
+                                    if ( ! isVisible && isPrimary ) {
+                                        $unitPrice.hide();
+                                    }
+                                }
                             }
-                        }
 
-                        if ( ! hasRefreshed && $unitPrice.length > 0 ) {
-                            self.unsetUnitPriceLoading( self, $unitPrice );
-                        }
-
-                        self.startObserver( self, priceSelector, isPrimary );
-                    }, 500 );
+                            self.startObserver( self, priceSelector, isPrimary );
+                        }, 500 );
+                    }
                 };
 
                 if ( "MutationObserver" in window ) {
@@ -316,7 +362,7 @@
 
     GermanizedUnitPriceObserver.prototype.getCurrentPriceData = function( self, priceSelector, isTotalPrice, isPrimary, quantitySelector ) {
         quantitySelector = quantitySelector && '' !== quantitySelector ? quantitySelector : self.params.qty_selector;
-        var $price       = self.getPriceNode( self, priceSelector, isPrimary );
+        var $price = ( typeof priceSelector === 'string' || priceSelector instanceof String ) ? self.getPriceNode( self, priceSelector, isPrimary ) : priceSelector;
 
         if ( $price.length > 0 ) {
             // Add a tmp hidden class to detect hidden elements in cloned obj
@@ -332,7 +378,8 @@
             var sale_price  = '',
                 $priceInner = $priceCloned.find( '.amount:first' ),
                 $qty        = $( self.params.wrapper + ' ' + quantitySelector + ':first' ),
-                qty         = 1;
+                qty         = 1,
+                is_range= false;
 
             if ( $qty.length > 0 ) {
                 qty = parseFloat( $qty.val() );
@@ -362,13 +409,20 @@
                 sale_price = self.getRawPrice( $sale_price, self.params.price_decimal_sep );
             }
 
+            /**
+             * Is price range, e.g. variable products
+             */
+            if ( sale_price && $priceCloned.find( 'del' ).length <= 0 ) {
+                is_range = true;
+            }
+
             $price.find( '.wc-gzd-is-hidden' ).removeClass( 'wc-gzd-is-hidden' );
 
             if ( $unit_price.length > 0 && price ) {
                 if ( isTotalPrice ) {
                     price = parseFloat( price ) / qty;
 
-                    if ( sale_price.length > 0 ) {
+                    if ( sale_price ) {
                         sale_price = parseFloat( sale_price ) / qty;
                     }
                 }
@@ -378,6 +432,7 @@
                     'unit_price': $unit_price,
                     'sale_price': sale_price,
                     'quantity'  : qty,
+                    'is_range'  : is_range,
                 };
             }
         }
@@ -419,10 +474,9 @@
              */
             $unit_price.html( '<span class="wc-gzd-placeholder-loading"><span class="wc-gzd-placeholder-row" style="height: ' + $unit_price.height() + 'px;"><span class="wc-gzd-placeholder-row-col-4" style="width: ' + textWidth + 'px; height: ' + textHeight + 'px;"></span></span></span>' );
             $unit_price.addClass( 'wc-gzd-loading' );
-            $unit_price.data( 'org-html', unitPriceOrg );
-        } else {
-            unitPriceOrg = $unit_price.data( 'org-html' );
         }
+
+        $unit_price.data( 'org-html', unitPriceOrg );
 
         return unitPriceOrg;
     };
@@ -433,8 +487,20 @@
         $unit_price.html( newHtml );
 
         if ( $unit_price.hasClass( 'wc-gzd-loading' ) ) {
-            $unit_price.removeClass( 'wc-gzd-loading' ).show();
+            $unit_price.removeClass( 'wc-gzd-loading' );
         }
+
+        if ( typeof newHtml === "string" && newHtml.length > 0 ) {
+            $unit_price.show();
+        }
+    };
+
+    GermanizedUnitPriceObserver.prototype.isRefreshingUnitPrice = function( currentProductId ) {
+        return germanized.unit_price_observer_queue.exists( currentProductId );
+    };
+
+    GermanizedUnitPriceObserver.prototype.abortRefreshUnitPrice = function( currentProductId ) {
+        return germanized.unit_price_observer_queue.abort( currentProductId );
     };
 
     GermanizedUnitPriceObserver.prototype.refreshUnitPrice = function( self, priceData, priceSelector, isPrimary ) {

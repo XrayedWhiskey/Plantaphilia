@@ -1,0 +1,49 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/form-row.html.twig" %}
+        {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/form-component/input.html.twig" as input %}
+        {% block label %}
+            <label class="bc-flex bc-items-center bc-space-x-1" for="{{ config.id }}">
+                <span>{{ config.label | raw }}</span>
+                {% if config.hint is not empty %}
+                    {{ hint.component({
+                        hint: config.hint,
+                    }) }}
+                {% endif %}
+            </label>
+        {% endblock %}
+        {% block input %}
+            {% set name = config.id %}
+            {% if config.name is not empty %}
+                {% set name = config.name %}
+            {% endif %}
+            {% set checkboxConfig = {
+                dataAttribute: "data-brlbs-enable-target=\"#{config.id}\"", } | merge(config)
+            %}
+            {% set checkboxConfig = checkboxConfig | merge({ id: "#{config.id}Status", name: "#{config.id}Status" }) %}
+            {% set inputConfig = {
+                cssClasses: ['bc-border', 'bc-rounded-none', 'bc-rounded-r', 'bc-border-transparent', 'bc-border-l-gray-300'],
+                hasToggle: true,
+                isDisabled: config.checked is empty } | merge(config)
+            %}
+            {% set inputConfig = inputConfig | merge({ width: 'bc-w-full' }) %}
+            {% set inputConfig = inputConfig | filter((v, k) => k != 'hint') %}
+            {% set inputConfig = inputConfig | filter((v, k) => k != 'alertMessage' and k != 'errorMessage') %}
+
+            <div
+                class="bc-relative bc-flex bc-border bc-border-solid bc-bg-gray-50 bc-items-center bc-rounded-md bc-border-gray-300 bc-shadow-sm {% if config.width %}{{ config.width }}{% endif %}"
+            >
+                <div class="bc-flex bc-items-center bc-px-2.5">
+                    {{ checkbox.component(checkboxConfig, localized) }}
+                </div>
+
+                {{ input.component(inputConfig, localized) }}
+            </div>
+            {# Displays the alert message if alert status is true. #}
+            {% if config.alertMessage is not empty %}
+                <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-error">{{ config.alertMessage | raw }}</div>
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

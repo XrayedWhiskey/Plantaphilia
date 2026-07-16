@@ -1,0 +1,41 @@
+{% macro component(config, localized) %}
+    {% if config.components %}
+        {% for component in config.components.list %}
+            {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+                {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+                {% block header %}
+                    {{ card_heading_with_subtitle.component({
+                        title: component.name ~ ' - ' ~ localized.headline.settings,
+                        subtitle: localized.headline[config.componentKey],
+                    }) }}
+                {% endblock %}
+                {% block content %}
+                    {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+                    {{ row_switch_button.component({
+                        hint: localized.hint.overwriteTranslation,
+                        id: "settings-for-language-#{config.language.key}-#{config.componentId}-#{component.key}-overwrite-translation",
+                        label: localized.field.overwriteTranslation,
+                        name: "settingsForLanguage[#{config.language.key}][#{config.componentKey}][#{component.key}][overwrite-translation]",
+                        value: 1,
+                    }) }}
+
+                    {{ row_switch_button.component({
+                        hint: attribute(localized.hint, 'overwriteCode' ~ ucfirst(config.componentKey)),
+                        id: "settings-for-language-#{config.language.key}-#{config.componentId}-#{component.key}-overwrite-code",
+                        label: localized.field.overwriteCode,
+                        name: "settingsForLanguage[#{config.language.key}][#{config.componentKey}][#{component.key}][overwrite-code]",
+                        value: 1,
+                    }) }}
+
+                    {% if component.languageSpecificSetupSettingsFieldsList.list is not empty %}
+                        {{ makeLanguageSpecificFields(
+                            component.languageSpecificSetupSettingsFieldsList,
+                            config.language.key,
+                            "settings-for-language-#{config.language.key}-#{config.componentId}",
+                            "settingsForLanguage[#{config.language.key}][#{config.componentKey}]") | raw }}
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}

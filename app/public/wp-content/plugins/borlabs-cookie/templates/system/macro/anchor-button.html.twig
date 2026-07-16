@@ -1,0 +1,43 @@
+{% macro component(config) %}
+    {% set config = {
+        additionalAttributes: [],
+        backgroundColor:'bc-bg-blue-600',
+        backgroundColorHover:'hover:bc-bg-blue-700',
+        border: 'bc-border bc-border-transparent',
+        dataAttribute:'',
+        display:'bc-inline-block',
+        focus:'focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-blue-800 focus:bc-ring-offset-2',
+        fontWeight: '',
+        id:'',
+        margin:'',
+        padding:'bc-px-3 bc-py-1.5',
+        radius:'bc-rounded',
+        textColor:'bc-text-white',
+        textColorHover:'hover:bc-text-white'
+    } | merge(config)
+    %}
+    {% set cssClasses = [
+        config.backgroundColor,
+        config.backgroundColorHover,
+        config.border,
+        config.display,
+        config.focus,
+        config.fontWeight,
+        config.margin,
+        config.padding,
+        config.radius,
+        config.textColor,
+        config.textColorHover,
+        config.width,
+        'bc-border bc-border-solid bc-border-transparent bc-text-sm bc-text-center bc-no-underline bc-shadow-sm bc-transition-all'
+    ] %}
+    {% set cssClasses = [config.backgroundColorHover] | merge(cssClasses) %}
+    <a
+        class="{{ cssClasses | join(' ') }}"
+        href="{{ config.href is not empty ? config.href | raw : '#' }}"
+        {% if config.id is not empty %} id="{{ config.id }}"{% endif %}
+        {% if config.dataAttribute is not empty %} {{ config.dataAttribute }}{% endif %}
+        {% for additionalAttribute in config.additionalAttributes %}
+            {{ additionalAttribute | raw }}
+        {% endfor %}>{{ config.linkText | raw }}</a>
+{% endmacro %}

@@ -2,7 +2,7 @@
 /**
  * Booster for WooCommerce - Module - Orders
  *
- * @version 7.1.4
+ * @version 7.3.0
  * @author  Pluggabl LLC.
  * @package Booster_For_WooCommerce/includes
  */
@@ -20,7 +20,7 @@ if ( ! class_exists( 'WCJ_Orders' ) ) :
 		/**
 		 * Constructor.
 		 *
-		 * @version 7.1.4
+		 * @version 7.3.0
 		 * @todo    Bulk Regenerate Download Permissions - copy "cron" to plugin
 		 * @todo    Bulk Regenerate Download Permissions - maybe move "bulk actions" to free
 		 * @todo    Bulk Regenerate Download Permissions - maybe as new module
@@ -29,7 +29,7 @@ if ( ! class_exists( 'WCJ_Orders' ) ) :
 
 			$this->id         = 'orders';
 			$this->short_desc = __( 'Orders', 'woocommerce-jetpack' );
-			$this->desc       = __( 'Orders auto-complete; admin order currency; admin order navigation; bulk regenerate download permissions for orders (Plus).', 'woocommerce-jetpack' );
+			$this->desc       = __( 'Orders auto-complete; admin order currency; admin order navigation; bulk regenerate download permissions for orders (Elite).', 'woocommerce-jetpack' );
 			$this->desc_pro   = __( 'Orders auto-complete; admin order currency; admin order navigation; bulk regenerate download permissions for orders.', 'woocommerce-jetpack' );
 			$this->link_slug  = 'woocommerce-orders';
 			parent::__construct();
@@ -446,7 +446,7 @@ if ( ! class_exists( 'WCJ_Orders' ) ) :
 		/**
 		 * Auto Complete all WooCommerce orders.
 		 *
-		 * @version 5.6.2
+		 * @version 7.2.4
 		 * @todo    (maybe) at first check if status is not `completed` already (however `WC_Order::set_status()` checks that anyway)
 		 * @param int $order_id defines the order_id.
 		 */
@@ -456,6 +456,10 @@ if ( ! class_exists( 'WCJ_Orders' ) ) :
 			}
 			$order           = wc_get_order( $order_id );
 			$payment_methods = apply_filters( 'booster_option', '', wcj_get_option( 'wcj_order_auto_complete_payment_methods', array() ) );
+			$order_status    = $order->get_status();
+			if ( 'failed' === $order_status ) {
+				return;
+			}
 			if ( ! empty( $payment_methods ) && ! in_array( $order->get_payment_method(), $payment_methods, true ) ) {
 				return;
 			}

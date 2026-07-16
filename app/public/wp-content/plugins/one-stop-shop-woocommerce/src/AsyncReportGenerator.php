@@ -14,15 +14,15 @@ class AsyncReportGenerator {
 
 	public function __construct( $type = 'quarterly', $args = array() ) {
 		$this->type    = $type;
-		$default_end   = new \WC_DateTime();
-		$default_start = new \WC_DateTime( 'now' );
+		$default_end   = Package::string_to_datetime( 'now' );
+		$default_start = Package::string_to_datetime( 'now' );
 		$default_start->modify( '-1 year' );
 
 		$args = wp_parse_args(
 			$args,
 			array(
-				'start'            => $default_start->format( 'Y-m-d' ),
-				'end'              => $default_end->format( 'Y-m-d' ),
+				'start'            => $default_start->date_i18n( 'Y-m-d' ),
+				'end'              => $default_end->date_i18n( 'Y-m-d' ),
 				'limit'            => Queue::get_batch_size(),
 				'status'           => Queue::get_order_statuses(),
 				'offset'           => 0,
@@ -41,10 +41,10 @@ class AsyncReportGenerator {
 
 		foreach ( array( 'start', 'end' ) as $date_field ) {
 			if ( is_a( $args[ $date_field ], 'WC_DateTime' ) ) {
-				$args[ $date_field ] = $args[ $date_field ]->format( 'Y-m-d' );
+				$args[ $date_field ] = $args[ $date_field ]->date_i18n( 'Y-m-d' );
 			} elseif ( is_numeric( $args[ $date_field ] ) ) {
 				$date                = new \WC_DateTime( '@' . $args[ $date_field ] );
-				$args[ $date_field ] = $date->format( 'Y-m-d' );
+				$args[ $date_field ] = $date->date_i18n( 'Y-m-d' );
 			}
 		}
 
@@ -106,7 +106,8 @@ class AsyncReportGenerator {
 	protected function has_local_pickup( $order ) {
 		$shipping_methods = $order->get_shipping_methods();
 		$has_pickup       = false;
-		$pickup_methods   = apply_filters( 'oss_local_pickup_shipping_methods', array( 'local_pickup' ) );
+		$pickup_methods   = apply_filters( 'oss_local_pickup_shipping_methods', array( 'local_pickup', 'pickup_location' ) );
+		$apply_base_tax   = true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true );
 
 		foreach ( $shipping_methods as $shipping_method ) {
 			if ( in_array( $shipping_method->get_method_id(), $pickup_methods, true ) ) {
@@ -115,7 +116,7 @@ class AsyncReportGenerator {
 			}
 		}
 
-		return apply_filters( 'oss_woocommerce_order_has_local_pickup', $has_pickup, $order );
+		return apply_filters( 'oss_woocommerce_order_has_local_pickup', $has_pickup && $apply_base_tax, $order );
 	}
 
 	/**
@@ -279,7 +280,7 @@ class AsyncReportGenerator {
 						$tax_data[ $country_iso ][ "$tax_percent" ]['net_total']  = (float) $tax_data[ $country_iso ][ "$tax_percent" ]['net_total'];
 						$tax_data[ $country_iso ][ "$tax_percent" ]['net_total'] += $net_total;
 
-						$orders_processed++;
+						++$orders_processed;
 					}
 				}
 			}

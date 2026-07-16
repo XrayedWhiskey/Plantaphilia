@@ -2,8 +2,13 @@
 
 namespace WP_STATISTICS;
 
+use WP_Statistics\Models\ViewsModel;
+use WP_Statistics\Models\VisitorsModel;
+use WP_Statistics\Traits\TransientCacheTrait;
+
 class ShortCode
 {
+    use TransientCacheTrait;
 
     public function __construct()
     {
@@ -47,11 +52,18 @@ class ShortCode
         if (!array_key_exists('format', $atts)) {
             $atts['format'] = '';
         }
+
+        $atts['type'] = '';
         if (!array_key_exists('id', $atts)) {
-            $atts['id'] = -1;
+            $atts['id']   = get_the_ID();
+            $currentPage  = Pages::get_page_type();
+            $atts['type'] = $currentPage['type'];
+        } else {
+            $atts['type'] = $this->getResourceType($atts['id']);
         }
 
         $formatnumber = array_key_exists('format', $atts);
+        $result       = '';
 
         switch ($atts['stat']) {
             case 'usersonline':
@@ -59,7 +71,9 @@ class ShortCode
                 break;
 
             case 'visits':
-                $result = wp_statistics_visit($atts['time']);
+                $visitorsModel = new VisitorsModel();
+                $args          = $this->parseArgs($atts['time'], $atts);
+                $result        = $visitorsModel->countHits($args);
                 break;
 
             case 'visitors':
@@ -67,7 +81,15 @@ class ShortCode
                 break;
 
             case 'pagevisits':
-                $result = wp_statistics_pages($atts['time'], null, $atts['id']);
+                $viewsModel = new ViewsModel();
+                $args       = $this->parseArgs($atts['stat'], $atts);
+                $result     = $viewsModel->countViews($args);
+                break;
+
+            case 'pagevisitors':
+                $visitorModel = new VisitorsModel();
+                $args         = $this->parseArgs($atts['stat'], $atts);
+                $result       = $visitorModel->countVisitors($args);
                 break;
 
             case 'searches':
@@ -137,6 +159,74 @@ class ShortCode
     }
 
     /**
+     * Parse the shortcode arguments.
+     *
+     * @param array $atts The shortcode arguments.
+     * @return array The parsed arguments.
+     */
+    public function parseArgs($modelType, $atts)
+    {
+        // Set the default arguments.
+        $args = [
+            'post_type'     => '',
+            'post_id'       => '',
+            'resource_id'   => '',
+            'resource_type' => '',
+            'date'          => '',
+        ];
+
+        // Parse the post_id parameter.
+        if (isset($atts['id'])) {
+            if ($modelType == 'pagevisits') {
+                $args['post_id'] = $atts['id'];
+            } else {
+                $args['resource_id'] = $atts['id'];
+            }
+        }
+
+        // Parse the resource_type parameter.
+        if (!empty($atts['type'])) {
+            $args['resource_type'] = $atts['type'];
+        } else {
+            $args['resource_type'] = $this->getResourceType($atts['id']);
+        }
+
+        // Parse the time parameter.
+        if (isset($atts['time'])) {
+            $timeMap = [
+                'week'  => '7days',
+                'month' => '30days',
+                'year'  => '12months',
+            ];
+
+            if (array_key_exists($atts['time'], $timeMap)) {
+                $args['date'] = $timeMap[$atts['time']];
+            } elseif (is_numeric($atts['time'])) {
+                $args['date'] = [
+                    'from' => date('Y-m-d', strtotime("{$atts['time']} days")),
+                    'to'   => date('Y-m-d'),
+                ];
+            } else {
+                $args['date'] = $atts['time'];
+            }
+        }
+
+        return $args;
+    }
+
+    public function getResourceType($resourceID = null)
+    {
+        $cacheKey = $this->getCacheKey('resourceType_' . $resourceID);
+
+        $resourceType = $this->getCachedResult($cacheKey);
+        if (!$resourceType) {
+            $this->setCachedResult($cacheKey, get_post_type($resourceID));
+        }
+
+        return $resourceType;
+    }
+
+    /**
      * Format a number in shorthand notation (1K, 1M, 1B).
      *
      * @param int|float $number El número que se formateará.
@@ -180,7 +270,7 @@ class ShortCode
                     'label'         => 'WP Statistics',
 
                     // Icon/image for shortcode. Optional. src or dashicons-$icon. Defaults to carrot.
-                    'listItemImage' => '<img src="' . WP_STATISTICS_URL . 'assets/images/logo-250.png" width="128" height="128">',
+                    'listItemImage' => '<img alt="logo" src="' . WP_STATISTICS_URL . 'assets/images/logo-250.png" width="128" height="128">',
 
                     // Available shortCode attributes and default values. Required. Array.
                     // Attribute model expects 'attr', 'type' and 'label'
@@ -193,10 +283,11 @@ class ShortCode
                             'description' => __('Select the statistic you wish to display.', 'wp-statistics'),
                             'value'       => 'usersonline',
                             'options'     => array(
-                                'usersonline'    => __('Online Users', 'wp-statistics'),
+                                'usersonline'    => __('Online Visitors', 'wp-statistics'),
                                 'visits'         => __('Views', 'wp-statistics'),
                                 'visitors'       => __('Visitors', 'wp-statistics'),
                                 'pagevisits'     => __('Page Views', 'wp-statistics'),
+                                'pagevisitors'   => __('Page Visitors', 'wp-statistics'),
                                 'searches'       => __('Searches', 'wp-statistics'),
                                 'postcount'      => __('Post Count', 'wp-statistics'),
                                 'pagecount'      => __('Page Count', 'wp-statistics'),

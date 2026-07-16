@@ -1,0 +1,15 @@
+{% extends "system/embed/card/card.html.twig" %}
+
+{% block cardContent %}
+    <div class="bc-border-b bc-border-solid bc-border-gray-200 bc-px-5 bc-py-3">
+        {% block header %}{% endblock %}
+    </div>
+    {% if contentSpacing == false %}
+        {% set cssClasses = ['bc-w-full'] %}
+    {% else %}
+        {% set cssClasses = ['bc-w-full', 'bc-px-5', 'bc-py-5'] %}
+    {% endif %}
+    <div class="{{ cssClasses | join(' ') }}">
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}

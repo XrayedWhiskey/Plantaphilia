@@ -5,7 +5,7 @@ use SiteGround_Optimizer\Images_Optimizer\Images_Optimizer;
 /**
  * WP-CLI: wp sg images value.
  *
- * Run the `wp sg images {compression-level} {frequency}` command to change the settgins of specific plugin functionality.
+ * Run the `wp sg images {compression-level} {frequency}` command to change the settings of specific plugin functionality.
  *
  * @since 6.0.0
  * @package Cli
@@ -27,19 +27,18 @@ class Cli_Images {
 	 * : Compression Level of the image optimization.
 	 * ---
 	 * options:
-	 *  - 0
 	 *  - 1
 	 *  - 2
-     *  - 3
+	 *  - 3
 	 */
 	public function __invoke( $args, $assoc_args ) {
-        $possible_entries = array( 1, 2, 3 );
-		if ( ! isset ( $assoc_args['compression-level'] ) || ! in_array( intval( $assoc_args['compression-level'] ), $possible_entries ) ) {
+		$possible_entries = array( 1, 2, 3 );
+		if ( ! isset( $assoc_args['compression-level'] ) || ! in_array( intval( $assoc_args['compression-level'] ), $possible_entries ) ) {
 			return \WP_CLI::error( 'Please specify the compression level' );
 		}
 		$image_optimizer  = new Images_Optimizer();
 
-		\WP_CLI::log( 'Start Image Optimization');
+		\WP_CLI::log( 'Start Image Optimization' );
 
 		// Add empty line.
 		\WP_CLI::log( '' );

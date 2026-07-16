@@ -1,0 +1,42 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "cloud-scan/macro/external-resource-table.html.twig" as external_resource_table %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.externalResoures,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {{ external_resource_table.component({
+            externalResources: data.scan.externalResources,
+            packages: data.packages,
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionExternalResources', expanded: data.scan.externalResources is empty ? false : true} %}
+                    {% import "system/macro/icons/details.html.twig" as details_icon %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineExternalResources | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.externalResources | raw }}</p>
+                        <p>{{ localized.thingsToKnow.externalResourcesExternalHostname | raw }}</p>
+                        <p>{{ localized.thingsToKnow.externalResourcesNumberOfResources | raw }}</p>
+                        <p>{{ localized.thingsToKnow.externalResourcesSuggestedPackageA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.externalResourcesSuggestedPackageB | raw }}</p>
+                        <p>{{ details_icon.component({}) }}: {{ localized.thingsToKnow.externalResourcesDetails | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,41 @@
+{% macro component(config) %}
+    {% embed "system/embed/form-row.html.twig" %}
+        {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+        {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+        {% import "system/macro/form-component/textarea.html.twig" as textarea %}
+        {% block label %}
+            <label class="bc-flex bc-items-center bc-space-x-1" for="{{ config.id }}">
+                <span>{{ config.label | raw }}</span>
+                {% if config.hint is not empty %}
+                    {{ hint.component({
+                        hint: config.hint,
+                    }) }}
+                {% endif %}
+            </label>
+        {% endblock %}
+
+        {% block input %}
+            {% set name = config.id %}
+            {% if config.name is not empty %}
+                {% set name = config.name %}
+            {% endif %}
+            {% set checkboxConfig = {
+                dataAttribute: "data-brlbs-enable-target=\"#{config.id}\"", } | merge(config) %}
+            {% set checkboxConfig = checkboxConfig | merge({ id: "#{config.id}Status", name: "#{config.id}Status" }) %}
+            {% set textareaConfig = {
+                cssClasses: ['bc-border', 'bc-rounded-none', 'bc-rounded-r', 'bc-border-transparent', 'bc-border-l-gray-300'],
+                hasToggle: true,
+                isDisabled: config.checked is empty,
+                width: 'bc-w-full' } | merge(config) %}
+            {% set textareaConfig = textareaConfig | filter((v, k) => k != 'hint') %}
+            {% set textareaConfig = textareaConfig | filter((v, k) => k != 'errorMessage') %}
+
+            <div class="bc-flex bc-border bc-border-solid bc-bg-gray-50 bc-items-center bc-rounded-md bc-border-gray-300 bc-shadow-sm">
+                <div class="bc-flex bc-items-center bc-p-2.5">
+                    {{ checkbox.component(checkboxConfig, localized) }}
+                </div>
+                {{ textarea.component(textareaConfig, localized) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

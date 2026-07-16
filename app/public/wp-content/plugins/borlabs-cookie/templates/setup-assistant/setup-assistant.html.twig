@@ -1,0 +1,134 @@
+{% import "system/macro/card/card-heading.html.twig" as card_heading %}
+{% import "system/macro/form-component/button.html.twig" as button %}
+{% import "system/macro/form-component/button-sparkle.html.twig" as button_sparkle %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+{{ messages() | raw }}
+
+<form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: true} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+        {% import "system/macro/form-component/input.html.twig" as input %}
+        {% import "system/macro/form-component/radio-card.html.twig" as radio_card %}
+        {% import "system/macro/icons/academic-cap.html.twig" as academic_cap_icon %}
+        {% import "system/macro/icons/adjustments-horizontal.html.twig" as adjustments_horizontal_icon %}
+        {% import "system/macro/icons/bolt.html.twig" as bolt_icon %}
+        {% import "system/macro/rest-client-error.html.twig" as rest_client_error %}
+        {% import "system/macro/row/input.html.twig" as row_input %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.welcome,
+            }) }}
+        {% endblock %}
+        {% block content %}
+            <fieldset>
+                <legend class="bc-pt-1 bc-text-lg bc-font-medium bc-text-center">{{ localized.headline.whatKindOfSetupDoYouPrefer | raw }}</legend>
+                <div class="bc-flex bc-flex-col sm:bc-flex-row bc-mt-6 bc-gap-y-6 sm:bc-gap-x-4 bc-justify-center">
+                    {{ radio_card.component({
+                        description: localized.text.guidedSetup,
+                        icon: academic_cap_icon.component({ height: 'bc-h-8', width: 'bc-w-8',}),
+                        id: 'setupGuidedSetup',
+                        label: findObject(enum.setupType.list, 'key', 'guided').value,
+                        name: 'setupType',
+                        value: 'guided',
+                        width: 'bc-w-full sm:bc-w-1/3',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.customSetup,
+                        icon: adjustments_horizontal_icon.component({ height: 'bc-h-8', width: 'bc-w-8',}),
+                        id: 'setupCustomSetup',
+                        label: findObject(enum.setupType.list, 'key', 'custom').value,
+                        name: 'setupType',
+                        value: 'custom',
+                        width: 'bc-w-full sm:bc-w-1/3',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.quickSetup,
+                        icon: bolt_icon.component({ height: 'bc-h-8', width: 'bc-w-8',}),
+                        id: 'setupQuickSetup',
+                        label: findObject(enum.setupType.list, 'key', 'quick').value,
+                        name: 'setupType',
+                        value: 'quick',
+                        width: 'bc-w-full sm:bc-w-1/3',
+                    }, localized) }}
+                </div>
+            </fieldset>
+
+            <diV data-brlbs-rest-api-authorization-test>
+                {{ rest_client_error.component({
+                    defaultErrorMessage: localized.restClient.alert.error,
+                }, localized.restClient) }}
+            </diV>
+        {% endblock %}
+    {% endembed %}
+
+    {% if not isPluginUnlocked() %}
+        {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+            {% block mainHeader %}
+                {{ card_heading.component({
+                    title: localized.license.headline.yourLicense,
+                }) }}
+            {% endblock %}
+
+            {% block mainContent %}
+                {% import "system/macro/row/input.html.twig" as row_input %}
+                {{ row_input.component({
+                    errorMessage: localized.license.validation.licenseKey,
+                    hint: localized.license.hint.licenseKey,
+                    id: 'licenseKey',
+                    label: localized.license.field.licenseKey,
+                }) }}
+            {% endblock %}
+
+            {% block infoPanelHeader %}
+                {{ localized.global.headline.thingsToKnow | raw }}
+            {% endblock %}
+
+            {% block infoPanelContent %}
+                {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                    {% block content %}
+                        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionRegistrationNotWorking', expanded: false} %}
+                            {% block title %}
+                                {{ localized.license.thingsToKnow.headlineRegistrationNotWorking | raw }}
+                            {% endblock %}
+
+                            {% block content %}
+                                <p>{{ localized.license.thingsToKnow.registrationNotWorkingA | raw }}</p>
+                                <p>{{ localized.license.thingsToKnow.registrationNotWorkingB | raw }}</p>
+                                <p class="bc-text-center">{{ localized.license.thingsToKnow.customerPortal | raw }}</p>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+
+    <div class="bc-flex bc-items-center bc-justify-end bc-bg-white bc-px-4 bc-py-3 sm:bc-px-6 bc-rounded-md bc-shadow bc-mb-6 bc-gap-x-2">
+        <div>
+            <span class="brlbs-cmpnt-text">{{ localized.field.startSetup | raw }}</span>
+        </div>
+        <div>
+            {{ wpNonceField("#{controllerId}-#{isPluginUnlocked() ? 'start' : 'register-and-start'}") | raw }}
+            {{ button_sparkle.component({
+                backgroundColor: 'bc-bg-blue-600',
+                backgroundColorHover: 'enabled:hover:bc-bg-blue-700',
+                backLink: "?page=#{controllerId}",
+                button: localized.button.startSetup,
+                dataAttribute: 'data-brlbs-rest-api-authorization-required',
+                focus: 'focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-offset-2',
+                focusColor: 'focus:bc-ring-blue-800',
+                name: 'action',
+                value: isPluginUnlocked() ? 'start' : 'register-and-start',
+            }, localized) }}
+        </div>
+    </div>
+</form>

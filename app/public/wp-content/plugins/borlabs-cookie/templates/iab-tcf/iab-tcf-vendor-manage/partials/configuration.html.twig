@@ -1,0 +1,125 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.configureVendors,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/input.html.twig" as row_input %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+        {% import "system/macro/row/checkbox-list.html.twig" as row_checkbox_list %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/textarea.html.twig" as row_textarea %}
+        {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+
+        {{ row_checkbox_list.component({
+            checkboxes: purposes.list,
+            checkedKeys: [],
+            dataAttribute: 'data-brlbs-iab-tcf-purpose-checkbox',
+            id: 'purposes',
+            title: localized.field.purposes,
+        }, localized) }}
+
+        {{ row_checkbox_list.component({
+            checkboxes: features.list,
+            checkedKeys: [],
+            dataAttribute: 'data-brlbs-iab-tcf-feature-checkbox',
+            id: 'features',
+            title: localized.field.features,
+        }, localized) }}
+
+        {{ row_checkbox_list.component({
+            checkboxes: specialFeatures.list,
+            checkedKeys: [],
+            dataAttribute: 'data-brlbs-iab-tcf-special-feature-checkbox',
+            id: 'specialFeatures',
+            title: localized.field.specialFeatures,
+        }, localized) }}
+
+        {{ row_checkbox_list.component({
+            checkboxes: specialPurposes.list,
+            checkedKeys: [],
+            dataAttribute: 'data-brlbs-iab-tcf-special-purpose-checkbox',
+            id: 'specialPurposes',
+            title: localized.field.specialPurposes,
+        }, localized) }}
+
+        {{ row_textarea.component({
+            dataAttribute: 'data-brlbs-iab-tcf-manual-vendor-ids',
+            hint: localized.hint.manualVendorIds,
+            id: 'manualVendorIds',
+            isRequired: false,
+            label: localized.field.manualVendorIds,
+        }) }}
+
+        {{ row_switch_button.component({
+            hint: localized.hint.replaceVendorConfiguration,
+            id: 'replaceVendorConfiguration',
+            label: localized.field.replaceVendorConfiguration,
+        }) }}
+
+        <input type="hidden" id="configuredVendors" name="configuredVendors" value="" data-brlbs-configured-vendor-ids>
+        <input type="hidden" name="action" value="save">
+
+        {{ row_save.component({
+            action: 'save',
+            button: localized.global.button.save,
+            nonce: wpNonceField("#{controllerId}-save"),
+            value: data.id,
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-info">
+                    {{ localized.thingsToKnow.configurationInfo | raw }}
+                </div>
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPurpose', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlinePurpose | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.purpose | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionFeature'} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineFeature | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.feature | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionSpecialFeature'} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineSpecialFeature | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.specialFeature | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionSpecialPurpose'} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineSpecialPurpose | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.specialPurpose | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

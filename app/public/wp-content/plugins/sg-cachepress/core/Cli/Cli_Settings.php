@@ -86,9 +86,8 @@ class Cli_Settings {
 			return \WP_CLI::error( 'The import was unsuccessful, please make sure your hash is correct.' );
 		}
 
-
 		if ( ! empty( $result ) ) {
-			\WP_CLI::error( 'We\'ve imported everything except the following settings: ' . implode( $result, ', ' ) );
+			\WP_CLI::error( 'We\'ve imported everything except the following settings: ' . implode( ', ', $result ) );
 		}
 
 		return \WP_CLI::success( 'Import Completed.' );

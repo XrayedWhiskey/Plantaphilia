@@ -1,0 +1,85 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.linkSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogLinkPrimaryColor',
+                label: localized.field.default,
+                value: data.dialogLinkPrimaryColor,
+            },
+            colorB:
+            {
+                id: 'dialogLinkPrimaryColorHover',
+                label: localized.field.hover,
+                value: data.dialogLinkPrimaryColorHover,
+            },
+            title: localized.field.dialogLinkPrimaryColor,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogLinkSecondaryColor',
+                label: localized.field.default,
+                value: data.dialogLinkSecondaryColor,
+            },
+            colorB:
+            {
+                id: 'dialogLinkSecondaryColorHover',
+                label: localized.field.hover,
+                value: data.dialogLinkSecondaryColorHover,
+            },
+            title: localized.field.dialogLinkSecondaryColor,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionLinkSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineOnWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.onWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}</p>
+                        <p>
+                            <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalLinkSettings" href="#" role="button">
+                                <img class="bc-w-48 bc-h-48 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-dialog-appearance-link-settings.png') }}" alt="">
+                            </a>
+                        </p>
+                        {% embed "system/embed/modal/modal.html.twig" with {
+                            id: 'borlabsModalLinkSettings',
+                            maxWidth: 'bc-max-w-2xl',
+                            title: localized.headline.linkSettings,
+                        } %}
+                            {% block icon %}
+                                {% import "system/macro/icons/paint-brush.html.twig" as pain_brush_icon %}
+                                <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                    {{ pain_brush_icon.component({}) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block description %}
+                                <img src="{{ imageUrl('ttk-dialog-appearance-link-settings.png') }}" alt="">
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

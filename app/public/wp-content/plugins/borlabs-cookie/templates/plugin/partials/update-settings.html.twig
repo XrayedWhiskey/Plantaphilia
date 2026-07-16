@@ -1,0 +1,43 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true } %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.updateSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {{ row_select.component({
+            alertMessage: data.automaticUpdate == 'auto-update-none' ? localized.alert.automaticUpdateNotSetToAll : null,
+            warningMessage: data.automaticUpdate != 'auto-update-all' and data.automaticUpdate != 'auto-update-none' ? localized.alert.automaticUpdateNotSetToAll : null,
+            id: 'automaticUpdate',
+            hint: localized.hint.automaticUpdate,
+            label: localized.field.automaticUpdate,
+            options: enum.automaticUpdate.list,
+            value: data.automaticUpdate,
+        }, localized) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionAutomaticUpdate', expanded: true} %}
+            {% block title %}
+                {{ localized.thingsToKnow.headlineAutomaticUpdate | raw }}
+            {% endblock %}
+            {% block content %}
+                <p>{{ localized.thingsToKnow.automaticUpdateA | raw }}</p>
+                <p>{{ localized.thingsToKnow.automaticUpdateB | raw }}</p>
+                <p>{{ localized.thingsToKnow.automaticUpdateC | raw }}</p>
+                <p>{{ localized.thingsToKnow.automaticUpdateD | raw }}</p>
+                <p>{{ localized.thingsToKnow.automaticUpdateE | raw }}</p>
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

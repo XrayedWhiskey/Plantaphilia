@@ -1,0 +1,21 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        showLanguageColumn: true,
+    } | merge(config) %}
+
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "legacy-importer/macro/pre-import-metadata-table.html.twig" as pre_import_metadata_table %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline[config.componentKey],
+            }) }}
+        {% endblock %}
+        {% block content %}
+            {{ pre_import_metadata_table.component({
+                preImportMetadataList: config.data.preImportMetadata.list,
+                showLanguageColumn: config.showLanguageColumn,
+            }, localized) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

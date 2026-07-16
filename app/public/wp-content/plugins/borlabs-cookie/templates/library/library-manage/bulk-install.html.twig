@@ -1,0 +1,104 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.showScan.breadcrumb.module, '?page=borlabs-cookie-cloud-scan'],
+            [localized.showScan.breadcrumb.scanResults, wpNonceUrl("?page=borlabs-cookie-cloud-scan&action=details&id=#{data.cloudScanId}", "borlabs-cookie-cloud-scan-#{data.cloudScanId}-details")],
+            localized.breadcrumb.installingMultiplePackages,
+        ]
+    }, localized) }}
+
+    <div class="bc-w-full lg:bc-w-2/3">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false}  %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+            {% import "system/macro/icons/clock.html.twig" as clock_icon %}
+            {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+            {% import "system/macro/rest-client-error.html.twig" as rest_client_error %}
+
+            {% block header %}
+                {{ card_heading.component({
+                    title: localized.headline.installingMultiplePackages,
+                }) }}
+            {% endblock %}
+
+            {% block content %}
+                {% import "system/macro/anchor-button.html.twig" as anchor_button %}
+
+                <table class="brlbs-cmpnt-table bc-min-w-full">
+                    <thead class="bc-bg-gray-100">
+                    <tr>
+                        <th class="bc-w-24 bc-text-left" scope="col">{{ localized.table.status }}</th>
+                        <th class="bc-text-left" scope="col">{{ localized.table.componentType }}</th>
+                        <th class="bc-text-left" scope="col">{{ localized.table.name }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for package in data.packages %}
+                            <tr data-brlbs-package='{"id": {{ package.id }}, "install": true }' data-brlbs-state="pending">
+                                <td>
+                                    <div class="bc-flex bc-justify-start">
+                                        <div data-brlbs-state-match="pending">{{ clock_icon.component({}) }}</div>
+                                        <div data-brlbs-state-match="installing"><img src="{{ imageUrl('borlabs-cookie-icon-black.svg') }}" alt="" class="bc-animate-spin bc-inline-block bc-m-auto bc-w-5 bc-h-5"></div>
+                                        <div class="bc-text-green-600" data-brlbs-state-match="installed">{{ check_circle_icon.component({}) }}</div>
+                                        <div class="bc-text-red-600" data-brlbs-state-match="failed">{{ x_circle_icon.component({}) }}</div>
+                                    </div>
+                                </td>
+                                <td>{{ data.componentTypes[package.type.value] | raw }}</td>
+                                <td>{{ package.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {{ rest_client_error.component({
+                    defaultErrorMessage: localized.alert.installationFailed,
+                }, localized.restClient) }}
+
+                <div class="bc-hidden" data-brlbs-success>
+                    <div class="bc-px-5 bc-py-5">
+                        <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-success">
+                            {{ localized.alert.installationSuccessful | raw }}
+                        </div>
+                    </div>
+                    <div class="bc-px-5 bc-pb-5 bc-text-right">
+                        {{ anchor_button.component({
+                            backgroundColor:'bc-bg-gray-600',
+                            backgroundColorHover:'hover:bc-bg-gray-700',
+                            href: wpNonceUrl("?page=borlabs-cookie-cloud-scan&action=details&id=#{data.cloudScanId}", "borlabs-cookie-cloud-scan-#{data.cloudScanId}-details"),
+                            linkText: localized.button.goBackToScanResult
+                        }) }}
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+    </div>
+
+    <div class="bc-w-full lg:bc-w-2/3 bc-hidden" data-brlbs-result>
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false}  %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+            {% block header %}
+                {{ card_heading.component({
+                    title: localized.headline.installationResult,
+                }) }}
+            {% endblock %}
+
+            {% block content %}
+                <table class="brlbs-cmpnt-table bc-min-w-full">
+                    <thead class="bc-bg-gray-100">
+                    <tr>
+                        <th class="bc-w-24 bc-text-left" scope="col">{{ localized.table.status }}</th>
+                        <th class="bc-text-left" scope="col">{{ localized.table.componentType }}</th>
+                        <th class="bc-text-left" scope="col">{{ localized.table.name }}</th>
+                    </tr>
+                    </thead>
+                    <tbody data-brlbs-result-list></tbody>
+                </table>
+            {% endblock %}
+        {% endembed %}
+    </div>
+{% endif %}

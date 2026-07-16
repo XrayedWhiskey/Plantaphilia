@@ -51,10 +51,9 @@ $cloud_select = sanitize_key( wp_unslash( $_REQUEST['cloud_select'] ?? '' ) );
 				<?php esc_html_e( 'Name of codevault', 'code-snippets' ); ?>
 			</option>
 		</select>
-
 		<input type="text" id="cloud_search" name="cloud_search" class="cloud_search"
 		       value="<?php echo esc_html( $search_query ); ?>"
-		       placeholder="<?php esc_html_e( 'e.g. Remove unused javascript…', 'code-snippets' ); ?>">
+		       placeholder="<?php esc_attr_e( 'e.g. Remove unused javascript…', 'code-snippets' ); ?>">
 
 		<button type="submit" id="cloud-search-submit" class="button">
 			<?php esc_html_e( 'Search Cloud', 'code-snippets' ); ?>
@@ -67,7 +66,6 @@ $cloud_select = sanitize_key( wp_unslash( $_REQUEST['cloud_select'] ?? '' ) );
 	       id="code_snippets_ajax_nonce"
 	       value="<?php echo esc_attr( wp_create_nonce( 'code_snippets_manage_ajax' ) ); ?>">
 	<?php
-
 	List_Table::required_form_fields();
 
 	if ( $search_query ) {

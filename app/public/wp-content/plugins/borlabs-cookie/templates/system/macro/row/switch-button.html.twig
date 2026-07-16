@@ -1,0 +1,16 @@
+{% macro component(config) %}
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    {% embed "system/embed/form-row.html.twig" with { hideInSimplifiedMode: config.hideInSimplifiedMode is defined ? config.hideInSimplifiedMode : false } %}
+        {% block label %}
+            <label for="{{ config.id }}">{{ config.label | raw }}</label>
+        {% endblock %}
+        {% block input %}
+            {% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+            {{ switch_button.component(config) }}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

@@ -1,5 +1,9 @@
 <?php
+
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
 use WP_Statistics\Components\View;
+
 ?>
 <div class="postbox-container wps-postbox-full">
     <div class="meta-box-sortables">
@@ -10,7 +14,7 @@ use WP_Statistics\Components\View;
                 </h2>
             </div>
             <div class="inside">
-                <?php View::load("components/charts/traffic-trends"); ?>
+                <?php View::load("components/charts/traffic-trends", ['chart_id' => 'trafficTrendsChart']); ?>
             </div>
         </div>
     </div>
@@ -26,11 +30,10 @@ use WP_Statistics\Components\View;
             </div>
             <?php
             $args = [
-                'page_column_title' => esc_html__('Page', 'wp-statistics'),
-                'data'              => $data['data'],
-                'pagination'        => isset($pagination) ? $pagination : null
+                'data'       => $data['data'],
+                'pagination' => $pagination ?? null
             ];
-            View::load("components/tables/visitors", $args);
+            View::load("components/tables/views", $args);
             ?>
         </div>
     </div>

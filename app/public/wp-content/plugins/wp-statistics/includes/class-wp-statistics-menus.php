@@ -18,8 +18,7 @@ class Menus
     public static $pages = array(
         'overview'           => 'overview',
         'exclusions'         => 'exclusions',
-        'referrers'          => 'referrers',
-        'searches'           => 'searches',
+        'referrals'          => 'referrals',
         'optimization'       => 'optimization',
         'settings'           => 'settings',
         'plugins'            => 'plugins',
@@ -30,7 +29,7 @@ class Menus
         'devices'            => 'devices',
         'category-analytics' => 'category-analytics',
         'pages'              => 'pages',
-        'visitors'           => 'visitors'
+        'visitors'           => 'visitors',
     );
 
     /**
@@ -156,66 +155,14 @@ class Menus
          *
          */
         $list = array(
-            'top'          => array(
-                'title'    => __('Statistics', 'wp-statistics'),
-                'page_url' => 'overview',
-                'method'   => 'log',
-                'icon'     => 'dashicons-chart-pie',
-                'priority' => 10,
-            ),
-            'overview'     => array(
-                'sub'      => 'overview',
-                'title'    => __('Overview', 'wp-statistics'),
-                'page_url' => 'overview',
-                'priority' => 20,
-            ),
-            'referrers'    => array(
-                'sub'      => 'overview',
-                'title'    => __('Referrers', 'wp-statistics'),
-                'page_url' => 'referrers',
-                'method'   => 'refer',
-                'priority' => 60,
-            ),
-            'searches'     => array(
-                'sub'      => 'overview',
-                'title'    => __('Search Engines', 'wp-statistics'),
-                'page_url' => 'searches',
-                'method'   => 'searches',
-                'priority' => 70,
-            ),
-            'plugins'      => array(
-                'sub'      => 'overview',
-                'title'    => __('Add-Ons', 'wp-statistics'),
-                'name'     => '<span class="wps-text-warning">' . __('Add-Ons', 'wp-statistics') . '</span>',
-                'page_url' => 'plugins',
-                'method'   => 'plugins',
-                'priority' => 90,
-                'break'    => true,
-            ),
-            'settings'     => array(
+            'settings' => array(
                 'sub'      => 'overview',
                 'title'    => __('Settings', 'wp-statistics'),
                 'cap'      => $manage_cap,
                 'page_url' => 'settings',
                 'method'   => 'settings',
                 'priority' => 100,
-            ),
-            'optimize'     => array(
-                'sub'      => 'overview',
-                'title'    => __('Optimization', 'wp-statistics'),
-                'cap'      => $manage_cap,
-                'page_url' => 'optimization',
-                'method'   => 'optimization',
-                'priority' => 110,
-            ),
-            'exclusions'   => array(
-                'require'  => array('record_exclusions' => true),
-                'sub'      => 'overview',
-                'title'    => __('Exclusions', 'wp-statistics'),
-                'page_url' => 'exclusions',
-                'method'   => 'exclusions',
-                'priority' => 120,
-            ),
+            )
         );
 
         /**
@@ -319,11 +266,6 @@ class Menus
 
             //Check if SubMenu or Main Menu
             if (array_key_exists('sub', $menu)) {
-                //Check if add Break Line
-                if (array_key_exists('break', $menu)) {
-                    add_submenu_page(self::get_page_slug($menu['sub']), '', '', $capability, 'wps_break_menu', $callback);
-                }
-
                 //Check Conditions For Show Menu
                 if (Option::check_option_require($menu) === true) {
                     add_submenu_page(self::get_page_slug($menu['sub']), $menu['title'], $name, $capability, self::get_page_slug($menu['page_url']), $callback);
@@ -350,6 +292,13 @@ class Menus
         });
 
         return reset($currentPage);
+    }
+
+    public static function isPluginPage($page)
+    {
+        $pattern = str_replace("[slug]", '[a-z0-9_-]+', self::$admin_menu_slug);
+
+        return preg_match('/^' . $pattern . '$/i', $page);
     }
 
 }

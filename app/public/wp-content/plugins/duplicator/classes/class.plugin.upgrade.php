@@ -137,7 +137,8 @@ class DUP_LITE_Plugin_Upgrade
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . "duplicator_packages";
+        $charset_collate = $wpdb->get_charset_collate();
+        $table_name      = $wpdb->prefix . "duplicator_packages";
 
         //PRIMARY KEY must have 2 spaces before for dbDelta to work
         //see: https://codex.wordpress.org/Creating_Tables_with_Plugins
@@ -150,7 +151,7 @@ class DUP_LITE_Plugin_Upgrade
 			   owner VARCHAR(60) NOT NULL,
 			   package LONGTEXT NOT NULL,
 			   PRIMARY KEY  (id),
-			   KEY hash (hash))";
+			   KEY hash (hash)) {$charset_collate}";
 
         $abs_path = duplicator_get_abs_path();
         require_once($abs_path . '/wp-admin/includes/upgrade.php');

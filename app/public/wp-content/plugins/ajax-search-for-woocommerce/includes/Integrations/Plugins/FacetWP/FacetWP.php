@@ -3,6 +3,7 @@
 namespace DgoraWcas\Integrations\Plugins\FacetWP;
 
 use DgoraWcas\Helpers;
+use DgoraWcas\Integrations\Plugins\AbstractPluginIntegration;
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) {
     exit;
@@ -13,36 +14,36 @@ if ( !defined( 'ABSPATH' ) ) {
  * Plugin URL: https://facetwp.com/
  * Author: FacetWP, LLC
  */
-class FacetWP {
+class FacetWP extends AbstractPluginIntegration {
+    protected const LABEL = 'FacetWP';
+
+    protected const VERSION_CONST = 'FACETWP_VERSION';
+
+    protected const MIN_VERSION = '3.5.5';
+
     private static $engine = 'dgwt_wcas';
 
     public $search_terms;
 
-    public function init() {
-        if ( !defined( 'FACETWP_VERSION' ) ) {
-            return;
-        }
-        if ( version_compare( FACETWP_VERSION, '3.5.5' ) < 0 ) {
-            return;
-        }
+    public function init() : void {
         // Search page
         add_filter(
             'facetwp_query_args',
-            array($this, 'query_args'),
+            [$this, 'query_args'],
             10,
             2
         );
         add_filter(
             'dgwt/wcas/search_bar/value',
-            array($this, 'restore_search_phrase'),
+            [$this, 'restore_search_phrase'],
             10,
             2
         );
         // Search facet
-        add_filter( 'facetwp_facet_search_engines', array($this, 'search_engines') );
+        add_filter( 'facetwp_facet_search_engines', [$this, 'search_engines'] );
         add_filter(
             'facetwp_facet_filter_posts',
-            array($this, 'search_facet'),
+            [$this, 'search_facet'],
             10,
             2
         );
@@ -51,7 +52,7 @@ class FacetWP {
     /**
      * Prevent the default WP search from running when our plugin is enabled
      */
-    function query_args( $args, $class ) {
+    public function query_args( $args, $class ) {
         if ( $class->is_search && isset( $class->http_params['get']['dgwt_wcas'] ) ) {
             $this->search_terms = $args['s'];
             if ( !dgoraAsfwFs()->is_premium() ) {

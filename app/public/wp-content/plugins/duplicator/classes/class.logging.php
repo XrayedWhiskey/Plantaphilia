@@ -55,7 +55,7 @@ class DUP_Log
             throw new Exception("A name value is required to open a file log.");
         }
         self::Close();
-        if ((self::$logFileHandle = @fopen(DUP_Settings::getSsdirPath() . "/{$nameHash}.log", "a+")) === false) {
+        if ((self::$logFileHandle = @fopen(DUP_Settings::getSsdirLogsPath() . "/{$nameHash}.log", "a+")) === false) {
             self::$logFileHandle = null;
             return false;
         } else {
@@ -238,20 +238,20 @@ class DUP_Log
     {
         $default_key         = self::getDefaultKey();
         $backup_log_filename = "dup_$default_key.log1";
-        $backup_path         = DUP_Settings::getSsdirPath() . "/" . $backup_log_filename;
+        $backup_path         = DUP_Settings::getSsdirLogsPath() . "/" . $backup_log_filename;
         return $backup_path;
     }
 
     /**
      * Gets the active trace file path
      *
-     * @return string   Returns the full path to the active trace file (i.e. dup-pro_hash.log)
+     * @return string Returns the full path to the active trace file
      */
     public static function GetTraceFilepath()
     {
         $default_key  = self::getDefaultKey();
         $log_filename = "dup_$default_key.log";
-        $file_path    = DUP_Settings::getSsdirPath() . "/" . $log_filename;
+        $file_path    = DUP_Settings::getSsdirLogsPath() . "/" . $log_filename;
         return $file_path;
     }
 
@@ -303,7 +303,7 @@ class DUP_Log
 
             case Dup_ErrorBehavior::Quit:
                 DUP_LOG::trace("quitting");
-                die("DUPLICATOR ERROR: Please see the 'Package Log' file link below.");
+                die("DUPLICATOR ERROR: Please see the 'Backup Log' file link below.");
                 break;
 
             default:

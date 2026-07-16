@@ -16,16 +16,17 @@ class Purge
         if ($purge_days >= apply_filters('wp_statistics_schedule_db_maint_days', 30)) {
 
             /**
-             * Purge the visit data.
+             * Store visits data.
              */
-            $table_name  = DB::table('visit');
+            $table_name  = DB::table('visitor');
             $date_string = TimeZone::getCurrentDate('Y-m-d', '-' . $purge_days);
 
-            $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table_name} WHERE `last_counter` < %s", $date_string));
+            // Get sum of visits
+            $result = $wpdb->get_var($wpdb->prepare("SELECT SUM(hits) FROM {$table_name} WHERE `last_counter` < %s", $date_string));
 
             if ($result) {
                 // Update the historical count with what we purged.
-                $historical_result = $wpdb->query($wpdb->prepare("UPDATE {$historical_table} SET value = value + %d WHERE `category` = 'visits'", $result));
+                $historical_result = $wpdb->query($wpdb->prepare("UPDATE {$historical_table} SET value = value + %d WHERE `category` = 'visits'", intval($result)));
 
                 // Insert
                 if ($historical_result == 0) {
@@ -92,18 +93,6 @@ class Purge
             $table_name = DB::table('exclusions');
 
             $result = $wpdb->query($wpdb->prepare("DELETE FROM {$table_name} WHERE `date` < %s", $date_string));
-
-            if ($result) {
-                $result_string .= '<br>' . sprintf(__('Data from %1$s Older Than %2$s Days Successfully Purged.', 'wp-statistics'), '<code>' . $table_name . '</code>', '<code>' . $purge_days . '</code>');
-            } else {
-                $result_string .= '<br>' . sprintf(__('No Records to Purge from %s!', 'wp-statistics'), '<code>' . $table_name . '</code>');
-            }
-
-            /**
-             * Purge the search data.
-             */
-            $table_name = DB::table('search');
-            $result     = $wpdb->query($wpdb->prepare("DELETE FROM {$table_name} WHERE `last_counter` < %s", $date_string));
 
             if ($result) {
                 $result_string .= '<br>' . sprintf(__('Data from %1$s Older Than %2$s Days Successfully Purged.', 'wp-statistics'), '<code>' . $table_name . '</code>', '<code>' . $purge_days . '</code>');
@@ -188,7 +177,6 @@ class Purge
     {
         global $wpdb;
         $visitor_table = DB::table('visitor');
-        $visit_table   = DB::table('visit');
 
         // If it's less than 10 hits, don't do anything.
         if ($purge_hits > 9) {
@@ -207,17 +195,6 @@ class Purge
             }
             if (count($to_delete) > 0) {
                 foreach ($to_delete as $item) {
-
-                    // First update the daily hit count.
-                    $wpdb->query(
-                        $wpdb->prepare(
-                            "UPDATE {$visit_table} SET `visit` = `visit` - %d WHERE `last_counter` = %s;",
-                            $item[2],
-                            $item[1]
-                        )
-                    );
-
-                    // Next remove the visitor.  Note we can't do both in a single query, looks like $wpdb doesn't like executing them together.
                     $wpdb->query(
                         $wpdb->prepare("DELETE FROM {$visitor_table} WHERE `id` = %s;", $item[0])
                     );

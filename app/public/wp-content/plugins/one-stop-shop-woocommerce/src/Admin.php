@@ -99,10 +99,10 @@ class Admin {
 	public static function html_field( $value ) {
 		?>
 		<tr valign="top">
-			<th class="forminp forminp-html" id="<?php echo esc_attr( $value['id'] ); ?>">
+			<th class="titledesc titledesc-html" id="<?php echo esc_attr( $value['id'] ); ?>" scope="row">
 				<label><?php echo esc_attr( $value['title'] ); ?><?php echo( isset( $value['desc_tip'] ) && ! empty( $value['desc_tip'] ) ? wc_help_tip( $value['desc_tip'] ) : '' ); ?></label>
 			</th>
-			<td class="forminp"><?php echo wp_kses_post( $value['html'] ); ?></td>
+			<td class="forminp forminp-html"><?php echo wp_kses_post( $value['html'] ); ?></td>
 		</tr>
 		<?php
 	}
@@ -721,7 +721,7 @@ class Admin {
 			else :
 				$details = Queue::get_queue_details( $report_id );
 				?>
-				<p class="summary"><?php printf( _x( 'Currently processed %1$s orders. Next iteration is scheduled for %2$s. <a href="%3$s">Find pending actions</a>', 'oss', 'one-stop-shop-woocommerce' ), esc_html( $details['order_count'] ), ( $details['next_date'] ? esc_html( $details['next_date']->date_i18n( wc_date_format() . ' @ ' . wc_time_format() ) ) : esc_html_x( 'Not yet known', 'oss', 'one-stop-shop-woocommerce' ) ), esc_url( $details['link'] ) ); ?></p>
+				<p class="summary"><?php echo wp_kses_post( sprintf( _x( 'Currently processed %1$s orders. Next iteration is scheduled for %2$s. <a href="%3$s">Find pending actions</a>', 'oss', 'one-stop-shop-woocommerce' ), esc_html( $details['order_count'] ), ( $details['next_date'] ? esc_html( $details['next_date']->date_i18n( wc_date_format() . ' @ ' . wc_time_format() ) ) : esc_html_x( 'Not yet known', 'oss', 'one-stop-shop-woocommerce' ) ), esc_url( $details['link'] ) ) ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -807,9 +807,8 @@ class Admin {
 	public static function admin_styles() {
 		$screen    = get_current_screen();
 		$screen_id = $screen ? $screen->id : '';
-		$suffix    = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_register_style( 'oss_woo', Package::get_url() . '/assets/css/admin' . $suffix . '.css', array(), Package::get_version() );
+		wp_register_style( 'oss_woo', Package::get_assets_build_url( 'admin.css' ), array(), Package::get_version() );
 
 		// Admin styles for WC pages only.
 		if ( in_array( $screen_id, self::get_screen_ids(), true ) ) {
@@ -829,7 +828,7 @@ class Admin {
 			$deps[] = 'jquery-ui-datepicker';
 		}
 
-		wp_register_script( 'oss-admin', Package::get_assets_url() . '/js/admin' . $suffix . '.js', $deps, Package::get_version() ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
+		wp_register_script( 'oss-admin', Package::get_assets_build_url( 'admin.js' ), $deps, Package::get_version() ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
 
 		if ( in_array( $screen_id, self::get_screen_ids(), true ) ) {
 			wp_enqueue_script( 'oss-admin' );

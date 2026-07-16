@@ -1,0 +1,80 @@
+{% import "setup-assistant/macro/direction-buttons.html.twig" as direction_buttons %}
+
+<div class="bc-hidden" data-brlbs-setup-flow="admin-plugin-wordpress-admin-sidebar-menu-mode">
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" with { withHeaderBorder: true } %}
+        {% import "system/macro/card/card-heading-with-subtitle.html.twig" as card_heading_with_subtitle %}
+        {% import "system/macro/form-component/radio-card.html.twig" as radio_card %}
+        {% import "system/macro/icons/2-bars.html.twig" as bars_2_icon %}
+        {% import "system/macro/icons/3-bars.html.twig" as bars_3_icon %}
+        {% import "system/macro/icons/4-bars.html.twig" as bars_4_icon %}
+
+        {% block mainHeader %}
+            {{ card_heading_with_subtitle.component({
+                title: localized.headline.wordPressAdminSidebarMenuMode,
+                subtitle: localized.headline.adminPluginSettings,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            <fieldset class="bc-p-6">
+                <legend class="bc-pt-6 bc-text-lg bc-font-medium bc-text-center">{{ localized.headline.choosePreferredMode | raw }}</legend>
+                <div class="bc-flex bc-flex-col sm:bc-flex-row bc-gap-y-6 sm:bc-gap-x-4 bc-justify-center">
+                    {{ radio_card.component({
+                        checked: true,
+                        description: localized.text.wordPressAdminSidebarMenuModeSimplified,
+                        icon: bars_2_icon.component({ height: 'bc-h-8', width: 'bc-w-8',}),
+                        id: 'wordPressAdminSidebarMenuModeSimplified',
+                        label: findObject(enum.wordPressAdminSidebarMenuMode.list, 'key', 'simplified').value,
+                        name: 'wordPressAdminSidebarMenuMode',
+                        value: 'simplified',
+                        width: 'bc-w-full sm:bc-w-1/3',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.wordPressAdminSidebarMenuModeStandard,
+                        icon: bars_3_icon.component({ height: 'bc-h-8', width: 'bc-w-8',}),
+                        id: 'wordPressAdminSidebarMenuModeStandard',
+                        label: findObject(enum.wordPressAdminSidebarMenuMode.list, 'key', 'standard').value,
+                        name: 'wordPressAdminSidebarMenuMode',
+                        value: 'standard',
+                        width: 'bc-w-full sm:bc-w-1/3',
+                    }, localized) }}
+
+                    {{ radio_card.component({
+                        description: localized.text.wordPressAdminSidebarMenuModeExpanded,
+                        icon: bars_4_icon.component({ height: 'bc-h-8', width: 'bc-w-8',}),
+                        id: 'wordPressAdminSidebarMenuModeExpanded',
+                        label: findObject(enum.wordPressAdminSidebarMenuMode.list, 'key', 'expanded').value,
+                        name: 'wordPressAdminSidebarMenuMode',
+                        value: 'expanded',
+                        width: 'bc-w-full sm:bc-w-1/3',
+                    }, localized) }}
+                </div>
+            </fieldset>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionSidebarMenuMode', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineSidebarMenuMode | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.sidebarMenuMode | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+
+    {{ direction_buttons.component({
+        currentStep: 7 + (data.setupType == 'guided' ? 5 : 0) + (data.multilanguagePluginActive ? 0 : -1),
+        steps: data.setupSteps,
+    }, localized) }}
+</div>

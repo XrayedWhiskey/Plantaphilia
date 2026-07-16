@@ -1,0 +1,82 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({items: [localized.breadcrumb.module]}, localized) }}
+
+    {{ messages() | raw }}
+
+    {% if data.serviceGroupsWithServices is not empty %}
+        {% for serviceGroupWithServices in data.serviceGroupsWithServices %}
+            {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+                {% import "service/macro/service-table.html.twig" as service_table %}
+                {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+                {% block header %}
+                    {{ card_heading.component({
+                        title: serviceGroupWithServices.name,
+                        buttonText: localized.global.button.addNew,
+                        buttonLink: wpNonceUrl("?page=#{controllerId}&action=edit&id=-1&serviceGroupId=#{serviceGroupWithServices.id}", "#{controllerId}--1-edit"),
+                    }, localized) }}
+                {% endblock %}
+                {% block content %}
+                    {{ service_table.component({
+                        controllerId: controllerId,
+                        services: serviceGroupWithServices.services,
+                    }, localized) }}
+                {% endblock %}
+            {% endembed %}
+        {% endfor %}
+    {% endif %}
+
+    {% embed "system/embed/info-panel.html.twig" with { isDetached: true } %}
+        {% block header %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block content %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPurposeServices', expanded: true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlinePurposeServices | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.purposeServicesExplainedA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.purposeServicesExplainedB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionSymbolsExplained' } %}
+                        {% import "system/macro/icons/edit.html.twig" as edit_icon %}
+                        {% import "system/macro/icons/switch-off.html.twig" as switch_off %}
+                        {% import "system/macro/icons/switch-on.html.twig" as switch_on %}
+                        {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineSymbolsExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            <ul class="bc-space-y-2 bc-text-left">
+                                <li>{{ switch_on.component({ color: 'bc-text-white', invertSlider: true }) }} {{ localized.thingsToKnow.symbolExplainedActive | raw }}</li>
+                                <li>{{ switch_off.component({ color: 'bc-text-white' }) }} {{ localized.thingsToKnow.symbolExplainedInactive | raw }}</li>
+                                <li>{{ trash_icon.component({}) }} {{ localized.thingsToKnow.symbolExplainedDelete | raw }}</li>
+                                <li>{{ edit_icon.component({}) }} {{ localized.thingsToKnow.symbolExplainedEdit | raw }}</li>
+                            </ul>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+    <!-- Reset Service Groups -->
+    <hr>
+    {{ form_confirmation.component({
+        action: 'reset',
+        headline: localized.headline.resetDefaultServices,
+        hint: localized.hint.reset,
+        nonce: wpNonceField("#{controllerId}-reset"),
+        route: "?page=#{controllerId}",
+    }, localized) }}
+{% endif %}

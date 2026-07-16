@@ -1,0 +1,30 @@
+<form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+    <div class="bc-w-2/3">
+        {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+            {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+            {% block header %}
+                {{ card_heading.component({
+                    title: localized.headline.legacySettings,
+                }) }}
+            {% endblock %}
+            {% block content %}
+                {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+                {% import "system/macro/row/save.html.twig" as row_save %}
+
+                {{ row_switch_button.component({
+                    hint: localized.hint.loadBackwardsCompatibilityJavaScript,
+                    id: 'loadBackwardsCompatibilityJavaScript',
+                    label: localized.field.loadBackwardsCompatibilityJavaScript,
+                    value: data.backwardsCompatibilityConfig.loadBackwardsCompatibilityJavaScript,
+                }) }}
+
+                {{ row_save.component({
+                    action: 'save',
+                    button: localized.global.button.save,
+                    nonce: wpNonceField("#{controllerId}-save"),
+                }, localized) }}
+
+            {% endblock %}
+        {% endembed %}
+    </div>
+</form>

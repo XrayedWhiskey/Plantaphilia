@@ -7,9 +7,12 @@ include_once __DIR__ . '/../core/class-wc-order-export-order-fields.php';
 include_once __DIR__ . '/../core/class-wc-order-export-order-product-fields.php';
 include_once __DIR__ . '/../core/class-wc-order-export-order-coupon-fields.php';
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+
 class WC_Order_Export_Data_Extractor {
 	use WOE_Core_Extractor;
-	
+
 	static $statuses;
 	static $countries;
 	static $prices_include_tax;
@@ -30,7 +33,7 @@ class WC_Order_Export_Data_Extractor {
 	const  HUGE_SHOP_PRODUCTS  = 1000;// more than 1000 products
 	const  HUGE_SHOP_CUSTOMERS = 1000;// more than 1000 users
 	const  HUGE_SHOP_COUPONS   = 1000;// more than 1000 coupons
-	
+
 	public static function is_HPOS_orders_field( $key ) {
 		return in_array($key, self::$table_orders_fields);
 	}
@@ -59,8 +62,7 @@ class WC_Order_Export_Data_Extractor {
             $orders_ids = get_transient($transient_key_orders_ids);
 
             if ($orders_ids === false) {
-                $limit = self::HUGE_SHOP_ORDERS;
-                $orders_ids = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}wc_orders ORDER BY date_created_gmt DESC LIMIT {$limit}" );
+                $orders_ids = $wpdb->get_col( $wpdb->prepare("SELECT id FROM {$wpdb->prefix}wc_orders ORDER BY date_created_gmt DESC LIMIT %d", self::HUGE_SHOP_ORDERS));
                 $orders_ids[] = 0; // add fake zero
                 $orders_ids = join( ",", $orders_ids );
 
@@ -80,6 +82,7 @@ class WC_Order_Export_Data_Extractor {
 		$fields = get_transient( $transient_key );
 		if ( $fields === false ) {
             $where_posts = self::get_where_last_orders('orders.id', 'WHERE');
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$fields = $wpdb->get_col( "SELECT DISTINCT meta_key FROM {$wpdb->prefix}wc_orders AS orders INNER JOIN {$wpdb->prefix}wc_orders_meta ON orders.id = {$wpdb->prefix}wc_orders_meta.order_id $where_posts" );
 			//HPOS
 			$fields = array_merge( $fields, self::$table_orders_fields);
@@ -102,6 +105,7 @@ class WC_Order_Export_Data_Extractor {
 		$metas = get_transient( $transient_key );
 		if ( $metas === false ) {
             $where_posts = self::get_where_last_orders("item.order_id", 'WHERE');
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$metas = $wpdb->get_col( "SELECT DISTINCT meta.meta_key FROM {$wpdb->prefix}woocommerce_order_itemmeta meta inner join {$wpdb->prefix}woocommerce_order_items item on item.order_item_id=meta.order_item_id and item.order_item_type = 'line_item' $where_posts" );
 			sort( $metas );
 			set_transient( $transient_key, $metas, 60 ); //valid for a minute
@@ -117,6 +121,7 @@ class WC_Order_Export_Data_Extractor {
 		$metas = false; //get_transient( $transient_key );
 		if ( $metas === false ) {
             $where_posts = self::get_where_last_orders("order_id");
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$metas = $wpdb->get_col( "SELECT DISTINCT order_item_name FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_type = 'shipping' $where_posts AND order_item_name <> '' " );
 			sort( $metas );
 			set_transient( $transient_key, $metas, 60 ); //valid for a minute
@@ -132,6 +137,7 @@ class WC_Order_Export_Data_Extractor {
 		$metas = get_transient( $transient_key );
 		if ( $metas === false ) {
             $where_posts = self::get_where_last_orders("order_id");
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
             $metas = $wpdb->get_col( "SELECT DISTINCT order_item_name FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_type = 'fee' $where_posts AND order_item_name <> '' " );
 			sort( $metas );
 			set_transient( $transient_key, $metas, 60 ); //valid for a minute
@@ -147,6 +153,7 @@ class WC_Order_Export_Data_Extractor {
 		$metas = get_transient( $transient_key );
 		if ( $metas === false ) {
             $where_posts = self::get_where_last_orders("order_id");
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
             $metas = $wpdb->get_col( "SELECT DISTINCT order_item_name FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_type = 'tax' $where_posts AND order_item_name <> '' " );
 			sort( $metas );
 			set_transient( $transient_key, $metas, 60 ); //valid for a minute
@@ -228,8 +235,8 @@ class WC_Order_Export_Data_Extractor {
 			}// operators
 		}
 
-		$orders_where = array();
-		self::apply_order_filters_to_sql( $orders_where, $settings );
+		$orders_where = $where_refund_subsql = array();
+		self::apply_order_filters_to_sql( $orders_where, $where_refund_subsql,$settings );
 		if ( $orders_where ) {
 			$left_join_order_items_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders  AS `orders` ON `orders`.id  = order_items.order_id";
 			$order_items_meta_where[]     = "( " . join( " AND ", $orders_where ) . " )";
@@ -388,7 +395,7 @@ class WC_Order_Export_Data_Extractor {
 			}
 			$ship_where = join( ' OR ', $ship_where );
 
-			//done 
+			//done
 			$order_items_where .= " AND orders.id IN (SELECT order_shippings.order_id FROM {$wpdb->prefix}woocommerce_order_items as order_shippings
 						LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS shipping_itemmeta ON  shipping_itemmeta.order_item_id = order_shippings.order_item_id
 						WHERE order_shippings.order_item_type='shipping' AND $ship_where )";
@@ -506,16 +513,23 @@ class WC_Order_Export_Data_Extractor {
 		if ( $settings['sort'] ) {
 			$sort_field = $settings['sort'];
 
-			if ( ! in_array( $settings['sort'], WC_Order_Export_Engine::get_wc_orders_fields() ) ) {
+			if ( ! in_array( $settings['sort'], WC_Order_Export_Engine::get_wp_posts_fields() ) ) {// we get legacy fields from UI
 				$pos = "sort";
-				$left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_cf_{$pos} " .
-				                          "ON ordermeta_cf_{$pos}.order_id = orders.id AND ordermeta_cf_{$pos}.meta_key='{$sort_field}'";
+				$hpos_addr = self::parse_HPOS_order_address_field($sort_field);
+				if($hpos_addr) {
+					$address_type = esc_sql($hpos_addr['address_type']);
+					$left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ordermeta_cf_{$pos} " .
+											"ON ordermeta_cf_{$pos}.order_id = orders.id AND ordermeta_cf_{$pos}.address_type ='{$address_type}'";
+				}
+				else
+					$left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_cf_{$pos} " .
+											"ON ordermeta_cf_{$pos}.order_id = orders.id AND ordermeta_cf_{$pos}.meta_key='{$sort_field}'";
 			}
 		}
 
 		if ( $settings['export_unmarked_orders'] ) {
 			$pos                    = "export_unmarked_orders";
-			$field                  = "woe_order_exported" . apply_filters("woe_exported_postfix",'');
+			$field                  = "woe_order_exported" . apply_filters("woe_exported_postfix",  WC_Order_Export_Engine::get_default_exported_postfix($settings) );
 			$left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_cf_{$pos} ON ordermeta_cf_{$pos}.order_id = orders.id AND ordermeta_cf_{$pos}.meta_key='$field'";
 			$order_meta_where []    = " ( ordermeta_cf_{$pos}.meta_value IS NULL ) ";
 		}
@@ -585,7 +599,7 @@ class WC_Order_Export_Data_Extractor {
 					$order_meta_where[] = $custom_sql;
 				else
 					$order_meta_where[] = "( " . join( apply_filters("woe_sql_get_order_ids_custom_order_fields_operator", " AND "), $order_custom_fields_where) . " )";
-			}		
+			}
 		}
 
 		if ( ! empty( $settings['user_custom_fields'] ) ) {
@@ -648,8 +662,9 @@ class WC_Order_Export_Data_Extractor {
 		$user_ids_ui_filters_applied = false;
 		if ( ! empty( $settings['user_names'] ) ) {
 			$user_ids          = array_filter( array_map( "intval", $settings['user_names'] ) );
-			$values            = self::sql_subset( $user_ids );
-			$user_meta_where[] = "( {$wpdb->users}.ID IN ($values) )";
+			$list_placeholders = implode(',', array_fill(0, count($user_ids), '%d'));
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Ignored for allowing interpolation in the IN statement.
+			$user_meta_where[] = $wpdb->prepare( "( {$wpdb->users}.ID IN ($list_placeholders) )",$user_ids );
 		}
 		//roles
 		if ( ! empty( $settings['user_roles'] ) ) {
@@ -658,7 +673,7 @@ class WC_Order_Export_Data_Extractor {
 
 			$roles_where = array();
 			foreach ( $settings['user_roles'] as $role ) {
-				$roles_where[] = "( usermeta_cf_role.meta_value LIKE '%\"$role\"%' )";
+				$roles_where[] = $wpdb->prepare( "( usermeta_cf_role.meta_value LIKE %s )", "%\"$role\"%");
 			}
 			$user_meta_where[] = "(" . join( ' OR ', $roles_where ) . ")";
 		}
@@ -669,7 +684,8 @@ class WC_Order_Export_Data_Extractor {
 			if ( self::$track_sql_queries ) {
 				self::$sql_queries[] = $sql;
 			}
-			$user_ids                    = $wpdb->get_col( $sql );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+			$user_ids                    = $wpdb->get_col( "SELECT DISTINCT ID FROM {$wpdb->users} $inner_join_user_meta WHERE $user_meta_where" );
 			$user_ids_ui_filters_applied = true;
 		}
 		$user_ids = apply_filters( "woe_sql_get_customer_ids", $user_ids, $settings );
@@ -698,20 +714,20 @@ class WC_Order_Export_Data_Extractor {
 
         if ( ! empty( $settings['sub_start_from_date'] ) || ! empty( $settings['sub_start_to_date'] ) ) {
             $field = 'schedule_start';
-            $left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_{$field} ON ordermeta_{$field}.order_id = orders.id";
+            $left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_{$field} ON ordermeta_{$field}.order_id = orders.id AND ordermeta_{$field}.meta_key='_{$field}'";
             $order_meta_where []    = self::get_date_meta_for_subscription_filters( $field, $settings['sub_start_from_date'], $settings['sub_start_to_date'] );
         }
 
 
         if ( ! empty( $settings['sub_end_from_date'] ) || ! empty( $settings['sub_end_to_date'] ) ) {
             $field = 'schedule_end';
-            $left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_{$field} ON ordermeta_{$field}.order_id = orders.id";
+            $left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_{$field} ON ordermeta_{$field}.order_id = orders.id AND ordermeta_{$field}.meta_key='_{$field}'";
             $order_meta_where []    = self::get_date_meta_for_subscription_filters( $field, $settings['sub_end_from_date'], $settings['sub_end_to_date'] );
         }
 
         if ( ! empty( $settings['sub_next_paym_from_date'] ) || ! empty( $settings['sub_next_paym_to_date'] ) ) {
             $field = 'schedule_next_payment';
-            $left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_{$field} ON ordermeta_{$field}.order_id = orders.id";
+            $left_join_order_meta[] = "LEFT JOIN {$wpdb->prefix}wc_orders_meta AS ordermeta_{$field} ON ordermeta_{$field}.order_id = orders.id AND ordermeta_{$field}.meta_key='_{$field}'";
             $order_meta_where []    = self::get_date_meta_for_subscription_filters( $field, $settings['sub_next_paym_from_date'], $settings['sub_next_paym_to_date'] );
         }
 
@@ -726,22 +742,34 @@ class WC_Order_Export_Data_Extractor {
 
 
 		//top_level
-		$where = array( 1 );
+		//setup order types to work with
+		$order_types = array( "'" . self::$object_type . "'" );
+		$order_types = join( ",", apply_filters( "woe_sql_order_types", $order_types ) );
+
+		$where = array( "orders.type in ($order_types)" );
 		$where = array_merge ($where, $HPOS_order_fields_where);
-		self::apply_order_filters_to_sql( $where, $settings );
+		$where_refund_subsql = array();
+		self::apply_order_filters_to_sql( $where, $where_refund_subsql,$settings );
 		$where     = apply_filters( 'woe_sql_get_order_ids_where', $where, $settings );
 		$order_sql = join( " AND ", $where );
 
-		//setup order types to work with
-		$order_types = array( "'" . self::$object_type . "'" );
+		$final_where = "$order_sql $order_meta_where $order_items_where";
+		//final for refunds
 		if ( $settings['export_refunds'] ) {
-			$order_types[] = "'shop_order_refund'";
+			if ( self::main_filter_empty($where_refund_subsql) AND  empty($order_meta_where) ) {
+				$refund_parent_sql = '';
+			} else {
+				$refund_parent_where = join( " AND ", $where_refund_subsql);
+				$final_where_refund_parent = "$refund_parent_where $order_meta_where";
+				$refund_parent_sql = "SELECT orders.id AS parent_order_id FROM {$wpdb->prefix}wc_orders AS orders	{$left_join_order_meta}	WHERE $final_where_refund_parent";
+			}
+			$refund_sql = self::build_refund_sql($settings,$refund_parent_sql) . $order_items_where;
+			$final_where = "($final_where)  OR ($refund_sql)";
 		}
-		$order_types = join( ",", apply_filters( "woe_sql_order_types", $order_types ) );
 
 		$sql = apply_filters( "woe_sql_get_order_ids", "SELECT " . apply_filters( "woe_sql_get_order_ids_fields", "orders.ID AS order_id" ) . " FROM {$wpdb->prefix}wc_orders AS orders
 			{$left_join_order_meta}
-			WHERE orders.type in ($order_types) AND $order_sql $order_meta_where $order_items_where", $settings );
+			WHERE $final_where", $settings );
 
 		if ( self::$track_sql_queries ) {
 			self::$sql_queries[] = $sql;
@@ -750,6 +778,30 @@ class WC_Order_Export_Data_Extractor {
 		//die($sql);
 		return $sql;
 	}
+
+	 private static function main_filter_empty($where){
+		 return count($where) ==2 AND
+			$where[0] == "orders.type in ('shop_order')" AND
+			$where[1] == "orders.status NOT in ('auto-draft','trash')";
+
+	}
+
+
+	private static function build_refund_sql($settings,$refund_parent_sql) {
+		$date_field = 'date'; //date created
+		$use_timestamps = false;
+		$where_meta = [];// unused
+		$where = array( "orders.type in ( 'shop_order_refund' )" );
+		foreach ( self::get_date_range( $settings, true, $use_timestamps, true ) as $date ) {
+			self::add_date_filter( $where, $where_meta, $date_field, $date );
+		}
+		if ( $settings['export_unmarked_orders'] )
+			$where[] = "ordermeta_cf_export_unmarked_orders.meta_value IS NULL";
+		if( $refund_parent_sql )
+			$where[] = "orders.parent_order_id in ($refund_parent_sql)";
+		return join(" AND ", $where);
+	}
+
 
 	private static function add_date_filter( &$where, &$where_meta, $date_field, $value ) {
 		if ( $date_field == 'date_paid' OR $date_field == 'date_completed' )
@@ -761,9 +813,11 @@ class WC_Order_Export_Data_Extractor {
 		} elseif ($date_field === 'modified') {
 			$where[] = "orders.date_updated_gmt IS NOT NULL AND orders.date_updated_gmt" . $value;
 		}
+
+		$where = apply_filters("woe_add_date_filter", $where, $date_field, $value);
 	}
 
-	private static function apply_order_filters_to_sql( &$where, $settings ) {
+	private static function apply_order_filters_to_sql( &$where, &$where_refund_subsql, $settings ) {
 		global $wpdb;
 
 		if ( ! empty( $settings['order_ids'] ) ) {
@@ -802,15 +856,10 @@ class WC_Order_Export_Data_Extractor {
 //				$date_field = 'completed_date';
 //			}
 //		}
-		$where_meta = array();
+		// Skip drafts and deleted
+		$where[] = "orders.status NOT in ('auto-draft','trash')";
 
-		// export and date rule
-
-		foreach ( self::get_date_range( $settings, true, $use_timestamps, true ) as $date ) {
-			self::add_date_filter( $where, $where_meta, $date_field, $date );
-		}
-
-		// end export and date rule
+		$where_refund_subsql = $where;
 
 		if ( $settings['statuses'] ) {
 			$values = self::sql_subset( $settings['statuses'] );
@@ -818,22 +867,26 @@ class WC_Order_Export_Data_Extractor {
 				$where[] = "orders.status in ($values)";
 			}
 		}
+		// skip child orders?
+		if ( $settings['skip_suborders'] ) {
+			$where[] = "orders.parent_order_id=0";
+		}
 
+
+		// export and date rule
+		$where_meta = array();
+
+		foreach ( self::get_date_range( $settings, true, $use_timestamps, true ) as $date ) {
+			self::add_date_filter( $where, $where_meta, $date_field, $date );
+		}
 		//for date_paid or date_completed
 		if ( $where_meta ) {
 			$where_meta = join( " AND ", $where_meta );
 			$where[]    = "orders.id  IN ( SELECT order_id FROM {$wpdb->prefix}wc_order_operational_data AS order_$date_field WHERE $where_meta)";
 		}
-
-		// skip child orders?
-		if ( $settings['skip_suborders'] AND ! $settings['export_refunds'] ) {
-			$where[] = "orders.parent_order_id=0";
-		}
-
-		// Skip drafts and deleted
-		$where[] = "orders.status NOT in ('auto-draft','trash')";
+		// end export and date rule
 	}
-	
+
 	public static function get_order_shipping_tax_refunded( $order_id ) {
 		global $wpdb;
 		$refund_ship_taxes = $wpdb->get_var( $wpdb->prepare( "
@@ -860,7 +913,7 @@ class WC_Order_Export_Data_Extractor {
 		} else {
 			return false;
 		}
-		
+
 		if ( 'first' === $first_or_last ) {
 			$direction = 'ASC';
 		} else if ( 'last' === $first_or_last ) {
@@ -869,16 +922,20 @@ class WC_Order_Export_Data_Extractor {
 			return false;
 		}
 
-        $order = $wpdb->get_var(
-        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-            "SELECT orders.ID
+		$statuses = array_keys( wc_get_order_statuses() );
+		$list_placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $order = $wpdb->get_var( $wpdb->prepare(
+        //phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        "SELECT orders.ID
         FROM {$wpdb->prefix}wc_orders AS orders
-        WHERE orders.{$meta_key} = '" . esc_sql($meta_value) ."'
+        WHERE orders.{$meta_key} = %s
         AND   orders.type = 'shop_order'
-        AND   orders.status IN ( '" . implode( "','", array_map( 'esc_sql', array_keys( wc_get_order_statuses() ) ) ) . "' )
-        ORDER BY orders.ID {$direction}"
-        // phpcs:enable
-        );
+        AND   orders.status IN ( $list_placeholders )
+        ORDER BY orders.ID " . esc_sql($direction)
+        //phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        , array_merge( [$meta_value], $statuses)
+		));
 
 		if ( ! $order ) {
 			return false;
@@ -894,22 +951,22 @@ class WC_Order_Export_Data_Extractor {
 	 */
 	public static function get_customer_order_count_by_email( $billing_email ) {
 		global $wpdb;
-		
-		$statuses = "'" . implode( "','", array_map( 'esc_sql', array_keys( wc_get_order_statuses() ) ) ) . "'";
-		
-		if( self::$has_order_stats) 
+
+		$statuses = array_keys( wc_get_order_statuses() );
+
+		if( self::$has_order_stats)
 			return self::get_customer_order_stats(self::$current_order, $statuses, "COUNT(*)");
 
-		$count = $wpdb->get_var(
-			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-			"SELECT COUNT(*)
+		$list_placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*)
 			FROM {$wpdb->prefix}wc_orders as orders
-			WHERE   orders.billing_email = '" . esc_sql( $billing_email ) . "'
+			WHERE   orders.billing_email = %s
 			AND     orders.customer_id = '0'
 			AND     orders.type = 'shop_order'
-			AND     orders.status IN ( $statuses )"
-			// phpcs:enable
-		);
+			AND     orders.status IN ($list_placeholders)",
+			array_merge( [$billing_email], $statuses)
+		) );
 
 		return is_numeric( $count ) ? intval( $count ) : 0;
 	}
@@ -921,28 +978,28 @@ class WC_Order_Export_Data_Extractor {
 	 */
 	public static function get_customer_total_spent_by_email( $billing_email ) {
 		global $wpdb;
-		
-		$statuses = implode( ',', array_map( function ( $status ) {
-			return sprintf( "'wc-%s'", esc_sql( $status ) );
-		}, wc_get_is_paid_statuses() ) );		
 
-		if( self::$has_order_stats) 
+		$statuses = array_map( function ( $status ) {
+			return sprintf( "wc-%s", esc_sql( $status ) );
+		}, wc_get_is_paid_statuses() );
+
+		if( self::$has_order_stats)
 			return self::get_customer_order_stats(self::$current_order, $statuses, "SUM(total_sales)");
 
-		$spent    = $wpdb->get_var(
-			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-			"SELECT SUM(orders.total_amount)
+		$list_placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$spent    = $wpdb->get_var($wpdb->prepare( "SELECT SUM(orders.total_amount)
 			FROM {$wpdb->prefix}wc_orders as orders
-			WHERE orders.billing_email = '" . esc_sql( $billing_email ) . "'
+			WHERE orders.billing_email = %s
 			AND   orders.customer_id   = '0'
 			AND   orders.type          = 'shop_order'
-			AND   orders.status        IN ( $statuses )"
-			// phpcs:enable
-		);
+			AND   orders.status        IN ( )",
+			array_merge( [$billing_email],$statuses)
+		) );
 
 		return is_numeric( $spent ) ? floatval( $spent ) : 0;
-	}	
-	
+	}
+
 	/**
 	 * @param int $customer_id
 	 * @param string $billing_email
@@ -952,26 +1009,31 @@ class WC_Order_Export_Data_Extractor {
 	public static function get_customer_paid_orders_count( $customer_id, $billing_email ) {
 		global $wpdb;
 
-		$statuses = implode( ',', array_map( function ( $status ) {
-			return sprintf( "'wc-%s'", esc_sql( $status ) );
-		}, wc_get_is_paid_statuses() ) );
-		
-		if( self::$has_order_stats) 
+		$statuses = array_map( function ( $status ) {
+			return sprintf( "wc-%s", esc_sql( $status ) );
+		}, wc_get_is_paid_statuses() );
+
+		if( self::$has_order_stats)
 			return self::get_customer_order_stats(self::$current_order, $statuses, "COUNT(*)");
-		
+
 		if( $customer_id ) {
 			$where = "orders.customer_id = '" . esc_sql( $customer_id ) . "'";
 		} else {
 			$where = "orders.billing_email = '" . esc_sql( $billing_email ) . "' AND orders.customer_id = '0'";
 		}
 
-		return $wpdb->get_var(
-				"SELECT COUNT(*)
+		$list_placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		return $wpdb->get_var($wpdb->prepare(
+            // phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter
+            "SELECT COUNT(*)
 				FROM {$wpdb->prefix}wc_orders as orders
 				WHERE $where
 				AND   orders.type = 'shop_order'
-				AND   orders.status IN ( $statuses )"
-		);
-	}	
-	
+				AND   orders.status IN ( $list_placeholders )",
+            // phpcs:enable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			$statuses
+		) );
+	}
+
 }

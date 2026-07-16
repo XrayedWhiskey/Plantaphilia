@@ -35,7 +35,12 @@ class WC_GZD_Shortcodes {
 			'gzd_product_shipping_notice'        => __CLASS__ . '::gzd_product_shipping_notice',
 			'gzd_product_cart_desc'              => __CLASS__ . '::gzd_product_cart_desc',
 			'gzd_product_defect_description'     => __CLASS__ . '::gzd_product_defect_description',
+			'gzd_product_safety_information'     => __CLASS__ . '::gzd_product_safety_information',
+			'gzd_product_manufacturer'           => __CLASS__ . '::gzd_product_manufacturer',
+			'gzd_product_safety_attachments'     => __CLASS__ . '::gzd_product_safety_attachments',
+			'gzd_product_safety_instructions'    => __CLASS__ . '::gzd_product_safety_instructions',
 			'gzd_product_deposit'                => __CLASS__ . '::gzd_product_deposit',
+			'gzd_product_power_supply'           => __CLASS__ . '::gzd_product_power_supply',
 			'gzd_product_deposit_packaging_type' => __CLASS__ . '::gzd_product_deposit_packaging_type',
 			'gzd_email_legal_page_attachments'   => __CLASS__ . '::gzd_email_legal_page_attachments',
 		);
@@ -72,7 +77,8 @@ class WC_GZD_Shortcodes {
 		$atts = wp_parse_args(
 			$atts,
 			array(
-				'product' => '',
+				'product'     => '',
+				'print_title' => false,
 			)
 		);
 
@@ -82,8 +88,12 @@ class WC_GZD_Shortcodes {
 		}
 
 		if ( $product && is_a( $product, 'WC_Product' ) ) {
+			$args = array(
+				'print_title' => wc_string_to_bool( $atts['print_title'] ),
+			);
+
 			ob_start();
-			call_user_func( $function_name );
+			call_user_func( $function_name, $args );
 			$content = ob_get_clean();
 		}
 
@@ -147,6 +157,54 @@ class WC_GZD_Shortcodes {
 		 *
 		 */
 		return apply_filters( 'woocommerce_gzd_shortcode_product_tax_notice_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_tax_info' ), $atts );
+	}
+
+	public static function gzd_product_safety_information( $atts ) {
+		/**
+		 * Filter shortcode product safety information output.
+		 *
+		 * @param string $html The output.
+		 * @param array $atts The shortcode arguments.
+		 *
+		 * @since 3.18.0
+		 */
+		return apply_filters( 'woocommerce_gzd_shortcode_product_safety_information_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_product_safety_information' ), $atts );
+	}
+
+	public static function gzd_product_safety_attachments( $atts ) {
+		/**
+		 * Filter shortcode product safety attachments output.
+		 *
+		 * @param string $html The output.
+		 * @param array $atts The shortcode arguments.
+		 *
+		 * @since 3.18.0
+		 */
+		return apply_filters( 'woocommerce_gzd_shortcode_product_safety_attachments_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_product_safety_attachments' ), $atts );
+	}
+
+	public static function gzd_product_safety_instructions( $atts ) {
+		/**
+		 * Filter shortcode product safety instructions output.
+		 *
+		 * @param string $html The output.
+		 * @param array $atts The shortcode arguments.
+		 *
+		 * @since 3.18.0
+		 */
+		return apply_filters( 'woocommerce_gzd_shortcode_product_safety_instructions_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_safety_instructions' ), $atts );
+	}
+
+	public static function gzd_product_manufacturer( $atts ) {
+		/**
+		 * Filter shortcode product manufacturer output.
+		 *
+		 * @param string $html The output.
+		 * @param array $atts The shortcode arguments.
+		 *
+		 * @since 3.18.0
+		 */
+		return apply_filters( 'woocommerce_gzd_shortcode_product_manufacturer_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_manufacturer' ), $atts );
 	}
 
 	public static function gzd_product_shipping_notice( $atts ) {
@@ -233,6 +291,18 @@ class WC_GZD_Shortcodes {
 		return apply_filters( 'woocommerce_gzd_shortcode_product_deposit_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_deposit' ), $atts );
 	}
 
+	public static function gzd_product_power_supply( $atts ) {
+		/**
+		 * Filter shortcode product power supply.
+		 *
+		 * @param string $html The output.
+		 * @param array $atts The shortcode arguments.
+		 *
+		 * @since 3.9.0
+		 */
+		return apply_filters( 'woocommerce_gzd_shortcode_product_power_supply_html', self::get_gzd_product_shortcode( $atts, 'woocommerce_gzd_template_single_product_power_supply' ), $atts );
+	}
+
 	public static function gzd_product_food( $atts, $content, $tag ) {
 		$food_type = sanitize_key( str_replace( 'gzd_product_food_', '', $tag ) );
 
@@ -306,19 +376,6 @@ class WC_GZD_Shortcodes {
 			'dispute' => wc_gzd_get_dispute_resolution_text(),
 		);
 
-		foreach ( $texts as $key => $text ) {
-			$texts[ $key ] = wpautop(
-				str_replace(
-					array(
-						'https://ec.europa.eu/consumers/odr',
-						'http://ec.europa.eu/consumers/odr/',
-					),
-					'<a href="https://ec.europa.eu/consumers/odr" target="_blank">https://ec.europa.eu/consumers/odr</a>',
-					$text
-				)
-			);
-		}
-
 		if ( $atts['text_only'] ) {
 			$texts['dispute'] = preg_replace( '%<p(.*?)>|</p>%s', '', $texts['dispute'] );
 		}
@@ -359,7 +416,6 @@ class WC_GZD_Shortcodes {
 	 * @return string
 	 */
 	public static function payment_methods_info( $atts ) {
-
 		WC_GZD_Payment_Gateways::instance()->manipulate_gateways();
 
 		ob_start();
@@ -367,7 +423,6 @@ class WC_GZD_Shortcodes {
 		$return = '<div class="woocommerce woocommerce-gzd">' . ob_get_clean() . '</div>';
 
 		return $return;
-
 	}
 
 	/**
@@ -399,5 +454,4 @@ class WC_GZD_Shortcodes {
 
 		return ob_get_clean();
 	}
-
 }

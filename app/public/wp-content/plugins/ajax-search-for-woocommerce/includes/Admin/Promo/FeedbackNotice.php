@@ -20,21 +20,20 @@ class FeedbackNotice {
 	const REVIEW_URL = 'https://wordpress.org/support/plugin/ajax-search-for-woocommerce/reviews/?filter=5';
 
 	/**
-	 * Admin notice offset
-	 * @var int timestamp
+	 * @var NoticePolicy
 	 */
-	private $offset;
+	private $policy;
 
-	function __construct() {
-		$this->offset = strtotime( '-7 days' );
+	public function __construct() {
+		$this->policy = new NoticePolicy();
 
-		add_action( 'admin_init', array( $this, 'checkInstallationDate' ) );
+		add_action( 'admin_init', [ $this, 'checkInstallationDate' ] );
 
-		add_action( 'wp_ajax_' . self::DISMISS_AJAX_ACTION, array( $this, 'dismissNotice' ) );
+		add_action( 'wp_ajax_' . self::DISMISS_AJAX_ACTION, [ $this, 'dismissNotice' ] );
 
-		add_action( 'admin_head', array( $this, 'loadStyle' ) );
+		add_action( 'admin_head', [ $this, 'loadStyle' ] );
 
-		add_action( 'admin_footer', array( $this, 'printDismissJS' ) );
+		add_action( 'admin_footer', [ $this, 'printDismissJS' ] );
 	}
 
 	/**
@@ -42,19 +41,8 @@ class FeedbackNotice {
 	 *
 	 * @return bool
 	 */
-	private function allowDisplay() {
-		$currentScreen = get_current_screen();
-		if (
-			! empty( $currentScreen )
-			&& (
-				in_array( $currentScreen->base, array( 'dashboard', 'post', 'edit' ) )
-				|| strpos( $currentScreen->base, DGWT_WCAS_SETTINGS_KEY ) !== false
-			)
-		) {
-			return true;
-		}
-
-		return false;
+	private function canShowOnCurrentScreen() {
+		return $this->policy->isSettingsPage();
 	}
 
 	/**
@@ -65,34 +53,48 @@ class FeedbackNotice {
 	public function displayNotice() {
 		global $current_user;
 
-		if ( $this->allowDisplay() && ! dgoraAsfwFs()->is_premium() ) {
+		if ( $this->canShowOnCurrentScreen() && ! $this->policy->isPremium() ) {
 			?>
 
 			<div class="notice-info notice dgwt-wcas-notice dgwt-wcas-review-notice">
 				<div class="dgwt-wcas-review-notice-logo"></div>
-				<?php printf( __( "Hey %s, it's Damian Góra from %s. You have used this free plugin for some time now, and I hope you like it!", 'ajax-search-for-woocommerce' ),
+				<?php
+				printf(
+					__( "Hey %1\$s, it's Damian Góra from %2\$s. You have used this free plugin for some time now, and I hope you like it!", 'ajax-search-for-woocommerce' ),
 					'<strong>' . $current_user->display_name . '</strong>',
 					'<strong>' . DGWT_WCAS_NAME . '</strong>'
-				); ?>
+				);
+				?>
 				<br/>
-				<?php printf( __( "The FiboSearch team have spent countless hours developing it, and it would mean a lot to me if you %ssupport it with a quick review on WordPress.org.%s", 'ajax-search-for-woocommerce' ),
-					'<strong><a target="_blank" href="' . self::REVIEW_URL . '">', '</a></strong>'
-				); ?>
+				<?php
+				printf(
+					__( 'The FiboSearch team have spent countless hours developing it, and it would mean a lot to me if you %1$ssupport it with a quick review on WordPress.org.%2$s', 'ajax-search-for-woocommerce' ),
+					'<strong><a target="_blank" href="' . self::REVIEW_URL . '">',
+					'</a></strong>'
+				);
+				?>
 				<div class="button-container">
-					<a href="<?php echo self::REVIEW_URL; ?>" target="_blank" data-link="follow" class="button-secondary dgwt-review-notice-dismiss">
+					<a href="<?php echo self::REVIEW_URL; ?>" target="_blank" data-link="follow" class="button-secondary js-dgwt-review-notice-dismiss">
 						<span class="dashicons dashicons-star-filled"></span>
-						<?php printf( __( "Review %s", 'ajax-search-for-woocommerce' ), DGWT_WCAS_NAME ); ?>
+						<?php printf( __( 'Review %s', 'ajax-search-for-woocommerce' ), DGWT_WCAS_NAME ); ?>
 					</a>
-					<a href="#" class="button-secondary dgwt-review-notice-dismiss">
+					<a href="#" class="button-secondary js-dgwt-review-notice-dismiss dgwt-review-notice-dismiss">
 						<span class="dashicons dashicons-no-alt"></span>
-						<?php _e( "No thanks", 'ajax-search-for-woocommerce' ); ?>
+						<?php _e( 'No thanks', 'ajax-search-for-woocommerce' ); ?>
 					</a>
 				</div>
+				<button class="dgwt-review-notice-dismiss-x js-dgwt-review-notice-dismiss"
+						aria-label="<?php _e( 'Close', 'ajax-search-for-woocommerce' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+						<path
+							d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"></path>
+					</svg>
+				</button>
 			</div>
 			<?php
+
 		}
 	}
-
 
 	/**
 	 * Check instalation date
@@ -100,23 +102,15 @@ class FeedbackNotice {
 	 * @return void
 	 */
 	public function checkInstallationDate() {
-
 		$date = get_option( self::ACTIVATION_DATE_OPT );
 		if ( empty( $date ) ) {
 			add_option( self::ACTIVATION_DATE_OPT, time() );
 		}
 
-		$notice_closed = get_option( self::HIDE_NOTICE_OPT );
-
-		if ( empty( $notice_closed ) ) {
-			$install_date = get_option( self::ACTIVATION_DATE_OPT );
-
-			if ( $this->offset >= $install_date && current_user_can( 'install_plugins' ) ) {
-				add_action( 'admin_notices', array( $this, 'displayNotice' ) );
-			}
+		if ( $this->policy->shouldShowFeedbackNotice() ) {
+			add_action( 'admin_notices', [ $this, 'displayNotice' ] );
 		}
 	}
-
 
 	/**
 	 * Hide admin notice
@@ -141,14 +135,14 @@ class FeedbackNotice {
 	 * @return void
 	 */
 	public function printDismissJS() {
-		if ( ! $this->allowDisplay() ) {
+		if ( ! $this->canShowOnCurrentScreen() ) {
 			return;
 		}
 		?>
 		<script>
 			(function ($) {
 
-				$(document).on('click', '.dgwt-review-notice-dismiss', function () {
+				$(document).on('click', '.js-dgwt-review-notice-dismiss', function () {
 					var $box = $(this).closest('.dgwt-wcas-review-notice'),
 						isLink = $(this).attr('data-link') === 'follow' ? true : false;
 
@@ -185,7 +179,7 @@ class FeedbackNotice {
 	 * @return void
 	 */
 	public function loadStyle() {
-		if ( $this->allowDisplay() ) {
+		if ( $this->canShowOnCurrentScreen() ) {
 			wp_enqueue_style( 'dgwt-wcas-admin-style' );
 		}
 	}

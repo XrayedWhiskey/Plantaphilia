@@ -1,0 +1,88 @@
+<div class="bc-px-5 bc-py-3 bc-mb-4 bc-shadow bc-rounded bc-bg-gray-800">
+    <div class="bc-flex bc-justify-between bc-items-center bc-border-b bc-border-solid bc-border-gray-500 bc-mb-3 bc-pb-3">
+        <h3 class="bc-flex bc-items-center bc-text-xl bc-text-gray-100 [&_small]:bc-inline-block [&_small]:bc-text-xs [&_small]:bc-ml-2 [&_small]:bc-text-gray-500">{{ localized.headline.cookieVersion | raw }}</h3>
+        <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+            <div class="bc-inline-flex bc-rounded-md">
+                <button name="timeRange" value="services30days" class="{{ data.timeRange == 'services30days' ? 'bc-bg-gray-500' : '' }} bc-inline-flex bc-items-center bc-rounded-l-md bc-px-3 bc-py-1.5 bc-text-sm bc-text-gray-300 bc-ring-1 bc-ring-inset bc-ring-gray-500 hover:bc-bg-gray-500 focus:bc-z-10" type="submit">
+                    {{ localized.button.chartDataServices30Days | raw }}
+                </button>
+                <button name="timeRange" value="today" class="{{ data.timeRange == 'today' ? 'bc-bg-gray-500' : '' }} bc-inline-flex bc-items-center bc-px-3 bc-py-1.5 bc-text-sm bc-text-gray-300 bc-ring-1 bc-ring-inset bc-ring-gray-500 hover:bc-bg-gray-500 focus:bc-z-10" type="submit">
+                    {{ localized.button.chartDataToday | raw }}
+                </button>
+                <button name="timeRange" value="7days" class="{{ data.timeRange == '7days' ? 'bc-bg-gray-500' : '' }} bc--ml-px bc-inline-flex bc-items-center bc-px-3 bc-py-1.5 bc-text-sm bc-text-gray-300 bc-ring-1 bc-ring-inset bc-ring-gray-500 hover:bc-bg-gray-500 bc-focus:z-10" type="submit">
+                    {{ localized.button.chartData7Days | raw }}
+                </button>
+                <button name="timeRange" value="30days" class="{{ data.timeRange == '30days' ? 'bc-bg-gray-500' : '' }} bc--ml-px bc-inline-flex bc-items-center bc-rounded-r-md bc-px-3 bc-py-1.5 bc-text-sm bc-text-gray-300 bc-ring-1 bc-ring-inset bc-ring-gray-500 hover:bc-bg-gray-500 bc-focus:z-10" type="submit">
+                    {{ localized.button.chartData30Days | raw }}
+                </button>
+            </div>
+            <input type="hidden" name="action" value="chart-data">
+            {{ wpNonceField("#{controllerId}-chart-data") | raw }}
+        </form>
+    </div>
+
+    <div>
+        {% if data.jsonChartData is empty %}
+            <div class="brlbs-cmpnt-alert brlbs-cmpnt-alert-warning" role="alert">{{ localized.alert.noChartData | raw }}
+            </div>
+        {% endif %}
+
+        {% if data.jsonChartData is not empty %}
+            <div style="height: 200px;">
+                <canvas id="BorlabsCookieChart"></canvas>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{{ scriptTagChartData | raw }}
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded', function () {
+    if (Object.entries(barChartData).length && document.getElementById('BorlabsCookieChart')) {
+        let borlabsCookieChartCanvas = document.getElementById('BorlabsCookieChart').getContext('2d');
+        window.borlabsCookieBarChart = new Chart(borlabsCookieChartCanvas, {
+            type: {{ data.timeRange == '30days' or data.timeRange == 'services30days' ? '\'bar\'' : '\'line\'' }},
+            data: barChartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: "#374151"
+                        },
+                        ticks: {
+                            color: "#d1d5db",
+                        },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: "#374151"
+                        },
+                        ticks: {
+                            color: "#d1d5db",
+                            callback: function (value) {
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                            }
+                        },
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: {{ data.timeRange == '30days' or data.timeRange == 'services30days' ? 'false' : 'true' }},
+                        labels: {
+                            color: "#d1d5db",
+                        },
+                    },
+                    title: {
+                        display: false,
+                    },
+                }
+            }
+        });
+    }
+});
+</script>

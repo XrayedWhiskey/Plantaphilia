@@ -42,57 +42,42 @@ class Bootstrap {
 	 * Init the package - load the blocks library and define constants.
 	 */
 	protected function init() {
-		if ( ! Package::load_blocks() ) {
-			return false;
+		add_filter( 'woocommerce_shiptastic_is_integration', '__return_true' );
+		add_filter( 'eu_owb_woocommerce_is_integration', '__return_true' );
+
+		if ( ! did_action( 'woocommerce_shiptastic_init' ) ) {
+			add_action( 'woocommerce_shiptastic_init', array( Shiptastic::class, 'init' ), 0 );
+		} else {
+			Shiptastic::init();
 		}
 
-		$this->register_dependencies();
-		$this->register_payment_methods();
-
-		add_filter(
-			'woocommerce_gzd_dhl_get_i18n_path',
-			function() {
-				return Package::get_language_path();
-			}
-		);
-
-		add_filter(
-			'woocommerce_gzd_shipments_get_i18n_path',
-			function() {
-				return Package::get_language_path();
-			}
-		);
-
-		add_filter(
-			'woocommerce_gzd_dhl_get_i18n_textdomain',
-			function() {
-				return 'woocommerce-germanized';
-			}
-		);
-
-		add_filter(
-			'woocommerce_gzd_shipments_get_i18n_textdomain',
-			function() {
-				return 'woocommerce-germanized';
-			}
-		);
-
-		if ( did_action( 'woocommerce_blocks_loaded' ) ) {
-			$this->load_blocks();
+		if ( ! did_action( 'eu_owb_woocommerce_init' ) ) {
+			add_action( 'eu_owb_woocommerce_init', array( OrderWithdrawalButton::class, 'init' ), 0 );
 		} else {
-			add_action(
-				'woocommerce_blocks_loaded',
-				function() {
-					$this->load_blocks();
-				}
-			);
+			OrderWithdrawalButton::init();
+		}
+
+		if ( Package::load_blocks() ) {
+			$this->register_dependencies();
+			$this->register_payment_methods();
+
+			if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+				$this->load_blocks();
+			} else {
+				add_action(
+					'woocommerce_blocks_loaded',
+					function () {
+						$this->load_blocks();
+					}
+				);
+			}
 		}
 	}
 
 	protected function load_blocks() {
 		add_filter(
 			'__experimental_woocommerce_blocks_add_data_attributes_to_namespace',
-			function( $namespaces ) {
+			function ( $namespaces ) {
 				return array_merge( $namespaces, array( 'woocommerce-germanized', 'woocommerce-germanized-blocks' ) );
 			}
 		);
@@ -166,7 +151,7 @@ class Bootstrap {
 	protected function register_payment_methods() {
 		$this->container->register(
 			Invoice::class,
-			function( $container ) {
+			function ( $container ) {
 				$asset_api = $container->get( Assets::class );
 				return new Invoice( $asset_api );
 			}
@@ -174,7 +159,7 @@ class Bootstrap {
 
 		$this->container->register(
 			DirectDebit::class,
-			function( $container ) {
+			function ( $container ) {
 				$asset_api = $container->get( Assets::class );
 				return new DirectDebit( $asset_api );
 			}

@@ -89,10 +89,26 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 		add_filter( 'wcml_get_order_items_language', array( $this, 'maybe_filter_wpml_order_items_language' ), 10, 2 );
 		add_action( 'woocommerce_gzd_switch_email_locale', array( $this, 'setup_email_locale' ), 10, 2 );
 		add_action( 'woocommerce_gzd_restore_email_locale', array( $this, 'restore_email_locale' ), 10, 1 );
+		add_action( 'wpml_st_force_translate_admin_options', array( $this, 'register_forced_email_translations' ), 0 );
 
 		// Add compatibility with email string translation by WPML
 		add_filter( 'wcml_emails_options_to_translate', array( $this, 'register_email_options' ), 10, 1 );
 		add_filter( 'wcml_emails_section_name_prefix', array( $this, 'filter_email_section_prefix' ), 10, 2 );
+
+		// Translate product category condition for checkboxes
+		add_filter(
+			'woocommerce_gzd_legal_checkbox_show_for_categories',
+			function ( $product_categories ) {
+				$product_categories = array_map(
+					function ( $product_category ) {
+						return apply_filters( 'wpml_object_id', $product_category, 'category' );
+					},
+					(array) $product_categories
+				);
+
+				return $product_categories;
+			}
+		);
 
 		$this->filter_page_ids();
 
@@ -103,6 +119,37 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 		 * @since 3.0.8
 		 */
 		do_action( 'woocommerce_gzd_wpml_compatibility_loaded', $this );
+	}
+
+	/**
+	 * As WCML does not provide a filter/entrypoint to detect when the plugin is translating emails
+	 * we'll need to find a tweak by checking whether WCML calls the wpml_st_force_translate_admin_options hook.
+	 * If that is the case, we'll need to register our custom strings too.
+	 *
+	 * @see WCML_Emails::force_translating_admin_options_in_backend
+	 *
+	 * @return void
+	 */
+	public function register_forced_email_translations() {
+		$stack     = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 5 ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
+		$is_emails = false;
+
+		foreach ( $stack as $backtrace ) {
+			if ( ! isset( $backtrace['class'], $backtrace['function'] ) ) {
+				continue;
+			}
+
+			if ( 'force_translating_admin_options_in_backend' === $backtrace['function'] ) {
+				$is_emails = true;
+				break;
+			}
+		}
+
+		if ( $is_emails ) {
+			remove_action( 'wpml_st_force_translate_admin_options', array( $this, 'force_admin_option_translation' ), 0 );
+
+			$this->force_admin_option_translation();
+		}
 	}
 
 	/**
@@ -334,14 +381,12 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 					$lang = $sitepress->get_default_language();
 				}
 			}
-		} else {
-			if ( $object ) {
-				if ( is_a( $object, 'WC_Order' ) ) {
-					$lang = $object->get_meta( 'wpml_language' );
-				} elseif ( is_a( $object, '\Vendidero\Germanized\Shipments\Shipment' ) ) {
-					if ( $order = $object->get_order() ) {
-						$lang = $order->get_meta( 'wpml_language' );
-					}
+		} elseif ( $object ) {
+			if ( is_a( $object, 'WC_Order' ) ) {
+				$lang = $object->get_meta( 'wpml_language' );
+			} elseif ( is_a( $object, '\Vendidero\Shiptastic\Shipment' ) ) {
+				if ( $order = $object->get_order() ) {
+					$lang = $order->get_meta( 'wpml_language' );
 				}
 			}
 		}
@@ -463,6 +508,8 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 				$prefix = 'wc_gzdp_email_';
 			} elseif ( $key && strpos( $key, 'TS_' ) !== false ) {
 				$prefix = 'wc_ts_email_';
+			} elseif ( $key && strpos( $key, 'STC_' ) !== false ) {
+				$prefix = 'wc_stc_email_';
 			}
 		}
 
@@ -473,13 +520,13 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 	 * Reload default, WC and WC Germanized locale
 	 */
 	public function reload_locale() {
-		unload_textdomain( 'default' );
-		unload_textdomain( 'woocommerce' );
+		unload_textdomain( 'default', true );
+		unload_textdomain( 'woocommerce', true );
 
 		// Init WC locale.
 		WC()->load_plugin_textdomain();
 
-		unload_textdomain( 'woocommerce-germanized' );
+		unload_textdomain( 'woocommerce-germanized', true );
 		WC_germanized()->load_plugin_textdomain();
 
 		load_default_textdomain( get_locale() );
@@ -593,7 +640,7 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 		}
 	}
 
-	public function language_locale_filter( $default ) {
+	public function language_locale_filter( $default_locale ) {
 		global $sitepress;
 
 		if ( $this->new_language && ! empty( $this->new_language ) ) {
@@ -602,7 +649,7 @@ class WC_GZD_Compatibility_WPML extends WC_GZD_Compatibility {
 			}
 		}
 
-		return $default;
+		return $default_locale;
 	}
 
 	public function language_user_locale_filter( $value, $user_id, $meta_key ) {

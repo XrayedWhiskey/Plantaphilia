@@ -1,0 +1,133 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true } %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.geoIp,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/select.html.twig" as row_select %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+        {% import "system/macro/form-component/button.html.twig" as button %}
+
+        {{ row_switch_button.component({
+            hint: localized.hint.geoIpActive,
+            id: 'geoIpActive',
+            label: localized.field.geoIpActive,
+            value: data.geoIpActive,
+        }) }}
+
+        {% if isLicenseExpired() %}
+            <div class="bc-flex bc-items-center bc-px-5 bc-py-2.5">
+                {{ getLicenseAlertMessage('licenseExpiredFeatureNotAvailable') | raw }}
+            </div>
+        {% endif %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/button.html.twig" as button %}
+            {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+            {% import "system/macro/icons/arrow-path.html.twig" as arrow_path_icon %}
+
+            {% block label %}
+                <label for="downloadGeoIpDatabase">{{ localized.field.geoIpDatabaseStatus | raw }}</label>
+            {% endblock %}
+
+            {% block input %}
+                <div>
+                    {{ status_indicator.component({
+                        id: 'geoIpDatabaseDownloaded',
+                        status: data.geoIpDatabaseImported,
+                        okText: localized.text.geoIpDatabaseDownloaded,
+                        errorText: localized.text.geoIpDatabaseNotDownloaded
+                    }, localized) }}
+                </div>
+                <div class="bc-mt-2">
+                    {{ button.component({
+                        backgroundColor: 'bc-bg-slate-950',
+                        backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                        button: "#{arrow_path_icon.component({ cssClasses: ['bc-relative', 'bc--top-0.5'], height: 'bc-h-4', width: 'bc-w-4', })}#{localized.button.updateDatabase}",
+                        dataAttribute: 'data-brlbs-geo-ip-database-download-button',
+                        focusColor: 'focus:bc-ring-slate-950',
+                        id: 'downloadGeoIpDatabase',
+                        isDisabled: data.geoIpActive == false,
+                        name: 'downloadGeoIpDatabase',
+                        value: '1',
+                    }, localized) }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                {{ localized.text.geoIpLastSyncAt }}
+            {% endblock %}
+            {% block input %}
+                <span id="geoIpLastSyncAt">{{ data.geoIpLastSuccessfulCheckWithApiFormattedTime }}</span>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <label for="geoIpCountriesWithHiddenDialog">{{ localized.field.geoIpCountriesWithHiddenDialog | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <select multiple="multiple"
+                        id="geoIpCountriesWithHiddenDialog"
+                        name="geoIpCountriesWithHiddenDialog[]"
+                        data-brlbs-localization-showlist-header="{{ localized.text.geoIpShowList | raw }}"
+                        data-brlbs-localization-hidelist-header="{{ localized.text.geoIpHideList | raw }}">
+                    {% for unionData in options.countriesGroupedByUnion.list %}
+                        <optgroup label="{{ localized.countries.unions[unionData.key] }}">
+                            {% for country in unionData.value.list %}
+                                <option value="{{ country.key }}" {% if country.key in data.geoIpCountriesWithHiddenDialog %}selected{% endif %}>
+                                    {{ country.value }}
+                                </option>
+                            {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            {% endblock %}
+        {% endembed %}
+        {{ row_switch_button.component({
+            hint: localized.hint.geoIpCachingMode,
+            id: 'geoIpCachingMode',
+            label: localized.field.geoIpCachingMode,
+            value: data.geoIpCachingMode,
+        }) }}
+
+        {{ row_save.component({
+            action: 'save',
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionGeoIp', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineGeoIp | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.geoIpGeneralDescriptionA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.geoIpGeneralDescriptionB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionGeoIpCaching'} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineGeoIpCaching | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.geoIpCachingDescription | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

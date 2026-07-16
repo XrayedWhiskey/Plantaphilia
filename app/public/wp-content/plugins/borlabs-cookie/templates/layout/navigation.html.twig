@@ -1,0 +1,159 @@
+{% import "system/macro/form-component/select.html.twig" as select %}
+{% import "system/macro/icons/cloud-arrow-down.html.twig" as cloud_arrow_down_icon %}
+{% import "system/macro/navigation/navigation-dropdown-item.html.twig" as navigation_dropdown_item %}
+{% import "system/macro/navigation/navigation-item.html.twig" as navigation_item %}
+
+<!-- NAVIGATION -->
+<div class="lg:bc-divide-y lg:bc-divide-gray-200 bc-rounded-b-md bc-bg-white bc-shadow bc-mb-6">
+    <div class="bc-flex lg:bc-items-center bc-justify-between bc-px-4">
+        <div class="bc-flex-1">
+            <div class="bc-relative bc-z-10 bc-flex bc-items-center lg:bc-hidden">
+                <!-- Mobile menu button -->
+                <button type="button"
+                        class="bc-inline-flex bc-items-center bc-justify-center bc-rounded-md bc-p-2 bc-text-gray-400 hover:bc-bg-gray-100 hover:bc-text-gray-500 focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-inset focus:bc-ring-indigo-500"
+                        aria-controls="primary-navigation" aria-expanded="false">
+                    <span class="bc-sr-only">{{ localized.navigation.openMenu }}</span>
+                    <svg class="bc-block bc-h-6 bc-w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24"
+                         stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                    </svg>
+                    <svg class="bc-hidden bc-h-6 bc-w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24"
+                         stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav id="primary-navigation" class="bc-hidden lg:bc-flex lg:bc-space-x-8 bc-py-2"
+                 aria-label="Global">
+                <ul class="[&>li]:lg:bc-inline-block [&_li]:bc-mb-0 bc-mb-0 bc-divide-y lg:bc-divide-y-0">
+                    {{ navigation_item.component({ module: 'Borlabs\\Cookie\\Controller\\Admin\\Dashboard\\DashboardController', title: localized.navigation.dashboard }, activeModule) }}
+
+                    {% if not isPluginUnlocked() %}
+                        {{ navigation_dropdown_item.component({
+                            title: localized.navigation.system,
+                            dropdownId: 'systemDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\License\\LicenseController', title: localized.navigation.license },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Job\\JobController', title: localized.navigation.jobs },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Log\\LogController', title: localized.navigation.logs },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\SetupAssistant\\SetupAssistantController', title: localized.navigation.setupAssistant },
+                                { title: localized.navigation.help, href: localized.url.help, isExternal: true },
+                            ]
+                        }, activeModule) }}
+                    {% else %}
+                        {{ navigation_dropdown_item.component({
+                            icon: activeModule != 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController' and getPackageUpdateCount() > 0
+                            ? cloud_arrow_down_icon.component({
+                                cssClasses: activeModule not in ['Borlabs\\Cookie\\Controller\\Admin\\CloudScan\\CloudScanController', 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibrarySettingsController',] ? ['bc-animate-bounce', 'bc-text-purple-600'] : ['bc-animate-bounce']
+                            })
+                            : null,
+                            title: localized.navigation.libraryAndScanner,
+                            dropdownId: 'libraryDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController', title: localized.navigation.library },
+                                {
+                                    activeCondition: activeModule == 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController' and request.getData['borlabs-filter'] != 'installed-packages',
+                                    indented: true,
+                                    module: 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController',
+                                    title: localized.navigation.libraryManage,
+                                },
+                                {
+                                    activeCondition: activeModule == 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController' and request.getData['borlabs-filter'] is defined and request.getData['borlabs-filter'] == 'installed-packages',
+                                    icon: activeModule != 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController' and getPackageUpdateCount() > 0
+                                    ? cloud_arrow_down_icon.component({ cssClasses: ['bc-animate-bounce', 'bc-text-purple-600'],})
+                                    : null,
+                                    href: "?page=#{ getControllerId('Borlabs\\Cookie\\Controller\\Admin\\Library\\LibraryController') }&borlabs-filter=installed-packages",
+                                    indented: true,
+                                    title: localized.navigation.libraryInstalledPackages,
+                                },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Library\\LibrarySettingsController', title: localized.navigation.librarySettings, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\CloudScan\\CloudScanController', title: localized.navigation.scanner }
+                            ]
+                        }, activeModule) }}
+
+                        {{ navigation_dropdown_item.component({
+                            title: localized.navigation.settings,
+                            dropdownId: 'settingsDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Settings\\SettingsController', title: localized.navigation.generalSettings },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Plugin\\PluginSettingsController', title: localized.navigation.adminAndPluginSettings },
+                            ]
+                        }, activeModule) }}
+
+                        {{ navigation_dropdown_item.component({
+                            title: localized.navigation.dialogAndWidget,
+                            dropdownId: 'dialogAndWidgetDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Dialog\\DialogSettingsController', title: localized.navigation.dialog },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Dialog\\DialogSettingsController', title: localized.navigation.dialogSettings, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Dialog\\DialogAppearanceController', title: localized.navigation.dialogAppearance, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Dialog\\DialogLocalizationController', title: localized.navigation.dialogLocalization, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Widget\\WidgetController', title: localized.navigation.widget }
+                            ]
+                        }, activeModule) }}
+
+                        {{ navigation_dropdown_item.component({
+                            title: localized.navigation.consentManagement,
+                            dropdownId: 'consentManagementDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Service\\ServiceController', title: localized.navigation.services },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ServiceGroup\\ServiceGroupController', title: localized.navigation.serviceGroups },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\IabTcf\\IabTcfVendorController', title: localized.navigation.iabTcf },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\IabTcf\\IabTcfVendorController', title: localized.navigation.iabTcfManageVendors, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\IabTcf\\IabTcfSettingsController', title: localized.navigation.iabTcfSettings, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Provider\\ProviderController', title: localized.navigation.providers },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ConsentLog\\ConsentLogController', title: localized.navigation.consentLogs }
+                            ]
+                        }, activeModule) }}
+
+                        {{ navigation_dropdown_item.component({
+                            title: localized.navigation.blockers,
+                            dropdownId: 'contentBlockerDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ContentBlocker\\ContentBlockerController', title: localized.navigation.contentBlockers },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ContentBlocker\\ContentBlockerController', title: localized.navigation.contentBlockerManage, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ContentBlocker\\ContentBlockerSettingsController', title: localized.navigation.contentBlockerSettings, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ContentBlocker\\ContentBlockerAppearanceController', title: localized.navigation.contentBlockerAppearance, indented: true },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ScriptBlocker\\ScriptBlockerController', title: localized.navigation.scriptBlockers },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\StyleBlocker\\StyleBlockerController', title: localized.navigation.styleBlockers }
+                            ]
+                        }, activeModule) }}
+
+                        {{ navigation_dropdown_item.component({
+                            title: localized.navigation.system,
+                            dropdownId: 'systemDropdown',
+                            dropdowns: [
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\CompatibilityPatches\\CompatibilityPatchesController', title: localized.navigation.compatibilityPatches },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\ImportExport\\ImportExportController', title: localized.navigation.importExport },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\LegacyImporter\\LegacyImporterController', title: localized.navigation.legacyImporter },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\License\\LicenseController', title: localized.navigation.license },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Job\\JobController', title: localized.navigation.jobs },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\Log\\LogController', title: localized.navigation.logs },
+                                { module: 'Borlabs\\Cookie\\Controller\\Admin\\SetupAssistant\\SetupAssistantController', title: localized.navigation.setupAssistant },
+                                constant('BORLABS_COOKIE_DEV_MODE_ENABLE_LOCALIZATION_CHECKER_INTERFACE') is defined and constant('BORLABS_COOKIE_DEV_MODE_ENABLE_LOCALIZATION_CHECKER_INTERFACE') ? { module: 'Borlabs\\Cookie\\Controller\\Admin\\LocalizationChecker\\LocalizationCheckerController', title: 'Localization Checker' } : null,
+                                constant('BORLABS_COOKIE_DEV_MODE_ENABLE_DEBUG_INTERFACE') is defined and constant('BORLABS_COOKIE_DEV_MODE_ENABLE_DEBUG_INTERFACE') ? { module: 'Borlabs\\Cookie\\Controller\\Admin\\Debug\\DebugController', title: 'Debug' } : null,
+                                { title: localized.navigation.help, href: localized.url.help, isExternal: true },
+                            ]
+                        }, activeModule) }}
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        <div class="bc-flex bc-items-center bc-space-x-2">
+            <label class="align-middle me-2" for="plugin-language">{{ localized.navigation.language | raw }}</label>
+            {{ select.component({
+                dataAttribute: 'data-brlbs-language-switch="plugin-language"',
+                id: 'plugin-language',
+                options: data.languageList.list,
+                value: data.currentLanguageCode,
+                width: 'w-auto pe-4'
+            }) }}
+        </div>
+    </div>
+
+</div>
+
+<!-- NAVIGATION END -->

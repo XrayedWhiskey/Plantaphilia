@@ -1,0 +1,135 @@
+{% macro component(config, localized) %}
+    {% set config = {
+        collectionName: 'MISSING',
+        showPhraseColumn: true,
+        title: 'MISSING',
+    } | merge(config) %}
+
+    {% embed "system/embed/card/card-with-info-panel-below.html.twig" %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+        {% block mainHeader %}
+            {{ card_heading.component({
+                title: config.title,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            {% embed "system/embed/table/table.html.twig" with { dataAttribute: "data-brlbs-table=\"#{config.collectionName}\"" } %}
+                {% block heading %}
+                    {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-1/12' } %}
+                        {% block content %}
+                            {{ localized.table.blockStatus | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-1/12' } %}
+                        {% block content %}
+                            {{ localized.table.type | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-3/12' } %}
+                        {% block content %}
+                            {{ localized.table.handle | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed "system/embed/table/table-header-element.html.twig" %}
+                        {% block content %}
+                            {{ localized.table.url | raw }}
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% if config.showPhraseColumn %}
+                        {% embed "system/embed/table/table-header-element.html.twig" with { columnWidth: 'bc-w-2/12' } %}
+                            {% block content %}
+                                {{ localized.table.phrase | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endif %}
+                {% endblock %}
+
+                {% block body %}
+                    {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: false } %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with { attributes: config.showPhraseColumn ? 'colspan="5"' : 'colspan="4"', textAlign: 'bc-text-center' } %}
+                                {% block content %}
+                                    {{ localized.alert.noScanResult | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+
+            <script type="text/template" data-brlbs-row-template="{{ config.collectionName }}">
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+                            {% block content %}
+                                {{ switch_button.component({
+                                    id: "#{config.collectionName}-##LOOP_INDEX##-blockStatus",
+                                    name: "#{config.collectionName}[##LOOP_INDEX##][blockStatus][##HANDLE##]",
+                                    value: '0',
+                                }) }}
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% block content %}
+                                ##TYPE##
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% block content %}
+                                ##HANDLE##
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% block content %}
+                                ##URL##
+                            {% endblock %}
+                        {% endembed %}
+
+                        {% if config.showPhraseColumn %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    ##PHRASE##
+                                {% endblock %}
+                            {% endembed %}
+                        {% endif %}
+                    {% endblock %}
+                {% endembed %}
+            </script>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: "accordionHandlesExplained#{config.collectionName | capitalize}", expanded: config.collectionName == 'unmatchedHandles' ? false : true } %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlineHandlesExplained | raw }}
+                        {% endblock %}
+                        {% block content %}
+                            {% if config.type == 'script' %}
+                                <p>{{ localized.thingsToKnow.handlesJavaScriptExplained | raw }}</p>
+                            {% else %}
+                                <p>{{ localized.thingsToKnow.handlesStylesExplained | raw }}</p>
+                            {% endif %}
+                            <p>{{ localized.thingsToKnow.handlesExplainedA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.handlesExplainedB | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

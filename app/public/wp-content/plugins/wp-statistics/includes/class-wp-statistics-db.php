@@ -2,6 +2,8 @@
 
 namespace WP_STATISTICS;
 
+use WP_Statistics\Service\Database\DatabaseFactory;
+
 class DB
 {
     /**
@@ -13,14 +15,12 @@ class DB
         /**
          * WP Statistics Table
          */
-        'useronline',
-        'visit',
         'visitor',
         'exclusions',
         'pages',
-        'search',
         'historical',
         'visitor_relationships',
+        'summary_totals',
 
         /**
          * Data Plus Table
@@ -30,7 +30,13 @@ class DB
         /**
          * Advanced Reporting Table
          */
-        'ar_outbox'
+        'ar_outbox',
+
+        /**
+         * Marketing Tables
+         */
+        'campaigns',
+        'goals'
     );
 
     /**
@@ -77,14 +83,12 @@ class DB
             /**
              * WP Statistics Table
              */
-            'useronline'            => __('This table keeps a record of users currently online on your website. Each row corresponds to a unique user session.', 'wp-statistics'),
-            'visit'                 => __('This table logs each unique visit to your website. A new row is added every time a visitor accesses your site.', 'wp-statistics'),
             'visitor'               => __('This table keeps a record of individual visitors to your website. Each row represents a unique visitor\'s information and their activities.', 'wp-statistics'),
             'exclusions'            => __('This table logs views that have been excluded based on certain criteria, like bots or specific IP addresses. It helps keep your statistics clean from non-human or unwanted traffic.', 'wp-statistics'),
             'pages'                 => __('This table logs the number of views each page on your website receives. Each row represents the data for a specific page.', 'wp-statistics'),
-            'search'                => __('This table records the search queries made on your website. It helps you understand what visitors are looking for.', 'wp-statistics'),
             'historical'            => __('This table stores historical data about views and visitors over time. It\'s useful for tracking trends and patterns in your website\'s traffic.', 'wp-statistics'),
             'visitor_relationships' => __('This table captures the relationships between visitors and the content they interact with, helping you understand user behavior and preferences.', 'wp-statistics'),
+            'summary_totals'        => __('This table stores the daily aggregated statistics of your website. Each row represents the summarized data for a specific date.', 'wp-statistics'),
 
             /**
              * Data Plus Table
@@ -142,7 +146,11 @@ class DB
             $table_name = self::getTableName($tbl);
 
             if ($export == "all") {
-                if (self::ExistTable($table_name)) {
+                $inspect = DatabaseFactory::table('inspect')
+                    ->setName($tbl)
+                    ->execute();
+
+                if ($inspect->getResult()) {
                     $list[$tbl] = $table_name;
                 }
             } else {

@@ -1,0 +1,66 @@
+{% import "local-scanner/macro/local-scan-settings.html.twig" as local_scan_settings %}
+{% import "local-scanner/macro/scan-result-handles.html.twig" as scan_result_handles %}
+{% import "local-scanner/macro/scan-result-tags.html.twig" as scan_result_tags %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            isEditAction ? localized.breadcrumb.edit : localized.breadcrumb.new
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}&action=edit&id=#{data.id}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- General Settings -->
+        {% include "script-blocker/partials/general-settings.html.twig" %}
+        <!-- Script Blocker Information -->
+        {% include "script-blocker/partials/script-blocker-information.html.twig" %}
+        {% if data.handles.list is not empty or data.phrases.list is not empty %}
+            <!-- Configuration -->
+            {% include "script-blocker/partials/configuration.html.twig" %}
+        {% endif %}
+        <!-- Local Scan Settings -->
+        {{ local_scan_settings.component({
+            customScanUrl: data.localScanner.customScanUrl,
+            handleTypes: data.localScanner.handleTypes,
+            pages: options.localScanner.pages,
+            scanMode: data.localScanner.scanMode,
+            scanModes: enum.localScanner.scanModes,
+            scanPageUrl: data.localScanner.scanPageUrl,
+            scanRequestOption: data.localScanner.scanRequestOption,
+            scanResultTables: data.localScanner.scanResultTables,
+            searchPhrase: data.localScanner.searchPhrase,
+            type: 'script',
+        }, localized.localScanner) }}
+        <!-- Scan Result Matched Handles -->
+        {{ scan_result_handles.component({
+            collectionName: 'matchedHandles',
+            title: localized.scanResult.headline.matchedHandles,
+            type: 'script',
+        }, localized.scanResult) }}
+        <!-- Scan Result Matched Tags -->
+        {{ scan_result_tags.component({
+            collectionName: 'matchedTags',
+            title: localized.scanResult.headline.matchedTags,
+            type: 'script',
+        }, localized.scanResult) }}
+        <!-- Scan Result Unmatched Handles -->
+        {{ scan_result_handles.component({
+            collectionName: 'unmatchedHandles',
+            showPhraseColumn: false,
+            title: localized.scanResult.headline.unmatchedHandles,
+            type: 'script',
+        }, localized.scanResult) }}
+        <!-- Scan Result Unmatched Tags -->
+        {{ scan_result_tags.component({
+            collectionName: 'unmatchedTags',
+            title: localized.scanResult.headline.unmatchedTags,
+            type: 'script',
+        }, localized.scanResult) }}
+    </form>
+{% endif %}

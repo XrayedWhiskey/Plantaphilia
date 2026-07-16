@@ -24,26 +24,26 @@ class TablePress_Import_Legacy extends TablePress_Import_Base {
 	/**
 	 * File/Data Formats that are available for import.
 	 *
+	 * The constructor also adds 'html', if the PHP prerequisites are met.
+	 *
 	 * @since 1.0.0
-	 * @var array<string, string>
+	 * @var string[]
 	 */
-	public $import_formats = array();
+	public array $import_formats = array( 'csv', 'json', 'xls', 'xlsx' );
 
 	/**
 	 * Whether HTML import support is available in the PHP installation on the server.
 	 *
 	 * @since 1.0.0
-	 * @var bool
 	 */
-	public $html_import_support_available = false;
+	public bool $html_import_support_available = false;
 
 	/**
 	 * Data to be imported.
 	 *
 	 * @since 1.0.0
-	 * @var string
 	 */
-	protected $import_data;
+	protected string $import_data;
 
 	/**
 	 * Imported table.
@@ -63,15 +63,9 @@ class TablePress_Import_Legacy extends TablePress_Import_Base {
 			$this->html_import_support_available = true;
 		}
 
-		// Initiate here, because function call not possible outside a class method.
-		$this->import_formats = array();
-		$this->import_formats['csv'] = __( 'CSV - Character-Separated Values', 'tablepress' );
 		if ( $this->html_import_support_available ) {
-			$this->import_formats['html'] = __( 'HTML - Hypertext Markup Language', 'tablepress' );
+			$this->import_formats[] = 'html';
 		}
-		$this->import_formats['json'] = __( 'JSON - JavaScript Object Notation', 'tablepress' );
-		$this->import_formats['xls'] = __( 'XLS - Microsoft Excel 97-2003 (experimental)', 'tablepress' );
-		$this->import_formats['xlsx'] = __( 'XLSX - Microsoft Excel 2007-2019 (experimental)', 'tablepress' );
 	}
 
 	/**
@@ -127,7 +121,7 @@ class TablePress_Import_Legacy extends TablePress_Import_Base {
 			$this->imported_table['data'],
 			static function ( /* string|int|float|bool|null */ &$cell_content, int $col_idx ): void {
 				$cell_content = (string) $cell_content;
-			}
+			},
 		);
 
 		return $this->imported_table;
@@ -322,7 +316,7 @@ class TablePress_Import_Legacy extends TablePress_Import_Base {
 			$current_encoding = mb_detect_encoding( $this->import_data, 'ASCII, UTF-8, ISO-8859-1' );
 			if ( 'UTF-8' !== $current_encoding ) {
 				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-				$data = @iconv( $current_encoding, 'UTF-8', $this->import_data ); // @phpstan-ignore-line
+				$data = @iconv( $current_encoding, 'UTF-8', $this->import_data ); // @phpstan-ignore argument.type
 				if ( false !== $data ) {
 					$this->import_data = $data;
 					return;
@@ -338,14 +332,14 @@ class TablePress_Import_Legacy extends TablePress_Import_Base {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param string[] $an_array Array in which Windows line breaks should be replaced by Unix line breaks.
+	 * @param array<int, array<int, string>> $an_array Array in which Windows line breaks should be replaced by Unix line breaks.
 	 */
 	protected function normalize_line_endings( array &$an_array ): void {
 		array_walk_recursive(
 			$an_array,
 			static function ( string &$cell_content, int $col_idx ): void {
 				$cell_content = str_replace( "\r\n", "\n", $cell_content );
-			}
+			},
 		);
 	}
 

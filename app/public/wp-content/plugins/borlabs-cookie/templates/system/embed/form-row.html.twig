@@ -1,0 +1,20 @@
+{% set cssClasses = [
+    'bc-flex bc-gap-x-2 bc-items-center bc-py-2.5 bc-px-5 first:bc-rounded-t-md last:bc-rounded-b-md'
+] %}
+
+{% if transparent != true %}
+    {% set cssClasses = ['brlbs-cmpnt-striped'] | merge(cssClasses) %}
+{% endif %}
+
+{% if hideInSimplifiedMode is defined and hideInSimplifiedMode %}
+    {% set cssClasses = ['brlbs-cmpnt-hide-in-simplified-mode'] | merge(cssClasses) %}
+{% endif %}
+
+<div class="{{ cssClasses | join(' ') }}">
+    <div class="bc-w-1/2 md:bc-w-5/12 bc-text-xs">
+        {% block label %}{% endblock %}
+    </div>
+    <div class="bc-w-1/2 md:bc-w-7/12">
+        {% block input %}{% endblock %}
+    </div>
+</div>

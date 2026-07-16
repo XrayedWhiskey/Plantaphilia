@@ -87,7 +87,7 @@ class ReportTable extends WP_List_Table {
 			foreach ( $ids as $id ) {
 				if ( $report = Package::get_report( $id ) ) {
 					if ( $report->delete() ) {
-						$changed++;
+						++$changed;
 					}
 				}
 			}
@@ -110,7 +110,6 @@ class ReportTable extends WP_List_Table {
 	}
 
 	public function output_notices() {
-
 	}
 
 	/**
@@ -128,7 +127,6 @@ class ReportTable extends WP_List_Table {
 	}
 
 	public function add_notice( $message, $type = 'success' ) {
-
 	}
 
 	/**
@@ -161,21 +159,30 @@ class ReportTable extends WP_List_Table {
 		$paged        = $this->get_pagenum();
 		$report_type  = isset( $_REQUEST['type'] ) ? wc_clean( wp_unslash( $_REQUEST['type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$report_type  = in_array( $report_type, array_keys( Package::get_available_report_types( true ) ), true ) ? $report_type : '';
+		$order_by     = isset( $_REQUEST['orderby'] ) ? wc_clean( wp_unslash( $_REQUEST['orderby'] ) ) : 'date_start'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order        = isset( $_REQUEST['order'] ) ? wc_clean( wp_unslash( $_REQUEST['order'] ) ) : 'DESC'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		$args = array(
 			'limit'            => $per_page,
 			'paginate'         => true,
 			'offset'           => ( $paged - 1 ) * $per_page,
 			'count_total'      => true,
+			'orderby'          => $order_by,
+			'order'            => strtoupper( $order ),
 			'type'             => $report_type,
 			'include_observer' => 'observer' === $report_type ? true : false,
 		);
 
 		$this->items = $this->get_reports( $args );
+		$total_items = empty( $args['type'] ) ? array_sum( $this->counts ) : $this->counts[ $args['type'] ];
+
+		if ( 'observer' !== $args['type'] ) {
+			$total_items -= $this->counts['observer'];
+		}
 
 		$this->set_pagination_args(
 			array(
-				'total_items' => empty( $args['type'] ) ? array_sum( $this->counts ) : $this->counts[ $args['type'] ],
+				'total_items' => $total_items,
 				'per_page'    => $per_page,
 			)
 		);
@@ -252,7 +259,7 @@ class ReportTable extends WP_List_Table {
 			);
 
 			$type_label = sprintf(
-				translate_nooped_plural( _nx_noop( $title . ' <span class="count">(%s)</span>', $title . ' <span class="count">(%s)</span>', 'oss', 'one-stop-shop-woocommerce' ), $num_reports[ $type ] ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralPlural,WordPress.WP.I18n.NonSingularStringLiteralSingle
+				translate_nooped_plural( _nx_noop( $title . ' <span class="count">(%s)</span>', $title . ' <span class="count">(%s)</span>', 'oss', 'one-stop-shop-woocommerce' ), $num_reports[ $type ] ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralPlural, WordPress.WP.I18n.NonSingularStringLiteralSingular
 				number_format_i18n( $num_reports[ $type ] )
 			);
 
@@ -265,24 +272,24 @@ class ReportTable extends WP_List_Table {
 	/**
 	 * Helper to create links to edit.php with params.
 	 *
-	 * @since 4.4.0
-	 *
 	 * @param string[] $args  Associative array of URL parameters for the link.
 	 * @param string   $label Link text.
-	 * @param string   $class Optional. Class attribute. Default empty string.
+	 * @param string   $html_class Optional. Class attribute. Default empty string.
+	 *
 	 * @return string The formatted link string.
+	 * @since 4.4.0
 	 */
-	protected function get_edit_link( $args, $label, $class = '' ) {
+	protected function get_edit_link( $args, $label, $html_class = '' ) {
 		$url = add_query_arg( $args, $this->get_main_page() );
 
 		$class_html = $aria_current = '';
-		if ( ! empty( $class ) ) {
+		if ( ! empty( $html_class ) ) {
 			$class_html = sprintf(
 				' class="%s"',
-				esc_attr( $class )
+				esc_attr( $html_class )
 			);
 
-			if ( 'current' === $class ) {
+			if ( 'current' === $html_class ) {
 				$aria_current = ' aria-current="page"';
 			}
 		}
@@ -333,7 +340,6 @@ class ReportTable extends WP_List_Table {
 	}
 
 	protected function render_filters() {
-
 	}
 
 	/**

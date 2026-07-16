@@ -1,0 +1,84 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+
+{% if data.licenseKey is not empty %}
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+        {% import "system/macro/row/text.html.twig" as row_text %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.yourLicenseInformation,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% embed "system/embed/form-row.html.twig" %}
+                {% block label %}
+                    {{ localized.field.licenseStatus }}
+                {% endblock %}
+
+                {% block input %}
+                    <span class="{% if data.licenseStatus == 'expired' %}bc-text-red-500{% else %}bc-text-green-500{% endif %}">
+                        {{ data.licenseStatusMessage }}
+                    </span>
+                {% endblock %}
+            {% endembed %}
+
+            {% if findObject(data.licenseMeta.list, 'key', 'hide_license_information').value != "1" %}
+                {{ row_text.component({
+                    label: localized.field.licenseName,
+                    value: data.licenseName,
+                }) }}
+
+                {{ row_text.component({
+                    label: localized.field.licenseValidUntil,
+                    value: data.licenseValidUntil,
+                }) }}
+
+                {{ row_text.component({
+                    label: localized.field.cloudScans,
+                    value: findObject(data.licenseMeta.list, 'key', 'scans').value,
+                }) }}
+
+                {{ row_text.component({
+                    label: localized.field.maxWebsites,
+                    value: findObject(data.licenseMeta.list, 'key', 'sites').value,
+                }) }}
+            {% endif %}
+
+            {% embed "system/embed/form-row.html.twig" %}
+                {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+
+                {% block label %}
+                    {{ localized.field.confirmRefresh | raw  }}
+                {% endblock %}
+
+                {% block input %}
+                    <div class="bc-flex bc-items-center">
+                        {{ checkbox.component({
+                            id: 'refreshConfirmation',
+                            dataAttribute: 'data-brlbs-enable-target="refreshExecute"'
+                        }) }}
+
+                        <label class="bc-mr-2 bc-pl-1 bc-pb-1" for="refreshConfirmation">
+                            {{ localized.field.confirm | raw }}
+                        </label>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            <form action="{{ "?page=#{controllerId}" }}" method="post" class="bc-group/form">
+            {{ row_save.component({
+                action: 'refresh',
+                buttonId: 'refreshExecute',
+                button: localized.button.refreshLicenseInformation,
+                isDisabled: true,
+                nonce: wpNonceField("#{controllerId}-refresh")
+            }) }}
+            </form>
+        {% endblock %}
+    {% endembed %}
+</div>
+{% endif %}

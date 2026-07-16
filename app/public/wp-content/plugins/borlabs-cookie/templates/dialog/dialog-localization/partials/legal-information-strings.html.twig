@@ -1,0 +1,113 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true, infoPanelGradient: ['bc-bg-gradient-to-tr bc-from-[#e61212] bc-to-[#921212] bc-text-white'] } %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% import "system/macro/icons/exclamation-triangle.html.twig" as exclamation_triangle_icon %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/row/textarea-optional.html.twig" as row_textarea_optional %}
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.dialogLegalInformation,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionConfirmAgeStatus'),
+            id: 'legalInformationDescriptionConfirmAge',
+            label: localized.field.legalInformationDescriptionConfirmAge,
+            value: data.legalInformationDescriptionConfirmAge,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionTechnologyStatus'),
+            id: 'legalInformationDescriptionTechnology',
+            label: localized.field.legalInformationDescriptionTechnology,
+            value: data.legalInformationDescriptionTechnology,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionPersonalDataStatus'),
+            id: 'legalInformationDescriptionPersonalData',
+            label: localized.field.legalInformationDescriptionPersonalData,
+            value: data.legalInformationDescriptionPersonalData,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionMoreInformationStatus'),
+            id: 'legalInformationDescriptionMoreInformation',
+            label: localized.field.legalInformationDescriptionMoreInformation,
+            value: data.legalInformationDescriptionMoreInformation,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionNoObligationStatus'),
+            id: 'legalInformationDescriptionNoObligation',
+            label: localized.field.legalInformationDescriptionNoObligation,
+            value: data.legalInformationDescriptionNoObligation,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionRevokeStatus'),
+            id: 'legalInformationDescriptionRevoke',
+            label: localized.field.legalInformationDescriptionRevoke,
+            value: data.legalInformationDescriptionRevoke,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionIndividualSettingsStatus'),
+            id: 'legalInformationDescriptionIndividualSettings',
+            label: localized.field.legalInformationDescriptionIndividualSettings,
+            value: data.legalInformationDescriptionIndividualSettings,
+        }) }}
+
+        {{ row_textarea_optional.component({
+            checked: attribute(data, 'legalInformationDescriptionNonEuDataTransferStatus'),
+            id: 'legalInformationDescriptionNonEuDataTransfer',
+            label: localized.field.legalInformationDescriptionNonEuDataTransfer,
+            value: data.legalInformationDescriptionNonEuDataTransfer,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        <span class="bc-flex bc-items-center bc-space-x-2">
+            {{ exclamation_triangle_icon.component({
+                height: "bc-h-6",
+                width: "bc-w-6",
+            }) }}
+            <span>{{ localized.global.headline.important | upper | raw }}</span>
+            {{ exclamation_triangle_icon.component({
+                height: "bc-h-6",
+                width: "bc-w-6",
+            }) }}
+        </span>
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with { id: 'accordionLegalInformationOne', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineLegalInformation | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.legalInformationA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.legalInformationB | raw }}</p>
+                        <p>{{ localized.thingsToKnow.legalInformationC | raw }}</p>
+                        <ul class="bc-mb-4 bc-space-y-2 bc-list-disc bc-text-left">
+                            <li>{{ localized.thingsToKnow.legalInformationTopicA | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicB | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicC | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicD | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicE | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicF | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicG | raw }}</li>
+                            <li>{{ localized.thingsToKnow.legalInformationTopicH | raw }}</li>
+                        </ul>
+                        <p>{{ localized.thingsToKnow.legalInformationTopicSmallPrintA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.legalInformationTopicSmallPrintB | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

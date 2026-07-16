@@ -1,4 +1,7 @@
 <?php
+
+use Duplicator\Core\Controllers\ControllersManager;
+
 defined('ABSPATH') || defined('DUPXABSPATH') || exit;
 global $wpdb;
 
@@ -9,7 +12,7 @@ if (isset($_POST['action'])) {
     switch ($action) {
         case 'duplicator_package_active':
             $action_result   = DUP_Settings::DeleteWPOption($action);
-            $action_response = __('Package settings have been reset.', 'duplicator');
+            $action_response = __('Backup settings have been reset.', 'duplicator');
             break;
     }
 }
@@ -238,7 +241,7 @@ SYSTEM REQUIREMENTS -->
                 <div class="dup-sys-info dup-info-box">
                     <?php if ($dup_tests['RES']['INSTALL'] == 'Pass') : ?>
                         <?php
-                        esc_html_e("None of the reserved files where found from a previous install.  This means you are clear to create a new package.", 'duplicator');
+                        esc_html_e("None of the reserved files where found from a previous install.  This means you are clear to create a new Backup.", 'duplicator');
                         echo "  [" . esc_html($dup_intaller_files) . "]";
                         ?>
                         <?php
@@ -250,7 +253,7 @@ SYSTEM REQUIREMENTS -->
                             <?php echo esc_html(duplicator_get_abs_path()); ?><br/>
                             <?php esc_html_e("A reserved file(s) was found in the WordPress root directory. Reserved file names include [{$dup_intaller_files}]. " .
                                 " To archive your data correctly please remove any of these files from your WordPress root directory. " .
-                                " Then try creating your package again.", 'duplicator'); ?>
+                                " Then try creating your Backup again.", 'duplicator'); ?>
                             <br/><input type='submit' class='button button-small' value='<?php esc_attr_e('Remove Files Now', 'duplicator') ?>' style='font-size:10px; margin-top:5px;' />
                         </form>
                     <?php endif; ?>
@@ -285,10 +288,13 @@ refresh page in-case any filters where set while on the scanner page -->
             } else {
                 $state.val("cached");
                 <?php
-                $redirect           = admin_url('admin.php?page=duplicator&tab=new1');
-                $redirect_nonce_url = wp_nonce_url($redirect, 'new1-package');
-                echo "window.location.href = '{$redirect_nonce_url}'";
-                ?>
+                    $redirect           = ControllersManager::getMenuLink(
+                        ControllersManager::PACKAGES_SUBMENU_SLUG,
+                        'new1'
+                    );
+                    $redirect_nonce_url = wp_nonce_url($redirect, 'new1-package');
+                    echo "window.location.href = '{$redirect_nonce_url}'";
+                    ?>
             }
         }
 

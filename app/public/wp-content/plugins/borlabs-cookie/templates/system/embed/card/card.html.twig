@@ -1,0 +1,15 @@
+{% set cssClasses = [
+    'bc-rounded-md bc-shadow bc-bg-white'
+] %}
+
+{% if hideInSimplifiedMode is defined and hideInSimplifiedMode %}
+    {% set cssClasses = ['brlbs-cmpnt-hide-in-simplified-mode'] | merge(cssClasses) %}
+{% endif %}
+
+{% if noMarginBottom is not defined or noMarginBottom != 'true' %}
+    {% set cssClasses = ['bc-mb-6'] | merge(cssClasses) %}
+{% endif %}
+
+<div class="{{ cssClasses | join(' ') }}">
+    {% block cardContent %}{% endblock %}
+</div>

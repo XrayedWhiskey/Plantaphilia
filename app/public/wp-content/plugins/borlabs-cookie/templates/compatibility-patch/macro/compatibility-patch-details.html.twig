@@ -1,0 +1,110 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/description-list/description-list.html.twig" %}
+        {% block listItems %}
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.id }}
+                {% endblock %}
+                {% block description %}
+                    {{ config.compatibilityPatch.key | raw }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.fileName }}
+                {% endblock %}
+                {% block description %}
+                    {{ config.compatibilityPatch.fileName | raw }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.filePath }}
+                {% endblock %}
+                {% block description %}
+                    {% if config.file.path is not empty %}
+                        {{ config.file.path | raw }}
+                    {% else %}
+                        <span class="bc-text-red-600">{{ localized.alert.fileMissing }}</span>
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.requiredHash }}
+                {% endblock %}
+                {% block description %}
+                    {{ config.compatibilityPatch.hash | raw }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.calculatedHash }}
+                {% endblock %}
+                {% block description %}
+                    {% if config.file.hash is not empty %}
+                        {{ config.file.hash | raw }}
+                    {% else %}
+                        <span class="bc-text-red-600">{{ localized.alert.fileMissing }}</span>
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.validationStatus }}
+                {% endblock %}
+                {% block description %}
+                    {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                    {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+
+                    {% if config.validationStatus %}
+                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                    {% else %}
+                        <span class="bc-text-red-600">{{ x_circle_icon.component({}) }}</span>
+                    {% endif %}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.packageName }}
+                {% endblock %}
+                {% block description %}
+                    {{ config.package.name | raw }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.installedAt }}
+                {% endblock %}
+                {% block description %}
+                    {{ adjustTimezone(config.package.installedAt).format('Y-m-d H:i') | raw }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.updatedAt }}
+                {% endblock %}
+                {% block description %}
+                    {{ adjustTimezone(config.package.updatedAt).format('Y-m-d H:i') | raw }}
+                {% endblock %}
+            {% endembed %}
+
+            {% embed "system/embed/description-list/list-item.html.twig" %}
+                {% block term %}
+                    {{ localized.descriptionList.version }}
+                {% endblock %}
+                {% block description %}
+                    {{ versionNumber(config.package.version) | raw }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

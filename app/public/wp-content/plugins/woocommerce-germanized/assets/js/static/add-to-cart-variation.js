@@ -6,8 +6,9 @@
     var GermanizedVariationForm = function( $form ) {
         var self = this;
 
+        self.params               = wc_gzd_add_to_cart_variation_params;
         self.$form                = $form;
-        self.$wrapper             = $form.closest( wc_gzd_add_to_cart_variation_params.wrapper );
+        self.$wrapper             = $form.closest( self.params.wrapper );
         self.$product             = $form.closest( '.product' );
         self.variationData        = $form.data( 'product_variations' );
         self.$singleVariation     = $form.find( '.single_variation' );
@@ -22,12 +23,26 @@
             self.$wrapper = self.$product;
         }
 
+        self.showOrHideTabs( self );
+
+        var $priceElement  = self.getPriceElement( self );
         self.isBlockLayout = self.$wrapper.find('.wp-block-woocommerce-product-price').length > 0;
-        self.replacePrice  = self.$wrapper.hasClass( 'bundled_product' ) ? false : wc_gzd_add_to_cart_variation_params.replace_price;
+        self.replacePrice  = self.$wrapper.hasClass( 'bundled_product' ) ? false : self.params.replace_price;
+
+        /**
+         * Some themes/page builders may not render the from-to price
+         */
+        if ( $priceElement.length <= 0 ) {
+            self.replacePrice = false;
+        }
 
         $form.on( 'click.wc-gzd-variation-form', '.reset_variations', { GermanizedvariationForm: self }, self.onReset );
         $form.on( 'reset_data.wc-gzd-variation-form', { GermanizedvariationForm: self }, self.onReset );
         $form.on( 'show_variation.wc-gzd-variation-form', { GermanizedvariationForm: self }, self.onShowVariation );
+
+        if ( self.replacePrice ) {
+            self.$form.addClass( 'wc-gzd-replace-price' );
+        }
 
         self.$wrapper.find( '' +
             '.woocommerce-product-attributes-item--food_description, ' +
@@ -41,9 +56,23 @@
             var $tr = $( this );
 
             if ( $tr.find( '.woocommerce-product-attributes-item__value' ).is( ':empty' ) || $tr.find( '.woocommerce-product-attributes-item__value .wc-gzd-additional-info-placeholder' ).is( ':empty' ) ) {
-                $tr.addClass( 'wc-gzd-additional-info-placeholder' );
+                $tr.attr( 'aria-hidden', 'true' ).addClass( 'wc-gzd-additional-info-placeholder' );
             }
         } );
+    };
+
+    GermanizedVariationForm.prototype.showOrHideTabs = function( self, has_product_safety_information = undefined ) {
+        /**
+         * Block-based themes have the global post/product classes attached to body instead of the product group wrapper.
+         */
+        var $defaultWrapper = $( 'body' ).hasClass( 'type-product' ) ? $( 'body' ) : self.$product;
+        has_product_safety_information = undefined === has_product_safety_information ? $defaultWrapper.hasClass( 'has-product-safety-information' ) : has_product_safety_information;
+
+        if ( has_product_safety_information ) {
+            self.$product.find( '.product_safety_tab' ).show().css( 'display', 'inline-block' );
+        } else {
+            self.$product.find( '.product_safety_tab' ).hide();
+        }
     };
 
     GermanizedVariationForm.prototype.getPriceElement = function( self ) {
@@ -53,7 +82,7 @@
          * Ignore the price wrapper inside the variation form to make sure the right
          * price is being replaced even if the price element is located beneath the form.
          */
-        return $wrapper.find( wc_gzd_add_to_cart_variation_params.price_selector + ':not(.price-unit):visible' ).not( '.variations_form .single_variation .price' ).first();
+        return $wrapper.find( self.params.price_selector + ':not(.price-unit):visible' ).not( '.variations_form .single_variation .price' ).first();
     };
 
     /**
@@ -68,6 +97,8 @@
         } );
 
         $wrapper.find( '.variation_gzd_modified' ).remove();
+
+        form.showOrHideTabs( form );
 
         event.data.GermanizedvariationForm.$form.trigger( 'germanized_reset_data' );
     };
@@ -116,6 +147,14 @@
         form.getElementOrBlock( form, 'delivery-time', '.delivery-time-info' ).wc_gzd_set_content( variation.delivery_time );
         form.getElementOrBlock( form, 'defect-description', '.defect-description' ).wc_gzd_set_content( variation.defect_description );
         form.getElementOrBlock( form, 'tax-info', '.tax-info' ).wc_gzd_set_content( hasDisplayPrice ? variation.tax_info : '' );
+        form.getElementOrBlock( form, 'manufacturer', '.manufacturer' ).wc_gzd_set_content( variation.manufacturer );
+        form.getElementOrBlock( form, 'manufacturer-heading', '.wc-gzd-product-manufacturer-heading' ).wc_gzd_set_content( variation.manufacturer_heading );
+        form.getElementOrBlock( form, 'product_safety_attachments', '.product-safety-attachments' ).wc_gzd_set_content( variation.product_safety_attachments );
+        form.getElementOrBlock( form, 'product-safety-attachments-heading', '.wc-gzd-product-safety-attachments-heading' ).wc_gzd_set_content( variation.product_safety_attachments_heading );
+        form.getElementOrBlock( form, 'safety_instructions', '.safety-instructions' ).wc_gzd_set_content( variation.safety_instructions );
+        form.getElementOrBlock( form, 'safety-instructions-heading', '.wc-gzd-product-safety-instructions-heading' ).wc_gzd_set_content( variation.safety_instructions_heading );
+        form.getElementOrBlock( form, 'power_supply', '.wc-gzd-power-supply' ).wc_gzd_set_content( variation.power_supply );
+
         form.getElementOrBlock( form, 'deposit', '.deposit-amount' ).wc_gzd_set_content( hasDisplayPrice ? variation.deposit_amount : '' );
         form.getElementOrBlock( form, 'deposit-packaging-type', '.deposit-packaging-type' ).wc_gzd_set_content( hasDisplayPrice ? variation.deposit_packaging_type : '' );
         form.getElementOrBlock( form, 'food-description', '.wc-gzd-food-description' ).wc_gzd_set_content( variation.food_description );
@@ -135,6 +174,8 @@
         form.getElementOrBlock( form, 'shipping-costs-info', '.shipping-costs-info' ).wc_gzd_set_content( hasDisplayPrice ? variation.shipping_costs_info : '' );
         form.getElementOrBlock( form, 'unit-price', '.price-unit' ).wc_gzd_set_content( hasDisplayPrice ? variation.unit_price : '' );
         form.getElementOrBlock( form, 'unit-product', '.product-units' ).wc_gzd_set_content( hasDisplayPrice ? variation.product_units : '' );
+
+        form.showOrHideTabs( form, variation.has_product_safety_information )
 
         form.$form.trigger( 'germanized_variation_data', variation, $wrapper );
     };
@@ -156,31 +197,32 @@
          * to be replaced within the main product wrapper (e.g. cross-sells).
          */
         var $this = this.not( '.wc-gzd-additional-info-loop' );
+        content = undefined === content ? '' : content;
 
         if ( undefined === $this.attr( 'data-o_content' ) ) {
             $this.attr( 'data-o_content', $this.html() );
         }
 
         $this.html( content );
-        $this.addClass( 'variation_modified variation_gzd_modified' ).removeClass( 'wc-gzd-additional-info-placeholder' ).show();
+        $this.addClass( 'variation_modified variation_gzd_modified' ).attr( 'aria-hidden', 'false' ).removeClass( 'wc-gzd-additional-info-placeholder' ).show();
 
         if ( $this.is( ':empty' ) ) {
-            $this.hide();
+            $this.attr( 'aria-hidden', 'true' ).hide();
 
             if ( $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).length > 0 ) {
-                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).addClass( 'wp-block-woocommerce-gzd-product-is-empty' );
+                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).attr( 'aria-hidden', 'true' ).addClass( 'wp-block-woocommerce-gzd-product-is-empty' );
             }
 
             if ( $this.parents( '.woocommerce-product-attributes-item' ).length > 0 ) {
-                $this.parents( '.woocommerce-product-attributes-item' ).hide();
+                $this.parents( '.woocommerce-product-attributes-item' ).attr( 'aria-hidden', 'true' ).hide();
             }
         } else {
             if ( $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).length > 0 ) {
-                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).removeClass( 'wp-block-woocommerce-gzd-product-is-empty' );
+                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).attr( 'aria-hidden', 'false' ).removeClass( 'wp-block-woocommerce-gzd-product-is-empty' );
             }
 
             if ( $this.parents( '.woocommerce-product-attributes-item' ).length > 0 ) {
-                $this.parents( '.woocommerce-product-attributes-item' ).show();
+                $this.parents( '.woocommerce-product-attributes-item' ).attr( 'aria-hidden', 'false' ).show();
             }
         }
     };
@@ -198,10 +240,10 @@
         }
 
         if ( $this.is( ':empty' ) ) {
-            $this.addClass( 'wc-gzd-additional-info-placeholder' ).hide();
+            $this.addClass( 'wc-gzd-additional-info-placeholder' ).attr( 'aria-hidden', 'true' ).hide();
 
             if ( $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).length > 0 ) {
-                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).addClass( 'wp-block-woocommerce-gzd-product-is-empty' );
+                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).addClass( 'wp-block-woocommerce-gzd-product-is-empty' ).attr( 'aria-hidden', 'true' );
             }
 
             if ( $this.parents( '.woocommerce-product-attributes-item' ).length > 0 ) {
@@ -209,7 +251,7 @@
             }
         } else {
             if ( $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).length > 0 ) {
-                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).removeClass( 'wp-block-woocommerce-gzd-product-is-empty' );
+                $this.parents( '.wp-block-woocommerce-gzd-product-price-label' ).removeClass( 'wp-block-woocommerce-gzd-product-is-empty' ).attr( 'aria-hidden', 'false' );
             }
 
             if ( $this.parents( '.woocommerce-product-attributes-item' ).length > 0 ) {

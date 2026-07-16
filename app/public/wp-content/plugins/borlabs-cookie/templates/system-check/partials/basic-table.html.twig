@@ -1,0 +1,201 @@
+{% embed "system/embed/table/responsive-table.html.twig" %}
+    {% block heading %}
+        {% embed "system/embed/table/table-header-element.html.twig" with { attributes: 'colspan="2"' }%}
+            {% block content %}
+                {{ localized.table.general | raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+    {% block body %}
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.borlabsCookieStatus | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorText: localized.status.inactive,
+                            okText: localized.status.active,
+                            status: data.borlabsCookieStatus,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.installedVersion | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ constant('BORLABS_COOKIE_VERSION') }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.language | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ language }} / {{ defaultLanguage }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.cronjob | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorText: data.status.system.cronjob.message,
+                            status: data.status.system.cronjob.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.cacheFolder | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.fileSystem.cacheFolder.message,
+                            status: data.status.fileSystem.cacheFolder.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.storageFolder | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.fileSystem.storageFolder.message,
+                            status: data.status.fileSystem.storageFolder.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.wordPressRestApiStatus | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.wordPressRestApiStatus.message,
+                            status: data.wordPressRestApiStatus.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.geoIpDatabaseLastCheck | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ data.geoIpLastSuccessfulCheckWithApiFormattedTime }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.iabTcfVendorDatabaseLastCheck | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ data.gvlLastSuccessfulCheckWithApiFormattedTime }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.packageLibraryDatabaseLastCheck | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ data.packageListSuccessfulCheckWithApiFormattedTime }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.totalConsentLogs | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% block content %}
+                        {{ data.totalConsentLogs }} / {{ data.consentLogTableSize }}  MiB
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

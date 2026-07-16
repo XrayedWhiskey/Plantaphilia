@@ -1,0 +1,43 @@
+{% macro component(config, localized) %}
+    {% import "system/macro/form-component/select.html.twig" as select %}
+    {% import "system/macro/form-component/input.html.twig" as input %}
+    {% import "system/macro/form-component/checkbox.html.twig" as checkbox %}
+
+    {% set pageSelectName = config.pageSelectId %}
+    {% if config.pageSelectName is not empty %}
+        {% set pageSelectName = config.pageSelectName %}
+    {% endif %}
+
+    {% set urlInputName = config.urlInputName %}
+    {% if config.urlInputName is not empty %}
+        {% set urlInputName = config.urlInputName %}
+    {% endif %}
+
+    <div class="bc-flex bc-items-center bc-space-x-2">
+        {{ select.component({
+            id: config.pageSelectId,
+            isDisabled: config.urlInputValue is not empty,
+            name: pageSelectName,
+            options: config.pagesList,
+            value: config.pageSelectValue,
+        }) }}
+    </div>
+
+    <div class="bc-flex bc-items-center bc-space-x-2 bc-pt-2 bc-w-3/4">
+        {{ checkbox.component({
+            id: "enable#{ucfirst(config.urlInputId)}",
+            name: "enable#{ucfirst(config.urlInputId)}",
+            dataAttribute: "data-brlbs-enable-target=\"#{config.urlInputId}\" data-brlbs-disable-target=\"#{config.pageSelectId}\"",
+            checked: config.urlInputValue is not empty
+        }) }}
+        {{ input.component({
+            id: config.urlInputId,
+            isDisabled: config.urlInputValue is empty,
+            name: urlInputName,
+            placeholder: 'https://',
+            type: 'url',
+            value: config.urlInputValue,
+            width: 'bc-w-full'
+        }) }}
+    </div>
+{% endmacro %}

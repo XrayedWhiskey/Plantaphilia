@@ -27,7 +27,8 @@ class Supercacher_Helper {
 		// Set the cache header to false so it's skipped from caching.
 		if (
 			0 === $is_cache_enabled ||
-			self::is_url_excluded( trailingslashit( $url ) )
+			self::is_url_excluded( trailingslashit( $url ) ) ||
+			self::is_query_param_excluded( $url )
 		) {
 			$result->header( 'X-Cache-Enabled', 'False' );
 		}
@@ -59,7 +60,8 @@ class Supercacher_Helper {
 		if (
 			( 0 === $is_cache_enabled && 0 === $file_cache_enabled ) ||
 			self::is_url_excluded( $url ) ||
-			self::is_post_type_excluded( $url )
+			self::is_post_type_excluded( $url ) ||
+			self::is_query_param_excluded( $url )
 		) {
 			$headers['X-Cache-Enabled'] = 'False';
 			return $headers;
@@ -157,6 +159,42 @@ class Supercacher_Helper {
 		// Check if the post type is in the exclude list.
 		if ( in_array( $post_type, $post_types ) ) {
 			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if the URL contains excluded query parameters.
+	 *
+	 * @param $url The URL to check.
+	 *
+	 * @return boolean True if the URL contains excluded parameters, false otherwise.
+	 */
+	public static function is_query_param_excluded( $url ) {
+		// Get the excluded parameters, if there are such.
+		$excluded_params = apply_filters( 'sgo_bypass_query_params', array() );
+
+		if ( empty( $excluded_params ) ) {
+			return false;
+		}
+
+		// Get the query parameters.
+		$parsed_params = wp_parse_url( $url, PHP_URL_QUERY );
+
+		if ( empty( $parsed_params ) ) {
+			return false;
+		}
+
+		// Convert the parameters into array.
+		$query_params = array();
+		parse_str( $parsed_params, $query_params );
+
+		// Check if excluded parameters, exist in the query string.
+		foreach ( $excluded_params as $param ) {
+			if ( array_key_exists( $param, $query_params ) ) {
+				return true;
+			}
 		}
 
 		return false;

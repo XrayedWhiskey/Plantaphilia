@@ -1,7 +1,5 @@
 <?php
 
-use Vendidero\Germanized\Shipments\Package;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
@@ -72,8 +70,8 @@ class WC_GZD_Settings_Germanized extends WC_Settings_Page {
 		}
 
 		$core_pages = wc_admin_get_core_pages_to_connect();
-		$tab        = isset( $_GET['tab'] ) ? wc_clean( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$tab_clean  = str_replace( 'germanized-', '', $tab );
+		$tab        = $this->get_current_tab();
+		$tab_clean  = $this->get_current_gzd_tab();
 
 		$new_breadcrumbs = array(
 			array(
@@ -135,9 +133,24 @@ class WC_GZD_Settings_Germanized extends WC_Settings_Page {
 		return $this->get_inner_settings( $section_id );
 	}
 
+	public function get_current_tab() {
+		return isset( $_GET['tab'] ) ? wc_clean( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	public function get_current_gzd_tab() {
+		$tab_clean = str_replace( 'germanized-', '', $this->get_current_tab() );
+		$tab_clean = str_replace( 'shiptastic-', '', $tab_clean );
+
+		return $this->is_active() && $tab_clean ? $tab_clean : false;
+	}
+
 	public function admin_styles() {
 		// Admin styles for WC pages only.
 		if ( $this->is_active() ) {
+			if ( 'license' === $this->get_current_gzd_tab() ) {
+				wp_enqueue_style( 'vd_admin' );
+			}
+
 			wp_enqueue_style( 'woocommerce-gzd-admin-settings' );
 
 			/**
@@ -163,42 +176,49 @@ class WC_GZD_Settings_Germanized extends WC_Settings_Page {
 	}
 
 	protected function is_active() {
-		if ( isset( $_GET['tab'] ) && strpos( wc_clean( wp_unslash( $_GET['tab'] ) ), 'germanized' ) !== false ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return true;
+		$is_active = false;
+
+		if ( isset( $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$tab_name = wc_clean( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			if ( strstr( $tab_name, 'germanized' ) || strstr( $tab_name, 'shiptastic' ) ) {
+				$is_active = true;
+			}
 		}
 
-		return false;
+		return $is_active;
 	}
 
 	public function add_body_classes( $classes ) {
 		if ( $this->is_active() ) {
 			$classes = $classes . ' wc-gzd-settings';
+
+			if ( \Vendidero\Germanized\PluginsHelper::compare_versions( \Vendidero\Germanized\PluginsHelper::get_plugin_version( 'woocommerce' ), '9.9.0', '>=' ) ) {
+				$classes = $classes . ' wc-gzd-settings-modern-nav';
+			}
 		}
 
 		return $classes;
 	}
 
 	public function get_tabs() {
-		include_once dirname( __FILE__ ) . '/abstract-wc-gzd-settings-tab.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-general.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-shopmarks.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-emails.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-taxes.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-button-solution.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-checkboxes.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-doi.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-oss.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-contract.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-invoices.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-multistep-checkout.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-terms-generator.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-revocation-generator.php';
-		include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-trusted-shops.php';
-
-		if ( class_exists( '\Vendidero\Germanized\Shipments\Package' ) && Package::has_dependencies() ) {
-			include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-shipments.php';
-			include_once dirname( __FILE__ ) . '/class-wc-gzd-settings-tab-shipping-provider.php';
-		}
+		include_once __DIR__ . '/abstract-wc-gzd-settings-tab.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-general.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-shopmarks.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-emails.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-taxes.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-button-solution.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-checkboxes.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-doi.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-oss.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-contract.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-invoices.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-multistep-checkout.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-terms-generator.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-revocation-generator.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-trusted-shops.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-license.php';
+		include_once __DIR__ . '/class-wc-gzd-settings-tab-shiptastic.php';
 
 		/**
 		 * Filter to register or remove certain setting tabs from the Germanized settings screen.
@@ -218,7 +238,7 @@ class WC_GZD_Settings_Germanized extends WC_Settings_Page {
 				'button_solution'                => 'WC_GZD_Settings_Tab_Button_Solution',
 				'multistep_checkout'             => 'WC_GZD_Settings_Tab_Multistep_Checkout',
 				'invoices'                       => 'WC_GZD_Settings_Tab_Invoices',
-				'shipments'                      => 'WC_GZD_Settings_Tab_Shipments',
+				'shiptastic'                     => 'WC_GZD_Settings_Tab_Shiptastic',
 				'shipping_provider'              => 'WC_GZD_Settings_Tab_Shipping_Provider',
 				'double_opt_in'                  => 'WC_GZD_Settings_Tab_DOI',
 				'emails'                         => 'WC_GZD_Settings_Tab_Emails',
@@ -228,6 +248,7 @@ class WC_GZD_Settings_Germanized extends WC_Settings_Page {
 				'revocation_generator'           => 'WC_GZD_Settings_Tab_Revocation_Generator',
 				'oss'                            => 'WC_GZD_Settings_Tab_OSS',
 				'trusted_shops_easy_integration' => 'WC_GZD_Settings_Tab_Trusted_Shops',
+				'license'                        => 'WC_GZD_Settings_Tab_License',
 			)
 		);
 
@@ -263,6 +284,6 @@ class WC_GZD_Settings_Germanized extends WC_Settings_Page {
 		$GLOBALS['hide_save_button'] = true;
 		$tabs                        = $this->get_tabs();
 
-		include_once dirname( __FILE__ ) . '/views/html-admin-settings-tabs.php';
+		include_once __DIR__ . '/views/html-admin-settings-tabs.php';
 	}
 }

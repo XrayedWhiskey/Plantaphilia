@@ -1,0 +1,173 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" with { hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/row/color-duo-selection.html.twig" as row_color_duo_selection %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.checkboxSettings,
+        }) }}
+    {% endblock %}
+    {% block mainContent %}
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogCheckboxBackgroundColorActive',
+                label: localized.field.backgroundColor,
+                value: data.dialogCheckboxBackgroundColorActive,
+            },
+            colorB:
+            {
+                id: 'dialogCheckboxBorderColorActive',
+                label: localized.field.borderColor,
+                value: data.dialogCheckboxBorderColorActive,
+            },
+            title: localized.field.dialogCheckboxActive,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogCheckboxBackgroundColorInactive',
+                label: localized.field.backgroundColor,
+                value: data.dialogCheckboxBackgroundColorInactive,
+            },
+            colorB:
+            {
+                id: 'dialogCheckboxBorderColorInactive',
+                label: localized.field.borderColor,
+                value: data.dialogCheckboxBorderColorInactive,
+            },
+            title: localized.field.dialogCheckboxInactive,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogCheckboxBackgroundColorDisabled',
+                label: localized.field.backgroundColor,
+                value: data.dialogCheckboxBackgroundColorDisabled,
+            },
+            colorB:
+            {
+                id: 'dialogCheckboxBorderColorDisabled',
+                label: localized.field.borderColor,
+                value: data.dialogCheckboxBorderColorDisabled,
+            },
+            title: localized.field.dialogCheckboxDisabled,
+        }) }}
+
+        {{ row_color_duo_selection.component({
+            colorA:
+            {
+                id: 'dialogCheckboxCheckMarkColorActive',
+                label: localized.field.active,
+                value: data.dialogCheckboxCheckMarkColorActive,
+            },
+            colorB:
+            {
+                id: 'dialogCheckboxCheckMarkColorDisabled',
+                label: localized.field.disabled,
+                value: data.dialogCheckboxCheckMarkColorDisabled,
+            },
+            title: localized.field.dialogCheckMark,
+        }) }}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% import "system/macro/form-component/input-group.html.twig" as input_group %}
+            {% block label %}
+                <label>{{ localized.field.dialogCheckboxBorderRadius | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                <div class="bc-relative bc-flex bc-gap-x-4">
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogCheckboxBorderRadiusTopLeft',
+                            min: 0,
+                            value: data.dialogCheckboxBorderRadiusTopLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogCheckboxBorderRadiusTopLeft">{{ localized.field.topLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogCheckboxBorderRadiusTopRight',
+                            min: 0,
+                            value: data.dialogCheckboxBorderRadiusTopRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogCheckboxBorderRadiusTopRight">{{ localized.field.topRight | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogCheckboxBorderRadiusBottomLeft',
+                            min: 0,
+                            value: data.dialogCheckboxBorderRadiusBottomLeft,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogCheckboxBorderRadiusBottomLeft">{{ localized.field.bottomLeft | raw }}</label>
+                    </div>
+                    <div class="bc-w-1/4">
+                        {{ input_group.component({
+                            append: 'px',
+                            cssClasses: ['bc-pr-[28px]'],
+                            id: 'dialogCheckboxBorderRadiusBottomRight',
+                            min: 0,
+                            value: data.dialogCheckboxBorderRadiusBottomRight,
+                            type: 'number'
+                        }) }}
+                        <label class="bc-pt-2" for="dialogCheckboxBorderRadiusBottomRight">{{ localized.field.bottomRight | raw }}</label>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionCheckboxSettings', expanded: true} %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineOnWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.onWhichElementsDoTheseSettingsHaveAVisualImpact | raw }}</p>
+                        <p>
+                            <a class="bc-flex bc-justify-center" data-brlbs-modal-target="borlabsModalCheckboxSettings" href="#" role="button">
+                                <img class="bc-w-48 bc-h-48 bc-rounded-md bc-shadow-md" src="{{ imageUrl('ttk-dialog-appearance-checkbox-settings.png') }}" alt="">
+                            </a>
+                        </p>
+                        {% embed "system/embed/modal/modal.html.twig" with {
+                            id: 'borlabsModalCheckboxSettings',
+                            maxWidth: 'bc-max-w-2xl',
+                            title: localized.headline.checkboxSettings,
+                        } %}
+                            {% block icon %}
+                                {% import "system/macro/icons/paint-brush.html.twig" as pain_brush_icon %}
+                                <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                    {{ pain_brush_icon.component({}) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block description %}
+                                <img src="{{ imageUrl('ttk-dialog-appearance-checkbox-settings.png') }}" alt="">
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

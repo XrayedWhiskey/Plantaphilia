@@ -1,0 +1,23 @@
+{% set cssClasses = [] %}
+
+{% if hideInSimplifiedMode is defined and hideInSimplifiedMode %}
+    {% set cssClasses = ['brlbs-cmpnt-hide-in-simplified-mode'] | merge(cssClasses) %}
+{% endif %}
+
+<div class="{{ cssClasses | join(' ') }}">
+    <button type="button" aria-expanded="{{ expanded ? 'true' : 'false' }}" class="bc-group bc-text-left bc-pt-3 bc-pb-1 bc-font-bold bc-flex bc-items-center bc-text-base" data-brlbs-accordion-target="{{ id }}">
+        <span class="bc-inline-block bc-w-5 bc-h-5 bc-mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="group-aria-expanded:bc-hidden bc-block bc-absolute bc-w-5 bc-h-5">
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="group-aria-expanded:bc-block bc-hidden bc-absolute bc-w-5 bc-h-5">
+                <path fill-rule="evenodd" d="M4 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.75A.75.75 0 014 10z" clip-rule="evenodd" />
+            </svg>
+        </span>
+
+        <span>{% block title %}{% endblock %}</span>
+    </button>
+    <div class="brlbs-cmpnt-accordion-content bc-hidden bc-text-left bc-pl-7" {{ expanded ? 'style="display: block"' }} id="{{ id }}">
+        {% block content %}{% endblock %}
+    </div>
+</div>

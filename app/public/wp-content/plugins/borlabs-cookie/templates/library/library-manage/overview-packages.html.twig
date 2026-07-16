@@ -1,0 +1,111 @@
+{% import "library/library-manage/macro/package-card.html.twig" as package_card %}
+{% import "system/macro/form-component/button.html.twig" as button %}
+{% import "system/macro/icons/cloud-arrow-down.html.twig" as cloud_arrow_down_icon %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+{% import "system/macro/navigation/pagination.html.twig" as pagination %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            localized.breadcrumb.module
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    {% if data.packages is not empty %}
+        <div class="bc-flex bc-justify-between bc-items-center bc-px-2 bc-py-2 bc-mb-6 bc-bg-white bc-shadow-sm bc-rounded-md bc-gap-x-2">
+            <div>
+                <nav class="bc-flex bc-items-center bc-space-x-2">
+                    <span class="bc-inline-block bc-px-3 bc-py-2 bc-text-xs">{{ localized.navigation.filter | raw }}:</span>
+                    <a href="{{ "?page=#{controllerId}" }}" class="{{ data.filter is  empty ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md"><span>{{ localized.navigation.all | raw }}</span></a>
+                    <a href="{{ "?page=#{controllerId}&borlabs-filter=service" }}" class="{{ data.filter == 'service' ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md"><span>{{ localized.navigation.services | raw }}</span></a>
+                    <a href="{{ "?page=#{controllerId}&borlabs-filter=content-blocker" }}" class="{{ data.filter == 'content-blocker' ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md"><span>{{ localized.navigation.contentBlockers | raw }}</span></a>
+                    <a href="{{ "?page=#{controllerId}&borlabs-filter=compatibility-patch" }}" class="{{ data.filter == 'compatibility-patch' ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md"><span>{{ localized.navigation.compatibilityPatches | raw }}</span></a>
+                    <a href="{{ "?page=#{controllerId}&borlabs-filter=script-blocker" }}" class="{{ data.filter == 'script-blocker' ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md"><span>{{ localized.navigation.scriptBlockers | raw }}</span></a>
+                    <a href="{{ "?page=#{controllerId}&borlabs-filter=style-blocker" }}" class="{{ data.filter == 'style-blocker' ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md"><span>{{ localized.navigation.styleBlockers | raw }}</span></a>
+                    <a href="{{ "?page=#{controllerId}&borlabs-filter=installed-packages" }}" class="{{ data.filter == 'installed-packages' ? 'bc-bg-blue-600 bc-text-white' : 'bc-text-gray-900 hover:bc-bg-gray-100' }} bc-px-3 bc-py-2 bc-text-xs bc-no-underline bc-rounded-md">
+                        {% if isUpdateAvailable == true %}
+                            {{ cloud_arrow_down_icon.component({
+                                cssClasses: ['bc-animate-bounce', data.filter != 'installed-packages' ? 'bc-text-purple-600' : ''],
+                            }) }}
+                        {% endif %}
+                        <span>{{ localized.navigation.installedPackages | raw }}</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="bc-flex bc-rounded bc-shadow-sm bc-mr-4">
+                <form action="{{ "?page=#{controllerId}" }}" method="post" class="bc-inline-block bc-rounded-md">
+                    <div class="bc-flex bc-flex-grow bc-items-stretch">
+                        <input
+                            class="bc-py-1.5 bc-px-3 bc-border-l bc-border-y bc-border-r-0 bc-border-gray-300 bc-rounded-l bc-block bc-w-full bc-rounded-none placeholder:bc-text-gray-400 sm:bc-text-sm focus:bc-border-blue-500 focus:bc-ring-blue-500"
+                            type="text"
+                            name="searchTerm"
+                            value="{{ data.searchTerm }}"
+                            placeholder="{{ localized.placeholder.search | raw }}"
+                        >
+                        <input type="hidden" name="filter" value="{{ data.filter }}">
+                        {{ button.component({
+                            radius:'bc-rounded-r',
+                        }, localized) }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <ul class="bc-grid bc-grid-cols-1 bc-gap-6 sm:bc-grid-cols-2 lg:bc-grid-cols-4 bc-mb-6">
+            {% for package in data.packages.data %}
+                <li>
+                    {{ package_card.component({
+                        additionalQueryParameters: data.additionalQueryParameters,
+                        componentTypes: data.componentTypes,
+                        controllerId: controllerId,
+                        package: package,
+                    }, localized) }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="bc-w-full">
+            {{ pagination.component({
+                controllerId: controllerId,
+                isDetached: true,
+                pagination: data.packages,
+            }, localized) }}
+        </div>
+        {% embed "system/embed/info-panel.html.twig" with { isDetached: true } %}
+            {% block header %}
+                {{ localized.global.headline.thingsToKnow | raw }}
+            {% endblock %}
+
+            {% block content %}
+                {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                    {% block content %}
+                        {% embed "system/embed/accordion/accordion.html.twig" with { expanded: true, id: 'accordionPackageAutoUpdateSymbol' } %}
+                            {% import "system/macro/icons/cpu-chip.html.twig" as cpu_chip_icon %}
+                            {% block title %}
+                                {{ localized.thingsToKnow.headlinePackageAutoUpdateSymbol | raw }}
+                            {% endblock %}
+                            {% block content %}
+                                <ul class="bc-space-y-2 bc-text-left">
+                                    <li>{{ cpu_chip_icon.component({ cssClasses: ['bc-text-white'], }) }} {{ localized.thingsToKnow.packageAutoUpdateSymbol | raw }}</li>
+                                </ul>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+
+    <!-- Refresh Library -->
+    <hr>
+    {% include "library/library-manage/partials/refresh-library.html.twig" %}
+
+    <div class="bc-flex bc-w-full bc-justify-center bc-my-8">
+        <div class="bc-w-full sm:bc-w-3/5 bc-p-4 bc-rounded-md bc-bg-neutral-200 bc-text-neutral-500 bc-shadow-inner bc-text-center bc-text-xxs">{{ localized.alert.copyrights }}</div>
+    </div>
+{% endif %}

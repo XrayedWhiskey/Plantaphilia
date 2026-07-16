@@ -5,21 +5,58 @@ if ( ! defined( 'DGWT_WCAS_FILE' ) ) {
 	exit;
 }
 
-add_filter( 'et_builder_load_requests', function ( $requests ) {
-	if ( ! isset( $requests['wc-ajax'] ) ) {
-		$requests['wc-ajax'] = array();
+/**
+ * Solves conflict with the Divi builder and "Woo Products" module.
+ * When using this module the wrong sorting was being determined on the search results page.
+ * Due to this, the order of the autocomplete results was not preserved on the search results page.
+ */
+add_filter(
+	'woocommerce_get_catalog_ordering_args',
+	function ( $args, $orderby, $order ) {
+		if (
+		! empty( get_query_var( 'dgwt_wcas' ) ) &&
+		$orderby === 'post__in' &&
+		$order === 'ASC' &&
+		is_callable( 'DgoraWcas\Helpers::is_running_inside_class' ) &&
+		\DgoraWcas\Helpers::is_running_inside_class( 'ET_Builder_Module_Shop', 20 )
+		) {
+			$args = [
+				'orderby'  => 'relevance',
+				'order'    => 'DESC',
+				'meta_key' => '',
+			];
+		}
+
+		return $args;
+	},
+	10,
+	3
+);
+
+add_filter(
+	'et_builder_load_requests',
+	function ( $requests ) {
+		if ( ! isset( $requests['wc-ajax'] ) ) {
+			$requests['wc-ajax'] = [];
+		}
+		$requests['wc-ajax'][] = 'dgwt_wcas_result_details';
+
+		return $requests;
+	},
+	15
+);
+
+add_action(
+	'wp_footer',
+	function () {
+		echo '<div id="wcas-divi-search" style="display: block;">' . do_shortcode( '[wcas-search-form layout="classic" mobile_overlay="1" mobile_breakpoint="980" ]' ) . '</div>';
 	}
-	$requests['wc-ajax'][] = 'dgwt_wcas_result_details';
+);
 
-	return $requests;
-}, 15 );
-
-add_action( 'wp_footer', function () {
-	echo '<div id="wcas-divi-search" style="display: block;">' . do_shortcode( '[wcas-search-form layout="classic" mobile_overlay="1" mobile_breakpoint="980" ]' ) . '</div>';
-} );
-
-add_action( 'wp_footer', function () {
-	?>
+add_action(
+	'wp_footer',
+	function () {
+		?>
 	<script>
 		(function ($) {
 
@@ -133,14 +170,34 @@ add_action( 'wp_footer', function () {
 						}, 500)
 					}
 				});
+
+				<?php
+				// Fix for FiboSearch and Divi Mobile.
+				if ( defined( 'DE_DM_VERSION' ) ) {
+					?>
+				$(document).ready(function () {
+					setTimeout(function () {
+						const diviMobileSearch = $('#dm-menu .dgwt-wcas-search-input');
+						if (diviMobileSearch.length > 0) {
+							diviMobileSearch.each(function (index, input) {
+								dgwt_wcas.fixer.core.reinitSearchBar($(input));
+							});
+						}
+					}, 1000);
+				});
+				<?php } ?>
 			});
 		}(jQuery));
 	</script>
-	<?php
-}, 100 );
+		<?php
+	},
+	100
+);
 
-add_action( 'wp_head', function () {
-	?>
+add_action(
+	'wp_head',
+	function () {
+		?>
 	<style>
 		#wcas-divi-search {
 			display: none !important;
@@ -267,5 +324,6 @@ add_action( 'wp_head', function () {
 			}
 		}
 	</style>
-	<?php
-} );
+		<?php
+	}
+);

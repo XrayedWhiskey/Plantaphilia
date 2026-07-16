@@ -5,6 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once 'trait-woe-plain-format.php';
 
+// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
 abstract class WOE_Formatter_Plain_Format extends WOE_Formatter {
 	use WOE_Order_Export_Plain_Format;
 	private $duplicate_settings = array();
@@ -176,7 +179,7 @@ abstract class WOE_Formatter_Plain_Format extends WOE_Formatter {
             }
 
 			if ($type === 'money' || $type === 'number') {
-				return $direction === 'asc' ? $a[$field] - $b[$field] : $b[$field] - $a[$field];
+				return $direction === 'asc' ? (float)$a[$field] - (float)$b[$field] : (float)$b[$field] - (float)$a[$field];
 			}
 
 			if ($type === 'date') {
@@ -686,7 +689,7 @@ abstract class WOE_Formatter_Plain_Format extends WOE_Formatter {
 
 		if ( $this->mode === 'preview' ) {
 			$width = 75;
-			$height = 75;
+			$height = 0;
 		}
 
 		if ( ! $uploads_dir || ! isset( $uploads_dir['basedir'], $uploads_dir['baseurl'] ) ) {

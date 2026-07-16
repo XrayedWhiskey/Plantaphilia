@@ -4,9 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( class_exists( '\Vendidero\Germanized\Shipments\Package' ) && \Vendidero\Germanized\Shipments\Package::has_dependencies() ) {
-	global $wpdb;
-	$wpdb->hide_errors();
+global $wpdb;
+$wpdb->hide_errors();
 
-	\Vendidero\Germanized\Shipments\Admin\Admin::remove_duplicate_provider_meta();
+$table_name = $wpdb->prefix . 'woocommerce_stc_shipping_providermeta';
+$exists     = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) ) );
+
+if ( $exists && $exists === $table_name ) {
+	$sql    = "DELETE FROM `{$table_name}` WHERE `meta_id` NOT IN (SELECT * FROM (SELECT MAX(`pm`.`meta_id`) FROM `{$table_name}` pm GROUP BY `pm`.`stc_shipping_provider_id`, `pm`.`meta_key`) x)";
+	$result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 }

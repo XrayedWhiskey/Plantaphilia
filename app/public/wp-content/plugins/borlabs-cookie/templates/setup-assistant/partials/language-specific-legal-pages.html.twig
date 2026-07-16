@@ -1,0 +1,37 @@
+<div class="bc-bg-neutral-200 bc-shadow-inner bc-px-6 bc-pt-6 bc-rounded-md">
+    <div class="bc-flex bc-items-center bc-justify-between bc-mb-2">
+        <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-0">{{ localized.headline.configureLanguage }}: {{ language.value }} ({{ language.key }})</h3>
+    </div>
+
+    <div id="components-for-language-{{ language.key }}" class="bc-flex bc-flex-col">
+        {% embed "system/embed/card/card.html.twig" %}
+            {% import "system/macro/row/page-selection.html.twig" as row_page_selection %}
+
+            {% block cardContent %}
+                {{ row_page_selection.component({
+                    hint: localized.hint.privacyPageId ~ ' ' ~ localized.hint.dialogIsHidden,
+                    label: localized.field.privacyPageId,
+                    pageSelectId: "privacy-page-id-#{language.key}",
+                    pageSelectName: "privacyPageId[#{language.key}]",
+                    pagesList: options.pages.list,
+                    pageSelectValue: '',
+                    urlInputId: "privacy-page-custom-url-#{language.key}",
+                    urlInputName: "privacyPageCustomUrl[#{language.key}]",
+                    urlInputValue: '',
+                }) }}
+
+                {{ row_page_selection.component({
+                    hint: localized.hint.imprintPageId ~ ' ' ~ localized.hint.dialogIsHidden,
+                    label: localized.field.imprintPageId,
+                    pageSelectId: "imprint-page-id-#{language.key}",
+                    pageSelectName: "imprintPageId[#{language.key}]",
+                    pagesList: options.pages.list,
+                    pageSelectValue: '',
+                    urlInputId: "imprint-page-custom-url-#{language.key}",
+                    urlInputName: "imprintPageCustomUrl[#{language.key}]",
+                    urlInputValue: '',
+                }) }}
+            {% endblock %}
+        {% endembed %}
+    </div>
+</div>

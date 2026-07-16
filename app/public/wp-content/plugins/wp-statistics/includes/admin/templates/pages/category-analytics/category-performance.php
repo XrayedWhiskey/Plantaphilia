@@ -1,70 +1,64 @@
 <?php
 
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
 use WP_STATISTICS\Admin_Template;
 use WP_STATISTICS\Helper;
 use WP_Statistics\Components\View;
+use WP_Statistics\Service\Admin\Posts\WordCountService;
 
 ?>
 
 <div class="metabox-holder wps-category-analytics">
     <div class="postbox-container" id="wps-postbox-container-1">
         <?php
-        $args1 = [
-            'title'          => esc_html__('Published Contents', 'wp-statistics'),
-            'tooltip'        => esc_html__('The number of published content items with this taxonomy during the selected period, as well as the total number of published contents.', 'wp-statistics'),
-            'avg'            => Helper::formatNumberWithUnit($data['overview']['published']['total']),
-            'avg_title'      => esc_html__('Total', 'wp-statistics'),
-            'selected'       => Helper::formatNumberWithUnit($data['overview']['published']['recent']),
-            'selected_title' => esc_html__('Selected Period', 'wp-statistics')
+        $metrics = [
+            [
+                'label'  => esc_html__('Published Contents', 'wp-statistics'),
+                'value'  => Helper::formatNumberWithUnit($data['glance']['posts']['value']),
+                'change' => $data['glance']['posts']['change']
+            ],
+            [
+                'label'  => esc_html__('Visitors', 'wp-statistics'),
+                'value'  => Helper::formatNumberWithUnit($data['glance']['visitors']['value']),
+                'change' => $data['glance']['visitors']['change']
+            ],
+            [
+                'label'  => esc_html__('Views', 'wp-statistics'),
+                'value'  => Helper::formatNumberWithUnit($data['glance']['views']['value']),
+                'change' => $data['glance']['views']['change']
+            ]
         ];
-        Admin_Template::get_template(['layout/category-analytics/overview-card'], $args1);
 
-        $args2 = [
-            'title'          => esc_html__('Views', 'wp-statistics'),
-            'tooltip'        => esc_html__('Total views of published content with this taxonomy in the selected period. Average per content is the total views divided by the number of published contents in that period.', 'wp-statistics'),
-            'selected'       => Helper::formatNumberWithUnit($data['overview']['views']['recent']),
-            'selected_title' => esc_html__('Selected Period', 'wp-statistics'),
-            'avg'            => Helper::formatNumberWithUnit($data['overview']['views']['avg']),
-            'avg_title'      => esc_html__('Avg. per Content', 'wp-statistics')
+        if (WordCountService::isActive()) {
+            $metrics[] = [
+                'label' => esc_html__('Words', 'wp-statistics'),
+                'value' => Helper::formatNumberWithUnit($data['glance']['words']['value']),
+            ];
+
+            $metrics[] = [
+                'label' => esc_html__('Avg. words per content', 'wp-statistics'),
+                'value' => Helper::formatNumberWithUnit($data['glance']['words_avg']['value']),
+            ];
+        }
+
+        $metrics[] = [
+            'label'  => esc_html__('Comments', 'wp-statistics'),
+            'value'  => Helper::formatNumberWithUnit($data['glance']['comments']['value']),
+            'change' => $data['glance']['comments']['change']
         ];
-        Admin_Template::get_template(['layout/category-analytics/overview-card'], $args2);
 
-        $args3 = [
-            'title'          => esc_html__('Visitors', 'wp-statistics'),
-            'tooltip'        => esc_html__('Total unique visitors for contents with this taxonomy during the selected period. The average per content is calculated by dividing the total visitors by the number of published contents in that period.', 'wp-statistics'),
-            'selected'       => Helper::formatNumberWithUnit($data['overview']['visitors']['recent']),
-            'selected_title' => esc_html__('Selected Period', 'wp-statistics'),
-            'avg'            => Helper::formatNumberWithUnit($data['overview']['visitors']['avg']),
-            'avg_title'      => esc_html__('Avg. per Content', 'wp-statistics')
+        $metrics[] = [
+            'label'  => esc_html__('Avg. comments per content', 'wp-statistics'),
+            'value'  => Helper::formatNumberWithUnit($data['glance']['comments_avg']['value']),
+            'change' => $data['glance']['comments_avg']['change']
         ];
-        Admin_Template::get_template(['layout/category-analytics/overview-card'], $args3);
 
-        $args4 = [
-            'title'          => esc_html__('Words', 'wp-statistics'),
-            'tooltip'        => esc_html__('Total word count and average per content based on published contents in the selected period. Also shows total word count and average per content for all time.', 'wp-statistics'),
-            'selected'       => Helper::formatNumberWithUnit($data['overview']['words']['recent']),
-            'selected_title' => esc_html__('Selected Period', 'wp-statistics'),
-            'avg'            => Helper::formatNumberWithUnit($data['overview']['words']['avg']),
-            'avg_title'      => esc_html__('Avg. per Content', 'wp-statistics'),
-            'total'          => Helper::formatNumberWithUnit($data['overview']['words']['total']),
-            'total_avg'      => Helper::formatNumberWithUnit($data['overview']['words']['total_avg'])
-        ];
-        Admin_Template::get_template(['layout/category-analytics/overview-card'], $args4);
+        View::load("components/objects/glance-card", ['metrics' => $metrics]);
 
-        $args5 = [
-            'title'          => esc_html__('Comments', 'wp-statistics'),
-            'tooltip'        => esc_html__('Total comments and average per content based on published contents in the selected period. Also shows total comments and average per content for all time.', 'wp-statistics'),
-            'selected'       => Helper::formatNumberWithUnit($data['overview']['comments']['recent'], 1),
-            'selected_title' => esc_html__('Selected Period', 'wp-statistics'),
-            'avg'            => Helper::formatNumberWithUnit($data['overview']['comments']['avg'], 1),
-            'avg_title'      => esc_html__('Avg. per Content', 'wp-statistics'),
-            'total'          => Helper::formatNumberWithUnit($data['overview']['comments']['total'], 1),
-            'total_avg'      => Helper::formatNumberWithUnit($data['overview']['comments']['total_avg'], 1)
-        ];
-        Admin_Template::get_template(['layout/category-analytics/overview-card'], $args5);
-        ?>
+        View::load("components/traffic-summary", ['data' => $data]);
 
-        <?php
+
         $operatingSystems = [
             'title'     => esc_html__('Operating Systems', 'wp-statistics'),
             'tooltip'   => esc_html__('Distribution of visitors by their operating systems.', 'wp-statistics'),
@@ -93,7 +87,6 @@ use WP_Statistics\Components\View;
             'unique_id' => 'category_device_usage'
         ];
         View::load("components/charts/horizontal-bar", $deviceUsage);
-
         ?>
     </div>
 
@@ -103,7 +96,6 @@ use WP_Statistics\Components\View;
             'title'       => esc_html__('Performance', 'wp-statistics'),
             'type'        => 'category',
             'description' => esc_html__('Last 15 Days', 'wp-statistics'),
-            'data'        => $data['performance']
         ];
         View::load("components/charts/performance", $performance);
 
@@ -129,19 +121,11 @@ use WP_Statistics\Components\View;
         ];
         Admin_Template::get_template(['layout/category-analytics/top-authors'], $topAuthors);
 
-        $summary = [
-            'title'   => esc_html__('Summary', 'wp-statistics'),
-            'tooltip' => esc_html__('Summary of views and visitors over various time periods, including today, yesterday, the last 7 days, and the last 30 days.', 'wp-statistics'),
-            'data'    => $data['visits_summary']
-        ];
-        Admin_Template::get_template(['layout/category-analytics/summary'], $summary);
-
         $topCountries = [
-            'title'   => esc_html__('Top Countries', 'wp-statistics'),
             'tooltip' => esc_html__('The countries from which the most visitors are coming.', 'wp-statistics'),
             'data'    => $data['visitors_country']
         ];
-        Admin_Template::get_template(['layout/category-analytics/top-countries'], $topCountries);
+        View::load("components/tables/top-countries", $topCountries);
 
         $engines = [
             'title'     => esc_html__('Search Engines', 'wp-statistics'),
@@ -151,11 +135,10 @@ use WP_Statistics\Components\View;
         View::load("components/charts/search-engines", $engines);
 
         $topReferring = [
-            'title'   => esc_html__('Top Referring', 'wp-statistics'),
             'tooltip' => esc_html__('The top referring domains.', 'wp-statistics'),
             'data'    => $data['referrers']
         ];
-        Admin_Template::get_template(['layout/category-analytics/top-referring'], $topReferring);
+        View::load("components/tables/top-referring", $topReferring);
         ?>
     </div>
 

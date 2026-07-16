@@ -1,0 +1,19 @@
+{% macro component(config, localized) %}
+    {# Merge overwrite default config with given config. #}
+    {% set config = {} | merge(config) %}
+
+    {% set name = config.id %}
+    {% if config.name is not empty %}
+        {% set name = config.name %}
+    {% endif %}
+
+    <div class="bc-flex bc-h-5 bc-items-center">
+        <input
+            type="checkbox"
+            class="bc-h-4 bc-w-4 bc-m-0 bc-rounded bc-border-gray-300 bc-text-blue-600 focus:bc-ring-blue-500 focus:bc-ring-2 focus:bc-ring-offset-0"
+            id="{{ config.id }}"
+            name="{{ name }}"
+            value="1"{% if config.checked %} checked{% endif %}
+            {% if config.dataAttribute is not empty %}{{ config.dataAttribute | raw }}{% endif %}>
+    </div>
+{% endmacro %}

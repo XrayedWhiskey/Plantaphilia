@@ -1,0 +1,22 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            isEditAction ? localized.breadcrumb.edit : localized.breadcrumb.new
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}&action=edit&id=#{data.id}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- General Settings -->
+        {% include "service-group/partials/general-settings.html.twig" %}
+
+        <!-- Service Group Information -->
+        {% include "service-group/partials/service-group-information.html.twig" %}
+    </form>
+{% endif %}

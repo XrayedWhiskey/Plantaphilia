@@ -10,6 +10,7 @@ use WP_STATISTICS\Option;
 use WP_Statistics\Service\Admin\MiniChart\MiniChartHelper;
 use WP_STATISTICS\TimeZone;
 use WP_STATISTICS\User;
+use WP_Statistics\Utils\Request;
 
 class PostsManager
 {
@@ -22,8 +23,10 @@ class PostsManager
     {
         $this->wordsCount = new WordCountService();
 
-        add_action('save_post', [$this, 'addWordsCountCallback'], 99, 3);
-        add_action('delete_post', [$this, 'removeWordsCountCallback'], 99, 2);
+        if ($this->wordsCount->isActive()) {
+            add_action('save_post', [$this, 'addWordsCountCallback'], 99, 3);
+            add_action('delete_post', [$this, 'removeWordsCountCallback'], 99, 2);
+        }
 
         // Add Hits column in edit lists of all post types
         if (User::Access('read') && !Option::get('disable_column')) {
@@ -34,17 +37,7 @@ class PostsManager
         add_action('deleted_post', [$this, 'deletePostHits']);
 
         // Remove term hits on term delete
-        add_action('delete_term', [$this, 'deleteTermHits'], 10, 2);
-
-        // Add meta-boxes and blocks only in edit mode if the user has access
-        global $pagenow;
-        if (User::Access('read') && $pagenow !== 'post-new.php') {
-            if (!Option::get('disable_editor')) {
-                add_action('enqueue_block_editor_assets', [$this, 'enqueueSidebarPanelAssets']);
-            }
-
-            add_action('add_meta_boxes', [$this, 'addPostMetaBoxes']);
-        }
+        add_action('delete_term', [$this, 'deleteTermHits'], 10, 3);
     }
 
     /**
@@ -80,20 +73,28 @@ class PostsManager
     {
         global $pagenow;
 
-        if ($pagenow === 'edit.php') {
-            // Posts and pages and CPTs
+        $isPostQuickEdit = $pagenow === 'admin-ajax.php' && !empty($_POST['action']) && $_POST['action'] === 'inline-save';
+        $isTaxQuickEdit  = $pagenow === 'admin-ajax.php' && !empty($_POST['action']) && $_POST['action'] === 'inline-save-tax';
+
+        if ($pagenow === 'edit.php' || $isPostQuickEdit) {
+            // Posts and pages and CPTs + Quick edit
 
             $hitColumnHandler = new HitColumnHandler();
 
-            foreach (Helper::get_list_post_type() as $type) {
-                add_action("manage_{$type}_posts_columns", [$hitColumnHandler, 'addHitColumn'], 10, 2);
-                add_action("manage_{$type}_posts_custom_column", [$hitColumnHandler, 'renderHitColumn'], 10, 2);
-                add_filter("manage_edit-{$type}_sortable_columns", [$hitColumnHandler, 'modifySortableColumns']);
+            foreach (['posts', 'pages'] as $type) {
+                add_filter("manage_{$type}_columns", [$hitColumnHandler, 'addHitColumn'], 10, 2);
+                add_action("manage_{$type}_custom_column", [$hitColumnHandler, 'renderHitColumn'], 10, 2);
             }
 
-            add_filter('posts_clauses', [$hitColumnHandler, 'handlePostOrderByHits'], 10, 2);
-        } else if ($pagenow === 'edit-tags.php') {
-            // Taxonomies
+            $currentPage = Request::get('post_type', 'post');
+
+            add_filter("manage_edit-{$currentPage}_sortable_columns", [$hitColumnHandler, 'modifySortableColumns']);
+
+            if (!$isPostQuickEdit) {
+                add_filter('posts_clauses', [$hitColumnHandler, 'handlePostOrderByHits'], 10, 2);
+            }
+        } else if ($pagenow === 'edit-tags.php' || $isTaxQuickEdit) {
+            // Taxonomies + Quick edit
 
             if (!apply_filters('wp_statistics_show_taxonomy_hits', true)) {
                 return;
@@ -101,11 +102,10 @@ class PostsManager
 
             $hitColumnHandler = new HitColumnHandler(true);
 
-            // Add Column
             foreach (Helper::get_list_taxonomy() as $tax => $name) {
-                add_action('manage_edit-' . $tax . '_columns', [$hitColumnHandler, 'addHitColumn'], 10, 2);
-                add_filter('manage_' . $tax . '_custom_column', [$hitColumnHandler, 'renderTaxHitColumn'], 10, 3);
-                add_filter('manage_edit-' . $tax . '_sortable_columns', [$hitColumnHandler, 'modifySortableColumns']);
+                add_filter("manage_edit-{$tax}_columns", [$hitColumnHandler, 'addHitColumn'], 10, 2);
+                add_filter("manage_{$tax}_custom_column", [$hitColumnHandler, 'renderTaxHitColumn'], 10, 3);
+                add_filter("manage_edit-{$tax}_sortable_columns", [$hitColumnHandler, 'modifySortableColumns']);
             }
 
             add_filter('terms_clauses', [$hitColumnHandler, 'handleTaxOrderByHits'], 10, 3);
@@ -138,6 +138,7 @@ class PostsManager
      *
      * @param int $term Term ID.
      * @param int $ttId Term taxonomy ID.
+     * @param string $taxonomy Taxonomy slug.
      *
      * @return void
      *
@@ -146,85 +147,19 @@ class PostsManager
      * @todo Replace this method with visitor decorator call after the class is ready.
      * @todo Also delete from historical table.
      */
-    public static function deleteTermHits($term, $ttId)
+    public static function deleteTermHits($term, $ttId, $taxonomy)
     {
         global $wpdb;
 
+        $taxSlug = 'tax_' . $taxonomy;
+
         $wpdb->query(
-            $wpdb->prepare("DELETE FROM `" . DB::table('pages') . "` WHERE `id` = %d AND (`type` = 'category' OR `type` = 'post_tag' OR `type` = 'tax');", esc_sql($ttId))
+            $wpdb->prepare(
+                "DELETE FROM `" . DB::table('pages') . "` WHERE `id` = %d AND (`type` = 'category' OR `type` = 'post_tag' OR `type` = %s);",
+                $ttId,
+                $taxSlug
+            )
         );
-    }
-
-    /**
-     * Enqueues assets for "Statistics - Summary" panel in the Gutenberg editor sidebar.
-     *
-     * @return	void
-     *
-     * @hooked	action: `enqueue_block_editor_assets` - 10
-     */
-    public function enqueueSidebarPanelAssets()
-    {
-        global $post;
-        if (empty($post)) {
-            return;
-        }
-
-        $postSummary = self::getPostStatisticsSummary($post);
-        if (empty($postSummary)) {
-            return;
-        }
-
-        Assets::script('editor-sidebar', 'blocks/post-summary/post-summary.js', ['wp-plugins', 'wp-editor'], $postSummary);
-
-        $styleFileName = is_rtl() ? 'style-post-summary-rtl.css' : 'style-post-summary.css';
-        Assets::style('editor-sidebar', "blocks/post-summary/$styleFileName");
-    }
-
-    /**
-     * Adds meta-boxes for the post in the classic editor mode.
-     *
-     * @return	void
-     *
-     * @hooked	action: `add_meta_boxes` - 10
-     */
-    public function addPostMetaBoxes()
-    {
-        // Display "Statistics - Summary" meta-box only in classic editor and only when `disable_editor` is disabled
-        $displaySummary        = !Helper::is_gutenberg() && !Option::get('disable_editor');
-
-        // Display "Statistics - Latest Visitors" meta-box only when DataPlus add-on is active and `latest_visitors_metabox` is enabled
-        // Or when DataPlus add-on is not active and `disable_editor` is disabled
-        $displayLatestVisitors = Helper::isAddOnActive('data-plus') ? Option::getByAddon('latest_visitors_metabox', 'data_plus', '1') === '1' : !Option::get('disable_editor');
-
-        // Add meta-box to all post types
-        foreach (Helper::get_list_post_type() as $screen) {
-            if ($displaySummary) {
-                add_meta_box(
-                    Meta_Box::getMetaBoxKey('post-summary'),
-                    Meta_Box::getList('post-summary')['name'],
-                    Meta_Box::LoadMetaBox('post-summary'),
-                    $screen,
-                    'side',
-                    'high',
-                    ['__back_compat_meta_box' => false]
-                );
-            }
-
-            if ($displayLatestVisitors) {
-                add_meta_box(
-                    Meta_Box::getMetaBoxKey('post'),
-                    Meta_Box::getList('post')['name'],
-                    Meta_Box::LoadMetaBox('post'),
-                    $screen,
-                    'normal',
-                    'high',
-                    [
-                        '__block_editor_compatible_meta_box' => true,
-                        '__back_compat_meta_box'             => false,
-                    ]
-                );
-            }
-        }
     }
 
     /**
@@ -232,7 +167,7 @@ class PostsManager
      *
      * @param   \WP_Post    $post
      *
-     * @return  array|null          Keys: 
+     * @return  array|null          Keys:
      *  - `postId`
      *  - `fromString`
      *  - `toString`
@@ -249,12 +184,12 @@ class PostsManager
      *  - `postChartSettings`
      *  - `contentAnalyticsUrl`
      */
-    public static function getPostStatisticsSummary($post)
+    public static function getPostStatisticsSummary($postId)
     {
         $dataProvider    = null;
         $miniChartHelper = new MiniChartHelper();
         try {
-            $dataProvider = new PostSummaryDataProvider($post);
+            $dataProvider = new PostSummaryDataProvider($postId);
         } catch (\Exception $e) {
             return null;
         }
@@ -320,7 +255,7 @@ class PostsManager
         $dataProvider->setTo(TimeZone::getTimeAgo());
 
         return [
-            'postId'                     => $post->ID,
+            'postId'                     => $postId,
             'fromString'                 => $dataProvider->getFromString('', true),
             'toString'                   => $dataProvider->getToString('', true),
             'publishDateString'          => $publishDate,

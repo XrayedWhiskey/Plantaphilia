@@ -69,6 +69,8 @@ class Message_Service {
 			'siteground_optimizer_frontend_permissions'    => __( 'Can Optimize Frontend', 'sg-cachepress' ),
 			'siteground_optimizer_images_permissions'      => __( 'Can Optimize Images', 'sg-cachepress' ),
 			'siteground_optimizer_environment_permissions' => __( 'Can Optimize Environment', 'sg-cachepress' ),
+			'purge_rest_cache'                             => __( 'Autoflush WordPress API Cache', 'sg-cachepress' ),
+			'ssl_enabled'                                  => __( 'HTTPS', 'sg-cachepress' ),
 		);
 
 		if ( is_null( $type ) ) {

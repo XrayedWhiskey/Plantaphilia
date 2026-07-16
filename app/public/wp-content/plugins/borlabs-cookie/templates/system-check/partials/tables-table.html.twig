@@ -1,0 +1,510 @@
+{% embed "system/embed/table/responsive-table.html.twig" %}
+    {% block heading %}
+        {% embed "system/embed/table/table-header-element.html.twig" with { attributes: 'colspan="2"' }%}
+            {% block content %}
+                {{ localized.table.databaseTables | raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+    {% block body %}
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableCloudScan | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.cloudScan.message,
+                            status: data.status.table.cloudScan.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableCloudScanCookie | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.cloudScanCookie.message,
+                            status: data.status.table.cloudScanCookie.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableCloudScanExternalResource | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.cloudScanExternalResource.message,
+                            status: data.status.table.cloudScanExternalResource.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableCloudScanSuggestion | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.cloudScanSuggestion.message,
+                            status: data.status.table.cloudScanSuggestion.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableCompatibilityPatch | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.compatibilityPatch.message,
+                            status: data.status.table.compatibilityPatch.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableConsentLog | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.consentLog.message,
+                            status: data.status.table.consentLog.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableConsentStatisticByDayGroupedByServiceGroup | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.consentStatisticByDayGroupedByServiceGroup.message,
+                            status: data.status.table.consentStatisticByDayGroupedByServiceGroup.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableConsentStatisticByDay | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.consentStatisticByDay.message,
+                            status: data.status.table.consentStatisticByDay.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableConsentStatisticByHourGroupedByServiceGroup | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.consentStatisticByHourGroupedByServiceGroup.message,
+                            status: data.status.table.consentStatisticByHourGroupedByServiceGroup.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableConsentStatisticByHour | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.consentStatisticByHour.message,
+                            status: data.status.table.consentStatisticByHour.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableContentBlocker | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.contentBlocker.message,
+                            status: data.status.table.contentBlocker.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableContentBlockerLocation | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.contentBlockerLocation.message,
+                            status: data.status.table.contentBlockerLocation.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableCountry | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.country.message,
+                            status: data.status.table.country.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableVendor | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.vendor.message,
+                            status: data.status.table.vendor.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableJob | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.job.message,
+                            status: data.status.table.job.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableLog | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.log.message,
+                            status: data.status.table.log.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tablePackage | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.package.message,
+                            status: data.status.table.package.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableScriptBlocker | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.scriptBlocker.message,
+                            status: data.status.table.scriptBlocker.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableProvider | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.serviceGroup.message,
+                            status: data.status.table.serviceGroup.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableService | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.service.message,
+                            status: data.status.table.service.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableServiceCookie | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.serviceCookie.message,
+                            status: data.status.table.serviceCookie.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableServiceLocation | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.serviceLocation.message,
+                            status: data.status.table.serviceLocation.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableServiceOption | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.serviceOption.message,
+                            status: data.status.table.serviceOption.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableServiceGroup | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.serviceGroup.message,
+                            status: data.status.table.serviceGroup.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/table/table-body-row.html.twig" %}
+            {% block rowContent %}
+                {% embed "system/embed/table/table-header-element.html.twig" %}
+                    {% block content %}
+                        {{ localized.table.tableStyleBlocker | raw }}
+                    {% endblock %}
+                {% endembed %}
+                {% embed "system/embed/table/table-body-element.html.twig" with { textAlign: 'bc-text-right' } %}
+                    {% import "system/macro/form-component/status-indicator.html.twig" as status_indicator %}
+                    {% block content %}
+                        {{ status_indicator.component({
+                            cssClasses: ['bc-justify-end'],
+                            errorMessage: data.status.table.styleBlocker.message,
+                            status: data.status.table.styleBlocker.success,
+                        }, localized) }}
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,12 @@
+{% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+{{ row_switch_button.component({
+    errorMessage: translation.errorMessage,
+    hint: translation.hint,
+    id: id,
+    infoMessage: translation.infoMessage,
+    isDisabled: false,
+    isRequired: isRequired,
+    label: translation.label,
+    name: name,
+    value: value != '' ? value : defaultValue,
+}) }}

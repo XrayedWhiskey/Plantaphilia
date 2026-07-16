@@ -1,0 +1,571 @@
+<div class="bc-w-2/3">
+{% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.animationSettings,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+        {% import "system/macro/row/save.html.twig" as row_save %}
+
+        {{ row_switch_button.component({
+            hint: localized.hint.animation,
+            id: 'animation',
+            label: localized.field.animation,
+            value: data.animation,
+        }) }}
+
+        {{ row_switch_button.component({
+            hideInSimplifiedMode: true,
+            hint: localized.hint.animationDelay,
+            id: 'animationDelay',
+            label: localized.field.animationDelay,
+            value: data.animationDelay,
+        }) }}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <label for="animationIn">{{ localized.field.animationIn | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                {% import "system/macro/form-component/select.html.twig" as select %}
+                {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+                <div class="bc-flex bc-items-center bc-space-x-2">
+                    {{ select.component({
+                        id: 'animationIn',
+                        value: data.animationIn,
+                        name: 'animationIn',
+                        label: localized.field.animationIn,
+                        dataAttribute: 'data-brlbs-animation="BorlabsCookieAnimationPreview"',
+                        groups: [
+                            {
+                                value: localized.option.attentionSeekers,
+                                options: [
+                                {
+                                    key:'bounce',
+                                    value: 'bounce'
+                                },
+                                {
+                                    key:'flash',
+                                    value: 'flash'
+                                },
+                                {
+                                    key:'pulse',
+                                    value: 'pulse'
+                                },
+                                {
+                                    key:'rubberBand',
+                                    value: 'rubberBand'
+                                },
+                                {
+                                    key:'shakeX',
+                                    value: 'shakeX'
+                                },
+                                {
+                                    key:'shakeY',
+                                    value: 'shakeY'
+                                },
+                                {
+                                    key:'swing',
+                                    value: 'swing'
+                                },
+                                {
+                                    key:'tada',
+                                    value: 'tada'
+                                },
+                                {
+                                    key:'wobble',
+                                    value: 'wobble'
+                                },
+                                {
+                                    key:'jello',
+                                    value: 'jello'
+                                },
+                                {
+                                    key:'heartBeat',
+                                    value: 'heartBeat'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.bouncingEntrances,
+                                options: [
+                                {
+                                    key:'bounceIn',
+                                    value: 'bounceIn'
+                                },
+                                {
+                                    key:'bounceInDown',
+                                    value: 'bounceInDown'
+                                },
+                                {
+                                    key:'bounceInLeft',
+                                    value: 'bounceInLeft'
+                                },
+                                {
+                                    key:'bounceInRight',
+                                    value: 'bounceInRight'
+                                },
+                                {
+                                    key:'bounceInUp',
+                                    value: 'bounceInUp'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.fadingEntrances,
+                                options: [
+                                {
+                                    key:'fadeIn',
+                                    value: 'fadeIn'
+                                },
+                                {
+                                    key:'fadeInDown',
+                                    value: 'fadeInDown'
+                                },
+                                {
+                                    key:'fadeInDownBig',
+                                    value: 'fadeInDownBig'
+                                },
+                                {
+                                    key:'fadeInLeft',
+                                    value: 'fadeInLeft'
+                                },
+                                {
+                                    key:'fadeInLeftBig',
+                                    value: 'fadeInLeftBig'
+                                },
+                                {
+                                    key:'fadeInRight',
+                                    value: 'fadeInRight'
+                                },
+                                {
+                                    key:'fadeInRightBig',
+                                    value: 'fadeInRightBig'
+                                },
+                                {
+                                    key:'fadeInUp',
+                                    value: 'fadeInUp'
+                                },
+                                {
+                                    key:'fadeInUpBig',
+                                    value: 'fadeInUpBig'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.flippers,
+                                options: [
+                                {
+                                    key:'flip',
+                                    value: 'flip'
+                                },
+                                {
+                                    key:'flipInX',
+                                    value: 'flipInX'
+                                },
+                                {
+                                    key:'flipInY',
+                                    value: 'flipInY'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.lightspeed,
+                                options: [
+                                {
+                                    key:'lightSpeedInLeft',
+                                    value: 'lightSpeedInLeft'
+                                },
+                                {
+                                    key:'lightSpeedInRight',
+                                    value: 'lightSpeedInRight'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.rotatingEntrances,
+                                options: [
+                                {
+                                    key:'rotateIn',
+                                    value: 'rotateIn'
+                                },
+                                {
+                                    key:'rotateInDownLeft',
+                                    value: 'rotateInDownLeft'
+                                },
+                                {
+                                    key:'rotateInDownRight',
+                                    value: 'rotateInDownRight'
+                                },
+                                {
+                                    key:'rotateInUpLeft',
+                                    value: 'rotateInUpLeft'
+                                },
+                                {
+                                    key:'rotateInUpRight',
+                                    value: 'rotateInUpRight'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.slidingEntrances,
+                                options: [
+                                {
+                                    key:'slideInUp',
+                                    value: 'slideInUp'
+                                },
+                                {
+                                    key:'slideInDown',
+                                    value: 'slideInDown'
+                                },
+                                {
+                                    key:'slideInLeft',
+                                    value: 'slideInLeft'
+                                },
+                                {
+                                    key:'slideInRight',
+                                    value: 'slideInRight'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.specials,
+                                options: [
+                                {
+                                    key:'jackInTheBox',
+                                    value: 'jackInTheBox'
+                                },
+                                {
+                                    key:'rollIn',
+                                    value: 'rollIn'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.zoomEntrances,
+                                options: [
+                                {
+                                    key:'zoomIn',
+                                    value: 'zoomIn'
+                                },
+                                {
+                                    key:'zoomInDown',
+                                    value: 'zoomInDown'
+                                },
+                                {
+                                    key:'zoomInLeft',
+                                    value: 'zoomInLeft'
+                                },
+                                {
+                                    key:'zoomInRight',
+                                    value: 'zoomInRight'
+                                },
+                                {
+                                    key:'zoomInUp',
+                                    value: 'zoomInUp'
+                                },
+                            ]
+                            },
+                        ],
+                    }) }}
+
+                    {% embed "system/embed/hint.html.twig" with {
+                        buttonConfig: {
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            border: 'bc-border bc-border-transparent',
+                            focus: 'focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-offset-2',
+                            focusColor: 'focus:bc-ring-slate-950',
+                            padding: 'bc-px-2 bc-py-1.5',
+                            radius: 'bc-rounded',
+                            textColor: 'bc-text-white',
+                        },
+                        customPosition: {
+                            cssClasses: ['bc-bottom-[44px]', 'bc-left-[-191px]'],
+                            triangleCssClasses: ['bc-bottom-[-10px]', 'bc-right-[10px]'],
+                        },
+                        dataAttribute: 'data-brlbs-animation-repeat="animationIn"',
+                        hint: localized.hint.repeatAnimation
+                    } %}
+                        {% block icon %}
+                            <svg
+                                class="bc-w-5 bc-h-5"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                            >
+                                <path fill-rule="evenodd"
+                                      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.603 3.113A1.125 1.125 0 019 15.113V8.887c0-.857.921-1.4 1.671-.983l5.603 3.113z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {{ hint.component({
+                        hint: localized.hint.animationIn,
+                    }) }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                <label for="animationOut">{{ localized.field.animationOut | raw }}</label>
+            {% endblock %}
+            {% block input %}
+                {% import "system/macro/form-component/select.html.twig" as select %}
+                {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+                <div class="bc-flex bc-items-center bc-space-x-2">
+                    {{ select.component({
+                        id: 'animationOut',
+                        value: data.animationOut,
+                        dataAttribute: 'data-brlbs-animation="BorlabsCookieAnimationPreview"',
+                        name: 'animationOut',
+                        groups: [
+                            {
+                                value: localized.option.bouncingExits,
+                                options: [
+                                {
+                                    key:'bounceOut',
+                                    value: 'bounceOut'
+                                },
+                                {
+                                    key:'bounceOutDown',
+                                    value: 'bounceOutDown'
+                                },
+                                {
+                                    key:'bounceOutLeft',
+                                    value: 'bounceOutLeft'
+                                },
+                                {
+                                    key:'bounceOutRight',
+                                    value: 'bounceOutRight'
+                                },
+                                {
+                                    key:'bounceOutUp',
+                                    value: 'bounceOutUp'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.fadingExits,
+                                options: [
+                                {
+                                    key:'fadeOut',
+                                    value: 'fadeOut'
+                                },
+                                {
+                                    key:'fadeOutDown',
+                                    value: 'fadeOutDown'
+                                },
+                                {
+                                    key:'fadeOutLeft',
+                                    value: 'fadeOutLeft'
+                                },
+                                {
+                                    key:'fadeOutLeftBig',
+                                    value: 'fadeOutLeftBig'
+                                },
+                                {
+                                    key:'fadeOutRight',
+                                    value: 'fadeOutRight'
+                                },
+                                {
+                                    key:'fadeOutRightBig',
+                                    value: 'fadeOutRightBig'
+                                },
+                                {
+                                    key:'fadeOutUp',
+                                    value: 'fadeOutUp'
+                                },
+                                {
+                                    key:'fadeOutUpBig',
+                                    value: 'fadeOutUpBig'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.flippers,
+                                options: [
+                                {
+                                    key:'flipOutX',
+                                    value: 'flipOutX'
+                                },
+                                {
+                                    key:'flipOutY',
+                                    value: 'flipOutY'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.lightspeed,
+                                options: [
+                                {
+                                    key:'lightSpeedOutLeft',
+                                    value: 'lightSpeedOutLeft'
+                                },
+                                {
+                                    key:'lightSpeedOutRight',
+                                    value: 'lightSpeedOutRight'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.rotatingExits,
+                                options: [
+                                {
+                                    key:'rotateOut',
+                                    value: 'rotateOut'
+                                },
+                                {
+                                    key:'rotateOutDownLeft',
+                                    value: 'rotateOutDownLeft'
+                                },
+                                {
+                                    key:'rotateOutDownRight',
+                                    value: 'rotateOutDownRight'
+                                },
+                                {
+                                    key:'rotateOutUpLeft',
+                                    value: 'rotateOutUpLeft'
+                                },
+                                {
+                                    key:'rotateOutUpRight',
+                                    value: 'rotateOutUpRight'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.slidingExits,
+                                options: [
+                                {
+                                    key:'slideOutUp',
+                                    value: 'slideOutUp'
+                                },
+                                {
+                                    key:'slideOutDown',
+                                    value: 'slideOutDown'
+                                },
+                                {
+                                    key:'slideOutLeft',
+                                    value: 'slideOutLeft'
+                                },
+                                {
+                                    key:'slideOutRight',
+                                    value: 'slideOutRight'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.specials,
+                                options: [
+                                {
+                                    key:'hinge',
+                                    value: 'hinge'
+                                },
+                                {
+                                    key:'rollOut',
+                                    value: 'rollOut'
+                                },
+                            ]
+                            },
+                            {
+                                value: localized.option.zoomExits,
+                                options: [
+                                {
+                                    key:'zoomOut',
+                                    value: 'zoomOut'
+                                },
+                                {
+                                    key:'zoomOutDown',
+                                    value: 'zoomOutDown'
+                                },
+                                {
+                                    key:'zoomOutLeft',
+                                    value: 'zoomOutLeft'
+                                },
+                                {
+                                    key:'zoomOutRight',
+                                    value: 'zoomOutRight'
+                                },
+                                {
+                                    key:'zoomOutUp',
+                                    value: 'zoomOutUp'
+                                },
+                            ]
+                            },
+                        ],
+                    }) }}
+
+                    {% embed "system/embed/hint.html.twig" with {
+                        buttonConfig: {
+                            backgroundColor: 'bc-bg-slate-950',
+                            backgroundColorHover: 'enabled:hover:bc-bg-slate-800',
+                            border: 'bc-border bc-border-transparent',
+                            focus: 'focus:bc-outline-none focus:bc-ring-2 focus:bc-ring-offset-2',
+                            focusColor: 'focus:bc-ring-slate-950',
+                            padding: 'bc-px-2 bc-py-1.5',
+                            radius: 'bc-rounded',
+                            textColor: 'bc-text-white',
+                        },
+                        customPosition: {
+                            cssClasses: ['bc-bottom-[44px]', 'bc-left-[-191px]'],
+                            triangleCssClasses: ['bc-bottom-[-10px]', 'bc-right-[10px]'],
+                        },
+                        dataAttribute: 'data-brlbs-animation-repeat="animationOut"',
+                        hint: localized.hint.repeatAnimation
+                    } %}
+                        {% block icon %}
+                            <svg
+                                class="bc-w-5 bc-h-5"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                            >
+                                <path fill-rule="evenodd"
+                                      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.603 3.113A1.125 1.125 0 019 15.113V8.887c0-.857.921-1.4 1.671-.983l5.603 3.113z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+
+                    {{ hint.component({
+                        hint: localized.hint.animationOut,
+                    }) }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed "system/embed/form-row.html.twig" %}
+            {% block label %}
+                {{ localized.field.animationPreview | raw }}
+            {% endblock %}
+            {% block input %}
+                <div id="BorlabsCookieAnimationPreview">
+                    <div class="dialog-preview">
+                        <div class="bc-flex">
+                            <div class="md:bc-w-1/6 bc-w-1/3">
+                                <img src="{{ imageUrl('borlabs-cookie-logo.svg') }}" alt="" style="margin: 8px;">
+                            </div>
+                            <div class="md:bc-w-5/6 bc-w-2/3">
+                                <span class="demo-headline" style="width: 50%;"></span>
+                                <span style="width: 80%;"></span>
+                                <span style="width: 80%;"></span>
+                                <span class="demo-btn" style="width: 70px;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+        {{ row_save.component({}, localized) }}
+
+    {% endblock %}
+{% endembed %}
+</div>

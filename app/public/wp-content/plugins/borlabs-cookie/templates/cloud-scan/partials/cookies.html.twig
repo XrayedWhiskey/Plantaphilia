@@ -1,0 +1,40 @@
+{% embed "system/embed/card/card-with-info-panel.html.twig" %}
+    {% import "cloud-scan/macro/cookie-table.html.twig" as cookie_table %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+    {% block mainHeader %}
+        {{ card_heading.component({
+            title: localized.headline.cookies,
+        }) }}
+    {% endblock %}
+
+    {% block mainContent %}
+        {{ cookie_table.component({
+            cookies: data.scan.cookies,
+            packages: data.packages,
+        }, localized) }}
+    {% endblock %}
+
+    {% block infoPanelHeader %}
+        {{ localized.global.headline.thingsToKnow | raw }}
+    {% endblock %}
+
+    {% block infoPanelContent %}
+        {% embed "system/embed/accordion/accordion-group.html.twig" %}
+            {% block content %}
+                {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionCookies', expanded: data.scan.cookies is empty ? false : true} %}
+                    {% import "system/macro/icons/details.html.twig" as details_icon %}
+                    {% block title %}
+                        {{ localized.thingsToKnow.headlineCookies | raw }}
+                    {% endblock %}
+                    {% block content %}
+                        <p>{{ localized.thingsToKnow.cookies | raw }}</p>
+                        <p>{{ localized.thingsToKnow.cookiesSuggestedPackageA | raw }}</p>
+                        <p>{{ localized.thingsToKnow.cookiesSuggestedPackageB | raw }}</p>
+                        <p>{{ details_icon.component({}) }}: {{ localized.thingsToKnow.cookiesDetails | raw }}</p>
+                    {% endblock %}
+                {% endembed %}
+            {% endblock %}
+        {% endembed %}
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,68 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            isEditAction ? localized.breadcrumb.edit : localized.breadcrumb.new
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    {% embed "system/embed/card/card-with-info-panel.html.twig" %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+        {% block mainHeader %}
+            {{ card_heading.component({
+                title: localized.headline.providerInformation,
+            }) }}
+        {% endblock %}
+
+        {% block mainContent %}
+            {% import "provider/macro/component-form.html.twig" as form_fields %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+
+            <form action="{{ "?page=#{controllerId}&action=edit&id=#{data.id}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+                {{ form_fields.component({
+                    data: data,
+                    isCreateAction: isCreateAction,
+                    isEditAction: isEditAction,
+                    languages: languages,
+                }, localized) }}
+
+                {{ row_save.component({
+                    action: 'save',
+                    backLink: "?page=#{controllerId}",
+                    button: localized.global.button.save,
+                    nonce: wpNonceField("#{controllerId}-#{data.id}-save"),
+                    value: data.id,
+                }, localized) }}
+            </form>
+        {% endblock %}
+
+        {% block infoPanelHeader %}
+            {{ localized.global.headline.thingsToKnow | raw }}
+        {% endblock %}
+
+        {% block infoPanelContent %}
+            {% embed "system/embed/accordion/accordion-group.html.twig" %}
+                {% block content %}
+                    {% embed "system/embed/accordion/accordion.html.twig" with {id: 'accordionPurposeProviders', expanded: true} %}
+                        {% block title %}
+                            {{ localized.thingsToKnow.headlinePurposeProviders | raw }}
+                        {% endblock %}
+
+                        {% block content %}
+                            <p>{{ localized.thingsToKnow.purposeProvidersExplainedA | raw }}</p>
+                            <p>{{ localized.thingsToKnow.purposeProvidersExplainedB | raw }}</p>
+                            <p>{{ localized.thingsToKnow.purposeProvidersExplainedC | raw }}</p>
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+    {% endembed %}
+{% endif %}

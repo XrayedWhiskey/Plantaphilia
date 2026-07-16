@@ -1,0 +1,26 @@
+{% extends "system/embed/card/card.html.twig" %}
+
+{% set headerCssClasses = ['bc-px-5 bc-py-3'] %}
+
+{% if withHeaderBorder is defined and withHeaderBorder %}
+    {% set headerCssClasses = ['bc-border-b bc-border-solid bc-border-gray-200'] | merge(headerCssClasses) %}
+{% endif %}
+
+{% block cardContent %}
+    <div>
+        <div class="bc-w-full">
+            <div class="{{ headerCssClasses | join(' ') }}">
+                {% block mainHeader %}{% endblock %}
+            </div>
+            <div>
+                {% block mainContent %}{% endblock %}
+            </div>
+        </div>
+        {% set infoPanelHeader = block('infoPanelHeader') %}
+        {% set infoPanelContent = block('infoPanelContent') %}
+        {% embed "system/embed/info-panel.html.twig" with { position: 'bottom' } %}
+            {% block header %}{{ infoPanelHeader | raw }}{% endblock %}
+            {% block content %}{{ infoPanelContent | raw }}{% endblock %}
+        {% endembed %}
+    </div>
+{% endblock %}

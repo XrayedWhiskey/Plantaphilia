@@ -1,0 +1,104 @@
+{% embed "system/embed/card/card-with-title.html.twig" with { contentSpacing: false, hideInSimplifiedMode: true } %}
+    {% import "system/macro/row/input.html.twig" as row_input %}
+    {% import "system/macro/row/save.html.twig" as row_save %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.consentHistoryTable,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryLoading,
+            id: 'consentHistoryLoading',
+            label: localized.field.consentHistoryLoading,
+            value: data.consentHistoryLoading,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryNoData,
+            id: 'consentHistoryNoData',
+            label: localized.field.consentHistoryNoData,
+            value: data.consentHistoryNoData,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableChoice,
+            id: 'consentHistoryTableChoice',
+            label: localized.field.consentHistoryTableChoice,
+            value: data.consentHistoryTableChoice,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableConsents,
+            id: 'consentHistoryTableConsents',
+            label: localized.field.consentHistoryTableConsents,
+            value: data.consentHistoryTableConsents,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableConsentGiven,
+            id: 'consentHistoryTableConsentGiven',
+            label: localized.field.consentHistoryTableConsentGiven,
+            value: data.consentHistoryTableConsentGiven,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableConsentWithdrawn,
+            id: 'consentHistoryTableConsentWithdrawn',
+            label: localized.field.consentHistoryTableConsentWithdrawn,
+            value: data.consentHistoryTableConsentWithdrawn,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableDate,
+            id: 'consentHistoryTableDate',
+            label: localized.field.consentHistoryTableDate,
+            value: data.consentHistoryTableDate,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableVersion,
+            id: 'consentHistoryTableVersion',
+            label: localized.field.consentHistoryTableVersion,
+            value: data.consentHistoryTableVersion,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableVersionChanges,
+            id: 'consentHistoryTableVersionChanges',
+            label: localized.field.consentHistoryTableVersionChanges,
+            value: data.consentHistoryTableVersionChanges,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableVersionChangesAdded,
+            id: 'consentHistoryTableVersionChangesAdded',
+            label: localized.field.consentHistoryTableVersionChangesAdded,
+            value: data.consentHistoryTableVersionChangesAdded,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableVersionChangesRemoved,
+            id: 'consentHistoryTableVersionChangesRemoved',
+            label: localized.field.consentHistoryTableVersionChangesRemoved,
+            value: data.consentHistoryTableVersionChangesRemoved,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableVersionChangesAdded,
+            id: 'consentHistoryTableVersionChangesAdded',
+            label: localized.field.consentHistoryTableVersionChangesAdded,
+            value: data.consentHistoryTableVersionChangesAdded,
+        }) }}
+
+        {{ row_input.component({
+            errorMessage: localized.validation.consentHistoryTableVersionChangesRemoved,
+            id: 'consentHistoryTableVersionChangesRemoved',
+            label: localized.field.consentHistoryTableVersionChangesRemoved,
+            value: data.consentHistoryTableVersionChangesRemoved,
+        }) }}
+
+        {{ row_save.component({}, localized) }}
+    {% endblock %}
+{% endembed %}

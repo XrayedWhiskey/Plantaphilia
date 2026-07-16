@@ -203,4 +203,16 @@ abstract class Abstract_Combinator {
 		// Finally return the file content.
 		return $file_content;
 	}
+
+	/**
+	 * Removes the host and query stings from an URL to get the source.
+	 *
+	 * @param $url The URL to prepare.
+	 *
+	 * @return string The URL src.
+	 */
+	public function prepare_url_src( $url ) {
+		// Strips the URL from its host and query strings.
+		return trim( str_replace( Helper_Service::get_site_url(), '', strtok( $url, '?' ) ), "/\\" );
+	}
 }

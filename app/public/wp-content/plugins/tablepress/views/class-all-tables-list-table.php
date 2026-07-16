@@ -25,9 +25,8 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 	 * Number of items of the initial data set (before sort, search, and pagination).
 	 *
 	 * @since 1.0.0
-	 * @var int
 	 */
-	protected $items_count = 0;
+	protected int $items_count = 0;
 
 	/**
 	 * Cached bulk actions.
@@ -36,9 +35,9 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 	 * and thus can't be inherited.
 	 *
 	 * @since 1.0.0
-	 * @var array<string, string>|null
+	 * @var array<string, string>
 	 */
-	protected $_actions; // phpcs:ignore PSR2.Classes.PropertyDeclaration.Underscore
+	protected array $_actions; // phpcs:ignore PSR2.Classes.PropertyDeclaration.Underscore
 
 	/**
 	 * Initialize the List Table.
@@ -49,11 +48,11 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 		$screen = get_current_screen();
 
 		// Hide "Last Modified By" column by default.
-		if ( false === get_user_option( "manage{$screen->id}columnshidden" ) ) {
-			update_user_option( get_current_user_id(), "manage{$screen->id}columnshidden", array( 'table_last_modified_by' ), true );
+		if ( false === get_user_option( "manage{$screen->id}columnshidden" ) ) { // @phpstan-ignore property.nonObject
+			update_user_option( get_current_user_id(), "manage{$screen->id}columnshidden", array( 'table_last_modified_by' ), true ); // @phpstan-ignore property.nonObject
 		}
 
-		// @phpstan-ignore-next-line (WordPress Core's docblocks state wrong argument types in some places.)
+		// @phpstan-ignore argument.type (WordPress Core's docblocks state wrong argument types in some places.)
 		parent::__construct( array(
 			'singular' => 'tablepress-table',      // Singular name of the listed records.
 			'plural'   => 'tablepress-all-tables', // Plural name of the listed records.
@@ -175,10 +174,9 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 		}
 
 		return sprintf(
-			// The `label-covers-full-cell` class on the <label> is kept for (some) backward compatibility with WordPress 6.3, and can be removed once TablePress requires WordPress 6.4.
-			'<input type="checkbox" id="cb-select-%1$s" name="table[]" value="%1$s"><label class="label-covers-full-cell" for="cb-select-%1$s"><span class="screen-reader-text">%2$s</span></label>',
+			'<input type="checkbox" id="cb-select-%1$s" name="table[]" value="%1$s"><label for="cb-select-%1$s"><span class="screen-reader-text">%2$s</span></label>',
 			esc_attr( $item['id'] ),
-			esc_html( sprintf( __( 'Select table “%s”', 'tablepress' ), $item['name'] ) )
+			esc_html( sprintf( __( 'Select table “%s”', 'tablepress' ), $item['name'] ) ),
 		);
 	}
 
@@ -237,7 +235,7 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 			$row_actions['export'] = sprintf( '<a href="%1$s" title="%2$s">%3$s</a>', $export_url, esc_attr( sprintf( __( 'Export &#8220;%s&#8221;', 'tablepress' ), $item['name'] ) ), _x( 'Export', 'row action', 'tablepress' ) );
 		}
 		if ( $user_can_delete_table ) {
-			$row_actions['delete'] = sprintf( '<a href="%1$s" title="%2$s" class="delete-link">%3$s</a>', $delete_url, esc_attr( sprintf( __( 'Delete &#8220;%s&#8221;', 'tablepress' ), $item['name'] ) ), __( 'Delete', 'tablepress' ) );
+			$row_actions['delete'] = sprintf( '<a href="%1$s" title="%2$s">%3$s</a>', $delete_url, esc_attr( sprintf( __( 'Delete “%1$s” (ID %2$s)', 'tablepress' ), $item['name'], $item['id'] ) ), __( 'Delete', 'tablepress' ) );
 		}
 		if ( $user_can_preview_table ) {
 			$row_actions['table-preview'] = sprintf( '<a href="%1$s" title="%2$s">%3$s</a>', $preview_url, esc_attr( sprintf( __( 'Preview of table “%1$s” (ID %2$s)', 'tablepress' ), $item['name'], $item['id'] ) ), __( 'Preview', 'tablepress' ) );
@@ -392,7 +390,7 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 	protected function bulk_actions( /* string */ $which = 'top' ): void {
 		// Don't use type hints in the method declaration to prevent PHP errors, as the method is inherited.
 
-		if ( is_null( $this->_actions ) ) {
+		if ( ! isset( $this->_actions ) ) {
 			$this->_actions = $this->get_bulk_actions();
 			$no_new_actions = $this->_actions;
 			/** This filter is documented in the WordPress function WP_List_Table::bulk_actions() in wp-admin/includes/class-wp-list-table.php */
@@ -408,14 +406,17 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 		}
 
 		$name_id = "bulk-action-selector-{$which}";
-		echo "<label for='{$name_id}' class='screen-reader-text'>" . __( 'Select Bulk Action', 'tablepress' ) . "</label>\n";
+		echo "<label for='{$name_id}' class='screen-reader-text'>" .
+			/* translators: Hidden accessibility text. */
+			__( 'Select bulk action', 'default' ) .
+		'</label>';
 		echo "<select name='{$name_id}' id='{$name_id}'>\n";
-		echo "<option value='-1' selected='selected'>" . __( 'Bulk Actions', 'tablepress' ) . "</option>\n";
+		echo "<option value='-1' selected='selected'>" . __( 'Bulk actions', 'default' ) . "</option>\n";
 		foreach ( $this->_actions as $name => $title ) {
 			echo "\t<option value='{$name}'>{$title}</option>\n";
 		}
 		echo "</select>\n";
-		submit_button( __( 'Apply', 'tablepress' ), 'action', '', false, array( 'id' => "doaction{$two}" ) );
+		submit_button( __( 'Apply', 'default' ), 'action', 'bulk_action', false, array( 'id' => "doaction{$two}" ) );
 		echo "\n";
 	}
 
@@ -492,6 +493,7 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 	 */
 	public function change_pagination_items_string( string $translation, string $single, string $plural, int $number, string $domain ): string {
 		if ( '%s item' === $single && '%s items' === $plural ) {
+			/* translators: %s: Number of tables */
 			$translation = _n( '%s table', '%s tables', $number, 'tablepress' );
 		}
 		return $translation;
@@ -510,7 +512,7 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 		static $json_encoded_term;
 		if ( is_null( $term ) || is_null( $json_encoded_term ) ) {
 			$term = wp_unslash( $_GET['s'] );
-			$json_encoded_term = substr( wp_json_encode( $term, TABLEPRESS_JSON_OPTIONS ), 1, -1 ); // @phpstan-ignore-line
+			$json_encoded_term = substr( wp_json_encode( $term, TABLEPRESS_JSON_OPTIONS ), 1, -1 ); // @phpstan-ignore argument.type
 		}
 
 		static $debug;
@@ -531,14 +533,16 @@ class TablePress_All_Tables_List_Table extends WP_List_Table {
 			return false;
 		}
 
+		$fn_stripos = function_exists( 'mb_stripos' ) ? 'mb_stripos' : 'stripos';
+
 		// Search from easy to hard, so that "expensive" code maybe doesn't have to run.
-		if ( false !== stripos( $item['id'], $term )
-		|| false !== stripos( $item['name'], $term )
-		|| false !== stripos( $item['description'], $term )
-		|| false !== stripos( TablePress::get_user_display_name( $item['author'] ), $term )
-		|| false !== stripos( TablePress::get_user_display_name( $item['options']['last_editor'] ), $term )
-		|| false !== stripos( TablePress::format_datetime( $item['last_modified'] ), $term )
-		|| false !== stripos( wp_json_encode( $item['data'], TABLEPRESS_JSON_OPTIONS ), $json_encoded_term ) ) { // @phpstan-ignore-line
+		if ( false !== $fn_stripos( $item['id'], (string) $term )
+		|| false !== $fn_stripos( $item['name'], (string) $term )
+		|| false !== $fn_stripos( $item['description'], (string) $term )
+		|| false !== $fn_stripos( TablePress::get_user_display_name( $item['author'] ), (string) $term )
+		|| false !== $fn_stripos( TablePress::get_user_display_name( $item['options']['last_editor'] ), (string) $term )
+		|| false !== $fn_stripos( TablePress::format_datetime( $item['last_modified'] ), (string) $term )
+		|| false !== $fn_stripos( wp_json_encode( $item['data'], TABLEPRESS_JSON_OPTIONS ), (string) $json_encoded_term ) ) { // @phpstan-ignore argument.type
 			return true;
 		}
 

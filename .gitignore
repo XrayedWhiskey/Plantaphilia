@@ -1,43 +1,22 @@
-# ===== SECURITY =====
-app/public/wp-config.php
+# ── Secrets ──────────────────────────────────────────────────────
+app/.env
+*.env
+!*.env.example
 
-# ===== UPLOADS (zu groß für GitHub, 1.5 GB) =====
-# Ausnahme: 2022/01 enthält Logo, Favicon, Banner, Fonts
+# ── WordPress-Konfiguration (enthält DB-Credentials) ─────────────
+app/public/wp-config.php
+app/public/wp-config-sample.php
+
+# ── Uploads (zu groß für Git) ────────────────────────────────────
 app/public/wp-content/uploads/*
 !app/public/wp-content/uploads/2022/
-app/public/wp-content/uploads/2022/*
-!app/public/wp-content/uploads/2022/01/
-app/public/wp-content/uploads/2022/01/**
-!app/public/wp-content/uploads/2022/01/*.svg
-!app/public/wp-content/uploads/2022/01/*.png
-!app/public/wp-content/uploads/2022/01/*.jpg
-!app/public/wp-content/uploads/2022/01/*.woff2
 
-# ===== WP BACKUPS =====
-app/public/wp-content/wpvividbackups/
-app/public/wp-content/wpvivid_staging/
-app/public/wp-content/updraft/
+# ── Debug-Log (kann sensible Daten enthalten) ─────────────────────
+app/public/wp-content/debug.log
 
-# ===== LOCALWP =====
-logs/
-*.sock
-
-# ===== OS & IDE =====
+# ── Caches & Build-Artefakte ─────────────────────────────────────
+app/public/wp-content/cache/
+*.log
+*.tmp
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/
-*.swp
-*~
-
-# ===== NODE & COMPOSER =====
-node_modules/
-vendor/
-
-# ===== ENV =====
-.env
-.env.*
-
-# ===== MISC =====
-*.tar.gz
-CLAUDE.local.md

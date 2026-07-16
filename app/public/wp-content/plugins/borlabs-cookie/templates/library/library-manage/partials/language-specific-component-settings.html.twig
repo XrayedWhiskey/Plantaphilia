@@ -1,0 +1,34 @@
+{% import "library/library-manage/macro/component-settings.html.twig" as component_settings %}
+{% import "system/macro/form-component/switch-button.html.twig" as switch_button %}
+
+<div class="bc-bg-neutral-200 bc-shadow-inner bc-px-6 bc-pt-6 bc-rounded-md">
+    <div class="bc-flex bc-items-center bc-justify-between bc-mb-2">
+        <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-0">{{ localized.headline.configureLanguage }}: {{ language.value }} ({{ language.key }})</h3>
+        <div class="bc-flex bc-items-center">
+            <label class="bc-text-xs bc-mr-2" for="{{ "language-#{language.key}" }}">{{ localized.field.install }}</label>
+            {{ switch_button.component({
+                dataAttribute: "data-brlbs-blurer='components-for-language-#{language.key}'",
+                id: "language-#{language.key}",
+                name: "language[#{language.key}]",
+                value: 1,
+            }) }}
+        </div>
+    </div>
+
+    <div id="components-for-language-{{ language.key }}" class="bc-flex bc-flex-col brlbs-cmpnt-blurable">
+        {{ component_settings.component({
+            components: data.package.components.contentBlockers,
+            componentId: 'content-blockers',
+            componentKey: 'contentBlocker',
+            language: language,
+        }, localized) }}
+
+        {{ component_settings.component({
+            components: data.package.components.services,
+            componentId: 'services',
+            componentKey: 'service',
+            language: language,
+            showOverwriteCodeSetting: true,
+        }, localized) }}
+    </div>
+</div>

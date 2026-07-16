@@ -1,0 +1,100 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.id | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.borlabsServicePackageKey | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.fileName | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% block content %}
+                    {{ localized.table.valid | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/details.html.twig" as details_icon %}
+                {% block content %}
+                    {{ details_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.compatibilityPatchesDetailsList.list is empty %}
+                <tr>
+                    <td colspan="5" class="bc-py-4 bc-text-center">
+                        {{ localized.alert.noCompatibilityPatchConfigured | raw }}
+                    </td>
+                </tr>
+            {% else %}
+                {% for item in config.compatibilityPatchesDetailsList.list %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ item.compatibilityPatch.key | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ item.compatibilityPatch.borlabsServicePackageKey }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ item.compatibilityPatch.fileName }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/check-circle.html.twig" as check_circle_icon %}
+                                {% import "system/macro/icons/x-circle.html.twig" as x_circle_icon %}
+                                {% block content %}
+                                    {% if item.validationStatus %}
+                                        <span class="bc-text-green-600">{{ check_circle_icon.component({}) }}</span>
+                                    {% else %}
+                                        <span class="bc-text-red-600">{{ x_circle_icon.component({}) }}</span>
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/details.html.twig" as details_icon %}
+                                {% block content %}
+                                    <button
+                                        data-brlbs-modal-target="{{ 'borlabsModalCompatibilityPatchDetails-' ~ item.compatibilityPatch.id }}">
+                                        {{ details_icon.component({}) }}
+                                    </button>
+                                    {% embed "system/embed/modal/modal.html.twig" with {
+                                        id: 'borlabsModalCompatibilityPatchDetails-' ~ item.compatibilityPatch.id,
+                                        maxWidth: 'bc-max-w-2xl',
+                                        title: item.package.name,
+                                    } %}
+                                        {% block icon %}
+                                            {% import "system/macro/icons/details.html.twig" as details_icon %}
+                                            <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                                {{ details_icon.component({}) }}
+                                            </div>
+                                        {% endblock %}
+
+                                        {% block description %}
+                                            {% import "compatibility-patch/macro/compatibility-patch-details.html.twig" as compatibility_patch_details %}
+                                            {{ compatibility_patch_details.component(item, localized.compatibilityPatchDetails) }}
+                                        {% endblock %}
+                                    {% endembed %}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

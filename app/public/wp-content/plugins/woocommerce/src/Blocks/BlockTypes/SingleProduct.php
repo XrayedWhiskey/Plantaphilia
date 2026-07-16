@@ -1,10 +1,16 @@
 <?php
 namespace Automattic\WooCommerce\Blocks\BlockTypes;
 
+use Automattic\WooCommerce\Blocks\Utils\ProductDataUtils;
+use Automattic\WooCommerce\Enums\ProductType;
+
 /**
  * SingleProduct class.
  */
 class SingleProduct extends AbstractBlock {
+
+	use EnableBlockJsonAssetsTrait;
+
 	/**
 	 * Block name.
 	 *
@@ -103,6 +109,10 @@ class SingleProduct extends AbstractBlock {
 			$result[] = $block['blockName'];
 		}
 
+		if ( 'woocommerce/product-template' === $block['blockName'] || 'core/post-template' === $block['blockName'] ) {
+			return $result;
+		}
+
 		if ( isset( $block['innerBlocks'] ) ) {
 			foreach ( $block['innerBlocks'] as $inner_block ) {
 				$this->extract_single_product_inner_block_names( $inner_block, $result );
@@ -123,9 +133,20 @@ class SingleProduct extends AbstractBlock {
 	 */
 	protected function replace_post_for_single_product_inner_block( $block, &$context ) {
 		if ( $this->single_product_inner_blocks_names ) {
-			$block_name = array_pop( $this->single_product_inner_blocks_names );
+			// Find the block index in $this->single_product_inner_blocks_names
+			// starting from the end.
+			$block_index_reversed = array_search( $block['blockName'], array_reverse( $this->single_product_inner_blocks_names ), true );
 
-			if ( $block_name === $block['blockName'] ) {
+			if ( false !== $block_index_reversed ) {
+				$block_index = count( $this->single_product_inner_blocks_names ) - (int) $block_index_reversed - 1;
+
+				$block_name = $block['blockName'];
+
+				// Remove all blocks after the current one. In some cases, like
+				// in the Product Gallery block, inner blocks are rendered
+				// directly by the parent block, so we need to skip them.
+				$this->single_product_inner_blocks_names = array_slice( $this->single_product_inner_blocks_names, 0, $block_index );
+
 				/**
 				 * This is a temporary fix to ensure the Post Title and Excerpt blocks work as expected
 				 * until Gutenberg versions 15.2 and 15.6 are included in the core of WordPress.
@@ -149,6 +170,39 @@ class SingleProduct extends AbstractBlock {
 				$context['singleProduct'] = true;
 			}
 		}
+	}
+
+	/**
+	 * Render the Single Product block.
+	 *
+	 * @param array    $attributes Block attributes.
+	 * @param string   $content Block content.
+	 * @param WP_Block $block Block instance.
+	 *
+	 * @return string Rendered block type output.
+	 */
+	protected function render( $attributes, $content, $block ) {
+		$product = wc_get_product( $block->context['postId'] );
+
+		if ( ! $product instanceof \WC_Product ) {
+			return '';
+		}
+
+		$interactivity_context = array(
+			'productId'   => $product->get_id(),
+			'variationId' => null,
+		);
+
+		$html = new \WP_HTML_Tag_Processor( $content );
+
+		if ( $html->next_tag( array( 'tag_name' => 'div' ) ) ) {
+			$html->set_attribute( 'data-wp-interactive', $this->get_full_block_name() );
+			$html->set_attribute( 'data-wp-context', wp_json_encode( $interactivity_context, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP ) );
+		}
+
+		$updated_html = $html->get_updated_html();
+
+		return parent::render( $attributes, $updated_html, $block );
 	}
 
 	/**

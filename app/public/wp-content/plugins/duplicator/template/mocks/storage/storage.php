@@ -1,7 +1,7 @@
 <?php
 
 use Duplicator\Controllers\StorageController;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined("ABSPATH") || exit;
 
@@ -61,7 +61,7 @@ defined("ABSPATH") || exit;
         <p><strong><?php echo __('Remote Cloud Backups is a PRO feature', 'duplicator'); ?></strong></p>
         <p><?php echo __('Back up to Dropbox, FTP, Google Drive, OneDrive, Amazon S3 or Amazon S3 compatible for safe off-site storage.', 'duplicator'); ?></p>
         <p>
-            <a href="<?php echo esc_url(Upsell::getCampaignUrl('storage-page', 'Notice Upgrade Now')); ?>"
+            <a href="<?php echo esc_url(LinkManager::getCampaignUrl('storage-page', 'Notice Upgrade Now')); ?>"
                class="dup-btn-green dup-btn-md dup-btn"
                target="_blank"
                rel="noopener noreferrer">
@@ -84,7 +84,7 @@ defined("ABSPATH") || exit;
                 <input type="button" class="button action" value="<?php esc_html_e('Apply', 'duplicator') ?>">
                 <span class="btn-separator"></span>
                 <a href="#" class="button grey-icon"
-                   title="Settings">
+                   title="<?php esc_attr_e('Settings', 'duplicator') ?>">
                     <i class="fas fa-sliders-h fa-fw"></i>
                 </a>
             </td>
@@ -157,7 +157,7 @@ $storageAlert = StorageController::getDialogBox('storage-page');
         $(".storage-tbl tr a, .item-chk, #new_storage").click(function (e) {
             e.preventDefault();
             let btn = $('#dup-storage-upgrade-btn');
-            let baseUrl = "<?php echo Upsell::getCampaignUrl('storage-page', 'Popup Upgrade Now'); ?>";
+            let baseUrl = "<?php echo LinkManager::getCampaignUrl('storage-page', 'Popup Upgrade Now'); ?>";
             let url = baseUrl + '&utm_term=New+Storage';
 
             if ($(this).is("a") || $(this).hasClass("item-chk")) {

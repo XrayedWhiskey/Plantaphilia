@@ -1,0 +1,83 @@
+<div class="bc-full sm:bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.packageInformation ~ ': ' ~ data.package.name,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% import "system/macro/form-component/info-hint.html.twig" as hint %}
+            {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+
+            <div class="bc-flex bc-flex-col-reverse sm:bc-flex-row bc-mb-4 bc-py-2.5 bc-px-5">
+                <div class="bc-w-full sm:bc-w-7/12 sm:bc-mr-4">
+                    <h4 class="bc-text-base bc-font-medium bc-mb-2">{{ localized.headline.description | raw }}</h4>
+                    <p>{{ markdownToHtml(translation('description', data.package.translations)) | raw }}</p>
+
+                    {% set preparationDescription = translation('preparation', data.package.translations) %}
+                    {% if preparationDescription is not empty %}
+                        <h4 class="bc-text-base bc-font-medium bc-mt-6 bc-mb-2">{{ localized.headline.preparation }}</h4>
+                        <p>{{ markdownToHtml(translation('preparation', data.package.translations)) | raw }}</p>
+                    {% endif %}
+
+                    {% set followUpDescription = translation('followUp', data.package.translations) %}
+                    {% if followUpDescription is not empty %}
+                        <h4 class="bc-text-base bc-font-medium bc-mt-6 bc-mb-2">{{ localized.headline.followUp }}</h4>
+                        <p>{{ markdownToHtml(translation('followUp', data.package.translations)) | raw }}</p>
+                    {% endif %}
+
+                    {% if data.suggestion is not empty and data.suggestion.pages.list is not empty %}
+                        <h4 class="bc-text-base bc-font-medium bc-mt-6 bc-mb-2">{{ localized.headline.detectedOnPages }}</h4>
+                        <ul class="bc-ml-4 bc-mt-2 bc-list-disc bc-text-left">
+                            {% for page in data.suggestion.pages.list %}
+                                <li>
+                                    <a class="bc-ml-2" href="{{ page.url }}" rel="nofollow noreferrer" target="_blank">
+                                        {{ page.url }}
+                                        {{ external_link_icon.component({}) }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div class="sm:bc-flex-shrink-0 bc-w-full sm:bc-w-5/12 bc-mb-4 sm:bc-mb-0">
+                    {% if data.package.thumbnail is not empty %}
+                        <img class="bc-w-full bc-rounded-md" src="{{ data.package.thumbnail | raw }}" alt="{{ data.package.name | raw }}">
+                    {% else %}
+                        <img class="bc-w-full bc-rounded-md" src="{{ imageUrl('borlabs-default-package.png') | raw }}" alt="{{ data.package.name | raw }}">
+                    {% endif %}
+                </div>
+            </div>
+            <dl class="bc-grid bc-grid-cols-2 bc-items-center sm:bc-grid-cols-5 bc-m-0 bc-text-xxs bc-rounded-b-md bc-border-t bc-border-solid bc-border-gray-200">
+                <div class="bc-col-span-1 bc-py-2.5 bc-px-5">
+                    <dt class="bc-m-0 bc-mb-1 bc-font-semibold">{{ localized.descriptionList.type }}</dt>
+                    <dd class="bc-m-0">{{ data.componentTypes[data.package.type.value] | raw }}</dd>
+                </div>
+                <div class="bc-col-span-1 bc-py-2.5 bc-px-5">
+                    <dt class="bc-m-0 bc-mb-1 bc-font-semibold">{{ localized.descriptionList.installedAt }}</dt>
+                    <dd class="bc-m-0">{{ data.package.installedAt ? adjustTimezone(data.package.installedAt).format('Y-m-d H:i') : '-' | raw }}</dd>
+                </div>
+                <div class="bc-col-span-1 bc-py-2.5 bc-px-5">
+                    <dt class="bc-m-0 bc-mb-1 bc-font-semibold">{{ localized.descriptionList.updatedAt }}</dt>
+                    <dd class="bc-m-0">{{ data.package.updatedAt ? adjustTimezone(data.package.updatedAt).format('Y-m-d H:i') : '-' | raw }}</dd>
+                </div>
+                <div class="bc-col-span-1 bc-py-2.5 bc-px-5">
+                    <dt class="bc-m-0 bc-mb-1 bc-font-semibold {{ data.package.installedAt is not empty ? ' bc-text-blue-600' : '' }}">{{ data.package.installedAt is not empty ? localized.descriptionList.installedVersion : localized.descriptionList.version }}</dt>
+                    <dd class="bc-m-0 {{ data.package.installedAt is not empty ? ' bc-text-blue-600' : '' }}">{{ versionNumber(data.package.version) | raw }}</dd>
+                </div>
+                <div class="bc-col-span-1 bc-py-2.5 bc-px-5">
+                    <dt class="bc-m-0 bc-mb-1 bc-font-semibold {{ updateAvailable ? 'bc-text-purple-600' : '' }}">{{ localized.descriptionList.latestVersion }}</dt>
+                    <dd class="bc-flex bc-items-center bc-m-0 {{ updateAvailable ? 'bc-text-purple-600' : '' }}">
+                        <span class="bc-inline-block bc-mr-0.5">{{ versionNumber(data.package.borlabsServicePackageVersion) | raw }}</span>
+                        {{ hint.component({
+                            hint: "#{localized.descriptionList.borlabsServiceUpdatedAt}: #{adjustTimezone(data.package.borlabsServiceUpdatedAt).format('Y-m-d H:i')}",
+                        }) }}
+                    </dd>
+                </div>
+            </dl>
+        {% endblock %}
+    {% endembed %}
+</div>

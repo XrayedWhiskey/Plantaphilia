@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
 use WP_Statistics\Utils\Request;
 use WP_Statistics\Components\View;
 
@@ -17,7 +19,7 @@ else: ?>
                 <div class="postbox">
                     <?php
                         View::load("components/tables/category-pages", [
-                            'data'       => $data['categories'][$taxonomy],
+                            'data'       => $data['categories'][$taxonomy] ?? null,
                             'pagination' => $pagination
                         ]);
                     ?>

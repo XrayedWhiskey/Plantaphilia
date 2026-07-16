@@ -1,0 +1,95 @@
+{% macro component(config, localized) %}
+    {% embed "system/embed/table/responsive-table.html.twig" %}
+        {% block heading %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.externalHostname | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.numberOfResources | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" %}
+                {% block content %}
+                    {{ localized.table.suggestedPackage | raw }}
+                {% endblock %}
+            {% endembed %}
+            {% embed "system/embed/table/table-header-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                {% import "system/macro/icons/details.html.twig" as details_icon %}
+                {% block content %}
+                    {{ details_icon.component({}) }}
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+        {% block body %}
+            {% if config.externalResources is empty %}
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        <td colspan="4"
+                            class="bc-py-4 bc-text-center bc-rounded-b-md">{{ localized.alert.noExternalResourceFound | raw }}
+                        </td>
+                    {% endblock %}
+                {% endembed %}
+            {% else %}
+                {% for externalResource in config.externalResources %}
+                    {% embed "system/embed/table/table-body-row.html.twig" %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% import "system/macro/icons/external-link.html.twig" as external_link_icon %}
+                                    <a class="bc-ml-2" href="https://{{ externalResource.hostname }}" rel="nofollow noreferrer" target="_blank">
+                                        {{ externalResource.hostname }}
+                                        {{ external_link_icon.component({}) }}
+                                    </a>
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ externalResource.examples.list | length }}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {% if config.packages is not empty and externalResource.borlabsServicePackageKey is not empty %}
+                                        {% set package = findObject(config.packages, 'borlabsServicePackageKey', externalResource.borlabsServicePackageKey) %}
+                                        {% if package %}
+                                            <a class="brlbs-cmpnt-link" data-brlbs-anchor-link href="#package-{{ externalResource.borlabsServicePackageKey }}">{{ package.name }}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endblock %}
+                            {% endembed %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with {textAlign: 'bc-text-center'} %}
+                                {% import "system/macro/icons/details.html.twig" as details_icon %}
+                                {% block content %}
+                                    <button
+                                        data-brlbs-modal-target="{{ 'borlabsModalExternalResourceDetails-' ~ externalResource.id }}">
+                                        {{ details_icon.component({}) }}
+                                    </button>
+                                    {% embed "system/embed/modal/modal.html.twig" with {
+                                        id: 'borlabsModalExternalResourceDetails-' ~ externalResource.id,
+                                        maxWidth: 'bc-max-w-2xl',
+                                        title: externalResource.hostname,
+                                    } %}
+                                        {% block icon %}
+                                            {% import "system/macro/icons/details.html.twig" as details_icon %}
+                                            <div class="bc-mx-auto bc-flex bc-h-12 bc-w-12 bc-flex-shrink-0 bc-items-center bc-justify-center bc-rounded-full bc-bg-gray-800 bc-text-white sm:bc-mx-0 sm:bc-h-10 sm:bc-w-10">
+                                                {{ details_icon.component({}) }}
+                                            </div>
+                                        {% endblock %}
+
+                                        {% block description %}
+                                            {% import "cloud-scan/macro/external-resource-details.html.twig" as external_resource_details %}
+                                            {{ external_resource_details.component(externalResource, localized) }}
+                                        {% endblock %}
+                                    {% endembed %}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}

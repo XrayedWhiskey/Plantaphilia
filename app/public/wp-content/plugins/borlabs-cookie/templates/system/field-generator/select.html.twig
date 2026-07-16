@@ -1,0 +1,8 @@
+{% import "system/macro/form-component/select.html.twig" as select %}
+{{ select.component({
+    hint: translation.hint,
+    id: id,
+    name: name,
+    options: values.list,
+    value: value == '' ? defaultValue : value,
+}) }}

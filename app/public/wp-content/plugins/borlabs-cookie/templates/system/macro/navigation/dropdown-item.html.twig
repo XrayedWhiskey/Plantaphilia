@@ -1,0 +1,38 @@
+{% macro component(config, activeModule) %}
+    {% set config = { activeCondition: null,  href: null, indented: false, isExternal: false, module: '', title: '' } | merge(config) %}
+
+    {% set isActive = false %}
+
+    {# Check for custom active condition first #}
+    {% if config.activeCondition is not null %}
+        {% set isActive = config.activeCondition %}
+    {% else %}
+        {% set isActive = activeModule == config.module %}
+    {% endif %}
+
+    <li class="bc-group">
+        {% if config.isExternal == true %}
+            <a class="bc-inline-flex bc-items-center hover:bc-bg-gray-50 bc-text-sm bc-px-3 bc-py-1.5 bc-w-full brlbs-cmpnt-link brlbs-cmpnt-link-with-icon group-last:bc-rounded-b-md"
+               href="{{ config.href }}"
+               rel="nofollow noreferrer"
+               target="_blank"
+            >
+                <span>{{ config.title | raw }}</span>
+                <span class="brlbs-cmpnt-external-link-icon"></span>
+            </a>
+        {% else %}
+            <a class="bc-inline-flex bc-items-center hover:bc-bg-gray-50 bc-text-sm bc-px-3 bc-py-1.5 bc-w-full {% if isActive %} bc-font-semibold {% endif %}group-last:bc-rounded-b-md"
+               href="{{ config.href ?? "?page=#{ getControllerId(config.module) }" }}">
+                {% if config.indented == true %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="bc-w-5 bc-h-5 bc-mr-0.5 bc--ml-1">
+                    <path d="M6.75 9.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" />
+                </svg>
+                {% endif %}
+                <span>{{ config.title | raw }}</span>
+                {% if config.icon %}
+                    <span class="bc-ml-1">{{ config.icon | raw }}</span>
+                {% endif %}
+            </a>
+        {% endif %}
+    </li>
+{% endmacro %}

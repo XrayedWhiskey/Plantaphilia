@@ -1,0 +1,39 @@
+{% import "system/macro/form/confirmation.html.twig" as form_confirmation %}
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+{% import "system/macro/form-component/button.html.twig" as button %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+
+    {% set breadCrumbTitle = localized.breadcrumb.scanResults %}
+
+    {% if data.scan.status == 'scanning' %}
+        {% set breadCrumbTitle = localized.breadcrumb.scanning %}
+    {% endif %}
+
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            breadCrumbTitle
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    {% if data.scan.status == 'scanning' %}
+        <!-- Scan Progress -->
+        {% include "cloud-scan/partials/scan-progress.html.twig" %}
+    {% else %}
+        <!-- Scan Result -->
+        {% include "cloud-scan/partials/scan-result.html.twig" %}
+        <!-- Pages -->
+        {% include "cloud-scan/partials/pages.html.twig" %}
+        <!-- Cookies -->
+        {% include "cloud-scan/partials/cookies.html.twig" %}
+        <!-- External Resources -->
+        {% include "cloud-scan/partials/external-resources.html.twig" %}
+        <!-- Suggestions -->
+        {% include "cloud-scan/partials/suggestions.html.twig" %}
+    {% endif %}
+{% endif %}

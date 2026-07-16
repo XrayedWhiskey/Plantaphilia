@@ -27,31 +27,21 @@ abstract class TablePress_View {
 	 * @since 1.0.0
 	 * @var array<string, mixed>
 	 */
-	protected $data = array();
+	protected array $data = array();
 
 	/**
 	 * Number of screen columns for post boxes.
 	 *
 	 * @since 1.0.0
-	 * @var int
 	 */
-	protected $screen_columns = 0;
+	protected int $screen_columns = 0;
 
 	/**
 	 * User action for this screen.
 	 *
 	 * @since 1.0.0
-	 * @var string
 	 */
-	protected $action = '';
-
-	/**
-	 * Instance of the Admin Page Helper Class, with necessary functions.
-	 *
-	 * @since 1.0.0
-	 * @var TablePress_Admin_Page
-	 */
-	protected $admin_page;
+	protected string $action = '';
 
 	/**
 	 * List of text boxes (similar to post boxes, but just with text and without extra functionality).
@@ -59,7 +49,7 @@ abstract class TablePress_View {
 	 * @since 1.0.0
 	 * @var array<string, array<string, array<string, mixed>>>
 	 */
-	protected $textboxes = array();
+	protected array $textboxes = array();
 
 	/**
 	 * List of messages that are to be displayed as boxes below the page title.
@@ -67,16 +57,15 @@ abstract class TablePress_View {
 	 * @since 1.0.0
 	 * @var string[]
 	 */
-	protected $header_messages = array();
+	protected array $header_messages = array();
 
 	/**
 	 * Whether there are post boxes registered for this screen,
 	 * is automatically set to true, when a meta box is added.
 	 *
 	 * @since 1.0.0
-	 * @var bool
 	 */
-	protected $has_meta_boxes = false;
+	protected bool $has_meta_boxes = false;
 
 	/**
 	 * List of WP feature pointers for this view.
@@ -84,40 +73,44 @@ abstract class TablePress_View {
 	 * @since 1.0.0
 	 * @var string[]
 	 */
-	protected $wp_pointers = array();
+	protected array $wp_pointers = array();
 
 	/**
-	 * Initialize the View class, by setting the correct screen columns and adding help texts.
+	 * Initializes the View class, by setting the correct screen columns and adding help texts.
 	 *
 	 * @since 1.0.0
 	 */
 	public function __construct() {
 		$screen = get_current_screen();
 		if ( 0 !== $this->screen_columns ) {
-			$screen->add_option( 'layout_columns', array( 'max' => $this->screen_columns ) );
+			$screen->add_option( 'layout_columns', array( 'max' => $this->screen_columns ) ); // @phpstan-ignore method.nonObject
 		}
 		// Enable two column layout.
-		add_filter( "get_user_option_screen_layout_{$screen->id}", array( $this, 'set_current_screen_layout_columns' ) );
+		add_filter( "get_user_option_screen_layout_{$screen->id}", array( $this, 'set_current_screen_layout_columns' ) ); // @phpstan-ignore property.nonObject
 
+		/* translators: %1$s: URL to TablePress website, %2$s: URL to WordPress Plugin Directory */
 		$common_content = '<p>' . sprintf( __( 'More information about TablePress can be found on the <a href="%1$s">plugin website</a> or on its page in the <a href="%2$s">WordPress Plugin Directory</a>.', 'tablepress' ), 'https://tablepress.org/', 'https://wordpress.org/plugins/tablepress/' ) . '</p>';
-		$common_content .= '<p>' . sprintf( __( 'For technical information, please see the <a href="%s">Documentation</a>.', 'tablepress' ), 'https://tablepress.org/documentation/' ) . ' ' . sprintf( __( 'Common questions are answered in the <a href="%s">FAQ</a>.', 'tablepress' ), 'https://tablepress.org/faq/' ) . '</p>';
+		/* translators: %s: URL to Documentation page */
+		$common_content .= '<p>' . sprintf( __( 'For technical information, please see the <a href="%s">Documentation</a>.', 'tablepress' ), 'https://tablepress.org/documentation/' ) . ' ';
+		/* translators: %s: URL to FAQ page */
+		$common_content .= sprintf( __( 'Common questions are answered in the <a href="%s">FAQ</a>.', 'tablepress' ), 'https://tablepress.org/faq/' ) . '</p>';
 
 		if ( tb_tp_fs()->is_free_plan() ) {
 			$common_content .= '<p>'
-				. sprintf( __( '<a href="%1$s">Support</a> is provided through the <a href="%2$s">WordPress Support Forums</a>.', 'tablepress' ), 'https://tablepress.org/support/', 'https://wordpress.org/tags/tablepress' )
+				. sprintf( __( '<a href="%1$s">Support</a> is provided through the <a href="%2$s">WordPress Support Forums</a>.', 'tablepress' ), 'https://tablepress.org/support/', 'https://wordpress.org/support/plugin/tablepress' )
 				. ' '
 				. sprintf( __( 'Before asking for support, please carefully read the <a href="%s">Frequently Asked Questions</a>, where you will find answers to the most common questions, and search through the forums.', 'tablepress' ), 'https://tablepress.org/faq/' )
 				. '</p>';
 			$common_content .= '<p><strong>' . sprintf( __( 'More great features for you and your site’s visitors and priority email support are available with a Premium license plan of TablePress. <a href="%s">Go check them out!</a>', 'tablepress' ), 'https://tablepress.org/premium/?utm_source=plugin&utm_medium=textlink&utm_content=help-tab' ) . '</strong></p>';
 		}
 
-		$screen->add_help_tab( array(
+		$screen->add_help_tab( array( // @phpstan-ignore method.nonObject
 			'id'      => 'tablepress-help', // This should be unique for the screen.
 			'title'   => __( 'TablePress Help', 'tablepress' ),
 			'content' => '<p>' . $this->help_tab_content() . '</p>' . $common_content,
 		) );
 		// "Sidebar" in the help tab.
-		$screen->set_help_sidebar(
+		$screen->set_help_sidebar( // @phpstan-ignore method.nonObject
 			'<p><strong>' . __( 'For more information:', 'tablepress' ) . '</strong></p>'
 			. '<p><a href="https://tablepress.org/">TablePress Website</a></p>'
 			. '<p><a href="https://tablepress.org/faq/">TablePress FAQ</a></p>'
@@ -127,7 +120,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Change the value of the user option "screen_layout_{$screen->id}" through a filter.
+	 * Changes the value of the user option "screen_layout_{$screen->id}" through a filter.
 	 *
 	 * @since 1.0.0
 	 *
@@ -146,7 +139,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Set up the view with data and do things that are necessary for all views.
+	 * Sets up the view with data and do things that are necessary for all views.
 	 *
 	 * @since 1.0.0
 	 *
@@ -162,16 +155,13 @@ abstract class TablePress_View {
 		// Set page title.
 		$GLOBALS['title'] = sprintf( __( '%1$s &lsaquo; %2$s', 'tablepress' ), $this->data['view_actions'][ $this->action ]['page_title'], 'TablePress' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		// Admin page helpers, like script/style loading, could be moved to view.
-		$this->admin_page = TablePress::load_class( 'TablePress_Admin_Page', 'class-admin-page-helper.php', 'classes' );
-		$this->admin_page->enqueue_style( 'common' );
+		add_filter( 'admin_footer_text', array( $this, 'add_admin_footer_text' ) );
+
+		TablePress::enqueue_style( 'common', array( 'wp-components' ) );
 		// RTL styles for the admin interface.
 		if ( is_rtl() ) {
-			$this->admin_page->enqueue_style( 'common-rtl', array( 'tablepress-common' ) );
+			TablePress::enqueue_style( 'common-rtl', array( 'tablepress-common' ) );
 		}
-		$this->admin_page->enqueue_script( 'common', array( 'jquery-core', 'postbox' ) );
-
-		$this->admin_page->add_admin_footer_text();
 
 		// Initialize WP feature pointers for TablePress.
 		$this->_init_wp_pointers();
@@ -180,10 +170,21 @@ abstract class TablePress_View {
 		$this->add_text_box( 'default_nonce_fields', array( $this, 'default_nonce_fields' ), 'header', false );
 		$this->add_text_box( 'action_nonce_field', array( $this, 'action_nonce_field' ), 'header', false );
 		$this->add_text_box( 'action_field', array( $this, 'action_field' ), 'header', false );
+
+		if ( tb_tp_fs()->is_plan_or_trial__premium_only( 'pro' ) && ! tb_tp_fs()->is_paying_or_trial__premium_only() ) {
+			$message = '<span class="dashicons dashicons-warning" style="color:#cc1818"></span> ';
+			$message .= '<strong>' . sprintf( __( 'Your TablePress %s premium license has expired!', 'tablepress' ), tb_tp_fs()->is_plan_or_trial( 'max', true ) ? 'Max' : 'Pro' ) . '</strong> ';
+			$message .= sprintf(
+				__( 'Please <a href="%1$s"><strong>renew your license now</strong></a> to continue receiving direct developer support, new features, and security updates for TablePress.', 'tablepress' ),
+				esc_url( tb_tp_fs()->checkout_url( WP_FS__PERIOD_ANNUALLY, false ) ),
+			);
+
+			$this->add_header_message( $message, 'is-warning not-dismissible' );
+		}
 	}
 
 	/**
-	 * Register a header message for the view.
+	 * Registers a header message for the view.
 	 *
 	 * @since 1.0.0
 	 *
@@ -191,7 +192,7 @@ abstract class TablePress_View {
 	 * @param string $css_class Optional. Additional CSS class for the header message.
 	 * @param string $title     Optional. Text for the header title.
 	 */
-	protected function add_header_message( string $text, string $css_class = 'notice-success', string $title = '' ): void {
+	protected function add_header_message( string $text, string $css_class = 'is-success', string $title = '' ): void {
 		if ( ! str_contains( $css_class, 'not-dismissible' ) ) {
 			$css_class .= ' is-dismissible';
 		}
@@ -202,11 +203,11 @@ abstract class TablePress_View {
 		if ( '' !== $text && ! str_starts_with( $text, '<p' ) ) {
 			$text = "<p>{$text}</p>";
 		}
-		$this->header_messages[] = "<div class=\"notice {$css_class}\">{$title}{$text}</div>\n";
+		$this->header_messages[] = "<div class=\"notice components-notice {$css_class}\"><div class=\"components-notice__content\">{$title}{$text}</div></div>\n";
 	}
 
 	/**
-	 * Process header action messages, i.e. check if a message should be added to the page.
+	 * Processes header action messages, i.e. check if a message should be added to the page.
 	 *
 	 * @since 1.0.0
 	 *
@@ -214,7 +215,7 @@ abstract class TablePress_View {
 	 */
 	protected function process_action_messages( array $action_messages ): void {
 		if ( $this->data['message'] && isset( $action_messages[ $this->data['message'] ] ) ) {
-			$class = ( str_starts_with( $this->data['message'], 'error' ) ) ? 'notice-error' : 'notice-success';
+			$class = ( str_starts_with( $this->data['message'], 'error' ) ) ? 'is-error' : 'is-success';
 
 			if ( '' !== $this->data['error_details'] ) {
 				$this->data['error_details'] = '</p><p>' . sprintf( __( 'Error code: %s', 'tablepress' ), '<code>' . esc_html( $this->data['error_details'] ) . '</code>' );
@@ -225,7 +226,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Register a text box for the view.
+	 * Registers a text box for the view.
 	 *
 	 * @since 1.0.0
 	 *
@@ -249,7 +250,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Register a post meta box for the view, that is drag/droppable with WordPress functionality.
+	 * Registers a post meta box for the view, that is drag/droppable with WordPress functionality.
 	 *
 	 * @since 1.0.0
 	 *
@@ -266,7 +267,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Render all text boxes for the given context.
+	 * Renders all text boxes for the given context.
 	 *
 	 * @since 1.0.0
 	 *
@@ -289,7 +290,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Render all post meta boxes for the given context, if there are post meta boxes.
+	 * Renders all post meta boxes for the given context, if there are post meta boxes.
 	 *
 	 * @since 1.0.0
 	 *
@@ -297,12 +298,12 @@ abstract class TablePress_View {
 	 */
 	protected function do_meta_boxes( string $context ): void {
 		if ( $this->has_meta_boxes ) {
-			do_meta_boxes( get_current_screen(), $context, $this->data ); // @phpstan-ignore-line
+			do_meta_boxes( get_current_screen(), $context, $this->data ); // @phpstan-ignore argument.type
 		}
 	}
 
 	/**
-	 * Print hidden fields with nonces for post meta box AJAX handling, if there are post meta boxes on the screen.
+	 * Prints hidden fields with nonces for post meta box AJAX handling, if there are post meta boxes on the screen.
 	 *
 	 * The check is possible as this function is executed after post meta boxes have to be registered.
 	 *
@@ -322,7 +323,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Print hidden field with a nonce for the screen's action, to be transmitted in HTTP requests.
+	 * Prints hidden field with a nonce for the screen's action, to be transmitted in HTTP requests.
 	 *
 	 * @since 1.0.0
 	 *
@@ -335,7 +336,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Print hidden field with the screen action.
+	 * Prints hidden field with the screen action.
 	 *
 	 * @since 1.0.0
 	 *
@@ -347,7 +348,7 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Render the current view.
+	 * Renders the current view.
 	 *
 	 * @since 1.0.0
 	 */
@@ -403,17 +404,22 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Render the navigation menu with links to the possible actions, highlighting the current one.
+	 * Renders the navigation menu with links to the possible actions, highlighting the current one.
 	 *
 	 * @since 1.0.0
 	 */
 	protected function print_nav_tab_menu(): void {
+		$name = __( 'TablePress', 'tablepress' );
+		$filename = 'admin/img/tablepress.svg';
 		?>
 		<div id="tablepress-header" class="header">
-			<h1 class="name"><img src="<?php echo plugins_url( 'admin/img/tablepress-icon.png', TABLEPRESS__FILE__ ); ?>" class="tablepress-icon" alt="<?php esc_attr_e( 'TablePress plugin logo', 'tablepress' ); ?>"><?php _e( 'TablePress', 'tablepress' ); ?></h1>
+			<h1 class="name">
+				<img src="<?php echo plugins_url( $filename, TABLEPRESS__FILE__ ); ?>" alt="<?php esc_attr_e( 'TablePress plugin logo', 'tablepress' ); ?>">
+				<span class="screen-reader-text"><?php echo $name; ?></span>
+			</h1>
 			<?php if ( ! TABLEPRESS_IS_PLAYGROUND_PREVIEW && tb_tp_fs()->is_free_plan() ) : ?>
 				<div class="buttons">
-					<a href="https://tablepress.org/premium/?utm_source=plugin&utm_medium=button&utm_content=upgrade-button" class="tablepress-button">
+					<a href="<?php echo esc_url( tb_tp_fs()->pricing_url( WP_FS__PERIOD_ANNUALLY, false ) ); ?>" class="tablepress-button">
 						<span><?php _e( 'Upgrade to Premium', 'tablepress' ); ?></span>
 						<span class="dashicons dashicons-arrow-right-alt"></span>
 					</a>
@@ -452,23 +458,27 @@ abstract class TablePress_View {
 	 */
 	public function textbox_no_javascript( array $data, array $box ): void {
 		?>
-		<div class="notice notice-error notice-alt notice-large hide-if-js">
-			<h3><em>
-				<?php _e( 'Attention: Unfortunately, there is a problem!', 'tablepress' ); ?>
-			</em></h3>
-			<p style="font-size:14px">
-				<strong><?php _e( 'This screen requires JavaScript. Please enable JavaScript in your browser settings.', 'tablepress' ); ?></strong><br>
-				<?php _e( 'For help, please follow <a href="https://www.enable-javascript.com/">the instructions on how to enable JavaScript in your browser</a>.', 'tablepress' ); ?>
-			</p>
-			<p>
-				<?php echo '<a href="' . esc_url( TablePress::url( array( 'action' => 'list' ) ) ) . '">' . __( 'Back to the List of Tables', 'tablepress' ) . '</a>'; ?>
-			</p>
+		<div class="notice components-notice is-error hide-if-js">
+			<div class="components-notice__content">
+				<h3><em>
+					<?php _e( 'Attention: Unfortunately, there is a problem!', 'tablepress' ); ?>
+				</em></h3>
+				<p style="font-size:14px">
+					<strong><?php _e( 'This screen requires JavaScript. Please enable JavaScript in your browser settings.', 'tablepress' ); ?></strong><br>
+					<?php _e( 'For help, please follow <a href="https://www.enable-javascript.com/">the instructions on how to enable JavaScript in your browser</a>.', 'tablepress' ); ?>
+				</p>
+				<p>
+					<?php echo '<a href="' . esc_url( TablePress::url( array( 'action' => 'list' ) ) ) . '">' . __( 'Back to the List of Tables', 'tablepress' ) . '</a>'; ?>
+				</p>
+			</div>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Print a submit button (only done when function is used as a callback for a text box).
+	 * Prints a submit button (only done when function is used as a callback for a text box).
+	 *
+	 * This method is soft-deprecated. It's no longer used in TablePress, but e.g. in the "TablePress Debug Extension".
 	 *
 	 * @since 1.0.0
 	 *
@@ -476,14 +486,52 @@ abstract class TablePress_View {
 	 * @param array<string, mixed> $box  Information about the text box.
 	 */
 	protected function textbox_submit_button( array $data, array $box ): void {
-		$caption = $data['submit_button_caption'] ?? __( 'Save Changes', 'tablepress' );
 		?>
-		<p class="submit"><input type="submit" value="<?php echo esc_attr( $caption ); ?>" class="button button-primary button-large"></p>
+		<p class="submit"><input type="submit" class="components-button is-primary button-save-changes" value="<?php esc_attr_e( 'Save Changes', 'tablepress' ); ?>"></p>
 		<?php
 	}
 
 	/**
-	 * Return the content for the help tab for this screen.
+	 * Returns a safe JSON representation of a variable for printing inside of JavaScript code.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param mixed $data Variable to convert to JSON.
+	 * @return string Safe JSON representation of a variable for printing inside of JavaScript code.
+	 */
+	public function convert_to_json_parse_output( /* string|array|bool|int|float|null */ $data ): string {
+		$json = wp_json_encode( $data, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES );
+		if ( false === $json ) {
+			// JSON encoding failed, return an error object. Use a prefixed "_error" key to avoid conflicts with intentionally added "error" keys.
+			$json = '{ "_error": "The data could not be encoded to JSON!" }';
+		}
+		// Print the JSON data inside a `JSON.parse()` call in JS for speed gains, with necessary escaping of `\` and `'`.
+		$json = str_replace( array( '\\', "'" ), array( '\\\\', "\'" ), $json );
+		return "JSON.parse( '{$json}' )";
+	}
+
+	/**
+	 * Prints JavaScript variables for the screen.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string               $variable Name of the JavaScript variable.
+	 * @param array<string, mixed> $data     Information about the text box.
+	 */
+	protected function print_script_data_json( string $variable, array $data ): void {
+		echo "<script>\n";
+		echo "window.tp = window.tp || {};\n";
+		echo "tp.{$variable} = {\n";
+		foreach ( $data as $key => $value ) {
+			$value = $this->convert_to_json_parse_output( $value );
+			echo "\t{$key}: {$value},\n";
+		}
+		echo "};\n";
+		echo "</script>\n";
+	}
+
+	/**
+	 * Returns the content for the help tab for this screen.
 	 *
 	 * Has to be implemented for every view that is visible in the WP Dashboard!
 	 *
@@ -497,7 +545,33 @@ abstract class TablePress_View {
 	}
 
 	/**
-	 * Initialize the WP feature pointers for TablePress.
+	 * Adds a TablePress "Thank You" message to the admin footer content.
+	 *
+	 * @since 1.0.0
+	 * @since 3.3.0 This method was moved from the now-removed `TablePress_Admin_Page` class.
+	 *
+	 * @param string $content Current admin footer content.
+	 * @return string New admin footer content.
+	 */
+	public function add_admin_footer_text( /* string */ $content ): string {
+		// Don't use a type hint in the method declaration as many WordPress plugins use the `admin_footer_text` filter without returning a string.
+
+		// Protect against other plugins not returning a string in their filter callbacks.
+		if ( ! is_string( $content ) ) { // @phpstan-ignore function.alreadyNarrowedType (The `is_string()` check is needed as the input is coming from a filter hook.)
+			$content = '';
+		}
+
+		/* translators: %s: URL to TablePress website */
+		$content .= ' &bull; ' . sprintf( __( 'Thank you for using <a href="%s">TablePress</a>.', 'tablepress' ), 'https://tablepress.org/' );
+		if ( tb_tp_fs()->is_free_plan() ) {
+			/* translators: %s: URL to TablePress premium features */
+			$content .= ' ' . sprintf( __( 'Take a look at the <a href="%s">Premium features</a>!', 'tablepress' ), 'https://tablepress.org/premium/?utm_source=plugin&utm_medium=textlink&utm_content=admin-footer' );
+		}
+		return $content;
+	}
+
+	/**
+	 * Initializes the WP feature pointers for TablePress.
 	 *
 	 * @since 1.0.0
 	 */
@@ -513,7 +587,7 @@ abstract class TablePress_View {
 		$pointers_on_page = false;
 		foreach ( array_diff( $this->wp_pointers, $dismissed ) as $pointer ) {
 			// Bind pointer print function.
-			add_action( "admin_footer-{$GLOBALS['hook_suffix']}", array( $this, 'wp_pointer_' . $pointer ) ); // @phpstan-ignore-line
+			add_action( "admin_footer-{$GLOBALS['hook_suffix']}", array( $this, 'wp_pointer_' . $pointer ) ); // @phpstan-ignore argument.type
 			$pointers_on_page = true;
 		}
 
@@ -521,6 +595,62 @@ abstract class TablePress_View {
 			wp_enqueue_style( 'wp-pointer' );
 			wp_enqueue_script( 'wp-pointer' );
 		}
+	}
+
+	/**
+	 * Prints the JavaScript code for a WP feature pointer.
+	 *
+	 * @since 1.0.0
+	 * @since 3.3.0 This method was moved from the now-removed `TablePress_Admin_Page` class.
+	 *
+	 * @param string               $pointer_id The pointer ID.
+	 * @param string               $selector   The HTML elements, on which the pointer should be attached.
+	 * @param array<string, mixed> $args       Arguments to be passed to the pointer JS (see wp-pointer.js).
+	 */
+	public function print_wp_pointer_js( string $pointer_id, string $selector, array $args ): void {
+		if ( empty( $pointer_id ) || empty( $selector ) || empty( $args['content'] ) ) {
+			return;
+		}
+
+		$keyboard_shortcut = '';
+		if ( 'tp33_edit_quick_navigation' === $pointer_id ) {
+			$keyboard_shortcut = <<<JS
+			content: options.content.replace( /%metaKey%/g, window?.navigator?.platform?.includes( 'Mac' ) ? wp.i18n._x( '⌘', 'keyboard shortcut modifier key on a Mac keyboard', 'tablepress' ) : wp.i18n._x( 'Ctrl+', 'keyboard shortcut modifier key on a non-Mac keyboard', 'tablepress' ) ),\n
+			JS;
+		}
+
+		/*
+		 * Print JS code for the feature pointers, extended with event handling for opened/closed "Screen Options", so that pointers can
+		 * be repositioned. 210 ms is slightly slower than jQuery's "fast" value, to allow all elements to reach their original position.
+		 */
+		?>
+<script>
+( ( $ ) => {
+	let options = <?php echo wp_json_encode( $args, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES ); ?>;
+	if ( ! options ) {
+		return;
+	}
+
+	options = {
+		...options,
+		<?php echo $keyboard_shortcut; ?>
+		close() {
+			$.post( ajaxurl, {
+				pointer: '<?php echo $pointer_id; ?>',
+				action: 'dismiss-wp-pointer'
+			} );
+			$( this ).pointer( { 'disabled': true } );
+		},
+	};
+
+	$( () => $( '<?php echo $selector; ?>' ).pointer( options ).pointer( 'open' ) );
+
+	$( document ).on( 'screen:options:open screen:options:close', () => {
+		setTimeout( () => $( '<?php echo $selector; ?>' ).pointer( 'reposition' ), 210 );
+	} );
+} )( jQuery );
+</script>
+		<?php
 	}
 
 } // class TablePress_View

@@ -5,10 +5,10 @@
  * Description: Comply with the One Stop Shop procedure while using WooCommerce.
  * Author: vendidero
  * Author URI: https://vendidero.de
- * Version: 1.6.2
+ * Version: 1.8.4
  * Requires PHP: 5.6
  * License: GPLv3
- * Tested up to: 6.4
+ * Tested up to: 7.0
  *
  * Text Domain: one-stop-shop-woocommerce
  * Domain Path: /i18n/languages/
@@ -52,7 +52,7 @@ if ( is_readable( $autoloader ) ) {
 	 */
 	add_action(
 		'admin_notices',
-		function() {
+		function () {
 			?>
 			<div class="notice notice-error">
 				<p>

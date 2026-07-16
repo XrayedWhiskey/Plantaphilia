@@ -1,8 +1,7 @@
 <?php
 
-use Duplicator\Installer\Utils\LinkManager;
 use Duplicator\Libs\Snap\SnapJson;
-use Duplicator\Utils\Upsell;
+use Duplicator\Utils\LinkManager;
 
 defined('ABSPATH') || defined('DUPXABSPATH') || exit;
 $view_state     = DUP_UI_ViewState::getArray();
@@ -31,6 +30,7 @@ $archive_build_mode      = ($package->Archive->Format === 'ZIP') ? 'ZipArchive (
 $dup_install_secure_on   = isset($package->Installer->OptsSecureOn) ? $package->Installer->OptsSecureOn : 0;
 $dup_install_secure_pass = isset($package->Installer->OptsSecurePass) ? DUP_Util::installerUnscramble($package->Installer->OptsSecurePass) : '';
 $installerNameMode       = DUP_Settings::Get('installer_name_mode');
+$storage_position        = DUP_Settings::Get('storage_position');
 
 $currentStoreURLPath = DUP_Settings::getSsdirUrl();
 $installerSecureName = $package->getInstDownloadName(true);
@@ -77,7 +77,7 @@ $installerDirectLink = "{$currentStoreURLPath}/" . pathinfo($installerSecureName
 </style>
 
 <?php if ($package_id == 0) :?>
-    <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Invalid Package ID request.  Please try again!', 'duplicator'); ?></p></div>
+    <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Invalid Backup ID request.  Please try again!', 'duplicator'); ?></p></div>
 <?php endif; ?>
 
 <div class="toggle-box">
@@ -190,7 +190,7 @@ GENERAL -->
                             <i class="fas fa-bolt fa-sm fa-fw"></i>&nbsp; <?php esc_html_e('Installer', 'duplicator') ?> &nbsp; <?php echo $installBtnIcon; ?>
                         </button>
                         <button class="button" onclick="Duplicator.Pack.DownloadFile(<?php echo $archiveDownloadInfoJson; ?>);return false;">
-                            <i class="far fa-file-archive"></i>&nbsp; <?php esc_html_e('Archive', 'duplicator') ?> - <?php echo esc_html($package->ZipSize); ?>
+                            <i class="far fa-file-archive"></i>&nbsp; <?php esc_html_e('Backup', 'duplicator') ?> - <?php echo esc_html($package->ZipSize); ?>
                         </button>
                         <button class="button" onclick="Duplicator.Pack.ShowLinksDialog(<?php echo $showLinksDialogJson;?>);" class="thickbox">
                             <i class="fas fa-share-alt"></i>&nbsp; <?php esc_html_e("Share File Links", 'duplicator')?>
@@ -204,7 +204,7 @@ GENERAL -->
                 <?php if (!$err_found) :?>
                 <table class="dup-sub-list">
                     <tr>
-                        <td><?php esc_html_e('Archive', 'duplicator') ?> </td>
+                        <td><?php esc_html_e('Backup', 'duplicator') ?> </td>
                         <td>
                             <a href="<?php echo esc_url($archiveDownloadInfo["url"]); ?>" class="link-style">
                                 <?php echo esc_html($package->Archive->File); ?>
@@ -225,7 +225,7 @@ GENERAL -->
                     </tr>
                     <tr>
                         <td class="sub-notes" colspan="2">
-                            <?php _e("The installer is also available inside the archive file.", 'duplicator') ?>
+                            <?php _e("The installer is also available inside the Backup file.", 'duplicator') ?>
                         </td>
                     </tr>
                 </table>
@@ -255,7 +255,7 @@ DIALOG: QUICK PATH -->
                 printf(
                     esc_html_x(
                         "A copy of the database.sql and installer.php files can both be found inside of the archive.zip/daf file.  "
-                        . "Download and extract the archive file to get a copy of the installer which will be named 'installer-backup.php'. "
+                        . "Download and extract the Backup file to get a copy of the installer which will be named 'installer-backup.php'. "
                         . "For details on how to extract a archive.daf file please see: "
                         . '%1$sHow to work with DAF files and the DupArchive extraction tool?%2$s',
                         '%1$s and %2$s are opening and closing <a> tags',
@@ -274,7 +274,7 @@ DIALOG: QUICK PATH -->
 STORAGE -->
 <div class="dup-box">
 <div class="dup-box-title">
-    <i class="fas fa-server fa-sm"></i>
+    <i class="fas fa-hdd fa-sm"></i>
     <?php esc_html_e('Storage', 'duplicator') ?>
     <div class="dup-box-arrow"></div>
 </div>
@@ -327,14 +327,14 @@ STORAGE -->
                                 '<i class="fas fa-network-wired fa-fw"></i>&nbsp;' . 'FTP/SFTP'
                             ); ?>
                             <a 
-                                href="<?php echo esc_url(Upsell::getCampaignUrl('details-storage')); ?>"
+                                href="<?php echo esc_url(LinkManager::getCampaignUrl('details-storage')); ?>"
                                 target="_blank"
                                 class="link-style">
                                 <?php esc_html_e('Duplicator Pro', 'duplicator');?>
                             </a>
                             <i class="fas fa-question-circle"
                                 data-tooltip-title="<?php esc_attr_e("Additional Storage:", 'duplicator'); ?>"
-                                data-tooltip="<?php esc_attr_e('Duplicator Pro allows you to create a package and store it at a custom location on this server or to a remote '
+                                data-tooltip="<?php esc_attr_e('Duplicator Pro allows you to create a Backup and store it at a custom location on this server or to a remote '
                                         . 'cloud location such as Google Drive, Amazon, Dropbox and many more.', 'duplicator'); ?>">
                              </i>
                         </span>
@@ -351,7 +351,7 @@ STORAGE -->
 ARCHIVE -->
 <div class="dup-box">
 <div class="dup-box-title">
-    <i class="far fa-file-archive"></i> <?php esc_html_e('Archive', 'duplicator') ?>
+    <i class="far fa-file-archive"></i> <?php esc_html_e('Backup', 'duplicator') ?>
     <div class="dup-box-arrow"></div>
 </div>
 <div class="dup-box-panel" id="dup-package-dtl-archive-panel" style="<?php echo esc_attr($ui_css_archive); ?>">
@@ -371,7 +371,7 @@ ARCHIVE -->
         <?php if ($package->Archive->ExportOnlyDB) : ?>
             <tr>
                 <td><?php esc_html_e('Database Mode', 'duplicator') ?> </td>
-                <td><?php esc_html_e('Archive Database Only Enabled', 'duplicator') ?></td>
+                <td><?php esc_html_e('Backup Database Only Enabled', 'duplicator') ?></td>
             </tr>
         <?php else : ?>
             <tr>
@@ -528,7 +528,7 @@ INSTALLER -->
 
 <?php if ($debug_on) : ?>
     <div style="margin:0">
-        <a href="javascript:void(0)" onclick="jQuery(this).parent().find('.dup-pack-debug').toggle()">[<?php esc_html_e('View Package Object', 'duplicator') ?>]</a><br/>
+        <a href="javascript:void(0)" onclick="jQuery(this).parent().find('.dup-pack-debug').toggle()">[<?php esc_html_e('View Backup Object', 'duplicator') ?>]</a><br/>
         <pre class="dup-pack-debug" style="display:none"><?php @print_r($package); ?> </pre>
     </div>
 <?php endif; ?>
@@ -545,12 +545,12 @@ jQuery(document).ready(function($)
     Duplicator.Pack.ShowLinksDialog = function(json)
     {
         var url = '#TB_inline?width=650&height=325&inlineId=dup-dlg-quick-path';
-        tb_show("<?php esc_html_e('Package File Links', 'duplicator') ?>", url);
+        tb_show("<?php esc_html_e('Backup File Links', 'duplicator') ?>", url);
 
         var msg = <?php printf(
             '"%s" + "\n\n%s:\n" + json.archive + "\n\n%s:\n" + json.log + "\n\n%s";',
             '=========== SENSITIVE INFORMATION START ===========',
-            esc_html__("ARCHIVE", 'duplicator'),
+            esc_html__("BACKUP", 'duplicator'),
             esc_html__("LOG", 'duplicator'),
             '=========== SENSITIVE INFORMATION END ==========='
         );

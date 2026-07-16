@@ -1,0 +1,23 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+{% import "system/macro/row/save.html.twig" as row_save %}
+{% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+
+{% if not isPluginUnlocked() %}
+    {{ messages() | raw }}
+{% else %}
+    {{ breadcrumb.component({
+        items: [
+            [localized.breadcrumb.module, "?page=#{controllerId}"],
+            localized.breadcrumb.configure
+        ]
+    }, localized) }}
+
+    {{ messages() | raw }}
+
+    <form action="{{ "?page=#{controllerId}" }}" method="post" class="needs-validation bc-group/form" novalidate>
+        <!-- Configuration -->
+        {% include "iab-tcf/iab-tcf-vendor-manage/partials/configuration.html.twig" %}
+        <!-- Vendors Preview -->
+        {% include "iab-tcf/iab-tcf-vendor-manage/partials/vendors-preview.html.twig" %}
+    </form>
+{% endif %}

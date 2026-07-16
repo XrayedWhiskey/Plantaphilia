@@ -1,0 +1,114 @@
+{% if settingsFieldsListList.list is not empty %}
+    {% set repeatableFieldsCardIdentifier = idPrefix ~ '-' ~ settingsFieldsListList.list[0].list[0].formFieldCollectionName ~ '-' ~ key %}
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% block header %}
+            {{ card_heading.component({
+                button: translation.buttonLabel,
+                buttonDataAttribute: "data-brlbs-add-table-row=\"#{repeatableFieldsCardIdentifier}\"",
+                buttonId: 'addServiceCookie',
+                buttonName: 'addServiceCookie',
+                title: translation.title,
+            }) }}
+        {% endblock %}
+
+        {% block content %}
+            {% embed "system/embed/table/responsive-table.html.twig" with { dataAttribute: "data-brlbs-table=\"#{repeatableFieldsCardIdentifier}\"" } %}
+                {% block heading %}
+                    {% for settingsFieldDefinition in settingsFieldsDefinition.list %}
+                        {% embed "system/embed/table/table-header-element.html.twig" %}
+                            {% block content %}
+                                {{ settingsFieldDefinition.translation.label | raw }}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+
+                    {% embed "system/embed/table/table-header-element.html.twig" %}
+                        {% block content %}
+                            #
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+
+                {% block body %}
+                    {% for settingsFieldsList in settingsFieldsListList.list %}
+                        {% set settingsFieldsListIndex = loop.index0 %}
+                        {% embed "system/embed/table/table-body-row.html.twig" %}
+                            {% block rowContent %}
+                                {% for settingsField in settingsFieldsList.list %}
+                                    {% embed "system/embed/table/table-body-element.html.twig" %}
+                                        {% block content %}
+                                            {{ makeFieldWithoutLabel(
+                                                settingsField,
+                                                generateRepeatableFormFieldId(idPrefix, key, settingsField, settingsFieldsListIndex),
+                                                generateRepeatableFormFieldName(namePrefix, key, settingsField, settingsFieldsListIndex),
+                                            ) | raw }}
+                                        {% endblock %}
+                                    {% endembed %}
+                                {% endfor %}
+
+                                {% embed "system/embed/table/table-body-element.html.twig" %}
+                                    {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                                    {% block content %}
+                                        <button data-brlbs-modal-target="{{ "#{repeatableFieldsCardIdentifier}ModalDelete-#{loop.index0}" }}" type="button">
+                                            {{ trash_icon.component({}) }}
+                                        </button>
+                                        {% embed "system/embed/modal/modal.html.twig" with {
+                                            buttonText: localized.global.button.delete,
+                                            id: "#{repeatableFieldsCardIdentifier}ModalDelete-#{settingsFieldsListIndex}",
+                                            title: localized.global.headline.deleteSelection,
+                                        } %}
+                                        {% endembed %}
+                                    {% endblock %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endfor %}
+
+                    {% embed "system/embed/table/table-body-row.html.twig" with { dataAttribute: 'data-brlbs-table-empty-message', hidden: settingsFieldsListList.list is not empty } %}
+                        {% block rowContent %}
+                            {% embed "system/embed/table/table-body-element.html.twig" with { attributes: "colspan=\"#{(settingsFieldsListList.list[0].list | length) + 1}\"", textAlign: 'bc-text-center' } %}
+                                {% block content %}
+                                    {{ localized.global.alert.noEntryConfigured }}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endblock %}
+                    {% endembed %}
+                {% endblock %}
+            {% endembed %}
+
+            <script type="text/template" data-brlbs-row-template="{{ repeatableFieldsCardIdentifier }}">
+                {% embed "system/embed/table/table-body-row.html.twig" %}
+                    {% block rowContent %}
+                        {% for settingsFieldDefinition in settingsFieldsDefinition.list %}
+                            {% embed "system/embed/table/table-body-element.html.twig" %}
+                                {% block content %}
+                                    {{ makeFieldWithoutLabel(
+                                        settingsFieldDefinition,
+                                        generateRepeatableFormFieldId(idPrefix, key, settingsFieldDefinition, '##LOOP_INDEX##'),
+                                        generateRepeatableFormFieldName(namePrefix, key, settingsFieldDefinition, '##LOOP_INDEX##'),
+                                    ) | raw }}
+                                {% endblock %}
+                            {% endembed %}
+                        {% endfor %}
+
+                        {% embed "system/embed/table/table-body-element.html.twig" %}
+                            {% import "system/macro/icons/trash.html.twig" as trash_icon %}
+                            {% block content %}
+                                <button data-brlbs-modal-target="{{ "#{repeatableFieldsCardIdentifier}ModalDelete-##LOOP_INDEX##" }}" type="button">
+                                    {{ trash_icon.component({}) }}
+                                </button>
+                                {% embed "system/embed/modal/modal.html.twig" with {
+                                    buttonText: localized.global.button.delete,
+                                    id: "#{repeatableFieldsCardIdentifier}ModalDelete-##LOOP_INDEX##",
+                                    title: localized.global.headline.deleteSelection,
+                                } %}
+                                {% endembed %}
+                            {% endblock %}
+                        {% endembed %}
+                    {% endblock %}
+                {% endembed %}
+            </script>
+        {% endblock %}
+    {% endembed %}
+{% endif %}

@@ -22,6 +22,7 @@ class WC_GZD_AJAX {
 			'gzd_refresh_unit_price'            => true,
 			'gzd_refresh_cart_vouchers'         => true,
 			'gzd_json_search_delivery_time'     => false,
+			'gzd_json_search_manufacturer'      => false,
 			'gzd_legal_checkboxes_save_changes' => false,
 			'gzd_toggle_tab_enabled'            => false,
 			'gzd_install_extension'             => false,
@@ -46,24 +47,63 @@ class WC_GZD_AJAX {
 			wp_die( - 1 );
 		}
 
-		$extension = wc_clean( wp_unslash( $_POST['extension'] ) );
+		$extension           = wc_clean( wp_unslash( $_POST['extension'] ) );
+		$license_key         = isset( $_POST['license_key'] ) ? wc_clean( wp_unslash( $_POST['license_key'] ) ) : '';
+		$redirect_on_success = false;
 
 		if ( ! empty( $extension ) && \Vendidero\Germanized\PluginsHelper::is_plugin_whitelisted( $extension ) ) {
-			$result = \Vendidero\Germanized\PluginsHelper::install_or_activate_extension( $extension );
+			$plugin_name = \Vendidero\Germanized\PluginsHelper::get_plugin_name( $extension );
+
+			if ( 'woocommerce-germanized-pro' === $extension ) {
+				if ( empty( $license_key ) ) {
+					wp_send_json(
+						array(
+							'message' => __( 'Please provide your license key.', 'woocommerce-germanized' ),
+						)
+					);
+				}
+
+				$redirect_on_success = admin_url( 'admin.php?page=wc-gzdp-setup' );
+			} elseif ( 'shiptastic-for-woocommerce' === $extension ) {
+				$redirect_on_success = admin_url( 'admin.php?page=wc-shiptastic-setup' );
+			}
+
+			$result = \Vendidero\Germanized\PluginsHelper::install_or_activate_extension( $extension, $license_key );
 
 			if ( \Vendidero\Germanized\PluginsHelper::is_plugin_active( $extension ) ) {
-				wp_send_json(
-					array(
-						'success' => true,
-					)
+				$result = array(
+					'success' => true,
 				);
+
+				if ( 'woocommerce-germanized-pro' === $extension ) {
+					if ( class_exists( '\Vendidero\VendideroHelper\Package' ) ) {
+						$pro_product_id = \Vendidero\Germanized\PluginsHelper::get_pro_version_product_id();
+						$pro_version    = \Vendidero\VendideroHelper\Package::get_product_by_id( $pro_product_id );
+
+						if ( ! $pro_version ) {
+							\Vendidero\VendideroHelper\Package::add_product( 'woocommerce-germanized-pro/woocommerce-germanized-pro.php', $pro_product_id, array( 'free' => false ) );
+							$pro_version = \Vendidero\VendideroHelper\Package::get_product_by_id( $pro_product_id );
+						}
+
+						if ( $pro_version ) {
+							$pro_version->register( $license_key );
+						}
+					}
+				}
+
+				if ( $redirect_on_success ) {
+					$result['redirect'] = $redirect_on_success;
+				}
+
+				wp_send_json( $result );
 			} else {
-				$plugin_name = \Vendidero\Germanized\PluginsHelper::get_plugin_name( $extension );
-				$message     = sprintf( __( 'There was an error while automatically installing %1$s. %2$s', 'woocommerce-germanized' ), esc_html( $plugin_name ), \Vendidero\Germanized\PluginsHelper::get_plugin_manual_install_message( $extension ) );
+				if ( ! is_wp_error( $result ) ) {
+					$result = new WP_Error( 'plugin_install', sprintf( __( 'There was an error while automatically installing %1$s. %2$s', 'woocommerce-germanized' ), esc_html( $plugin_name ), \Vendidero\Germanized\PluginsHelper::get_plugin_manual_install_message( $extension ) ) );
+				}
 
 				wp_send_json(
 					array(
-						'message' => $message,
+						'message' => $result->get_error_message(),
 					)
 				);
 			}
@@ -211,6 +251,7 @@ class WC_GZD_AJAX {
 
 		$args = array(
 			'hide_empty' => false,
+			'fields'     => 'id=>name',
 		);
 
 		if ( is_numeric( $term ) ) {
@@ -219,10 +260,45 @@ class WC_GZD_AJAX {
 			$args['name__like'] = (string) $term;
 		}
 
-		$query = get_terms( 'product_delivery_time', $args );
+		$query = WC_germanized()->delivery_times->get_delivery_times( $args );
+
 		if ( ! empty( $query ) ) {
-			foreach ( $query as $term ) {
-				$terms[ $term->term_id ] = rawurldecode( $term->name );
+			foreach ( $query as $term_id => $term_name ) {
+				$terms[ $term_id ] = rawurldecode( $term_name );
+			}
+		} else {
+			$terms[ rawurldecode( $term ) ] = rawurldecode( sprintf( __( '%s [new]', 'woocommerce-germanized' ), $term ) );
+		}
+		wp_send_json( $terms );
+	}
+
+	public static function gzd_json_search_manufacturer() {
+		ob_start();
+
+		check_ajax_referer( 'search-products', 'security' );
+		$term  = isset( $_GET['term'] ) ? (string) wc_clean( wp_unslash( $_GET['term'] ) ) : '';
+		$terms = array();
+
+		if ( empty( $term ) ) {
+			die();
+		}
+
+		$args = array(
+			'hide_empty' => false,
+			'fields'     => 'id=>name',
+		);
+
+		if ( is_numeric( $term ) ) {
+			$args['include'] = array( absint( $term ) );
+		} else {
+			$args['name__like'] = (string) $term;
+		}
+
+		$query = WC_germanized()->manufacturers->get_manufacturers( $args );
+
+		if ( ! empty( $query ) ) {
+			foreach ( $query as $term_id => $term_name ) {
+				$terms[ $term_id ] = rawurldecode( $term_name );
 			}
 		} else {
 			$terms[ rawurldecode( $term ) ] = rawurldecode( sprintf( __( '%s [new]', 'woocommerce-germanized' ), $term ) );
@@ -276,6 +352,7 @@ class WC_GZD_AJAX {
 			wp_send_json( array( 'result' => 'failure' ) );
 		}
 
+		$queue_id = isset( $_POST['queue_id'] ) ? absint( wp_unslash( $_POST['queue_id'] ) ) : 1;
 		$products = (array) wc_clean( wp_unslash( $_POST['products'] ) );
 		$response = array();
 
@@ -291,24 +368,102 @@ class WC_GZD_AJAX {
 				continue;
 			}
 
-			$args = self::get_db_prices_by_display_prices(
-				$product,
-				array(
-					'price'      => (float) wc_clean( wp_unslash( $product_data['price'] ) ),
-					'sale_price' => isset( $product_data['price_sale'] ) && '' !== wc_clean( wp_unslash( $product_data['price_sale'] ) ) ? (float) wc_clean( wp_unslash( $product_data['price_sale'] ) ) : '',
-				)
-			);
+			$org_unit_price = $product->get_unit_price_html();
+			$has_unit_price = ! empty( $org_unit_price );
+			$unit_price     = '';
 
-			$product->recalculate_unit_price( $args );
+			/**
+			 * Check whether the current product actually supports unit price display.
+			 */
+			if ( $has_unit_price ) {
+				$regular_price = (float) wc_clean( wp_unslash( $product_data['price'] ) );
+				$sale_price    = isset( $product_data['price_sale'] ) && '' !== wc_clean( wp_unslash( $product_data['price_sale'] ) ) ? (float) wc_clean( wp_unslash( $product_data['price_sale'] ) ) : '';
+				$is_range      = isset( $product_data['is_range'] ) ? wc_string_to_bool( wc_clean( wp_unslash( $product_data['is_range'] ) ) ) : false;
+				$price         = '' !== $sale_price ? $sale_price : $regular_price;
+				$price_html    = '';
+
+				if ( is_a( $product, 'WC_GZD_Product_Variable' ) ) {
+					if ( $product->has_unit() ) {
+						$prices            = $product->get_variation_unit_prices( true );
+						$variation_ids     = array_keys( $prices['price'] );
+						$variation_id_from = current( $variation_ids );
+						$variation_id_to   = end( $variation_ids );
+
+						if ( $from_variation = wc_gzd_get_gzd_product( $variation_id_from ) ) {
+							$price_args = array(
+								'price'    => $regular_price,
+								'base'     => $from_variation->get_unit_base(),
+								'products' => $from_variation->get_unit_product(),
+							);
+
+							$from_prices = wc_gzd_recalculate_unit_price( $price_args );
+							$to_prices   = $from_prices;
+
+							if ( $sale_price && $variation_id_from !== $variation_id_to ) {
+								if ( $to_variation = wc_gzd_get_gzd_product( $variation_id_to ) ) {
+									$price_args = array(
+										'price'    => $sale_price,
+										'base'     => $to_variation->get_unit_base(),
+										'products' => $to_variation->get_unit_product(),
+									);
+
+									$to_prices = wc_gzd_recalculate_unit_price( $price_args );
+									$to_prices = wp_parse_args(
+										$to_prices,
+										array(
+											'unit' => 0.0,
+										)
+									);
+
+									if ( $to_variation->get_unit_base() !== $from_variation->get_unit_base() || $to_variation->get_unit_product() !== $from_variation->get_unit_product() ) {
+										$is_range = true;
+									}
+								}
+							}
+
+							if ( ! empty( $from_prices ) ) {
+								if ( $from_prices['unit'] !== $to_prices['unit'] && ! $is_range ) {
+									$price_html = wc_format_sale_price( wc_price( $from_prices['unit'] ), wc_price( $to_prices['unit'] ) );
+								} elseif ( $from_prices['unit'] !== $to_prices['unit'] ) {
+									$price_html = woocommerce_gzd_format_unit_price_range( $from_prices['unit'], $to_prices['unit'] );
+								} else {
+									$price_html = wc_price( $from_prices['unit'] );
+								}
+							}
+						}
+					}
+				} elseif ( is_a( $product, 'WC_GZD_Product_Grouped' ) ) { // Do not recalculate unit prices for grouped products
+					$unit_price = '';
+				} else {
+					$prices = wc_gzd_recalculate_unit_price(
+						array(
+							'regular_price' => $regular_price,
+							'sale_price'    => $sale_price,
+							'price'         => $price,
+							'base'          => $product->get_unit_base(),
+							'products'      => $product->get_unit_product(),
+						)
+					);
+
+					if ( ! empty( $prices ) ) {
+						$price_html = ! empty( $sale_price ) ? $product->get_price_html_from_to( $prices['regular'], $prices['sale'], false ) : wc_price( $prices['unit'] );
+					}
+				}
+
+				if ( ! empty( $price_html ) ) {
+					$unit_price = wc_gzd_format_unit_price( $price_html, $product->get_unit_html(), $product->get_unit_base_html(), wc_gzd_format_product_units_decimal( $product->get_unit_product() ) );
+				}
+			}
 
 			$response[ $key ] = array(
-				'unit_price_html' => $product->get_unit_price_html(),
+				'unit_price_html' => $unit_price,
 				'product_id'      => $product_id,
 			);
 		}
 
 		wp_send_json(
 			array(
+				'queue_id' => $queue_id,
 				'result'   => 'success',
 				'products' => $response,
 			)
@@ -322,146 +477,19 @@ class WC_GZD_AJAX {
 	 * @return array
 	 */
 	public static function get_db_prices_by_display_prices( $product, $prices ) {
-		$prices = wp_parse_args(
-			$prices,
-			array(
-				'price'      => 0,
-				'sale_price' => '',
-			)
-		);
+		wc_deprecated_function( __CLASS__ . '::' . __FUNCTION__, '4.0' );
 
-		if ( is_a( $product, 'WC_GZD_Product' ) ) {
-			$product = $product->get_wc_product();
-		}
-
-		$price            = (float) $prices['price'];
-		$sale_price       = '' === $prices['sale_price'] ? '' : (float) $prices['sale_price'];
-		$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
-
-		/**
-		 * The issue with the price passed to the unit price recalculation is that the price
-		 * reflects the actual display price, e.g. a price which already includes taxes.
-		 *
-		 * We do need to restore the actual price stored within the DB (based on whether
-		 * prices are stored including tax or not) to make sure that taxes are not added/subtracted twice.
-		 */
-		if ( wc_tax_enabled() && $product->is_taxable() ) {
-			$price_before = $prices['price'];
-
-			if ( 'incl' === $tax_display_mode ) {
-				$price_after = wc_get_price_including_tax(
-					$product,
-					array(
-						'price' => $price,
-						'qty'   => 1,
-					)
-				);
-			} else {
-				$price_after = wc_get_price_excluding_tax(
-					$product,
-					array(
-						'price' => $price,
-						'qty'   => 1,
-					)
-				);
-			}
-
-			$tax_diff = abs( (float) $price_before - (float) $price_after );
-
-			if ( $tax_diff > 0 ) {
-				$sale_price_incl_taxes = '';
-
-				/**
-				 * Ugly tweaks to make sure we do not need to replicate
-				 * the whole tax calculation behaviour included in wc_get_price_including_tax().
-				 *
-				 * The whole idea of this is to revert the tax calculation done to the display price
-				 * and then add/subtract the difference to the price passed to this script.
-				 *
-				 * @see wc_get_price_including_tax()
-				 */
-				add_filter( 'wc_get_price_decimals', array( __CLASS__, 'tmp_increase_price_decimals' ), 9999 );
-				add_filter( 'woocommerce_calc_tax', array( __CLASS__, 'tmp_manipulate_tax_calculation' ), 9999, 4 );
-
-				if ( 'incl' === $tax_display_mode ) {
-					$price_incl_taxes = wc_get_price_including_tax(
-						$product,
-						array(
-							'price' => $price,
-							'qty'   => 1,
-						)
-					);
-
-					if ( '' !== $sale_price ) {
-						$sale_price_incl_taxes = wc_get_price_including_tax(
-							$product,
-							array(
-								'price' => $sale_price,
-								'qty'   => 1,
-							)
-						);
-					}
-				} else {
-					$price_incl_taxes = wc_get_price_excluding_tax(
-						$product,
-						array(
-							'price' => $price,
-							'qty'   => 1,
-						)
-					);
-
-					if ( '' !== $sale_price ) {
-						$sale_price_incl_taxes = wc_get_price_excluding_tax(
-							$product,
-							array(
-								'price' => $sale_price,
-								'qty'   => 1,
-							)
-						);
-					}
-				}
-
-				remove_filter( 'wc_get_price_decimals', array( __CLASS__, 'tmp_increase_price_decimals' ), 9999 );
-				remove_filter( 'woocommerce_calc_tax', array( __CLASS__, 'tmp_manipulate_tax_calculation' ), 9999 );
-
-				if ( wc_prices_include_tax() ) {
-					$price = \Vendidero\Germanized\Utilities\NumberUtil::round( $price + abs( $price - $price_incl_taxes ), wc_get_price_decimals() );
-
-					if ( '' !== $sale_price_incl_taxes ) {
-						$sale_price = \Vendidero\Germanized\Utilities\NumberUtil::round( $sale_price + abs( $sale_price - $sale_price_incl_taxes ), wc_get_price_decimals() );
-					}
-				} else {
-					$price = \Vendidero\Germanized\Utilities\NumberUtil::round( $price - abs( $price - $price_incl_taxes ), wc_get_price_decimals() );
-
-					if ( '' !== $sale_price_incl_taxes ) {
-						$sale_price = \Vendidero\Germanized\Utilities\NumberUtil::round( $sale_price - abs( $sale_price - $sale_price_incl_taxes ), wc_get_price_decimals() );
-					}
-				}
-			}
-		}
-
-		return apply_filters(
-			'woocommerce_gzd_db_prices_by_display_prices',
-			array(
-				'regular_price' => $price,
-				'sale_price'    => '' !== $sale_price ? $sale_price : $price,
-				'price'         => '' !== $sale_price ? $sale_price : $price,
-			),
-			$prices,
-			$product
-		);
+		return $prices;
 	}
 
 	public static function tmp_increase_price_decimals() {
+		wc_deprecated_function( __CLASS__ . '::' . __FUNCTION__, '4.0' );
+
 		return absint( WC_ROUNDING_PRECISION );
 	}
 
 	public static function tmp_manipulate_tax_calculation( $taxes, $price, $rates, $price_includes_tax ) {
-		if ( true === $price_includes_tax ) {
-			$taxes = WC_Tax::calc_exclusive_tax( $price, $rates );
-		} else {
-			$taxes = WC_Tax::calc_inclusive_tax( $price, $rates );
-		}
+		wc_deprecated_function( __CLASS__ . '::' . __FUNCTION__, '4.0' );
 
 		return $taxes;
 	}
@@ -495,10 +523,8 @@ class WC_GZD_AJAX {
 							if ( isset( $field['required'] ) && empty( $_POST[ $key ] ) ) {
 								wc_add_notice( '<strong>' . $field['label'] . '</strong>', 'error' );
 							}
-						} else {
-							if ( isset( $field['required'] ) && empty( $_POST[ $key ] ) ) {
+						} elseif ( isset( $field['required'] ) && empty( $_POST[ $key ] ) ) {
 								wc_add_notice( '<strong>' . $field['label'] . '</strong> ' . _x( 'is not valid.', 'revocation-form', 'woocommerce-germanized' ), 'error' );
-							}
 						}
 					}
 

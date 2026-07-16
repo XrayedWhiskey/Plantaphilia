@@ -210,6 +210,12 @@ a.dgwt-wcas-product-details-readmore:hover {
 	line-height: 110%;
 }
 
+.dgwt-wcas-st .dgwt-wcas-score {
+	color: #8e44ad;
+	font-weight: bold;
+	font-size: 80%;
+}
+
 .dgwt-wcas-st > span {
 	display: inline-block;
 	vertical-align: middle;
@@ -385,6 +391,7 @@ a.dgwt-wcas-product-details-readmore:hover {
 .dgwt-wcas-details-outside .dgwt-wcas-details-wrapp {
 	margin-top: -1px;
 	border-top: 1px solid #ddd;
+	max-width: 300px;
 }
 
 .dgwt-wcas-details-outside.dgwt-wcas-is-details .dgwt-wcas-suggestions-wrapp {
@@ -1566,6 +1573,7 @@ html.dgwt-wcas-overlay-mobile-on {
 	width: 100%;
 	height: 100%;
 	cursor: pointer;
+	display: block;
 }
 
 html:not(.dgwt-wcas-overlay-mobile-on) .dgwt-wcas-icon-mobile .dgwt-wcas-search-form {
@@ -1635,9 +1643,38 @@ html:not(.dgwt-wcas-overlay-mobile-on) .dgwt-wcas-search-wrapp.dgwt-wcas-layout-
 	max-width: 20px;
 }
 
+html:not(.dgwt-wcas-overlay-mobile-on) .menu .dgwt-wcas-search-wrapp.dgwt-wcas-layout-icon {
+	width: auto;
+}
+
 .dgwt-wcas-layout-icon-flexible .dgwt-wcas-search-form,
 .dgwt-wcas-layout-icon-flexible-inv .dgwt-wcas-search-form {
 	opacity: 0;
+}
+
+.dgwt-wcas-layout-icon-flexible:not(.dgwt-wcas-layout-icon-flexible-loaded),
+.dgwt-wcas-layout-icon-flexible-inv:not(.dgwt-wcas-layout-icon-flexible-loaded) {
+	max-width: 20px;
+	min-width: unset;
+}
+
+.dgwt-wcas-layout-icon-flexible:not(.dgwt-wcas-layout-icon-flexible-loaded) .dgwt-wcas-search-form,
+.dgwt-wcas-layout-icon-flexible-inv:not(.dgwt-wcas-layout-icon-flexible-loaded) .dgwt-wcas-search-form {
+	max-width: 20px;
+	min-width: unset;
+}
+
+.dgwt-wcas-icon-preloader {
+	margin: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+}
+
+.dgwt-wcas-layout-icon .dgwt-wcas-icon-preloader {
+	display: none;
 }
 
 .dgwt-wcas-layout-icon-flexible-loaded .dgwt-wcas-search-form {
@@ -1673,6 +1710,16 @@ html:not(.dgwt-wcas-overlay-mobile-on) .dgwt-wcas-search-wrapp.dgwt-wcas-layout-
 	width: 20px;
 	height: auto;
 	cursor: pointer;
+	display: block;
+}
+
+li.menu-item a.dgwt-wcas-search-icon {
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.menu .dgwt-wcas-search-icon {
+	width: auto;
 }
 
 .dgwt-wcas-ico-magnifier-handler {

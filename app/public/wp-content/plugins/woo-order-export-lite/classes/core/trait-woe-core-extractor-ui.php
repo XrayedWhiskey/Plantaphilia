@@ -3,13 +3,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+
 trait WOE_Core_Extractor_UI {
 
 	public static function get_order_item_custom_meta_fields_for_orders( $sql_order_ids ) {
 		global $wpdb;
 
+		//phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$wc_fields = $wpdb->get_col( "SELECT DISTINCT meta_key FROM {$wpdb->prefix}woocommerce_order_itemmeta WHERE order_item_id IN
-									(SELECT DISTINCT order_item_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_type = 'line_item' AND order_id IN ($sql_order_ids))" );
+									(SELECT DISTINCT order_item_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_type = 'line_item' AND order_id IN ($sql_order_ids))" );//phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		// WC internal table add attributes
 		$wc_attr_fields = $wpdb->get_results( "SELECT DISTINCT attribute_name FROM {$wpdb->prefix}woocommerce_attribute_taxonomies" );
 		foreach ( $wc_attr_fields as $f ) {
@@ -29,12 +33,14 @@ trait WOE_Core_Extractor_UI {
 		$sql_products = "SELECT DISTINCT meta_value FROM {$wpdb->prefix}woocommerce_order_itemmeta WHERE meta_key ='_product_id' AND order_item_id IN
 									(SELECT DISTINCT order_item_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_type = 'line_item' AND order_id IN ($sql_order_ids))";
 
-		$product_ids = $wpdb->get_col( "SELECT DISTINCT ID FROM {$wpdb->posts} WHERE post_type IN ('product','product_variation') AND ID IN ($sql_products) ORDER BY ID DESC LIMIT " . self::HUGE_SHOP_PRODUCTS );
+		//phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		$product_ids = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT ID FROM {$wpdb->posts} WHERE post_type IN ('product','product_variation') AND ID IN ($sql_products) ORDER BY ID DESC LIMIT %d", self::HUGE_SHOP_PRODUCTS) );
 
 		$wp_fields  = array();
 		if($product_ids ) {
-			$product_ids = join(",", $product_ids);
-			$wp_fields = $wpdb->get_col( "SELECT DISTINCT meta_key FROM {$wpdb->postmeta} WHERE post_id IN ($product_ids)  ORDER BY meta_key" );
+			$list_placeholders = implode(',', array_fill(0, count($product_ids), '%d'));
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Ignored for allowing interpolation in the IN statement.
+			$wp_fields = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT meta_key FROM {$wpdb->postmeta} WHERE post_id IN ($list_placeholders)  ORDER BY meta_key",$product_ids) );
 		}
 
 		return apply_filters( 'get_product_custom_meta_fields_for_orders', $wp_fields );
@@ -73,12 +79,11 @@ trait WOE_Core_Extractor_UI {
 				$fields = $wpdb->get_col( "SELECT DISTINCT meta_key FROM {$wpdb->postmeta} INNER JOIN {$wpdb->posts} ON {$wpdb->postmeta}.post_id = {$wpdb->posts}.ID
 											WHERE post_type = 'shop_coupon'" );
 			} else { // we have a lot of orders, take last good orders, upto 1000
-				$limit = self::HUGE_SHOP_COUPONS;
-				$coupon_ids   = $wpdb->get_col( "SELECT  ID FROM {$wpdb->posts} WHERE post_type = 'shop_coupon' ORDER BY post_date DESC LIMIT {$limit}" );
+				$coupon_ids   = $wpdb->get_col( $wpdb->prepare("SELECT  ID FROM {$wpdb->posts} WHERE post_type = 'shop_coupon' ORDER BY post_date DESC LIMIT %d",self::HUGE_SHOP_COUPONS) );
 				$coupon_ids[] = 0; // add fake zero
-				$coupon_ids   = join( ",", $coupon_ids );
-				$fields = $wpdb->get_col( "SELECT DISTINCT meta_key FROM {$wpdb->postmeta} INNER JOIN {$wpdb->posts} ON {$wpdb->postmeta}.post_id = {$wpdb->posts}.ID
-											WHERE post_type = 'shop_coupon' AND post_id IN ($coupon_ids)" );
+				$list_placeholders = implode(',', array_fill(0, count($coupon_ids), '%d'));
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Ignored for allowing interpolation in the IN statement.
+				$fields = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT meta_key FROM {$wpdb->postmeta} INNER JOIN {$wpdb->posts} ON {$wpdb->postmeta}.post_id = {$wpdb->posts}.ID WHERE post_type = 'shop_coupon' AND post_id IN ($list_placeholders)",$coupon_ids) );
 			}
 			sort( $fields );
 			set_transient( $transient_key, $fields, 60 ); //valid for a minute
@@ -93,10 +98,11 @@ trait WOE_Core_Extractor_UI {
 
 		$show_image = apply_filters("woe_autocomplete_show_product_image", true);
 		$like         = $wpdb->esc_like( $like );
-		$limit_result = (int) $limit > 0 ? "LIMIT " . (int) $limit : "";
+		$limit_result = (int) $limit > 0 ?  (int) $limit : "100";
 
-		$query = "
-                SELECT      post.ID as id,post.post_title as text,att.meta_value as photo_id, '' as photo_url
+
+		$products = $wpdb->get_results( $wpdb->prepare(
+				"SELECT      post.ID as id,post.post_title as text,att.meta_value as photo_id, '' as photo_url
                 FROM        " . $wpdb->posts . " as post
                 LEFT JOIN  " . $wpdb->postmeta . " AS att ON post.ID=att.post_id AND att.meta_key='_thumbnail_id'
                 WHERE       post.post_title LIKE %s
@@ -104,9 +110,9 @@ trait WOE_Core_Extractor_UI {
 				AND         post.post_status NOT IN ('trash')
                 GROUP BY    post.ID
                 ORDER BY    post.post_title
-                " . $limit_result;
-
-		$products = $wpdb->get_results( $wpdb->prepare( $query, '%' . $like . '%' ) );
+                LIMIT %d",
+			'%' . $like . '%', $limit_result
+		) );
 		foreach ( $products as $key => $product ) {
 			if ( $product->photo_id AND $show_image ) {
 				$photo                       = wp_get_attachment_image_src( $product->photo_id, 'thumbnail' );
@@ -140,17 +146,17 @@ trait WOE_Core_Extractor_UI {
 		global $wpdb;
 
 		$like  = $wpdb->esc_like( $like );
-		$query = "
-                SELECT      post.post_title as id, post.post_title as text
+		return $wpdb->get_results( $wpdb->prepare(
+				"SELECT      post.post_title as id, post.post_title as text
                 FROM        " . $wpdb->posts . " as post
                 WHERE       post.post_title LIKE %s
                 AND         post.post_type = 'shop_coupon'
                 AND         post.post_status <> 'trash'
                 ORDER BY    post.post_title
                 LIMIT 0,10
-        ";
-
-		return $wpdb->get_results( $wpdb->prepare( $query, '%' . $like . '%' ) );
+        ",
+		'%' . $like . '%'
+		) );
 	}
 
 	public static function get_categories_like( $like, $limit = null ) {
@@ -158,7 +164,7 @@ trait WOE_Core_Extractor_UI {
 		$limit_result = (int) $limit > 0 ? "&number=" . $limit : "";
 
 		foreach (
-			get_terms( 'product_cat', 'hide_empty=0&hierarchical=1&name__like=' . $like . $limit_result ) as $term
+			get_terms( 'taxonomy=product_cat&hide_empty=0&hierarchical=1&name__like=' . $like . $limit_result ) as $term
 		) {
 			$cat[] = array( "id" => $term->term_id, "text" => $term->name );
 		}
@@ -178,15 +184,14 @@ trait WOE_Core_Extractor_UI {
 	public static function get_product_custom_fields_values( $key ) {
 		global $wpdb;
 
-		$product_ids   = $wpdb->get_col( "SELECT DISTINCT ID FROM {$wpdb->posts} WHERE post_type = 'product_variation' OR post_type = 'product' ORDER BY ID DESC LIMIT " . self::HUGE_SHOP_PRODUCTS );
+		$product_ids   = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT ID FROM {$wpdb->posts} WHERE post_type = 'product_variation' OR post_type = 'product' ORDER BY ID DESC LIMIT %d", self::HUGE_SHOP_PRODUCTS) );
 		if( empty($product_ids) )
 			return array();
 
-		$product_ids   = join( ",", $product_ids );
+		$list_placeholders = implode(',', array_fill(0, count($product_ids), '%d'));
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Ignored for allowing interpolation in the IN statement.
+		$values = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND post_id IN ($list_placeholders)",array_merge([$key],$product_ids) ) );
 
-
-		$values = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s    AND post_id IN ($product_ids)",
-			$key ) );
 		sort( $values );
 
 		return apply_filters("woe_get_product_custom_fields_values", $values, $key);
@@ -210,8 +215,8 @@ trait WOE_Core_Extractor_UI {
 		$max_len      = apply_filters( 'woe_itemmeta_values_max_length', 50 );
 		$limit        = apply_filters( 'woe_itemmeta_values_max_records', 200 );
 		$meta_key_ent = esc_html( $key );
-		$metas        = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_value FROM {$wpdb->prefix}woocommerce_order_itemmeta where (meta_key = '%s' OR meta_key='%s') AND LENGTH(meta_value) <= $max_len LIMIT $limit",
-			$key, $meta_key_ent ) );
+		$metas        = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_value FROM {$wpdb->prefix}woocommerce_order_itemmeta where (meta_key = %s OR meta_key=%s) AND LENGTH(meta_value) <= %d LIMIT %d",
+			$key, $meta_key_ent,$max_len, $limit ) );
 		sort( $metas );
 
 		return $metas;
@@ -225,7 +230,7 @@ trait WOE_Core_Extractor_UI {
 				break;
 			} elseif ( $item->attribute_label == $key ) {
 				$name   = wc_attribute_taxonomy_name( $item->attribute_name );
-				$values = get_terms( $name, array( 'hide_empty' => false ) );
+				$values = get_terms( array( 'taxonomy'=>$name,'hide_empty' => false ) );
 				if ( is_array( $values ) ) {
 					$data = array_map( function ( $elem ) {
 						return $elem->slug;
@@ -257,8 +262,8 @@ trait WOE_Core_Extractor_UI {
 		$values = $wpdb->get_col( $wpdb->prepare( "SELECT distinct meta_value FROM  {$wpdb->prefix}woocommerce_order_items AS items
 			JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS meta ON meta.order_item_id = items.order_item_id
 			WHERE items.order_item_type = %s AND meta.meta_key=%s
-				AND meta_value NOT LIKE  'a:%' AND LENGTH(meta_value)<20
-			ORDER BY meta_value", $type, $key ) );
+				AND meta_value NOT LIKE  %s AND LENGTH(meta_value)<20
+			ORDER BY meta_value", $type, $key,'a:%' ) );
 
 		return $values;
 	}
@@ -280,6 +285,11 @@ trait WOE_Core_Extractor_UI {
 				'label'   => __( 'Product Id', 'woo-order-export-lite' ),
 				'checked' => 0,
 				'format'  => 'number',
+			),
+			'_global_unique_id'                  => array(
+				'label'   => __( 'GTIN/EAN', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'string',
 			),
 			'product_name'                => array(
 				'label'   => __( 'Product Name', 'woo-order-export-lite' ),
@@ -311,6 +321,11 @@ trait WOE_Core_Extractor_UI {
 				'checked' => 0,
 				'format'  => 'money',
 			),
+			'cogs'                       => array(
+				'label'   => __( 'Cost of goods', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'money',
+			),
 			'type'                        => array(
 				'label'   => __( 'Type', 'woo-order-export-lite' ),
 				'checked' => 0,
@@ -318,6 +333,11 @@ trait WOE_Core_Extractor_UI {
 			),
 			'category'                    => array(
 				'label'   => __( 'Category', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'string',
+			),
+			'brand'                    => array(
+				'label'   => __( 'Brand', 'woo-order-export-lite' ),
 				'checked' => 0,
 				'format'  => 'string',
 			),
@@ -635,7 +655,7 @@ trait WOE_Core_Extractor_UI {
 				'checked' => 0,
 				'format'  => 'string',
 			);
-		}	
+		}
 		return $keys;
 	}
 
@@ -668,6 +688,11 @@ trait WOE_Core_Extractor_UI {
 			),
 			'user_role'             => array(
 				'label'   => __( 'Customer Role', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'string',
+			),
+			'returning_customer'    => array(
+				'label'   => __( 'New or Returning', 'woo-order-export-lite' ),
 				'checked' => 0,
 				'format'  => 'string',
 			),
@@ -983,6 +1008,11 @@ trait WOE_Core_Extractor_UI {
 				'checked' => 1,
 				'format'  => 'number',
 			),
+			'qty_refunded'            => array(
+				'label'   => __( 'Quantity (Refunded)', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'number',
+			),
 			'item_price'                  => array(
 				'label'   => __( 'Item Cost', 'woo-order-export-lite' ),
 				'checked' => 1,
@@ -995,6 +1025,11 @@ trait WOE_Core_Extractor_UI {
 			),
 			'item_price_before_discount'                  => array(
 				'label'   => __( 'Item Cost Before Discount', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'money',
+			),
+			'item_price_before_discount_inc_tax'          => array(
+				'label'   => __( 'Item Cost Before Discount (inc. tax)', 'woo-order-export-lite' ),
 				'checked' => 0,
 				'format'  => 'money',
 			),
@@ -1054,9 +1089,14 @@ trait WOE_Core_Extractor_UI {
 				'format'  => 'money',
 			),
 			'tax_rate'                    => array(
-				'label'   => __( 'Item Tax Rate', 'woo-order-export-lite' ),
+				'label'   => __( 'Tax Rate (calculated)', 'woo-order-export-lite' ),
 				'checked' => 0,
 				'format'  => 'number',
+			),
+			'tax_rates_list' => array(
+				'label'   => __( 'Tax Rates (exact)', 'woo-order-export-lite' ),
+				'checked' => 0,
+				'format'  => 'string',
 			),
 			'item_download_url'           => array(
 				'label'   => __( 'Item download URL', 'woo-order-export-lite' ),
@@ -1149,6 +1189,11 @@ trait WOE_Core_Extractor_UI {
 			),
 			'cart_discount'                 => array(
 				'label'   => __( 'Cart Discount Amount', 'woo-order-export-lite' ),
+				'checked' => 1,
+				'format'  => 'money',
+			),
+			'cart_discount_inc_tax'                 => array(
+				'label'   => __( 'Cart Discount Amount(inc. tax)', 'woo-order-export-lite' ),
 				'checked' => 1,
 				'format'  => 'money',
 			),
@@ -1391,5 +1436,5 @@ trait WOE_Core_Extractor_UI {
 		}
 		return $email_titles;
 	}
-	
+
 }

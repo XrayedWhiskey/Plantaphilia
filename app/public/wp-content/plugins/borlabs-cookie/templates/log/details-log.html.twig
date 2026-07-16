@@ -1,0 +1,27 @@
+{% import "system/macro/navigation/breadcrumb.html.twig" as breadcrumb %}
+
+{{ breadcrumb.component({
+    items: [
+        [localized.breadcrumb.module, "?page=#{controllerId}"],
+        localized.breadcrumb.details
+    ]
+}, localized) }}
+
+{{ messages() | raw }}
+
+{% import "log/macro/log-card.html.twig" as log_card %}
+{{ log_card.component({
+    log: data.log,
+}, localized) }}
+
+{% if data.processHistory is not empty %}
+    <div class="bc-bg-neutral-200 bc-shadow-inner bc-p-6 bc-rounded-md bc-mb-6">
+        <h3 class="bc-text-lg bc-font-medium bc-leading-6 bc-mb-6">{{ localized.headline.processHistory }}</h3>
+        {% for item in data.processHistory %}
+            {{ log_card.component({
+                log: item,
+                originalLog: data.log,
+            }, localized) }}
+        {% endfor %}
+    </div>
+{% endif %}

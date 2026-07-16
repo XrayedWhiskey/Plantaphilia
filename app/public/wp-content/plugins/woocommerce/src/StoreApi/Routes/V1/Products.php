@@ -1,13 +1,20 @@
 <?php
+declare( strict_types = 1 );
+
 namespace Automattic\WooCommerce\StoreApi\Routes\V1;
 
+use Automattic\WooCommerce\Enums\ProductType;
+use Automattic\WooCommerce\Enums\CatalogVisibility;
 use Automattic\WooCommerce\StoreApi\Utilities\Pagination;
 use Automattic\WooCommerce\StoreApi\Utilities\ProductQuery;
+use Automattic\WooCommerce\StoreApi\Utilities\ProductLinksTrait;
 
 /**
  * Products class.
  */
 class Products extends AbstractRoute {
+	use ProductLinksTrait;
+
 	/**
 	 * The route identifier.
 	 *
@@ -52,6 +59,7 @@ class Products extends AbstractRoute {
 				'callback'            => [ $this, 'get_response' ],
 				'permission_callback' => '__return_true',
 				'args'                => $this->get_collection_params(),
+				'allow_batch'         => [ 'v1' => true ],
 			],
 			'schema' => [ $this->schema, 'get_public_item_schema' ],
 		];
@@ -73,7 +81,7 @@ class Products extends AbstractRoute {
 			$response_objects = [];
 
 			foreach ( $query_results['objects'] as $object ) {
-				$data               = rest_ensure_response( $this->schema->get_item_response( $object ) );
+				$data               = $this->prepare_item_for_response( $object, $request );
 				$response_objects[] = $this->prepare_response_for_collection( $data );
 			}
 
@@ -82,36 +90,13 @@ class Products extends AbstractRoute {
 			$query_results = $product_query->get_results( $request );
 		}
 
-		$response = ( new Pagination() )->add_headers( $response, $request, $query_results['total'], $query_results['pages'] );
-		$response->header( 'Last-Modified', $product_query->get_last_modified() );
-
-		return $response;
-	}
-
-	/**
-	 * Prepare links for the request.
-	 *
-	 * @param \WC_Product      $item Product object.
-	 * @param \WP_REST_Request $request Request object.
-	 * @return array
-	 */
-	protected function prepare_links( $item, $request ) {
-		$links = array(
-			'self'       => array(
-				'href' => rest_url( $this->get_namespace() . $this->get_path() . '/' . $item->get_id() ),
-			),
-			'collection' => array(
-				'href' => rest_url( $this->get_namespace() . $this->get_path() ),
-			),
-		);
-
-		if ( $item->get_parent_id() ) {
-			$links['up'] = array(
-				'href' => rest_url( $this->get_namespace() . $this->get_path() . '/' . $item->get_parent_id() ),
-			);
+		$response      = ( new Pagination() )->add_headers( $response, $request, $query_results['total'], $query_results['pages'] );
+		$last_modified = $product_query->get_last_modified();
+		if ( $last_modified ) {
+			$response->header( 'Last-Modified', $last_modified );
 		}
 
-		return $links;
+		return $response;
 	}
 
 	/**
@@ -134,10 +119,10 @@ class Products extends AbstractRoute {
 		);
 
 		$params['per_page'] = array(
-			'description'       => __( 'Maximum number of items to be returned in result set. Defaults to no limit if left blank.', 'woocommerce' ),
+			'description'       => __( 'Maximum number of items to be returned in result set.', 'woocommerce' ),
 			'type'              => 'integer',
 			'default'           => 10,
-			'minimum'           => 0,
+			'minimum'           => 1,
 			'maximum'           => 100,
 			'sanitize_callback' => 'absint',
 			'validate_callback' => 'rest_validate_request_arg',
@@ -262,7 +247,7 @@ class Products extends AbstractRoute {
 		$params['type'] = array(
 			'description'       => __( 'Limit result set to products assigned a specific type.', 'woocommerce' ),
 			'type'              => 'string',
-			'enum'              => array_merge( array_keys( wc_get_product_types() ), [ 'variation' ] ),
+			'enum'              => array_merge( array_keys( wc_get_product_types() ), [ ProductType::VARIATION ] ),
 			'sanitize_callback' => 'sanitize_key',
 			'validate_callback' => 'rest_validate_request_arg',
 		);
@@ -282,9 +267,9 @@ class Products extends AbstractRoute {
 		);
 
 		$params['category'] = array(
-			'description'       => __( 'Limit result set to products assigned a specific category ID.', 'woocommerce' ),
+			'description'       => __( 'Limit result set to products assigned a set of category IDs or slugs, separated by commas.', 'woocommerce' ),
 			'type'              => 'string',
-			'sanitize_callback' => 'wp_parse_id_list',
+			'sanitize_callback' => 'wp_parse_list',
 			'validate_callback' => 'rest_validate_request_arg',
 		);
 
@@ -297,19 +282,39 @@ class Products extends AbstractRoute {
 			'validate_callback' => 'rest_validate_request_arg',
 		);
 
+		$params['brand'] = array(
+			'description'       => __( 'Limit result set to products assigned a set of brand IDs or slugs, separated by commas.', 'woocommerce' ),
+			'type'              => 'string',
+			'sanitize_callback' => 'wp_parse_list',
+			'validate_callback' => 'rest_validate_request_arg',
+		);
+
+		$params['brand_operator'] = array(
+			'description'       => __( 'Operator to compare product brand terms.', 'woocommerce' ),
+			'type'              => 'string',
+			'enum'              => [ 'in', 'not_in', 'and' ],
+			'default'           => 'in',
+			'sanitize_callback' => 'sanitize_key',
+			'validate_callback' => 'rest_validate_request_arg',
+		);
+
 		// If the $_REQUEST contains a taxonomy query, add it to the params and sanitize it.
 		foreach ( $_REQUEST as $param => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! is_string( $param ) ) {
+				continue;
+			}
+
 			if ( str_starts_with( $param, '_unstable_tax_' ) && ! str_ends_with( $param, '_operator' ) ) {
 				$params[ $param ] = array(
-					'description'       => __( 'Limit result set to products assigned a specific category ID.', 'woocommerce' ),
+					'description'       => __( 'Limit result set to products assigned a set of taxonomies IDs or slugs, separated by commas.', 'woocommerce' ),
 					'type'              => 'string',
-					'sanitize_callback' => 'wp_parse_id_list',
+					'sanitize_callback' => 'wp_parse_list',
 					'validate_callback' => 'rest_validate_request_arg',
 				);
 			}
 			if ( str_starts_with( $param, '_unstable_tax_' ) && str_ends_with( $param, '_operator' ) ) {
 				$params[ $param ] = array(
-					'description'       => __( 'Operator to compare product category terms.', 'woocommerce' ),
+					'description'       => __( 'Operator to compare product taxonomies terms.', 'woocommerce' ),
 					'type'              => 'string',
 					'enum'              => [ 'in', 'not_in', 'and' ],
 					'default'           => 'in',
@@ -320,9 +325,9 @@ class Products extends AbstractRoute {
 		}
 
 		$params['tag'] = array(
-			'description'       => __( 'Limit result set to products assigned a specific tag ID.', 'woocommerce' ),
+			'description'       => __( 'Limit result set to products assigned a set of tag IDs or slugs, separated by commas.', 'woocommerce' ),
 			'type'              => 'string',
-			'sanitize_callback' => 'wp_parse_id_list',
+			'sanitize_callback' => 'wp_parse_list',
 			'validate_callback' => 'rest_validate_request_arg',
 		);
 
@@ -417,7 +422,7 @@ class Products extends AbstractRoute {
 		$params['catalog_visibility'] = array(
 			'description'       => __( 'Determines if hidden or visible catalog products are shown.', 'woocommerce' ),
 			'type'              => 'string',
-			'enum'              => array( 'any', 'visible', 'catalog', 'search', 'hidden' ),
+			'enum'              => array( 'any', CatalogVisibility::VISIBLE, CatalogVisibility::CATALOG, CatalogVisibility::SEARCH, CatalogVisibility::HIDDEN ),
 			'sanitize_callback' => 'sanitize_key',
 			'validate_callback' => 'rest_validate_request_arg',
 		);
@@ -431,6 +436,13 @@ class Products extends AbstractRoute {
 			),
 			'default'           => [],
 			'sanitize_callback' => 'wp_parse_id_list',
+		);
+
+		$params['related'] = array(
+			'description'       => __( 'Limit result set to products related to a specific product ID.', 'woocommerce' ),
+			'type'              => 'integer',
+			'sanitize_callback' => 'absint',
+			'validate_callback' => 'rest_validate_request_arg',
 		);
 
 		return $params;

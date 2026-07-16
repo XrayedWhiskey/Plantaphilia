@@ -1,0 +1,18 @@
+{% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+    {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+    {% block header %}
+        {{ card_heading.component({
+            title: localized.headline.systemStatus,
+        }) }}
+    {% endblock %}
+    {% block content %}
+        <!-- Basic -->
+        {% include "system-check/partials/basic-table.html.twig" %}
+        <!-- Tables -->
+        {% include "system-check/partials/tables-table.html.twig" %}
+        <!-- Seeds -->
+        {% include "system-check/partials/seeds-table.html.twig" %}
+        <!-- Server -->
+        {% include "system-check/partials/server-table.html.twig" %}
+    {% endblock %}
+{% endembed %}

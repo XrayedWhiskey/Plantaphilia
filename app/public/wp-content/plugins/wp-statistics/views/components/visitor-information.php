@@ -1,52 +1,76 @@
 <?php
+
 namespace WP_STATISTICS;
+
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
+use WP_Statistics\Decorators\VisitorDecorator;
+
 ?>
 
-<ul class="wps-visitor__information--container">
-    <li class="wps-visitor__information">
-        <div class="wps-tooltip" title="<?php echo esc_attr("$visitor->agent v$visitor->version") ?>">
-            <a href="<?php echo esc_url(Menus::admin_url('visitors', ['agent' => $visitor->agent])) ?>"><img src="<?php echo esc_url(UserAgent::getBrowserLogo($visitor->agent)) ?>" alt="<?php echo esc_attr($visitor->agent) ?>" width="15" height="15"></a>
-        </div>
-    </li>
+    <?php /** @var VisitorDecorator $visitor */ ?>
 
-    <li class="wps-visitor__information">
-        <div class="wps-tooltip" title="<?php echo esc_attr($visitor->platform) ?>">
-            <a href="<?php echo esc_url(Menus::admin_url('visitors', ['platform' => $visitor->platform])) ?>"><img src="<?php echo esc_url(UserAgent::getPlatformLogo($visitor->platform)) ?>" alt="<?php echo esc_attr($visitor->platform) ?>" width="15" height="15"></a>
-        </div>
-    </li>
+    <?php if (!empty($visitor)) : ?>
+    <ul class="wps-visitor__information--container">
+        <li class="wps-visitor__information">
+            <?php
+            $countryName = $visitor->getLocation()->getCountryName();
+            $location = Admin_Template::locationColumn($visitor->getLocation()->getCountryCode(), $visitor->getLocation()->getRegion(), $visitor->getLocation()->getCity());
+            $locationWithCountry = $countryName !== __('(not set)', 'wp-statistics') ? $countryName . ', ' . $location : $location;
+            ?>
+             <a href="<?php echo esc_url(Menus::admin_url('geographic', ['type' => 'single-country', 'country' => $visitor->getLocation()->getCountryCode()])) ?>">
+                <img src="<?php echo esc_url($visitor->getLocation()->getCountryFlag()) ?>"
+                     class="wps-tooltip flag" title="<?php echo esc_attr($locationWithCountry) ?>"
+                     alt="<?php echo esc_attr($visitor->getLocation()->getCountryName()) ?>" width="16" height="14">
+            </a>
+         </li>
+        <li class="wps-visitor__information">
+             <a href="<?php echo esc_url(Menus::admin_url('visitors', ['tab' => 'visitors','platform' => $visitor->getOs()->getName()])) ?>">
+                <img src="<?php echo esc_url($visitor->getOs()->getLogo()) ?>"
+                     class="wps-tooltip" title="<?php echo esc_attr($visitor->getOs()->getName()) ?>"
+                     alt="<?php echo esc_attr($visitor->getOs()->getName()) ?>" width="15" height="15">
+            </a>
+         </li>
 
-    <?php if (!empty($visitor->user_id)) : ?>
+        <li class="wps-visitor__information">
+             <img src="<?php echo esc_url($visitor->getDevice()->getLogo()) ?>"
+                 class="wps-tooltip" title="<?php echo esc_attr($visitor->getDevice()->getType()) ?>"
+                 alt="<?php echo esc_attr($visitor->getDevice()->getType()) ?>" width="15" height="15">
+         </li>
+
+        <li class="wps-visitor__information">
+             <a href="<?php echo esc_url(Menus::admin_url('visitors', ['tab' => 'visitors','agent' => $visitor->getBrowser()->getRaw()])) ?>">
+                <img src="<?php echo esc_url($visitor->getBrowser()->getLogo()) ?>"
+                     class="wps-tooltip" title="<?php echo $visitor->getBrowser()->getName() !== __('(not set)', 'wp-statistics') ? esc_attr("{$visitor->getBrowser()->getName()} v{$visitor->getBrowser()->getVersion()}") : $visitor->getBrowser()->getName(); ?>"
+                     alt="<?php echo esc_attr($visitor->getBrowser()->getName()) ?>" width="15" height="15">
+            </a>
+         </li>
+
         <li class="wps-visitor__information">
             <div>
-                <a href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->ID])); ?>">
-                    <span class="wps-visitor__information__user-img"></span>
-                </a>
-                <?php if (Option::get('visitors_log')): ?>
-                    <a class="wps-visitor__information__user-text" href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->ID])); ?>">
-                        <span><?php echo esc_html($visitor->display_name) ?></span>
-                        <span>#<?php echo esc_html($visitor->user_id) ?></span>
+                <?php if ($visitor->isLoggedInUser() && Option::get('visitors_log')) : ?>
+                    <a aria-label="Visitor Information" href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->getId()])); ?>">
+                        <span class="wps-visitor__information__user-img"></span>
                     </a>
+                <?php else : ?>
+                    <a aria-label="visitor information" href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->getId()])) ?>">
+                        <span class="wps-visitor__information__incognito-img"></span>
+                    </a>
+                <?php endif; ?>
+
+                <?php if (!Option::get('hash_ips') || Option::get('visitors_log')) : ?>
+                    <?php if ($visitor->isLoggedInUser() && Option::get('visitors_log')) : ?>
+                        <a class="wps-visitor__information__user-text wps-tooltip" title="<?php echo esc_html($visitor->getUser()->getEmail()) ?> (<?php echo esc_html($visitor->getUser()->getRole()) ?>)" href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->getId()])); ?>">
+                            <span title="<?php echo esc_html($visitor->getUser()->getDisplayName()) ?>"><?php echo esc_html($visitor->getUser()->getDisplayName()) ?></span>
+                            <span>#<?php echo esc_html($visitor->getUser()->getId()) ?></span>
+                        </a>
+                    <?php else : ?>
+                        <a class="wps-visitor__information__incognito-text" href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->getId()])) ?>">
+                            <?php echo esc_html($visitor->getIP()); ?>
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </li>
-    <?php else : ?>
-        <li class="wps-visitor__information">
-            <div>
-                <a href="<?php echo esc_url(Menus::admin_url('visitors', ['type' => 'single-visitor', 'visitor_id' => $visitor->ID])) ?>">
-                    <span class="wps-visitor__information__incognito-img"></span>
-                </a>
-                <span class="wps-visitor__information__incognito-text">
-                    <?php if (Option::get('visitors_log')): ?>
-                        #<?php echo IP::IsHashIP($visitor->ip) ? substr($visitor->ip, 6, 8) : $visitor->ip; ?>
-                    <?php endif ?>
-                </span>
-            </div>
-        </li>
-    <?php endif; ?>
-</ul>
-<?php if (!empty($visitor->user_id) && Option::get('visitors_log')) : ?>
-    <div class="wps-visitor__information__user-more-info">
-        <div><?php esc_html_e('Email', 'wp-statistics') ?>: <?php echo esc_html($visitor->user_email) ?></div>
-        <div><?php esc_html_e('Role', 'wp-statistics') ?>: <span class="c-capitalize"><?php echo esc_html(User::get($visitor->user_id)['role'][0]) ?></span></div>
-    </div>
+    </ul>
 <?php endif; ?>

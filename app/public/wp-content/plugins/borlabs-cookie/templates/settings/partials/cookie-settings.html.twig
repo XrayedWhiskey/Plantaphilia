@@ -1,0 +1,85 @@
+<div class="bc-w-2/3">
+    {% embed "system/embed/card/card-with-title.html.twig" with {contentSpacing: false} %}
+        {% import "system/macro/card/card-heading.html.twig" as card_heading %}
+        {% block header %}
+            {{ card_heading.component({
+                title: localized.headline.cookieSettings,
+            }) }}
+        {% endblock %}
+        {% block content %}
+            {% import "system/macro/row/switch-button.html.twig" as row_switch_button %}
+            {% import "system/macro/row/input.html.twig" as row_input %}
+            {% import "system/macro/row/select.html.twig" as row_select %}
+            {% import "system/macro/row/save.html.twig" as row_save %}
+
+            {{ row_switch_button.component({
+                dataAttribute: 'data-brlbs-disable="cookieDomain,cookiePath" data-brlbs-disable-on="true"',
+                hint: localized.hint.automaticCookieDomainAndPath,
+                id: 'automaticCookieDomainAndPath',
+                label: localized.field.automaticCookieDomainAndPath,
+                value: data.automaticCookieDomainAndPath,
+            }) }}
+
+            {{ row_input.component({
+                alert: cookieDomainIsDifferent ? localized.alert.cookieDomainIsDifferent : '',
+                errorMessage: localized.validation.cookieDomain,
+                hint: localized.hint.cookieDomain,
+                id: 'cookieDomain',
+                isDisabled: data.automaticCookieDomainAndPath,
+                label: localized.field.cookieDomain,
+                value: data.cookieDomain,
+            }) }}
+
+            {{ row_input.component({
+                errorMessage: localized.validation.cookiePath,
+                hint: localized.hint.cookiePath,
+                id: 'cookiePath',
+                isDisabled: data.automaticCookieDomainAndPath,
+                label: localized.field.cookiePath,
+                value: data.cookiePath,
+            }) }}
+
+            {{ row_switch_button.component({
+                hideInSimplifiedMode: true,
+                hint: localized.hint.cookieSecure,
+                id: 'cookieSecure',
+                label: localized.field.cookieSecure,
+                value: data.cookieSecure,
+            }) }}
+
+            {{ row_select.component({
+                hideInSimplifiedMode: true,
+                hint: localized.hint.cookieSameSite,
+                id: 'cookieSameSite',
+                label: localized.field.cookieSameSite,
+                name: 'cookieSameSite',
+                options: enum.sameSite.list,
+                value: data.cookieSameSite,
+            }) }}
+
+            {{ row_input.component({
+                errorMessage: localized.validation.cookieLifetime,
+                hideInSimplifiedMode: true,
+                hint: localized.hint.cookieLifetime,
+                id: 'cookieLifetime',
+                label: localized.field.cookieLifetime,
+                type: 'number',
+                value: data.cookieLifetime,
+            }) }}
+
+            {{ row_input.component({
+                errorMessage: localized.validation.cookieLifetimeEssentialOnly,
+                hideInSimplifiedMode: true,
+                hint: localized.hint.cookieLifetimeEssentialOnly,
+                id: 'cookieLifetimeEssentialOnly',
+                label: localized.field.cookieLifetimeEssentialOnly,
+                type: 'number',
+                value: data.cookieLifetimeEssentialOnly,
+            }) }}
+
+            {{ row_save.component({
+                action: 'save',
+            }, localized) }}
+        {% endblock %}
+    {% endembed %}
+</div>

@@ -2,7 +2,7 @@
 /**
  * Booster for WooCommerce - Module - Order Min/Max Quantities
  *
- * @version 7.1.6
+ * @version 7.2.5
  * @since   2.9.0
  * @author  Pluggabl LLC.
  * @package Booster_For_WooCommerce/includes
@@ -327,6 +327,14 @@ if ( ! class_exists( 'WCJ_Order_Quantities' ) ) :
 		public function enqueue_script() {
 			$_product = wc_get_product();
 			if ( $_product && $_product->is_type( 'variable' ) ) {
+				// Memory guard: skip loading variations for products with 100+ variations.
+				$variation_ids   = $_product->get_children();
+				$variation_count = count( $variation_ids );
+				if ( $variation_count >= 100 ) {
+					// Too many variations - skip per-variation JS to prevent memory exhaustion.
+					return;
+				}
+
 				$quantities_options = array(
 					'reset_to_min'         => ( 'reset_to_min' === wcj_get_option( 'wcj_order_quantities_variable_variation_change', 'do_nothing' ) ),
 					'reset_to_max'         => ( 'reset_to_max' === wcj_get_option( 'wcj_order_quantities_variable_variation_change', 'do_nothing' ) ),
@@ -421,19 +429,33 @@ if ( ! class_exists( 'WCJ_Order_Quantities' ) ) :
 		/**
 		 * Set_quantity_input_max.
 		 *
-		 * @version 3.2.2
+		 * @version 7.11.0
 		 * @since   3.2.2
 		 * @param int   $qty defines the qty.
 		 * @param array $_product defines the _product.
 		 */
 		public function set_quantity_input_max( $qty, $_product ) {
-			if ( ! $_product->is_type( 'variable' ) ) {
-				$max  = $this->get_product_quantity( 'max', $_product, $qty );
-				$_max = $_product->get_max_purchase_quantity();
-				return ( -1 === $_max || $max < $_max ? $max : $_max );
-			} else {
+			// Reentrancy guard to prevent infinite loops.
+			static $depth = 0;
+			if ( $depth > 0 ) {
 				return $qty;
 			}
+
+			$depth++;
+
+			// If product is variable, let WC handle it.
+			if ( $_product->is_type( 'variable' ) ) {
+				$depth--;
+				return $qty;
+			}
+
+			// Apply Booster logic.
+			$plugin_max = $this->get_product_quantity( 'max', $_product, $qty );
+			$wc_max     = $_product->get_max_purchase_quantity();
+			$depth--;
+
+			// Return the more restrictive limit if applicable.
+			return ( -1 === $wc_max || $plugin_max < $wc_max ) ? $plugin_max : $wc_max;
 		}
 
 		/**
@@ -650,7 +672,7 @@ if ( ! class_exists( 'WCJ_Order_Quantities' ) ) :
 		/**
 		 * Check_quantities.
 		 *
-		 * @version 7.0.0
+		 * @version 7.2.5
 		 * @since   2.9.0
 		 * @param string        $min_or_max defines the min_or_max.
 		 * @param int           $cart_item_quantities defines the cart_item_quantities.
@@ -660,6 +682,13 @@ if ( ! class_exists( 'WCJ_Order_Quantities' ) ) :
 		 */
 		public function check_quantities( $min_or_max, $cart_item_quantities, $cart_total_quantity, $_is_cart, $_return ) {
 			$min_or_max_cart_total_quantity = wcj_get_option( 'wcj_order_quantities_' . $min_or_max . '_cart_total_quantity', 0 );
+
+			foreach ( $cart_item_quantities as $product_id => $qty ) {
+				$products_excl = wcj_get_option( 'wcj_order_quantities_min_cart_total_quantity_exclude_product', array() );
+				if ( in_array( (string) $product_id, $products_excl, true ) ) {
+					$cart_total_quantity = $cart_total_quantity - $qty;
+				}
+			}
 			if ( (string) 0 !== ( $min_or_max_cart_total_quantity ) && 0 !== ( $min_or_max_cart_total_quantity ) ) {
 				if (
 				( 'max' === $min_or_max && $cart_total_quantity > $min_or_max_cart_total_quantity ) ||

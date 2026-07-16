@@ -1,6 +1,6 @@
 <?php
 
-use Duplicator\Installer\Utils\LinkManager;
+use Duplicator\Utils\LinkManager;
 
 defined('ABSPATH') || defined('DUPXABSPATH') || exit;
 require_once(DUPLICATOR_PLUGIN_PATH . '/views/inc.header.php');
@@ -10,7 +10,7 @@ function _duplicatorSortFiles($a, $b)
     return filemtime($b) - filemtime($a);
 }
 
-$logs = glob(DUP_Settings::getSsdirPath() . '/*.log') ;
+$logs = glob(DUP_Settings::getSsdirLogsPath() . '/*.log') ;
 if ($logs != false && count($logs)) {
     usort($logs, '_duplicatorSortFiles');
     @chmod(DUP_Util::safePath($logs[0]), 0644);
@@ -33,7 +33,7 @@ if (!isset($logname) || !$logname) {
     $logname = (count($logs) > 0) ? basename($logs[0]) : "";
 }
 
-$logurl   = DUP_Settings::getSsdirUrl() . '/' . $logname;
+$logurl   = DUP_Settings::getSsdirLogsUrl() . '/' . $logname;
 $logfound = (strlen($logname) > 0) ? true : false;
 ?>
 
@@ -45,13 +45,13 @@ $logfound = (strlen($logname) > 0) ? true : false;
     td#dup-log-panel-left div.opts {float:right;}
     td#dup-log-panel-right {vertical-align: top; padding-left:15px; max-width: 375px}
     #dup-log-content {
-        padding:5px; 
-        background: #fff; 
-        min-height:500px; 
-        width: calc(100vw - 630px);; 
+        padding:5px;
+        background: #fff;
+        min-height:500px;
+        width: calc(100vw - 630px);
         border:1px solid silver;
-        overflow:scroll; 
-        word-wrap: break-word; 
+        overflow:scroll;
+        word-wrap: break-word;
         margin:0;
         line-height: 2;
     }
@@ -166,7 +166,7 @@ jQuery(document).ready(function($)
 <?php if (! $logfound) :   ?>
     <div style="padding:20px">
         <h2><?php esc_html_e("Log file not found or unreadable", 'duplicator') ?>.</h2>
-        <?php esc_html_e("Try to create a package, since no log files were found in the snapshots directory with the extension *.log", 'duplicator') ?>.<br/><br/>
+        <?php esc_html_e("Try to create a Backup, since no log files were found in the snapshots directory with the extension *.log", 'duplicator') ?>.<br/><br/>
         <?php esc_html_e("Reasons for log file not showing", 'duplicator') ?>: <br/>
         - <?php esc_html_e("The web server does not support returning .log file extentions", 'duplicator') ?>. <br/>
         - <?php esc_html_e("The snapshots directory does not have the correct permissions to write files.  Try setting the permissions to 755", 'duplicator') ?>. <br/>
@@ -212,7 +212,7 @@ jQuery(document).ready(function($)
                 </div>
 
                 <div class="dup-log-hdr">
-                    <?php esc_html_e("Package Logs", 'duplicator') ?>
+                    <?php esc_html_e("Backup Logs", 'duplicator') ?>
                     <small><?php esc_html_e("Top 20", 'duplicator') ?></small>
                 </div>
 

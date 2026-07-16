@@ -3,6 +3,7 @@
 namespace DgoraWcas\Integrations\Plugins\EANForWooCommerce;
 
 // Exit if accessed directly
+use DgoraWcas\Integrations\Plugins\AbstractPluginIntegration;
 if ( !defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -12,26 +13,30 @@ if ( !defined( 'ABSPATH' ) ) {
  * Plugin URL: https://wordpress.org/plugins/ean-for-woocommerce/
  * Author: WPFactory
  */
-class EANForWooCommerce {
-    public function init() {
-        if ( !defined( 'ALG_WC_EAN_VERSION' ) ) {
-            return;
+class EANForWooCommerce extends AbstractPluginIntegration {
+    protected const LABEL = 'EAN for WooCommerce';
+
+    protected const VERSION_CONST = 'ALG_WC_EAN_VERSION';
+
+    protected const MIN_VERSION = '4.3';
+
+    public static function isActive() : bool {
+        if ( parent::isActive() === false ) {
+            return false;
         }
-        if ( version_compare( ALG_WC_EAN_VERSION, '4.3' ) < 0 ) {
-            return;
-        }
-        if ( !function_exists( 'alg_wc_ean' ) ) {
-            return;
-        }
+        return function_exists( 'alg_wc_ean' );
+    }
+
+    public function init() : void {
         // Disable plugin hook on WP_Query.
         if ( !is_admin() ) {
             if ( isset( alg_wc_ean()->core->search ) && get_option( 'alg_wc_ean_frontend_search', 'no' ) === 'yes' ) {
-                remove_action( 'pre_get_posts', array(alg_wc_ean()->core->search, 'search'), 10 );
+                remove_action( 'pre_get_posts', [alg_wc_ean()->core->search, 'search'], 10 );
                 if ( !dgoraAsfwFs()->is_premium() ) {
-                    add_filter( 'dgwt/wcas/native/search_query/join', array($this, 'searchQueryJoin') );
+                    add_filter( 'dgwt/wcas/native/search_query/join', [$this, 'searchQueryJoin'] );
                     add_filter(
                         'dgwt/wcas/native/search_query/search_or',
-                        array($this, 'searchQueryOr'),
+                        [$this, 'searchQueryOr'],
                         10,
                         2
                     );
@@ -70,9 +75,9 @@ class EANForWooCommerce {
             return $search;
         }
         if ( strpos( $search, 'dgwt_wcasmsku' ) !== false ) {
-            $search .= $wpdb->prepare( " OR (dgwt_wcasmsku.meta_key=%s AND dgwt_wcasmsku.meta_value LIKE %s)", $field, $like );
+            $search .= $wpdb->prepare( ' OR (dgwt_wcasmsku.meta_key=%s AND dgwt_wcasmsku.meta_value LIKE %s)', $field, $like );
         } else {
-            $search .= $wpdb->prepare( " OR (dgwt_wcasmean.meta_key=%s AND dgwt_wcasmean.meta_value LIKE %s)", $field, $like );
+            $search .= $wpdb->prepare( ' OR (dgwt_wcasmean.meta_key=%s AND dgwt_wcasmean.meta_value LIKE %s)', $field, $like );
         }
         return $search;
     }
