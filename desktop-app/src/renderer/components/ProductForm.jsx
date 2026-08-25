@@ -966,11 +966,9 @@ export default function ProductForm({ productId, onClose, onSaved }) {
                 </select>
               </Field>
             </Row>
-            <Row>
-              <Field label="Pflegehinweise" hint={linkHint('care_winter')}>
-                <input className="input" value={form.care_winter} onChange={e => setField('care_winter', e.target.value)} placeholder="z. B. hell und kühl, min. 5 °C" />
-              </Field>
-            </Row>
+            <Field label="Pflegehinweise" full hint={linkHint('care_winter')}>
+              <textarea className="input" rows={3} value={form.care_winter} onChange={e => setField('care_winter', e.target.value)} placeholder="z. B. hell und kühl, min. 5 °C" />
+            </Field>
             <Row>
               <Field label="Temp. min. (Topf, °C)" hint={linkHint('care_temp_min')}>
                 <input className="input" type="number" step="1" value={form.care_temp_min} onChange={e => setField('care_temp_min', e.target.value)} placeholder="-5" />
