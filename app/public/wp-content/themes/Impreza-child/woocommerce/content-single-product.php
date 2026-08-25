@@ -79,10 +79,11 @@ if ( $temp_min !== null || $temp_max !== null ) $has_care = true;
 // Substrat-Empfehlung + Dünger — nur bei Pflanzen-Produkten gepflegt (App:
 // ProductForm.jsx, Pflegehinweise-Sektion). Strukturierte Meta-Werte wie bei
 // den übrigen _pa_care_*-Feldern, kein fertiges HTML aus der App.
-$pa_substrate_name        = get_post_meta( $product_id, '_pa_substrate_name', true );
-$pa_substrate_composition = json_decode( (string) get_post_meta( $product_id, '_pa_substrate_composition', true ), true ) ?: [];
-$pa_substrate_sell_own    = get_post_meta( $product_id, '_pa_substrate_sell_own', true ) === '1';
-$pa_substrate_wp_id       = (int) get_post_meta( $product_id, '_pa_substrate_wp_id', true );
+$pa_substrate_name         = get_post_meta( $product_id, '_pa_substrate_name', true );
+$pa_substrate_composition  = json_decode( (string) get_post_meta( $product_id, '_pa_substrate_composition', true ), true ) ?: [];
+$pa_substrate_sell_own     = get_post_meta( $product_id, '_pa_substrate_sell_own', true ) === '1';
+$pa_substrate_display_text = get_post_meta( $product_id, '_pa_substrate_display_text', true );
+$pa_substrate_wp_id        = (int) get_post_meta( $product_id, '_pa_substrate_wp_id', true );
 
 // Dünger-Produkt dieses Typs wird zur Anzeigezeit gesucht, nicht von der App
 // fest verlinkt — existiert noch keins, verlinkt es automatisch, sobald eins
@@ -99,7 +100,7 @@ if ( $pa_substrate_name || $pa_fertilizer_type_choice ) $has_care = true;
 // tolerates_max mit Strich bei der bevorzugten Stufe. Ohne gepflegten Range
 // fällt min/max auf den bevorzugten Wert zurück (Bar zeigt dann nur den Strich).
 $light_map   = [ 'schatten' => 1, 'halbschatten' => 2, 'sonne' => 3, 'sonnig' => 3, 'vollsonne' => 4 ];
-$water_map   = [ 'wenig' => 1, 'maessig' => 2, 'mäßig' => 2, 'mittel' => 2, 'viel' => 3, 'reichlich' => 3 ];
+$water_map   = [ 'sehr_trocken' => 1, 'trockener' => 2, 'feucht' => 3, 'nass' => 4 ];
 $light_scale = $light_map[ strtolower( $care_light ) ] ?? 0;
 $water_scale = $water_map[ strtolower( $care_water ) ] ?? 0;
 $light_min_scale = $light_map[ strtolower( $care_light_min ) ] ?? $light_scale;
@@ -383,7 +384,7 @@ $pa_crumbs[ count( $pa_crumbs ) - 1 ]['href'] = null; // letztes Element = aktue
                   <div class="pdp-carebar-pref" style="left:<?php echo round( $lp, 1 ); ?>%"></div>
                 </div>
               </div>
-              <div class="pdp-carebar-ends"><span>Schatten</span><span>Vollsonne</span></div>
+              <div class="pdp-carebar-ends"><span>Schatten</span><span>Volle Sonne</span></div>
             </div>
             <?php else : ?>
             <div class="value"><?php echo esc_html( $care_light ); ?></div>
@@ -395,9 +396,9 @@ $pa_crumbs[ count( $pa_crumbs ) - 1 ]['href'] = null; // letztes Element = aktue
           <div class="pdp-iconscale-cell">
             <div class="label">Wasser</div>
             <?php if ( $water_scale > 0 ) :
-              $wp = ( $water_scale - 1 ) / 2 * 100;
-              $w0 = ( min( $water_min_scale, $water_max_scale ) - 1 ) / 2 * 100;
-              $w1 = ( max( $water_min_scale, $water_max_scale ) - 1 ) / 2 * 100;
+              $wp = ( $water_scale - 1 ) / 3 * 100;
+              $w0 = ( min( $water_min_scale, $water_max_scale ) - 1 ) / 3 * 100;
+              $w1 = ( max( $water_min_scale, $water_max_scale ) - 1 ) / 3 * 100;
             ?>
             <div class="pdp-carebar">
               <div class="pdp-carebar-track-wrap">
@@ -407,7 +408,7 @@ $pa_crumbs[ count( $pa_crumbs ) - 1 ]['href'] = null; // letztes Element = aktue
                   <div class="pdp-carebar-pref" style="left:<?php echo round( $wp, 1 ); ?>%"></div>
                 </div>
               </div>
-              <div class="pdp-carebar-ends"><span>Wenig</span><span>Viel</span></div>
+              <div class="pdp-carebar-ends"><span>Sehr trocken</span><span>Nass</span></div>
             </div>
             <?php else : ?>
             <div class="value"><?php echo esc_html( $care_water ); ?></div>
@@ -470,12 +471,16 @@ $pa_crumbs[ count( $pa_crumbs ) - 1 ]['href'] = null; // letztes Element = aktue
             <div class="label"><?php echo $pa_substrate_sell_own ? 'Substrat' : 'Empfohlenes Substrat'; ?></div>
             <p class="value">
               <?php
-              if ( ! $pa_substrate_sell_own ) echo 'Empfohlenes Substrat nach Hausrezept: ';
-              $pa_ingredient_lines = array_filter( array_map(
-                function ( $ing ) { return trim( ( $ing['percent'] ?? '' ) . '% ' . ( $ing['name'] ?? '' ) ); },
-                $pa_substrate_composition
-              ) );
-              echo esc_html( implode( ', ', $pa_ingredient_lines ) );
+              if ( $pa_substrate_sell_own ) {
+                echo esc_html( $pa_substrate_display_text );
+              } else {
+                echo 'Empfohlenes Substrat nach Hausrezept: ';
+                $pa_ingredient_lines = array_filter( array_map(
+                  function ( $ing ) { return trim( ( $ing['percent'] ?? '' ) . '% ' . ( $ing['name'] ?? '' ) ); },
+                  $pa_substrate_composition
+                ) );
+                echo esc_html( implode( ', ', $pa_ingredient_lines ) );
+              }
               ?>
             </p>
             <?php if ( $pa_substrate_sell_own && $pa_substrate_wp_id ) : ?>

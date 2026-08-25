@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS products (
   fertilizer_type TEXT DEFAULT '',
   composition TEXT DEFAULT '[]',
   sell_own_substrate INTEGER DEFAULT 0,
+  substrate_display_text TEXT DEFAULT '',
   substrate_product_id INTEGER,
   fertilizer_type_choice TEXT DEFAULT '',
   fertilizer_amount TEXT DEFAULT '',
@@ -560,7 +561,7 @@ export function saveProduct(product) {
         wp_id=?, slug=?, name=?, gattung=?, art=?, kultivar=?, common_name=?, sku=?,
         price=?, regular_price=?, sale_price=?, product_type=?, unit_type=?,
         liter_content=?, weight_content=?, fertilizer_type=?, composition=?,
-        sell_own_substrate=?, substrate_product_id=?, fertilizer_type_choice=?, fertilizer_amount=?,
+        sell_own_substrate=?, substrate_display_text=?, substrate_product_id=?, fertilizer_type_choice=?, fertilizer_amount=?,
         tax_class=?, differential_taxation=?, shipping_class=?,
         delivery_time=?, stock=?, low_stock_threshold=?, never_low_stock=?, show_exact_stock=?,
         weight=?, length=?, width=?, height=?,
@@ -582,7 +583,7 @@ export function saveProduct(product) {
       product.liter_content ?? null, product.weight_content ?? null,
       product.fertilizer_type ?? '',
       typeof product.composition === 'string' ? product.composition : JSON.stringify(product.composition ?? []),
-      product.sell_own_substrate ? 1 : 0, product.substrate_product_id ?? null,
+      product.sell_own_substrate ? 1 : 0, product.substrate_display_text ?? '', product.substrate_product_id ?? null,
       product.fertilizer_type_choice ?? '', product.fertilizer_amount ?? '',
       product.tax_class ?? 'reduced-rate',
       product.differential_taxation ? 1 : 0, product.shipping_class ?? '',
@@ -610,7 +611,7 @@ export function saveProduct(product) {
         wp_id, slug, name, gattung, art, kultivar, common_name, sku,
         price, regular_price, sale_price, product_type, unit_type,
         liter_content, weight_content, fertilizer_type, composition,
-        sell_own_substrate, substrate_product_id, fertilizer_type_choice, fertilizer_amount,
+        sell_own_substrate, substrate_display_text, substrate_product_id, fertilizer_type_choice, fertilizer_amount,
         tax_class, differential_taxation, shipping_class,
         delivery_time, stock, low_stock_threshold, never_low_stock, show_exact_stock,
         weight, length, width, height,
@@ -624,7 +625,7 @@ export function saveProduct(product) {
         gattung_id, art_id, blueprint_links, tax_class_id, is_variable,
         seo_title, seo_description, seo_focus_keyword
       ) VALUES (
-        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
       )
     `).run(
       product.wp_id ?? null, product.slug ?? '', product.name ?? '',
@@ -634,7 +635,7 @@ export function saveProduct(product) {
       product.liter_content ?? null, product.weight_content ?? null,
       product.fertilizer_type ?? '',
       typeof product.composition === 'string' ? product.composition : JSON.stringify(product.composition ?? []),
-      product.sell_own_substrate ? 1 : 0, product.substrate_product_id ?? null,
+      product.sell_own_substrate ? 1 : 0, product.substrate_display_text ?? '', product.substrate_product_id ?? null,
       product.fertilizer_type_choice ?? '', product.fertilizer_amount ?? '',
       product.tax_class ?? 'reduced-rate',
       product.differential_taxation ? 1 : 0, product.shipping_class ?? '',

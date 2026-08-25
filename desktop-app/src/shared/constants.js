@@ -6,17 +6,18 @@ export const TAX_CLASSES = [
 
 export const CARE_LIGHT_OPTIONS = [
   { value: '', label: '— nicht angegeben —' },
-  { value: 'vollsonne', label: 'Vollsonne' },
-  { value: 'sonnig', label: 'Sonnig' },
+  { value: 'vollsonne', label: 'Volle Sonne' },
+  { value: 'sonnig', label: 'Eher sonnig' },
   { value: 'halbschatten', label: 'Halbschatten' },
   { value: 'schatten', label: 'Schatten' },
 ]
 
 export const CARE_WATER_OPTIONS = [
   { value: '', label: '— nicht angegeben —' },
-  { value: 'viel', label: 'Viel (feucht halten)' },
-  { value: 'maessig', label: 'Mäßig' },
-  { value: 'wenig', label: 'Wenig (trocken halten)' },
+  { value: 'nass', label: 'Nass' },
+  { value: 'feucht', label: 'Feucht' },
+  { value: 'trockener', label: 'Etwas trockener' },
+  { value: 'sehr_trocken', label: 'Sehr trocken' },
 ]
 
 export const CARE_FERTILIZER_OPTIONS = [

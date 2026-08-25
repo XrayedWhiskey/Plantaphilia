@@ -22,7 +22,7 @@ const EMPTY = {
   gattung_id: null, art_id: null, blueprint_links: {},
   price: '', regular_price: '',
   product_type: 'plant', unit_type: 'piece', liter_content: '', weight_content: '',
-  fertilizer_type: '', composition: [], sell_own_substrate: false,
+  fertilizer_type: '', composition: [], sell_own_substrate: false, substrate_display_text: '',
   substrate_product_id: null, fertilizer_type_choice: '', fertilizer_amount: '',
   tax_class: 'reduced-rate', tax_class_id: null, differential_taxation: false,
   delivery_time: '',
@@ -402,15 +402,14 @@ export default function ProductForm({ productId, onClose, onSaved }) {
   }, [form.gattung, form.art, form.kultivar, form.name, form.product_type])
 
   useEffect(() => {
-    const potSizeCm = availableSpecs.find(s => s.id === selectedSpecId)?.pot_size_cm ?? null
-    const auto = composeSeoDescription({ ...form, potSizeCm })
+    const auto = composeSeoDescription(form)
     if (!auto || auto === form.seo_description) return
     if (form.seo_description === autoSeoDescRef.current) {
       autoSeoDescRef.current = auto
       set('seo_description', auto)
     }
   }, [form.gattung, form.art, form.kultivar, form.name, form.product_type, form.short_description,
-      form.care_light, form.care_water, form.price, form.regular_price, form.stock, form.is_variable, selectedSpecId, availableSpecs])
+      form.care_light, form.care_water, form.price, form.regular_price, form.is_variable])
 
   useEffect(() => {
     const auto = composeSeoFocusKeyword(form)
@@ -999,17 +998,21 @@ export default function ProductForm({ productId, onClose, onSaved }) {
             {form.substrate_product_id && (() => {
               const sub = allProducts.find(p => p.id === form.substrate_product_id)
               if (!sub) return null
-              let ingredients = []
-              try { ingredients = JSON.parse(sub.composition || '[]') } catch { ingredients = [] }
               return (
                 <div style={{ marginTop: -4, marginBottom: 12, padding: '10px 14px', background: 'rgba(155,111,208,0.08)', border: '1px solid rgba(155,111,208,0.2)', borderRadius: 4, fontSize: 12, color: '#C8C0AF' }}>
                   <div style={{ color: '#B8A8D8', marginBottom: 4 }}>
                     {sub.sell_own_substrate ? sub.name : 'Empfohlenes Substrat nach Hausrezept'}
                   </div>
-                  {ingredients.map((ing, i) => <div key={i}>{ing.percent}% {ing.name}</div>)}
-                  {sub.sell_own_substrate && (
-                    <div style={{ marginTop: 4, color: '#9CA59E' }}>Wird zusätzlich als eigenes Produkt verkauft — „Oder hier kaufen"-Link erscheint automatisch auf der Live-Produktseite.</div>
-                  )}
+                  {sub.sell_own_substrate ? (
+                    <>
+                      <div>{sub.substrate_display_text || <em style={{ color: '#9CA59E' }}>(kein Website-Text hinterlegt)</em>}</div>
+                      <div style={{ marginTop: 4, color: '#9CA59E' }}>Wird zusätzlich als eigenes Produkt verkauft — „Oder hier kaufen"-Link erscheint automatisch auf der Live-Produktseite.</div>
+                    </>
+                  ) : (() => {
+                    let ingredients = []
+                    try { ingredients = JSON.parse(sub.composition || '[]') } catch { ingredients = [] }
+                    return ingredients.map((ing, i) => <div key={i}>{ing.percent}% {ing.name}</div>)
+                  })()}
                 </div>
               )
             })()}
@@ -1056,6 +1059,11 @@ export default function ProductForm({ productId, onClose, onSaved }) {
               <input type="checkbox" checked={form.sell_own_substrate} onChange={e => set('sell_own_substrate', e.target.checked)} />
               <span style={{ fontSize: 12, color: '#C8C0AF' }}>Verkaufe ich als eigenes Produkt</span>
             </label>
+            <Field label="Website-Text" hint="wird nur angezeigt, wenn oben Verkaufe ich aktiviert ist — ersetzt dort die Zutatenliste">
+              <textarea className="input" rows={3} value={form.substrate_display_text}
+                onChange={e => set('substrate_display_text', e.target.value)}
+                placeholder="z. B. Torffreie Bio-Erde speziell für Pelargonien, sorgt für optimale Drainage..." />
+            </Field>
           </Section>
           )}
 

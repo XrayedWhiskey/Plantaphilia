@@ -300,6 +300,7 @@ async function doPushProduct(product, resolutions) {
       productToSave._substrate_name = sub.name
       productToSave._substrate_composition = sub.composition
       productToSave._substrate_sell_own = sub.sell_own_substrate
+      productToSave._substrate_display_text = sub.substrate_display_text
       productToSave._substrate_wp_id = sub.wp_id
     }
   }

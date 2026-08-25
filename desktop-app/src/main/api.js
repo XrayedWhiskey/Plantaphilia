@@ -353,6 +353,7 @@ export function wcProductToLocal(wc) {
     fertilizer_amount: (wc.meta_data?.find(m => m.key === '_pa_fertilizer_amount') || {}).value || '',
     sell_own_substrate: (wc.meta_data?.find(m => m.key === '_pa_substrate_sell_own') || {}).value === '1' ? 1 : 0,
     composition: (wc.meta_data?.find(m => m.key === '_pa_substrate_composition') || {}).value || '[]',
+    substrate_display_text: (wc.meta_data?.find(m => m.key === '_pa_substrate_display_text') || {}).value || '',
     differential_taxation: (wc.meta_data?.find(m => m.key === '_differential_taxation') || {}).value === '1' ? 1 : 0,
     low_stock_threshold: parseInt((wc.meta_data?.find(m => m.key === '_custom_low_stock_threshold') || {}).value, 10) || null,
     never_low_stock: (wc.meta_data?.find(m => m.key === '_never_low_stock') || {}).value === '1' ? 1 : 0,
@@ -413,6 +414,7 @@ export function localProductToWc(local, wpTagIds = [], variants = []) {
     // so verlinkt er automatisch, sobald ein Produkt dieses Typs existiert.
     { key: '_pa_substrate_name', value: local._substrate_name || '' },
     { key: '_pa_substrate_composition', value: local._substrate_composition || '[]' },
+    { key: '_pa_substrate_display_text', value: local._substrate_display_text || '' },
     { key: '_pa_substrate_sell_own', value: local._substrate_sell_own ? '1' : '0' },
     { key: '_pa_substrate_wp_id', value: local._substrate_wp_id ? String(local._substrate_wp_id) : '' },
     { key: '_pa_fertilizer_type_choice', value: local.fertilizer_type_choice || '' },

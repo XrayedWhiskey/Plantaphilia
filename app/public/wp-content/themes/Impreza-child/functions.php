@@ -1010,29 +1010,6 @@ function adjust_availability_based_on_in_progress($availability, $product) {
     return $availability;
 }
 
-// Meta-Description wird von der App vorformuliert gepusht (_yoast_wpseo_metadesc,
-// Muster "..., verfügbar: ..." bzw. "..., nicht verfügbar: ...", siehe
-// composeSeoDescription.js) — Yoast liest dieses Postmeta als Basiswert und
-// gibt ihn danach durch diesen Filter. Nur das Verfügbarkeits-Wort wird hier
-// live nachgezogen, damit echte Bestandsänderungen auf der Website (nicht nur
-// der nächste App-Push) sich sofort in der Meta-Description niederschlagen.
-// Gleiche Bestand-minus-_in_progress-Logik wie adjust_availability_based_on_in_progress.
-add_filter('wpseo_metadesc', 'pa_live_availability_in_metadesc');
-function pa_live_availability_in_metadesc($desc) {
-    if (!is_product() || !$desc) return $desc;
-    global $product;
-    if (!$product) return $desc;
-    $stock = $product->get_stock_quantity();
-    if ($stock === null) {
-        $available = $product->is_in_stock();
-    } else {
-        $in_progress = intval(get_post_meta($product->get_id(), '_in_progress', true));
-        $available = ($stock - $in_progress) > 0;
-    }
-    $word = $available ? 'verfügbar' : 'nicht verfügbar';
-    return preg_replace('/, (nicht verfügbar|verfügbar):/u', ", {$word}:", $desc, 1);
-}
-
 function get_product_list_data() {
     error_log('DEBUG: get_product_list_data aufgerufen');
     check_ajax_referer('product_list_nonce', 'nonce');

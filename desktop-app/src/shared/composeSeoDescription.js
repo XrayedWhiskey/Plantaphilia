@@ -25,14 +25,8 @@ function formatPrice(n) {
 }
 
 // data: { product_type, is_variable, gattung, art, kultivar, name,
-//   short_description, price, regular_price, stock, care_light, care_water,
-//   potSizeCm, variants: [{ price, regular_price, stock }] }
-//
-// Das Verfügbarkeits-Wort steht immer exakt im Muster ", (nicht )?verfügbar:"
-// (Komma davor, Doppelpunkt danach) — Anker, an dem der WordPress-Theme-Filter
-// (functions.php, wpseo_metadesc) das Wort später durch den Live-Bestand
-// ersetzt, damit Lagerbestandsänderungen auf der Website auch ohne erneuten
-// App-Push korrekt reflektiert werden.
+//   short_description, price, regular_price, care_light, care_water,
+//   variants: [{ price, regular_price }] }
 export function composeSeoDescription(data) {
   const isPlant = (data.product_type || 'plant') === 'plant'
   const productName = isPlant
@@ -50,11 +44,7 @@ export function composeSeoDescription(data) {
     if (prices.length > 0) priceSegment = `ab ${formatPrice(Math.min(...prices))}€`
   } else {
     const price = Number(data.price || data.regular_price || 0)
-    if (price > 0) {
-      priceSegment = isPlant && data.potSizeCm
-        ? `im ${data.potSizeCm}cm Topf für ${formatPrice(price)}€`
-        : `für ${formatPrice(price)}€`
-    }
+    if (price > 0) priceSegment = `für ${formatPrice(price)}€`
   }
 
   if (!priceSegment) {
@@ -67,10 +57,5 @@ export function composeSeoDescription(data) {
     return truncate(`${productName} online kaufen bei Plantaphilia.${careLine} Sorgfältig verpackt, schnelle Lieferung.`, 155)
   }
 
-  const available = data.is_variable
-    ? (data.variants || []).some(v => Number(v.stock || 0) > 0)
-    : Number(data.stock || 0) > 0
-  const availWord = available ? 'verfügbar' : 'nicht verfügbar'
-
-  return truncate(`${productName} ${priceSegment}, ${availWord}: ${shortDesc}`, 155)
+  return truncate(`${productName} ${priceSegment}: ${shortDesc}`, 155)
 }
