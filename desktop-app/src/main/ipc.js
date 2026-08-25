@@ -893,8 +893,15 @@ export function registerIpcHandlers() {
   ipcMain.handle('fs:renameFolder', async (_, oldSlug, newSlug) => {
     const projectFolder = getProjectFolder() || getSetting('project_folder') || ''
     if (!projectFolder || !oldSlug || oldSlug === newSlug) return true
-    const oldDir = path.join(projectFolder, 'images', oldSlug)
-    const newDir = path.join(projectFolder, 'images', newSlug)
+    // Slugs are meant to be plain generated names (see folderNameFor() in
+    // ProductForm.jsx) — reject anything that could escape images/ via path
+    // traversal (e.g. "..") before it ever reaches the filesystem.
+    const safeSlug = /^[a-zA-Z0-9_-]+$/
+    if (!safeSlug.test(oldSlug) || !safeSlug.test(newSlug)) return true
+    const imagesRoot = path.resolve(path.join(projectFolder, 'images'))
+    const oldDir = path.resolve(path.join(imagesRoot, oldSlug))
+    const newDir = path.resolve(path.join(imagesRoot, newSlug))
+    if (!oldDir.startsWith(imagesRoot + path.sep) || !newDir.startsWith(imagesRoot + path.sep)) return true
     if (!fs.existsSync(oldDir)) return true
     try {
       if (fs.existsSync(newDir)) {
