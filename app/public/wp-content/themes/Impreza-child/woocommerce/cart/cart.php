@@ -66,7 +66,6 @@ wc_print_notices();
         <div class="cc-sect-head">
           <?php $cnt = $cart->get_cart_contents_count(); ?>
           <h2><em><?php echo esc_html( $cnt ); ?></em>&nbsp; Position<?php echo $cnt === 1 ? '' : 'en'; ?></h2>
-          <span class="meta">Reserviert &middot; 60 Min</span>
         </div>
 
         <div class="cc-lines">
@@ -99,9 +98,10 @@ wc_print_notices();
               ?: $product->get_attribute( 'pa_gattung' )
               ?: '';
 
-            // Prices
-            $line_subtotal = wc_price( $cart_item['line_subtotal'] );
-            $unit_price    = $qty > 1 ? wc_price( $cart_item['line_subtotal'] / $qty ) : '';
+            // Prices (inkl. MwSt., wie im Bestellwert angezeigt)
+            $line_gross    = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
+            $line_subtotal = wc_price( $line_gross );
+            $unit_price    = $qty > 1 ? wc_price( $line_gross / $qty ) : '';
 
             // Remove URL
             $remove_url = add_query_arg('remove_item', $cart_item_key, wc_get_cart_url());
@@ -230,7 +230,6 @@ wc_print_notices();
       <!-- ── Rechte Spalte: Bestellübersicht ── -->
       <aside class="cc-aside">
         <div class="cc-summary">
-          <div class="cc-summary-stamp">Tafel &middot; Bestellung</div>
           <div class="cc-summary-eyebrow">&middot; Zwischenrechnung &middot;</div>
           <h2 class="cc-summary-h">Ihre <em>Bestellung</em></h2>
 
@@ -238,11 +237,18 @@ wc_print_notices();
           <?php foreach ( $cart->get_cart() as $item_key => $item ) :
             $p = $item['data'];
             if ( ! $p || ! $p->exists() ) { continue; }
+            $item_tax = (float) $item['line_subtotal_tax'];
           ?>
           <div class="cc-summary-row">
             <span class="lab"><?php echo esc_html( $p->get_name() ); ?> &times; <?php echo esc_html( $item['quantity'] ); ?></span>
-            <span class="val"><?php echo wc_price( $item['line_subtotal'] + $item['line_subtotal_tax'] ); ?></span>
+            <span class="val"><?php echo wc_price( $item['line_subtotal'] + $item_tax ); ?></span>
           </div>
+          <?php if ( $item_tax > 0 ) : ?>
+          <div class="cc-summary-subrow">
+            <span class="lab">davon Steuern</span>
+            <span class="val"><?php echo wc_price( $item_tax ); ?></span>
+          </div>
+          <?php endif; ?>
           <?php endforeach; ?>
 
           <!-- Subtotal -->

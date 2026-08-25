@@ -9,6 +9,7 @@ $cart_count  = ( function_exists('WC') && WC()->cart ) ? WC()->cart->get_cart_co
 $logo_url    = content_url('uploads/2022/01/Logo-Plantaphilia-1.svg');
 $shop_url    = function_exists('wc_get_page_id') ? get_permalink(wc_get_page_id('shop'))      : home_url('/shop/');
 $account_url = function_exists('wc_get_page_id') ? get_permalink(wc_get_page_id('myaccount')) : home_url('/my-account/');
+$cart_url    = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/warenkorb/');
 $logout_url  = wp_logout_url(home_url());
 $is_logged_in = is_user_logged_in();
 ?>
@@ -59,7 +60,7 @@ $is_logged_in = is_user_logged_in();
         </a>
       <?php endif; ?>
 
-      <button class="pa-iconbtn" id="pa-cart-btn" aria-label="Warenkorb öffnen">
+      <a class="pa-iconbtn" id="pa-cart-btn" href="<?php echo esc_url($cart_url); ?>" aria-label="Warenkorb öffnen">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>
           <path d="M3 4h3l2.7 11.5a2 2 0 0 0 2 1.5h7.6a2 2 0 0 0 2-1.5L22 8H6"/>
@@ -68,7 +69,7 @@ $is_logged_in = is_user_logged_in();
         <?php if ($cart_count > 0) : ?>
           <em class="pa-cart-badge"><?php echo intval($cart_count); ?></em>
         <?php endif; ?>
-      </button>
+      </a>
 
       <div class="pa-lang-dropdown">
         <button class="pa-iconbtn pa-lang-btn" id="pa-lang-btn" aria-label="Sprache wählen">

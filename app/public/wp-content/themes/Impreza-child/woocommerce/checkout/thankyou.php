@@ -5,6 +5,16 @@
  */
 defined( 'ABSPATH' ) || exit;
 
+// wc_get_template() bindet dieses Template innerhalb einer Funktion ein (anders als
+// WordPress' eigenes load_template()) — $wp muss daher explizit globalisiert werden,
+// sonst ist $wp->query_vars hier immer leer und die Bestellung wird nie gefunden.
+global $wp;
+
+// Dieses Template wird per template_redirect (Priority 1) direkt eingebunden und
+// überspringt damit WordPress' normale Seitenvorlage — ohne get_header()/get_footer()
+// fehlen Design/CSS und Navigation komplett (wie bei single-product.php).
+get_header();
+
 // Bestellung laden
 $order = false;
 if ( $order_id = absint( $wp->query_vars['order-received'] ?? 0 ) ) {
@@ -327,3 +337,5 @@ do_action( 'woocommerce_before_thankyou', $order ? $order->get_id() : 0 );
 <?php endif; ?>
 
 </div>
+
+<?php get_footer(); ?>

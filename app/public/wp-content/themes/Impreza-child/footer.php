@@ -179,13 +179,6 @@ $wc_cart = ( function_exists('WC') && WC()->cart ) ? WC()->cart : null;
       langMenu.classList.remove('open');
     });
   }
-
-  // Cart drawer
-  var cart = g('pa-cart-drawer');
-  if (cart) {
-    g('pa-cart-btn')   && g('pa-cart-btn').addEventListener('click',   function () { cart.classList.add('open'); });
-    g('pa-cart-close') && g('pa-cart-close').addEventListener('click', function () { cart.classList.remove('open'); });
-  }
 }());
 </script>
 

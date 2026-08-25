@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #25302B; color: #EAE4D6; font-family: 'Montserrat', system-ui, sans-serif; font-size: 14px; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1A231F; }
+::-webkit-scrollbar-thumb { background: rgba(155,111,208,0.4); border-radius: 3px; }
+
+@layer components {
+  .btn { @apply px-4 py-2 rounded text-sm font-semibold tracking-wide uppercase transition-colors cursor-pointer; }
+  .btn-primary { @apply btn bg-plum-hot text-creme hover:bg-plum; }
+  .btn-secondary { @apply btn bg-bg-surface text-creme border border-border-thin hover:bg-bg-raised; }
+  .btn-danger { @apply btn bg-burgundy text-creme hover:bg-burgundy-hot; }
+  .input { @apply w-full px-3 py-2 bg-bg-surface border border-border-thin rounded text-creme placeholder-creme-muted focus:outline-none focus:border-plum-hot transition-colors; }
+  .label { @apply block text-xs font-semibold text-creme-muted uppercase tracking-wider mb-1; }
+  .card { @apply bg-bg-surface border border-border-thin rounded-md; }
+  .section-header { @apply text-xs font-bold text-creme-muted uppercase tracking-widest pb-3 border-b border-border-hair; }
+  .badge { @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium; }
+  .toggle-group { @apply flex rounded overflow-hidden border border-border-thin; }
+  .toggle-btn { @apply px-3 py-1.5 text-xs font-semibold text-creme-muted cursor-pointer transition-colors; }
+  .toggle-btn.active { @apply bg-plum-hot text-creme; }
+  .toggle-btn:not(.active) { @apply bg-bg-deep hover:bg-bg-raised; }
+}

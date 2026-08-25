@@ -1,0 +1,26 @@
+/shop/
++-> suchleiste mittig oben
++-> preis schieberegler einerseits auch eintippbar machen und die kugeln des schiebe reglers besser plazieren...
++-> nach sonnen/wasser requirements und winterhärte filterbar/sortierbar machen
+/produkt/ 
+++> cookiecrumb nav hinzufügen (shop/gattung/art/kultivar bzw. shop/gattung/kultivar und vgl.)
+|+-> gattung/art click bar machen und dann auf /shop/ umleiten mit nem aktiven filter für diese gattung/art
++->gattung art und kultivar sollten sitewide gleich groß sein, hier könnte man es so machen das das spezifischste (also kultivar und wenn diese nicht existiert, dann art usw.) eine eigene zeile bekommt oder so idk? wenn du andere ideen hat dann ists wilkommen
+
+der button folgender button soll auf /warenkorb/ verlinken <button class="pa-iconbtn" id="pa-cart-btn" aria-label="Warenkorb öffnen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle>
+          <path d="M3 4h3l2.7 11.5a2 2 0 0 0 2 1.5h7.6a2 2 0 0 0 2-1.5L22 8H6"></path>
+        </svg>
+        <span class="pa-iconbtn-text">Warenkorb</span>
+                  <em class="pa-cart-badge">1</em>
+              </button>
+
+/warenkorb/
++-> das kommt weg <span class="meta">Reserviert · 60 Min</span>
++-> <bdi>839,50&nbsp;<span class="woocommerce-Price-currencySymbol">€</span></bdi> soll einfach den eingetragenen preis beinhalten, aktuell zeigts den preis ohne steuern an...
++-> kann weg : <div class="cc-summary-stamp">Tafel · Bestellung</div>
++-> hier drunter kann bei jedem produkt ein reiter stehen von wegen, davon steuern x€ <div class="cc-summary-row">
+            <span class="lab">Gattung Art 'Kultivar' × 1</span>
+            <span class="val"><span class="woocommerce-Price-amount amount"><bdi>999,00&nbsp;<span class="woocommerce-Price-currencySymbol">€</span></bdi></span></span>
+          </div>

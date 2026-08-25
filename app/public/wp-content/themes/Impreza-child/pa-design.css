@@ -266,8 +266,8 @@ body.pa-storefront *::after { box-sizing: border-box; }
 
 .pa-card-body { padding: 18px 20px 22px; display: flex; flex-direction: column; flex: 1; }
 .pa-card-name {
-  font-family: var(--serif-display); font-weight: 500;
-  font-size: 19px; color: var(--creme); margin: 0;
+  font-family: var(--serif-display); font-weight: 500; font-style: normal;
+  font-size: 16px; color: var(--creme); margin: 0; letter-spacing: 0.01em; line-height: 1.3;
 }
 .pa-card-latin {
   font-family: var(--serif-display); font-style: italic;
@@ -736,6 +736,24 @@ body.pa-storefront .woocommerce-page {
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-hair);
+}
+
+.pa-shop-heading {
+  display: block;
+  text-align: center;
+  font-weight: 500;
+  color: var(--creme);
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.pa-shop-description {
+  text-align: center;
+  color: var(--creme-dim);
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 640px;
+  margin: 0 auto 20px;
 }
 
 .pa-filter-toggle {
@@ -1432,7 +1450,6 @@ body.pa-storefront .woocommerce-MyAccount-navigation .is-active a { color: var(-
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  margin-top: 16px;
   transition: all var(--t-base) var(--ease-botanical);
 }
 
@@ -1446,7 +1463,6 @@ body.pa-storefront .woocommerce-MyAccount-navigation .is-active a { color: var(-
   display: none;
   flex-direction: column;
   gap: 16px;
-  margin-top: 16px;
 }
 
 .pa-addresses-grid {
@@ -1996,6 +2012,29 @@ body.pa-storefront.woocommerce-checkout .form-row textarea {
 body.pa-storefront.woocommerce-checkout .form-row input.input-text:focus,
 body.pa-storefront.woocommerce-checkout .form-row select:focus,
 body.pa-storefront.woocommerce-checkout .form-row textarea:focus {
+  border-color: var(--amethyst) !important; box-shadow: none !important;
+}
+
+/* Login / Registrierung / Passwort-Reset – gleiche Feld-Optik wie Checkout */
+body.pa-storefront.woocommerce-account .form-row label:not(.checkbox) {
+  font-family: var(--sans-body) !important; font-size: 10px !important;
+  letter-spacing: 0.24em !important; text-transform: uppercase !important;
+  color: var(--lavender-dim) !important; margin-bottom: 6px !important;
+  display: block !important;
+}
+body.pa-storefront.woocommerce-account .form-row input.input-text,
+body.pa-storefront.woocommerce-account .form-row select,
+body.pa-storefront.woocommerce-account .form-row textarea {
+  background: var(--bg-inky) !important; border: 1px solid var(--border-thin) !important;
+  color: var(--creme) !important; font-family: var(--serif-display) !important;
+  font-size: 16px !important; padding: 13px 14px !important;
+  outline: none !important; width: 100% !important;
+  box-sizing: border-box !important; border-radius: 0 !important;
+  height: auto !important; box-shadow: none !important;
+}
+body.pa-storefront.woocommerce-account .form-row input.input-text:focus,
+body.pa-storefront.woocommerce-account .form-row select:focus,
+body.pa-storefront.woocommerce-account .form-row textarea:focus {
   border-color: var(--amethyst) !important; box-shadow: none !important;
 }
 
@@ -2595,7 +2634,6 @@ body.pa-storefront .g-cols.vc_row.via_flex.valign_top > .vc_column_container > .
 .cc-summary::-webkit-scrollbar { width: 4px; }
 .cc-summary::-webkit-scrollbar-track { background: transparent; }
 .cc-summary::-webkit-scrollbar-thumb { background: var(--border-thin); border-radius: 2px; }
-.cc-summary-stamp { position: absolute; top: 18px; right: 22px; font-family: var(--serif-display); font-style: italic; font-size: 12px; color: var(--amethyst-dim); letter-spacing: 0.02em; }
 .cc-summary-h { font-family: var(--serif-display); font-weight: 500; font-size: 24px; line-height: 1.1; margin: 0 0 18px; color: var(--creme); }
 .cc-summary-h em { font-style: italic; color: var(--lavender); }
 .cc-summary-eyebrow { font-family: var(--sans-body); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--lavender-dim); margin-bottom: 6px; }
@@ -2606,6 +2644,9 @@ body.pa-storefront .g-cols.vc_row.via_flex.valign_top > .vc_column_container > .
 .cc-summary-row.free .val { color: var(--amethyst); font-style: italic; }
 .cc-summary-row.free .val .amount { color: var(--amethyst); font-style: italic; }
 .cc-summary-row.discount .val { color: var(--plum-hot); }
+.cc-summary-subrow { display: flex; justify-content: space-between; align-items: baseline; padding: 0 0 9px; margin-top: -9px; font-family: var(--sans-body); font-size: 11px; color: var(--creme-muted); }
+.cc-summary-subrow .lab { letter-spacing: 0.04em; font-style: italic; }
+.cc-summary-subrow .val { font-family: var(--sans-body); font-size: 11px; }
 .cc-summary-divider { height: 1px; background: var(--border-gold); margin: 14px 0; }
 .cc-summary-total { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 0; }
 .cc-summary-total .lab { font-family: var(--sans-body); font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--creme); }
@@ -3605,6 +3646,17 @@ body.pa-storefront.single-product .woocommerce-notices-wrapper { padding: 0 48px
 }
 .pa-art-label:hover .pa-filter-lbl { color: var(--creme); font-style: italic; }
 
+.pa-art-row { display: flex; align-items: center; gap: 6px; }
+.pa-art-row .pa-art-label { flex: 1; }
+.pa-nested-tags { padding-left: 20px; }
+.pa-nested-tag-group { margin-bottom: 6px; }
+.pa-nested-tag-group-title {
+  display: block;
+  font-family: var(--sans-body); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--lavender-dim); margin-bottom: 2px;
+}
+
 /* Checkbox styling */
 .pa-filter-label input[type="checkbox"],
 .pa-art-label   input[type="checkbox"] {
@@ -3655,6 +3707,15 @@ body.pa-storefront.single-product .woocommerce-notices-wrapper { padding: 0 48px
 
 /* Search bar */
 .pa-search-wrap { position: relative; margin-bottom: 20px; }
+.pa-search-wrap--center {
+  max-width: 440px; margin: 22px auto 0;
+}
+.pa-search-wrap--center .pa-search-inp {
+  padding: 13px 16px 13px 40px; font-size: 14px; text-align: center;
+  border-radius: var(--r-pill, 999px);
+}
+.pa-search-wrap--center .pa-search-inp:focus { text-align: left; }
+.pa-search-wrap--center .pa-search-ico { left: 16px; }
 .pa-search-inp {
   width: 100%; box-sizing: border-box;
   padding: 10px 14px 10px 36px;
@@ -3687,11 +3748,12 @@ body.pa-storefront.single-product .woocommerce-notices-wrapper { padding: 0 48px
   font-size: 18px; color: var(--creme-muted);
 }
 
-/* Card taxonomy line (genus/art italic above card name) */
+/* Card taxonomy line (genus/art above card name) — visuell identisch zu .pa-card-name,
+   Gattung/Art/Kultivar sollen sitewide gleich behandelt werden, nur auf eigenen Zeilen. */
 .pa-card-taxonomy {
-  font-family: var(--serif-display); font-style: italic;
-  font-size: 11.5px; color: var(--lavender);
-  margin: 0 0 3px; letter-spacing: 0.01em; line-height: 1.3;
+  font-family: var(--serif-display); font-weight: 500; font-style: normal;
+  font-size: 16px; color: var(--creme);
+  margin: 0 0 2px; letter-spacing: 0.01em; line-height: 1.3;
 }
 
 /* Tag filter section header — title + expand button side by side */
@@ -3729,10 +3791,19 @@ a.pa-card { text-decoration: none; color: inherit; }
 
 /* ── Preisregler ─────────────────────────────────────────────────── */
 .pa-price-labels {
-  display: flex; justify-content: space-between;
+  display: flex; justify-content: space-between; align-items: center;
   font-family: var(--sans-body); font-size: 12px; font-weight: 500;
   color: var(--creme); margin-bottom: 10px;
 }
+.pa-price-field { display: inline-flex; align-items: center; gap: 4px; }
+.pa-price-input {
+  width: 52px; box-sizing: border-box;
+  background: var(--bg-inky); border: 1px solid var(--border-thin);
+  color: var(--creme); font-family: var(--sans-body); font-size: 12px; font-weight: 500;
+  padding: 4px 5px; border-radius: 3px; outline: none;
+}
+.pa-price-input:focus { border-color: var(--amethyst); }
+.pa-price-field:last-child .pa-price-input { text-align: right; }
 .pa-slider-outer { padding: 4px 0 8px; }
 .pa-slider-track {
   position: relative; height: 4px;
@@ -3748,11 +3819,12 @@ a.pa-card { text-decoration: none; color: inherit; }
   position: relative; height: 20px; margin-top: -12px;
 }
 .pa-prange {
-  position: absolute; top: 0; left: 0; width: 100%;
+  position: absolute; top: 0; left: 0; width: 100%; z-index: 1;
   -webkit-appearance: none; appearance: none;
   height: 4px; background: transparent; pointer-events: none;
   outline: none;
 }
+.pa-prange.pa-prange-top { z-index: 2; }
 .pa-prange::-webkit-slider-thumb {
   -webkit-appearance: none; pointer-events: all;
   width: 16px; height: 16px; border-radius: 50%;

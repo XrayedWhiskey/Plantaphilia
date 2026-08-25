@@ -53,7 +53,9 @@
 .pdp-crumb a{ color: var(--creme-muted); text-decoration: none; transition: color var(--t-base) var(--ease-botanical); }
 .pdp-crumb a:hover{ color: var(--creme); }
 .pdp-crumb .sep{ color: var(--amethyst-dim); }
-.pdp-crumb .cur{ color: var(--creme); font-style: italic; font-family: var(--serif-display); text-transform: none; letter-spacing: 0.01em; font-size: 14px; }
+/* Aktuelles Element bekommt bewusst denselben Font/Größe/Farbe wie die Links davor —
+   Gattung/Art/Kultivar sollen innerhalb der Breadcrumb identisch aussehen. */
+.pdp-crumb .cur{ color: var(--creme-muted); font-style: normal; font-family: var(--sans-body); text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; }
 
 /* ── Main hero grid ────────────────────────────────────────────── */
 .pdp-hero{
@@ -164,14 +166,16 @@
   letter-spacing: 0.28em; text-transform: uppercase;
   color: var(--lavender-dim);
 }
+/* Gattung/Art (.pdp-taxonomy) und Kultivar/Art/Gattung (.pdp-title) sollen sitewide
+   gleich behandelt werden — daher identische Schrift/Größe/Farbe, nur auf eigenen Zeilen. */
 .pdp-taxonomy{
-  font-family: var(--serif-display); font-style: italic; font-weight: 400;
-  font-size: 17px; letter-spacing: 0.01em;
-  color: var(--creme-muted); margin-bottom: -8px;
+  font-family: var(--serif-display); font-style: normal; font-weight: 500;
+  font-size: 42px; line-height: 1.1; letter-spacing: -0.01em;
+  color: var(--creme); margin-bottom: 4px;
 }
 .pdp-title{
-  font-family: var(--serif-display); font-weight: 500;
-  font-size: 64px; line-height: 1.02; letter-spacing: -0.018em;
+  font-family: var(--serif-display); font-style: normal; font-weight: 500;
+  font-size: 42px; line-height: 1.1; letter-spacing: -0.01em;
   color: var(--creme); margin: 0;
 }
 .pdp-title em{ font-style: italic; color: var(--lavender); font-weight: 400; display: block; font-size: 0.42em; letter-spacing: 0.005em; margin-top: 8px; }
@@ -510,6 +514,49 @@
 }
 .pdp-scale-ends{
   display: flex; justify-content: space-between; gap: 12px;
+  font-family: var(--serif-display); font-style: italic; font-weight: 400;
+  font-size: 12px; letter-spacing: 0.02em;
+  color: var(--creme-muted);
+}
+
+.pdp-carebar{
+  margin-top: 4px;
+  width: 100%;
+}
+.pdp-carebar-track-wrap{
+  position: relative;
+  padding-top: 24px;
+}
+.pdp-carebar-pref-label{
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  max-width: calc(100% - 4px);
+  font-family: var(--sans-body); font-size: 11px;
+  color: var(--creme); letter-spacing: 0.01em;
+}
+.pdp-carebar-track{
+  position: relative;
+  height: 6px;
+  background: var(--border-thin);
+  border-radius: 3px;
+}
+.pdp-carebar-range{
+  position: absolute; top: 0; bottom: 0;
+  background: var(--lavender);
+  opacity: 0.45;
+  border-radius: 3px;
+}
+.pdp-carebar-pref{
+  position: absolute; top: -4px; bottom: -4px;
+  width: 3px;
+  background: var(--plum-hot);
+  transform: translateX(-50%);
+}
+.pdp-carebar-ends{
+  display: flex; justify-content: space-between;
+  margin-top: 10px;
   font-family: var(--serif-display); font-style: italic; font-weight: 400;
   font-size: 12px; letter-spacing: 0.02em;
   color: var(--creme-muted);
@@ -1047,7 +1094,8 @@
 @media (max-width: 1100px){ .pdp-related-grid{ grid-template-columns: repeat(2,1fr); } }
 
 /* ── Density tweaks ────────────────────────────────────────────── */
-:root[data-density="compact"] .pdp-title{ font-size: 48px; }
+:root[data-density="compact"] .pdp-title,
+:root[data-density="compact"] .pdp-taxonomy{ font-size: 48px; }
 :root[data-density="compact"] .pdp-price{ font-size: 32px; }
 :root[data-density="compact"] .pdp-plaque{ padding: 36px 36px 30px; }
 :root[data-density="compact"] .pdp-field{ padding: 12px 18px; }
@@ -1088,7 +1136,8 @@
   .pdp-zoom-hint{ display: none; }
 
   .pdp-info{ gap: 14px; }
-  .pdp-title{ font-size: 40px !important; letter-spacing: -0.012em; }
+  .pdp-title,
+  .pdp-taxonomy{ font-size: 40px !important; letter-spacing: -0.012em; }
   .pdp-title em{ font-size: 0.5em; }
   .pdp-price{ font-size: 32px !important; }
   .pdp-meta-row{ flex-wrap: wrap; gap: 10px; font-size: 10px; }
@@ -1211,7 +1260,8 @@ html[data-viewport="mobile"] .pdp-thumbs{ flex-direction: row; order: 1; overflo
 html[data-viewport="mobile"] .pdp-thumb{ width: 72px; height: 72px; flex: none; }
 html[data-viewport="mobile"] .pdp-thumb.active::after{ left: 50%; top: -5px; transform: translateX(-50%); width: 24px; height: 3px; }
 html[data-viewport="mobile"] .pdp-zoom-hint{ display: none; }
-html[data-viewport="mobile"] .pdp-title{ font-size: 40px !important; }
+html[data-viewport="mobile"] .pdp-title,
+html[data-viewport="mobile"] .pdp-taxonomy{ font-size: 40px !important; }
 html[data-viewport="mobile"] .pdp-title em{ font-size: 0.5em; }
 html[data-viewport="mobile"] .pdp-price{ font-size: 32px !important; }
 html[data-viewport="mobile"] .pdp-meta-row{ flex-wrap: wrap; gap: 10px; font-size: 10px; }

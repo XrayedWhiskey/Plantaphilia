@@ -64,6 +64,10 @@ $care_light       = get_post_meta( $product_id, '_pa_care_light',    true );
 $care_water       = get_post_meta( $product_id, '_pa_care_water',    true );
 $care_winter      = get_post_meta( $product_id, '_pa_care_winter',   true );
 $care_winterhaerte = get_post_meta( $product_id, '_pa_winterhaerte', true );
+$care_light_min   = get_post_meta( $product_id, '_pa_care_light_tolerates_min', true );
+$care_light_max   = get_post_meta( $product_id, '_pa_care_light_tolerates_max', true );
+$care_water_min   = get_post_meta( $product_id, '_pa_care_water_tolerates_min', true );
+$care_water_max   = get_post_meta( $product_id, '_pa_care_water_tolerates_max', true );
 $has_care         = $care_light || $care_water || $care_winter || $care_winterhaerte;
 
 $temp_min_raw = get_post_meta( $product_id, '_pa_care_temp_min', true );
@@ -72,19 +76,73 @@ $temp_min     = $temp_min_raw !== '' ? (float) $temp_min_raw : null;
 $temp_max     = $temp_max_raw !== '' ? (float) $temp_max_raw : null;
 if ( $temp_min !== null || $temp_max !== null ) $has_care = true;
 
-// Map text values → numeric pip scale
+// Substrat-Empfehlung + Dünger — nur bei Pflanzen-Produkten gepflegt (App:
+// ProductForm.jsx, Pflegehinweise-Sektion). Strukturierte Meta-Werte wie bei
+// den übrigen _pa_care_*-Feldern, kein fertiges HTML aus der App.
+$pa_substrate_name        = get_post_meta( $product_id, '_pa_substrate_name', true );
+$pa_substrate_composition = json_decode( (string) get_post_meta( $product_id, '_pa_substrate_composition', true ), true ) ?: [];
+$pa_substrate_sell_own    = get_post_meta( $product_id, '_pa_substrate_sell_own', true ) === '1';
+$pa_substrate_wp_id       = (int) get_post_meta( $product_id, '_pa_substrate_wp_id', true );
+
+// Dünger-Produkt dieses Typs wird zur Anzeigezeit gesucht, nicht von der App
+// fest verlinkt — existiert noch keins, verlinkt es automatisch, sobald eins
+// angelegt wird (siehe pa_find_fertilizer_product_id in functions.php).
+$pa_fertilizer_type_choice   = get_post_meta( $product_id, '_pa_fertilizer_type_choice', true );
+$pa_fertilizer_amount        = get_post_meta( $product_id, '_pa_fertilizer_amount', true );
+$pa_fertilizer_type_labels   = [ 'langzeit' => 'Langzeitdünger', 'kalibetont' => 'Kalibetonter Dünger', 'ausgeglichen' => 'Ausgeglichener Dünger' ];
+$pa_fertilizer_amount_labels = [ 'viel' => 'Viel', 'maessig' => 'Mäßig', 'wenig' => 'Wenig' ];
+$pa_fertilizer_product_id    = $pa_fertilizer_type_choice ? pa_find_fertilizer_product_id( $pa_fertilizer_type_choice ) : 0;
+
+if ( $pa_substrate_name || $pa_fertilizer_type_choice ) $has_care = true;
+
+// Licht/Wasser: 4- bzw. 3-stufige Skala, Range-Bar von tolerates_min bis
+// tolerates_max mit Strich bei der bevorzugten Stufe. Ohne gepflegten Range
+// fällt min/max auf den bevorzugten Wert zurück (Bar zeigt dann nur den Strich).
 $light_map   = [ 'schatten' => 1, 'halbschatten' => 2, 'sonne' => 3, 'sonnig' => 3, 'vollsonne' => 4 ];
 $water_map   = [ 'wenig' => 1, 'maessig' => 2, 'mäßig' => 2, 'mittel' => 2, 'viel' => 3, 'reichlich' => 3 ];
 $light_scale = $light_map[ strtolower( $care_light ) ] ?? 0;
 $water_scale = $water_map[ strtolower( $care_water ) ] ?? 0;
+$light_min_scale = $light_map[ strtolower( $care_light_min ) ] ?? $light_scale;
+$light_max_scale = $light_map[ strtolower( $care_light_max ) ] ?? $light_scale;
+$water_min_scale = $water_map[ strtolower( $care_water_min ) ] ?? $water_scale;
+$water_max_scale = $water_map[ strtolower( $care_water_max ) ] ?? $water_scale;
 // Normalize underscore-slugs for display (e.g. 'bedingt_frostfest' → 'Bedingt frostfest')
 $care_winter_display = ucfirst( str_replace( '_', ' ', $care_winter ) );
 
 // Reviews average
 $rating_count = $product->get_rating_count();
 $avg_rating   = $product->get_average_rating();
+
+// Breadcrumb: Shop / Gattung / Art / 'Kultivar' — je nachdem was vorhanden ist.
+// Gattung/Art verlinken zurück in den Shop mit passendem Filter, das letzte
+// Element ist immer die aktuelle Seite (kein Link).
+$shop_url = wc_get_page_permalink( 'shop' );
+$pa_crumbs = [ [ 'label' => 'Shop', 'href' => $shop_url ] ];
+if ( $pa_gattung !== '' ) {
+  $pa_crumbs[] = [ 'label' => $pa_gattung, 'href' => add_query_arg( 'gattung', $pa_gattung, $shop_url ) ];
+}
+if ( $pa_art !== '' ) {
+  $pa_crumbs[] = [ 'label' => $pa_art, 'href' => add_query_arg( [ 'gattung' => $pa_gattung, 'art' => $pa_art ], $shop_url ) ];
+}
+if ( $pa_kultivar !== '' ) {
+  $pa_crumbs[] = [ 'label' => '‘' . $pa_kultivar . '’', 'href' => $shop_url ];
+}
+if ( count( $pa_crumbs ) === 1 ) {
+  $pa_crumbs[] = [ 'label' => $name, 'href' => $shop_url ];
+}
+$pa_crumbs[ count( $pa_crumbs ) - 1 ]['href'] = null; // letztes Element = aktuelle Seite
 ?>
 
+<nav class="pdp-crumb" aria-label="Breadcrumb">
+  <?php foreach ( $pa_crumbs as $i => $crumb ) : ?>
+    <?php if ( $i > 0 ) : ?><span class="sep">/</span><?php endif; ?>
+    <?php if ( $crumb['href'] ) : ?>
+      <a href="<?php echo esc_url( $crumb['href'] ); ?>"><?php echo esc_html( $crumb['label'] ); ?></a>
+    <?php else : ?>
+      <span class="cur"><?php echo esc_html( $crumb['label'] ); ?></span>
+    <?php endif; ?>
+  <?php endforeach; ?>
+</nav>
 
 <!-- Hero: Gallery + Info -->
 <div class="pdp-hero">
@@ -312,16 +370,23 @@ $avg_rating   = $product->get_average_rating();
           <?php if ( $care_light ) : ?>
           <div class="pdp-iconscale-cell">
             <div class="label">Licht</div>
-            <div class="value"><?php echo esc_html( $care_light ); ?></div>
-            <?php if ( $light_scale > 0 ) : ?>
-            <div class="pdp-scale-block">
-              <div class="pdp-scale">
-                <?php for ( $i = 1; $i <= 4; $i++ ) : ?>
-                <span class="pip<?php echo $i <= $light_scale ? ' on' : ''; ?>"></span>
-                <?php endfor; ?>
+            <?php if ( $light_scale > 0 ) :
+              $lp = ( $light_scale - 1 ) / 3 * 100;
+              $l0 = ( min( $light_min_scale, $light_max_scale ) - 1 ) / 3 * 100;
+              $l1 = ( max( $light_min_scale, $light_max_scale ) - 1 ) / 3 * 100;
+            ?>
+            <div class="pdp-carebar">
+              <div class="pdp-carebar-track-wrap">
+                <span class="pdp-carebar-pref-label" style="left:<?php echo round( $lp, 1 ); ?>%">Bevorzugt: <?php echo esc_html( $care_light ); ?></span>
+                <div class="pdp-carebar-track">
+                  <div class="pdp-carebar-range" style="left:<?php echo round( $l0, 1 ); ?>%;width:<?php echo round( $l1 - $l0, 1 ); ?>%"></div>
+                  <div class="pdp-carebar-pref" style="left:<?php echo round( $lp, 1 ); ?>%"></div>
+                </div>
               </div>
-              <div class="pdp-scale-ends"><span>Schatten</span><span>Vollsonne</span></div>
+              <div class="pdp-carebar-ends"><span>Schatten</span><span>Vollsonne</span></div>
             </div>
+            <?php else : ?>
+            <div class="value"><?php echo esc_html( $care_light ); ?></div>
             <?php endif; ?>
           </div>
           <?php endif; ?>
@@ -329,16 +394,23 @@ $avg_rating   = $product->get_average_rating();
           <?php if ( $care_water ) : ?>
           <div class="pdp-iconscale-cell">
             <div class="label">Wasser</div>
-            <div class="value"><?php echo esc_html( $care_water ); ?></div>
-            <?php if ( $water_scale > 0 ) : ?>
-            <div class="pdp-scale-block">
-              <div class="pdp-scale">
-                <?php for ( $i = 1; $i <= 3; $i++ ) : ?>
-                <span class="pip water<?php echo $i <= $water_scale ? ' on' : ''; ?>"></span>
-                <?php endfor; ?>
+            <?php if ( $water_scale > 0 ) :
+              $wp = ( $water_scale - 1 ) / 2 * 100;
+              $w0 = ( min( $water_min_scale, $water_max_scale ) - 1 ) / 2 * 100;
+              $w1 = ( max( $water_min_scale, $water_max_scale ) - 1 ) / 2 * 100;
+            ?>
+            <div class="pdp-carebar">
+              <div class="pdp-carebar-track-wrap">
+                <span class="pdp-carebar-pref-label" style="left:<?php echo round( $wp, 1 ); ?>%">Bevorzugt: <?php echo esc_html( $care_water ); ?></span>
+                <div class="pdp-carebar-track">
+                  <div class="pdp-carebar-range" style="left:<?php echo round( $w0, 1 ); ?>%;width:<?php echo round( $w1 - $w0, 1 ); ?>%"></div>
+                  <div class="pdp-carebar-pref" style="left:<?php echo round( $wp, 1 ); ?>%"></div>
+                </div>
               </div>
-              <div class="pdp-scale-ends"><span>Wenig</span><span>Viel</span></div>
+              <div class="pdp-carebar-ends"><span>Wenig</span><span>Viel</span></div>
             </div>
+            <?php else : ?>
+            <div class="value"><?php echo esc_html( $care_water ); ?></div>
             <?php endif; ?>
           </div>
           <?php endif; ?>
@@ -350,18 +422,21 @@ $avg_rating   = $product->get_average_rating();
             <div class="value"><?php echo esc_html( $care_temp ); ?></div>
             <?php endif; ?>
             <?php if ( $temp_min !== null && $temp_max !== null ) :
-              $left_pct  = max( 0, min( 100, $temp_min / 35 * 100 ) );
-              $width_pct = max( 0, min( 100 - $left_pct, ( $temp_max - $temp_min ) / 35 * 100 ) );
+              $temp_scale_min = -20;
+              $temp_scale_max = 50;
+              $temp_span      = $temp_scale_max - $temp_scale_min;
+              $left_pct  = max( 0, min( 100, ( $temp_min - $temp_scale_min ) / $temp_span * 100 ) );
+              $width_pct = max( 0, min( 100 - $left_pct, ( $temp_max - $temp_min ) / $temp_span * 100 ) );
             ?>
             <div class="pdp-tempbar">
               <div class="pdp-tempbar-track">
                 <div class="pdp-tempbar-fill" style="left:<?php echo round( $left_pct, 1 ); ?>%;width:<?php echo round( $width_pct, 1 ); ?>%"></div>
               </div>
               <div class="pdp-tempbar-labels">
-                <span>0°C</span>
-                <span>Minimum <b>+<?php echo intval( $temp_min ); ?>°C</b></span>
-                <span>Maximum <b>+<?php echo intval( $temp_max ); ?>°C</b></span>
-                <span>35°C</span>
+                <span><?php echo $temp_scale_min; ?>°C</span>
+                <span>Minimum <b><?php echo sprintf( '%+d', intval( $temp_min ) ); ?>°C</b></span>
+                <span>Maximum <b><?php echo sprintf( '%+d', intval( $temp_max ) ); ?>°C</b></span>
+                <span><?php echo $temp_scale_max; ?>°C</span>
               </div>
             </div>
             <?php endif; ?>
@@ -387,6 +462,42 @@ $avg_rating   = $product->get_average_rating();
           <div class="pdp-iconscale-cell pdp-iconscale-wide">
             <div class="label">Winterhärte</div>
             <p class="value"><?php echo esc_html( $wh_labels[ $care_winterhaerte ] ); ?></p>
+          </div>
+          <?php endif; ?>
+
+          <?php if ( $pa_substrate_name ) : ?>
+          <div class="pdp-iconscale-cell pdp-iconscale-wide">
+            <div class="label"><?php echo $pa_substrate_sell_own ? 'Substrat' : 'Empfohlenes Substrat'; ?></div>
+            <p class="value">
+              <?php
+              if ( ! $pa_substrate_sell_own ) echo 'Empfohlenes Substrat nach Hausrezept: ';
+              $pa_ingredient_lines = array_filter( array_map(
+                function ( $ing ) { return trim( ( $ing['percent'] ?? '' ) . '% ' . ( $ing['name'] ?? '' ) ); },
+                $pa_substrate_composition
+              ) );
+              echo esc_html( implode( ', ', $pa_ingredient_lines ) );
+              ?>
+            </p>
+            <?php if ( $pa_substrate_sell_own && $pa_substrate_wp_id ) : ?>
+            <p class="value"><a href="<?php echo esc_url( get_permalink( $pa_substrate_wp_id ) ); ?>">Oder hier kaufen</a></p>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
+
+          <?php if ( $pa_fertilizer_type_choice ) : ?>
+          <div class="pdp-iconscale-cell pdp-iconscale-wide">
+            <div class="label">Düngeempfehlung</div>
+            <p class="value">
+              <?php
+              echo esc_html( $pa_fertilizer_type_labels[ $pa_fertilizer_type_choice ] ?? $pa_fertilizer_type_choice );
+              if ( $pa_fertilizer_amount && isset( $pa_fertilizer_amount_labels[ $pa_fertilizer_amount ] ) ) {
+                echo ' &middot; ' . esc_html( $pa_fertilizer_amount_labels[ $pa_fertilizer_amount ] ) . ' düngen';
+              }
+              ?>
+            </p>
+            <?php if ( $pa_fertilizer_product_id ) : ?>
+            <p class="value"><a href="<?php echo esc_url( get_permalink( $pa_fertilizer_product_id ) ); ?>">Oder hier kaufen</a></p>
+            <?php endif; ?>
           </div>
           <?php endif; ?>
 

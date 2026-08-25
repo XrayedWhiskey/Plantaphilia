@@ -492,22 +492,26 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
 }
 .pa-combo-option:hover { background:#f5f5f5; }
 .pa-combo-option.selected { background:#e8f0e8; font-weight:500; }
-/* ── combo add popup ── */
-#pa-combo-overlay {
+/* ── Blueprint/Spezifikation/Lieferzeit Modale ── */
+.pa-modal-overlay {
   position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:19999;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:30px 16px; overflow-y:auto;
 }
-#pa-combo-dialog {
+.pa-modal-dialog {
   background:#fff; border-radius:6px; padding:24px 28px;
-  width:340px; max-width:92vw; box-shadow:0 8px 32px rgba(0,0,0,.22);
+  width:560px; max-width:100%; box-shadow:0 8px 32px rgba(0,0,0,.22);
 }
-#pa-combo-dialog h4 { margin:0 0 14px; font-size:15px; font-weight:600; }
-#pa-combo-dialog-input {
+.pa-modal-dialog.pa-modal-narrow { width:380px; }
+.pa-modal-dialog h4 { margin:0 0 4px; font-size:16px; font-weight:600; }
+.pa-modal-dialog h5 { margin:18px 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:#888; border-top:1px solid #eee; padding-top:14px; }
+.pa-modal-dialog h5:first-of-type { border-top:none; padding-top:0; margin-top:14px; }
+.pa-modal-dialog input, .pa-modal-dialog select, .pa-modal-dialog textarea {
   width:100%; box-sizing:border-box; padding:9px 11px;
-  border:1px solid #ddd; border-radius:3px; font-size:14px; margin-bottom:16px;
+  border:1px solid #ddd; border-radius:3px; font-size:14px;
 }
-#pa-combo-dialog-input:focus { outline:none; border-color:#555; }
-.pa-combo-dialog-btns { display:flex; gap:10px; justify-content:flex-end; }
+.pa-modal-dialog .form-row { margin-bottom:12px; }
+.pa-modal-dialog-btns { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
 </style>
 
 <div style="display: flex; justify-content: center; width: 100%;">
@@ -537,39 +541,56 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
         <div class="form-section">
             <h3>Grundinformationen</h3>
 
-            <div class="row-2col" style="align-items:end;">
-                <div class="form-row">
-                    <label>Gattung *</label>
-                    <div class="pa-combo" id="combo-gattung">
-                      <div class="pa-combo-trigger" onclick="_hfComboToggle('gattung')">
-                        <span class="pa-combo-val pa-combo-placeholder" id="combo-gattung-lbl">z. B. Pelargonium</span>
-                        <svg class="pa-combo-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                      </div>
-                      <div class="pa-combo-drop" id="combo-gattung-drop" style="display:none">
-                        <button type="button" class="pa-combo-new-btn" onclick="_hfComboOpenAdd('gattung',event)">+ Neu hinzufügen</button>
-                        <div class="pa-combo-options" id="combo-gattung-opts"></div>
-                      </div>
-                      <input type="hidden" id="product-gattung" name="gattung" value="">
+            <div id="pflanze-taxonomy-fields">
+                <div class="row-2col" style="align-items:end;">
+                    <div class="form-row">
+                        <label>Gattung *</label>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                        <div class="pa-combo" id="combo-gattung" style="flex:1;">
+                          <div class="pa-combo-trigger" onclick="_hfComboToggle('gattung')">
+                            <span class="pa-combo-val pa-combo-placeholder" id="combo-gattung-lbl">z. B. Pelargonium</span>
+                            <svg class="pa-combo-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                          </div>
+                          <div class="pa-combo-drop" id="combo-gattung-drop" style="display:none">
+                            <button type="button" class="pa-combo-new-btn" onclick="event.stopPropagation();openBlueprintModal('gattung',null)">+ Neu hinzufügen</button>
+                            <div class="pa-combo-options" id="combo-gattung-opts"></div>
+                          </div>
+                          <input type="hidden" id="product-gattung" name="gattung" value="">
+                          <input type="hidden" id="product-gattung-bp-id" name="gattung_bp_id" value="">
+                        </div>
+                        <button type="button" class="btn-secondary" id="combo-gattung-edit-btn" style="display:none;padding:0 9px;" title="Gattung bearbeiten"
+                          onclick="openBlueprintModal('gattung', parseInt(document.getElementById('product-gattung-bp-id').value,10))">✏️</button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>Art</label>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                        <div class="pa-combo" id="combo-art" style="flex:1;">
+                          <div class="pa-combo-trigger" onclick="_hfComboToggle('art')">
+                            <span class="pa-combo-val pa-combo-placeholder" id="combo-art-lbl">z. B. zonale</span>
+                            <svg class="pa-combo-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                          </div>
+                          <div class="pa-combo-drop" id="combo-art-drop" style="display:none">
+                            <button type="button" class="pa-combo-new-btn" onclick="event.stopPropagation();openBlueprintModal('art',null)">+ Neu hinzufügen</button>
+                            <div class="pa-combo-options" id="combo-art-opts"></div>
+                          </div>
+                          <input type="hidden" id="product-art" name="art" value="">
+                          <input type="hidden" id="product-art-bp-id" name="art_bp_id" value="">
+                        </div>
+                        <button type="button" class="btn-secondary" id="combo-art-edit-btn" style="display:none;padding:0 9px;" title="Art bearbeiten"
+                          onclick="openBlueprintModal('art', parseInt(document.getElementById('product-art-bp-id').value,10))">✏️</button>
+                        </div>
                     </div>
                 </div>
                 <div class="form-row">
-                    <label>Art</label>
-                    <div class="pa-combo" id="combo-art">
-                      <div class="pa-combo-trigger" onclick="_hfComboToggle('art')">
-                        <span class="pa-combo-val pa-combo-placeholder" id="combo-art-lbl">z. B. zonale</span>
-                        <svg class="pa-combo-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                      </div>
-                      <div class="pa-combo-drop" id="combo-art-drop" style="display:none">
-                        <button type="button" class="pa-combo-new-btn" onclick="_hfComboOpenAdd('art',event)">+ Neu hinzufügen</button>
-                        <div class="pa-combo-options" id="combo-art-opts"></div>
-                      </div>
-                      <input type="hidden" id="product-art" name="art" value="">
-                    </div>
+                    <label for="product-kultivar">Kultivar <span style="font-weight:400;font-size:12px;color:#999;">(Sortenname, ohne Anführungszeichen)</span></label>
+                    <input type="text" id="product-kultivar" name="kultivar" placeholder="z. B. Thai Constellation">
                 </div>
             </div>
-            <div class="form-row">
-                <label for="product-kultivar">Kultivar <span style="font-weight:400;font-size:12px;color:#999;">(Sortenname, ohne Anführungszeichen)</span></label>
-                <input type="text" id="product-kultivar" name="kultivar" placeholder="z. B. Thai Constellation">
+
+            <div class="form-row" id="substrat-name-field" style="display:none;">
+                <label for="product-name">Name / Produkttitel *</label>
+                <input type="text" id="product-name" name="product_name" placeholder="z. B. Bio-Blumenerde Premium">
             </div>
 
             <div class="row-2col">
@@ -709,8 +730,13 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
 
             <!-- Lieferzeit -->
             <div class="form-row">
-                <label for="delivery-time">Lieferzeit (Tage)</label>
-                <input type="number" id="delivery-time" name="delivery_time" value="7" min="1" style="max-width:120px;">
+                <label for="delivery-time-select">Lieferzeit</label>
+                <div style="display:flex;gap:6px;max-width:320px;">
+                    <select id="delivery-time-select" name="delivery_time" style="flex:1;" onchange="_bpMarkManual('delivery_time')">
+                        <option value="">— nicht angegeben —</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="openDeliveryTimeModal()">+ Neue</button>
+                </div>
             </div>
 
             <!-- Nicht retournierbar (disabled) -->
@@ -748,6 +774,21 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
             <div class="checkbox-row">
                 <input type="checkbox" id="never-low-stock" name="never_low_stock">
                 <label for="never-low-stock">Nie als geringer Lagerbestand markieren</label>
+            </div>
+        </div>
+
+        <!-- Spezifikation -->
+        <div class="form-section">
+            <h3>Spezifikation</h3>
+            <p style="font-size:13px; color:#666; margin:0 0 14px;">Wiederverwendbare Topfgröße/Gewicht/Maße-Voreinstellung — füllt Gewicht &amp; Maße unten aus, danach weiter frei änderbar.</p>
+            <div class="form-row">
+                <label for="specification-select">Produktspezifikation</label>
+                <div style="display:flex;gap:6px;max-width:420px;">
+                    <select id="specification-select" name="specification_select" style="flex:1;" onchange="_specSelected(this.value)">
+                        <option value="">— keine Vorgabe —</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="openSpecificationModal()">+ Neue</button>
+                </div>
             </div>
         </div>
 
@@ -889,6 +930,7 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
             <input type="hidden" id="h-fixed-tags"   name="product_tags_fixed"   value="">
             <input type="hidden" id="h-categories"    name="product_categories"   value="">
             <input type="hidden" id="h-variable-tags" name="product_variable_tags" value="[]">
+            <input type="hidden" id="h-specification-id" name="specification_id" value="">
         </div>
 
         <!-- Pflege-Infos -->
@@ -897,7 +939,7 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
 <p style="font-size:13px; color:#666; margin:0 0 14px;">Pflegehinweise für die Produktdetailseite.</p>
 
 <div class="species-care-group">
-<label for="care-light">Licht</label>
+<label for="care-light">Licht (bevorzugt)</label>
 <select id="care-light" name="care_light">
 <option value="">— nicht angegeben —</option>
 <option value="vollsonne">Vollsonne</option>
@@ -908,9 +950,51 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
 </div>
 
 <div class="species-care-group">
-<label for="care-water">Wasser</label>
+<label for="care-light-min">Licht verträgt (von)</label>
+<select id="care-light-min" name="care_light_tolerates_min">
+<option value="">— wie bevorzugt —</option>
+<option value="vollsonne">Vollsonne</option>
+<option value="sonnig">Sonnig</option>
+<option value="halbschatten">Halbschatten</option>
+<option value="schatten">Schatten</option>
+</select>
+</div>
+
+<div class="species-care-group">
+<label for="care-light-max">Licht verträgt (bis)</label>
+<select id="care-light-max" name="care_light_tolerates_max">
+<option value="">— wie bevorzugt —</option>
+<option value="vollsonne">Vollsonne</option>
+<option value="sonnig">Sonnig</option>
+<option value="halbschatten">Halbschatten</option>
+<option value="schatten">Schatten</option>
+</select>
+</div>
+
+<div class="species-care-group">
+<label for="care-water">Wasser (bevorzugt)</label>
 <select id="care-water" name="care_water">
 <option value="">— nicht angegeben —</option>
+<option value="viel">Viel (feucht halten)</option>
+<option value="maessig">Mäßig</option>
+<option value="wenig">Wenig (trocken halten)</option>
+</select>
+</div>
+
+<div class="species-care-group">
+<label for="care-water-min">Wasser verträgt (von)</label>
+<select id="care-water-min" name="care_water_tolerates_min">
+<option value="">— wie bevorzugt —</option>
+<option value="viel">Viel (feucht halten)</option>
+<option value="maessig">Mäßig</option>
+<option value="wenig">Wenig (trocken halten)</option>
+</select>
+</div>
+
+<div class="species-care-group">
+<label for="care-water-max">Wasser verträgt (bis)</label>
+<select id="care-water-max" name="care_water_tolerates_max">
+<option value="">— wie bevorzugt —</option>
 <option value="viel">Viel (feucht halten)</option>
 <option value="maessig">Mäßig</option>
 <option value="wenig">Wenig (trocken halten)</option>
@@ -1060,15 +1144,154 @@ input:checked + .slider:before { transform: translateX(26px); background-color: 
 <input type="file" id="ia-file-input" accept="image/*" style="display:none;" onchange="iaHandleFile(this)">
 </div>
 
-<!-- Tag erstellen Popup -->
-<!-- Combo Add Popup -->
-<div id="pa-combo-overlay" style="display:none" onclick="if(event.target===this)paComboCloseOverlay()">
-  <div id="pa-combo-dialog">
-    <h4 id="pa-combo-dialog-title">Neu hinzufügen</h4>
-    <input type="text" id="pa-combo-dialog-input" placeholder="Name eingeben…">
-    <div class="pa-combo-dialog-btns">
-      <button type="button" class="btn-primary" onclick="paComboConfirmAdd()" style="font-size:13px;padding:9px 18px;">Hinzufügen</button>
-      <button type="button" class="btn-secondary" onclick="paComboCloseOverlay()">Abbrechen</button>
+<!-- Blueprint (Gattung/Art) erstellen/bearbeiten -->
+<div id="pa-bp-overlay" class="pa-modal-overlay" style="display:none" onclick="if(event.target===this)closeBlueprintModal()">
+  <div class="pa-modal-dialog">
+    <h4 id="pa-bp-title">Neue Gattung</h4>
+    <div class="form-row">
+      <label for="bp-name">Name *</label>
+      <input type="text" id="bp-name" placeholder="z. B. Pelargonium">
+    </div>
+
+    <h5>Einheit &amp; Typ</h5>
+    <div class="row-2col">
+      <div class="form-row">
+        <label for="bp-unit-type">Einheit</label>
+        <select id="bp-unit-type"><option value="">— keine Vorgabe —</option><option value="piece">Stück</option><option value="liter">Liter</option></select>
+      </div>
+      <div class="form-row">
+        <label for="bp-product-type">Produkttyp</label>
+        <select id="bp-product-type"><option value="">— keine Vorgabe —</option><option value="plant">🌿 Pflanze</option><option value="substrate">🪨 Substrat</option></select>
+      </div>
+    </div>
+
+    <h5>Steuer &amp; Versand</h5>
+    <div class="row-2col">
+      <div class="form-row">
+        <label for="bp-tax-class">Steuerklasse</label>
+        <select id="bp-tax-class"><option value="">— keine Vorgabe —</option></select>
+      </div>
+      <div class="form-row">
+        <label for="bp-delivery-time">Lieferzeit</label>
+        <select id="bp-delivery-time"><option value="">— keine Vorgabe —</option></select>
+      </div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="bp-differential-taxation">
+      <label for="bp-differential-taxation">Differenzbesteuerung §25a UStG</label>
+    </div>
+
+    <h5>Lager</h5>
+    <div class="row-2col">
+      <div class="form-row">
+        <label for="bp-stock">Lagerbestand</label>
+        <input type="number" id="bp-stock" min="0" placeholder="— keine Vorgabe —">
+      </div>
+      <div class="form-row">
+        <label for="bp-low-stock-threshold">Niedrig-Bestand Schwellwert</label>
+        <input type="number" id="bp-low-stock-threshold" min="0" placeholder="— keine Vorgabe —">
+      </div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="bp-never-low-stock">
+      <label for="bp-never-low-stock">Nie als „Niedriger Bestand" markieren</label>
+    </div>
+
+    <h5>Spezifikation</h5>
+    <div class="form-row">
+      <div style="display:flex;gap:6px;">
+        <select id="bp-specification" style="flex:1;"><option value="">— keine Vorgabe —</option></select>
+        <button type="button" class="btn-secondary" onclick="openSpecificationModal()">+ Neue</button>
+      </div>
+    </div>
+
+    <h5>Kurzbeschreibung &amp; Beschreibung</h5>
+    <div class="form-row">
+      <textarea id="bp-short-description" rows="2" maxlength="500" placeholder="Kurze Produktbeschreibung für Listings..."></textarea>
+    </div>
+    <div class="form-row">
+      <textarea id="bp-description" rows="4" placeholder="Ausführliche Produktbeschreibung..."></textarea>
+    </div>
+
+    <h5>Pflegehinweise</h5>
+    <div class="row-2col">
+      <div class="form-row"><label>Licht (Bevorzugt)</label><select id="bp-care-light"></select></div>
+      <div class="form-row"><label>Wasser (Bevorzugt)</label><select id="bp-care-water"></select></div>
+    </div>
+    <div class="row-2col">
+      <div class="form-row"><label>Licht verträgt (von)</label><select id="bp-care-light-min"></select></div>
+      <div class="form-row"><label>Licht verträgt (bis)</label><select id="bp-care-light-max"></select></div>
+    </div>
+    <div class="row-2col">
+      <div class="form-row"><label>Wasser verträgt (von)</label><select id="bp-care-water-min"></select></div>
+      <div class="form-row"><label>Wasser verträgt (bis)</label><select id="bp-care-water-max"></select></div>
+    </div>
+    <div class="row-2col">
+      <div class="form-row"><label>Winterhärte</label><select id="bp-care-winterhaerte"></select></div>
+      <div class="form-row"><label>Überwinterung</label><input type="text" id="bp-care-winter" placeholder="z. B. hell und kühl, min. 5 °C"></div>
+    </div>
+    <div class="row-2col">
+      <div class="form-row"><label>Temp. min. (°C)</label><input type="number" id="bp-care-temp-min" placeholder="—"></div>
+      <div class="form-row"><label>Temp. max. (°C)</label><input type="number" id="bp-care-temp-max" placeholder="—"></div>
+    </div>
+
+    <div class="pa-modal-dialog-btns">
+      <button type="button" class="btn-secondary" onclick="closeBlueprintModal()">Abbrechen</button>
+      <button type="button" class="btn-primary" onclick="saveBlueprintModal()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Spezifikation erstellen -->
+<div id="pa-spec-overlay" class="pa-modal-overlay" style="display:none" onclick="if(event.target===this)closeSpecificationModal()">
+  <div class="pa-modal-dialog pa-modal-narrow">
+    <h4>Neue Spezifikation</h4>
+    <p style="font-size:12px;color:#888;margin:0 0 14px;">Topfgröße, Form, Gewicht und Maße</p>
+    <div class="form-row">
+      <label for="spec-pot-size">Topfgröße (cm) *</label>
+      <input type="number" id="spec-pot-size" step="0.5" min="0" placeholder="z. B. 12">
+    </div>
+    <div class="form-row">
+      <label>Topfform *</label>
+      <select id="spec-shape"><option value="round">⭘ Rund</option><option value="square">⬜ Eckig</option></select>
+    </div>
+    <div class="form-row">
+      <label for="spec-weight">Gewicht *</label>
+      <div style="display:flex;gap:6px;">
+        <input type="number" id="spec-weight" step="0.1" min="0" placeholder="z. B. 250" style="flex:1;">
+        <select id="spec-weight-unit" style="width:70px;"><option value="g">g</option><option value="kg">kg</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Maße (Höhe × Breite, cm)</label>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="number" id="spec-height" step="0.5" min="0" placeholder="Höhe">
+        <span>×</span>
+        <input type="number" id="spec-width" step="0.5" min="0" placeholder="Breite">
+      </div>
+    </div>
+    <div class="pa-modal-dialog-btns">
+      <button type="button" class="btn-secondary" onclick="closeSpecificationModal()">Abbrechen</button>
+      <button type="button" class="btn-primary" onclick="saveSpecificationModal()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lieferzeit erstellen -->
+<div id="pa-dt-overlay" class="pa-modal-overlay" style="display:none" onclick="if(event.target===this)closeDeliveryTimeModal()">
+  <div class="pa-modal-dialog pa-modal-narrow">
+    <h4>Neue Lieferzeit</h4>
+    <div class="form-row">
+      <label for="dt-label">Bezeichnung *</label>
+      <input type="text" id="dt-label" placeholder="z. B. 3–5 Werktage">
+    </div>
+    <div class="row-2col">
+      <div class="form-row"><label for="dt-days-min">Tage (von)</label><input type="number" id="dt-days-min" min="0"></div>
+      <div class="form-row"><label for="dt-days-max">Tage (bis)</label><input type="number" id="dt-days-max" min="0"></div>
+    </div>
+    <div class="pa-modal-dialog-btns">
+      <button type="button" class="btn-secondary" onclick="closeDeliveryTimeModal()">Abbrechen</button>
+      <button type="button" class="btn-primary" onclick="saveDeliveryTimeModal()">Speichern</button>
     </div>
   </div>
 </div>
@@ -1120,6 +1343,8 @@ document.getElementById('product-type-toggle').addEventListener('change', functi
     l.style.color      = this.checked ? '#999' : '#333';
     r.style.fontWeight = this.checked ? '600' : '400';
     r.style.color      = this.checked ? '#333' : '#999';
+    document.getElementById('pflanze-taxonomy-fields').style.display = this.checked ? 'none' : '';
+    document.getElementById('substrat-name-field').style.display     = this.checked ? '' : 'none';
     recalcBasePrice();
 });
 
@@ -1468,21 +1693,36 @@ document.getElementById('add-product-form').addEventListener('submit', function(
     e.preventDefault();
     const shortDescVal = document.getElementById('product-short-description').value;
     if (!checkShortDescLimit(shortDescVal)) return;
+
+    const isLiter    = document.getElementById('unit-toggle').checked;
+    const isSubstrat = document.getElementById('product-type-toggle').checked;
+
+    if (isSubstrat) {
+        if (!document.getElementById('product-name').value.trim()) {
+            alert('Bitte einen Namen/Produkttitel angeben.');
+            return;
+        }
+    } else if (!document.getElementById('product-gattung').value.trim()
+            && !document.getElementById('product-art').value.trim()
+            && !document.getElementById('product-kultivar').value.trim()) {
+        alert('Bitte Gattung, Art oder Kultivar angeben.');
+        return;
+    }
+
     const btn     = document.getElementById('submit-btn');
     const spinner = document.getElementById('submit-spinner');
     btn.disabled  = true;
     spinner.style.display = 'inline';
 
     const descriptionHtml = document.getElementById('product-description').innerHTML;
-    const isLiter    = document.getElementById('unit-toggle').checked;
-    const isSubstrat = document.getElementById('product-type-toggle').checked;
 
     const params = new URLSearchParams({
         action:                'add_product',
         nonce:                 addProductNonce,
-        gattung:               document.getElementById('product-gattung').value,
-        art:                   document.getElementById('product-art').value,
-        kultivar:              document.getElementById('product-kultivar').value,
+        gattung:               isSubstrat ? '' : document.getElementById('product-gattung').value,
+        art:                   isSubstrat ? '' : document.getElementById('product-art').value,
+        kultivar:              isSubstrat ? '' : document.getElementById('product-kultivar').value,
+        product_name:          isSubstrat ? document.getElementById('product-name').value : '',
         product_sku:           document.getElementById('product-sku').value,
         product_price:         document.getElementById('product-price').value,
         product_stock:         document.getElementById('product-stock').value,
@@ -1492,7 +1732,11 @@ document.getElementById('add-product-form').addEventListener('submit', function(
         tax_class:             document.getElementById('tax-class-select').value,
         differential_taxation: document.getElementById('differential-taxation').checked ? '1' : '0',
         shipping_class:        document.getElementById('no-shipping-class').checked ? '' : document.getElementById('shipping-class-select').value,
-        delivery_time:         document.getElementById('delivery-time').value,
+        delivery_time:         document.getElementById('delivery-time-select').value,
+        gattung_bp_id:         document.getElementById('product-gattung-bp-id').value,
+        art_bp_id:             document.getElementById('product-art-bp-id').value,
+        specification_id:      document.getElementById('h-specification-id').value,
+        blueprint_links:       JSON.stringify(bpLinks),
         custom_low_stock:      document.getElementById('custom-low-stock').checked ? '1' : '0',
         low_stock_threshold:   document.getElementById('custom-low-stock').checked ? document.getElementById('low-stock-threshold').value : '5',
         never_low_stock:       document.getElementById('never-low-stock').checked ? '1' : '0',
@@ -1505,8 +1749,13 @@ document.getElementById('add-product-form').addEventListener('submit', function(
         shipping_width:        document.getElementById('shipping-dims-same').checked ? document.getElementById('product-width').value  : document.getElementById('shipping-width').value,
         shipping_height:       document.getElementById('shipping-dims-same').checked ? document.getElementById('product-height').value : document.getElementById('shipping-height').value,
                 care_light: document.getElementById('care-light').value,
+                care_light_tolerates_min: document.getElementById('care-light-min').value,
+                care_light_tolerates_max: document.getElementById('care-light-max').value,
                 care_water: document.getElementById('care-water').value,
+                care_water_tolerates_min: document.getElementById('care-water-min').value,
+                care_water_tolerates_max: document.getElementById('care-water-max').value,
                 care_winter: document.getElementById('care-winter').value,
+                care_winterhaerte: document.getElementById('care-winterhaerte').value,
                 care_temp_min: document.getElementById('care-temp-min').value,
                 care_temp_max: document.getElementById('care-temp-max').value,
         featured_image_id:     document.getElementById('featured-image-id').value,
@@ -1532,11 +1781,7 @@ document.getElementById('add-product-form').addEventListener('submit', function(
         msg.style.display = 'block';
         if (data.success) {
             msg.className = 'success';
-            var _g = document.getElementById('product-gattung').value;
-            var _a = document.getElementById('product-art').value;
-            var _k = document.getElementById('product-kultivar').value;
-            var _composed = [_g, _a].filter(Boolean).join(' ') + (_k ? " '" + _k + "'" : '');
-            msg.textContent = '✓ Produkt "' + _composed + '" wurde erfolgreich erstellt.';
+            msg.textContent = '✓ Produkt "' + data.data.product_name + '" wurde erfolgreich erstellt.';
             resetForm();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
@@ -1558,11 +1803,20 @@ function resetForm() {
     document.getElementById('add-product-form').reset();
     document.getElementById('product-gattung').value = '';
     document.getElementById('product-art').value = '';
+    document.getElementById('product-gattung-bp-id').value = '';
+    document.getElementById('product-art-bp-id').value = '';
+    document.getElementById('h-specification-id').value = '';
     document.getElementById('product-kultivar').value = '';
+    document.getElementById('product-name').value = '';
+    bpLinks = {};
+    document.getElementById('pflanze-taxonomy-fields').style.display = '';
+    document.getElementById('substrat-name-field').style.display = 'none';
     ['gattung','art'].forEach(f => {
         const lbl = document.getElementById('combo-'+f+'-lbl');
         const placeholders = { gattung: 'z. B. Pelargonium', art: 'z. B. zonale' };
         if (lbl) { lbl.textContent = placeholders[f]; lbl.classList.add('pa-combo-placeholder'); }
+        const editBtn = document.getElementById('combo-'+f+'-edit-btn');
+        if (editBtn) editBtn.style.display = 'none';
     });
     document.getElementById('product-short-description').value = '';
     document.getElementById('short-desc-count').textContent = '0';
@@ -2405,40 +2659,40 @@ const selVariable   = {};           // { prefix: { value, isVariation } }
     }
 })();
 
-// ── Gattung / Art Combo-Dropdown ─────────────────────────────────────────────
-var _taxPool = { gattungen: [], arts: {} };
+// ── Gattung / Art Combo-Dropdown (Blueprint-gestützt) ─────────────────────────
+// Gattung/Art sind jetzt Blueprints mit vererbbaren Feldern (wie in der App):
+// Auswahl füllt leere Formularfelder, ein manueller Edit "gewinnt" danach immer.
+var _bp = { gattungen: [], arten: [] };
 
-(async function initTaxPool() {
+async function paAjax(action, extra) {
+    const params = new URLSearchParams(Object.assign({ action, nonce: addProductNonce }, extra || {}));
+    const res = await fetch(ajaxUrl, { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: params.toString() });
+    return res.json();
+}
+
+(async function initBlueprints() {
     try {
-        const res  = await fetch(ajaxUrl, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'action=pa_get_taxonomy_values&nonce=' + addProductNonce
-        });
-        const data = await res.json();
-        if (data.success) {
-            _taxPool = data.data;
-            _hfRenderGattungOpts();
-        }
+        const data = await paAjax('pa_get_blueprints');
+        if (data.success) { _bp = data.data; _hfRenderGattungOpts(); }
     } catch(e) {}
 })();
 
 function _hfRenderGattungOpts() {
     const opts = document.getElementById('combo-gattung-opts');
     if (!opts) return;
-    const cur = document.getElementById('product-gattung').value;
-    opts.innerHTML = _taxPool.gattungen.map(g =>
-        `<button type="button" class="pa-combo-option${g===cur?' selected':''}" onclick="_hfComboSelect('gattung','${escHtml(g)}')">${escHtml(g)}</button>`
+    const curId = document.getElementById('product-gattung-bp-id').value;
+    opts.innerHTML = _bp.gattungen.map(g =>
+        `<button type="button" class="pa-combo-option${String(g.id)===curId?' selected':''}" onclick="_hfComboSelect('gattung',${g.id})">${escHtml(g.name)}</button>`
     ).join('') || '<div style="padding:9px 12px;color:#aaa;font-size:12px;font-style:italic;">Noch keine Einträge</div>';
 }
 
-function _hfRenderArtOpts(gattung) {
+function _hfRenderArtOpts(gattungId) {
     const opts = document.getElementById('combo-art-opts');
     if (!opts) return;
-    const cur = document.getElementById('product-art').value;
-    const arts = _taxPool.arts[gattung] || [];
+    const curId = document.getElementById('product-art-bp-id').value;
+    const arts = _bp.arten.filter(a => String(a.gattung_id) === String(gattungId));
     opts.innerHTML = arts.map(a =>
-        `<button type="button" class="pa-combo-option${a===cur?' selected':''}" onclick="_hfComboSelect('art','${escHtml(a)}')">${escHtml(a)}</button>`
+        `<button type="button" class="pa-combo-option${String(a.id)===curId?' selected':''}" onclick="_hfComboSelect('art',${a.id})">${escHtml(a.name)}</button>`
     ).join('') || '<div style="padding:9px 12px;color:#aaa;font-size:12px;font-style:italic;">Noch keine Einträge</div>';
 }
 
@@ -2453,32 +2707,42 @@ function _hfComboToggle(field) {
     });
     if (!isOpen) {
         if (field === 'gattung') _hfRenderGattungOpts();
-        if (field === 'art') _hfRenderArtOpts(document.getElementById('product-gattung').value);
+        if (field === 'art') _hfRenderArtOpts(document.getElementById('product-gattung-bp-id').value);
         drop.style.display = '';
         trig.classList.add('open');
     }
 }
 
-function _hfComboSelect(field, val) {
-    document.getElementById('product-' + field).value = val;
+function _hfComboSelect(field, bpId) {
+    const pool = field === 'gattung' ? _bp.gattungen : _bp.arten;
+    const row = pool.find(x => x.id === bpId);
+    if (!row) return;
+    document.getElementById('product-' + field).value = row.name;
+    document.getElementById('product-' + field + '-bp-id').value = row.id;
     const lbl = document.getElementById('combo-' + field + '-lbl');
-    lbl.textContent = val;
+    lbl.textContent = row.name;
     lbl.classList.remove('pa-combo-placeholder');
     document.getElementById('combo-' + field + '-drop').style.display = 'none';
     document.getElementById('combo-' + field + '-drop').previousElementSibling.classList.remove('open');
+    document.getElementById('combo-' + field + '-edit-btn').style.display = '';
     if (field === 'gattung') {
         // Reset art when gattung changes
         document.getElementById('product-art').value = '';
+        document.getElementById('product-art-bp-id').value = '';
         const artLbl = document.getElementById('combo-art-lbl');
         artLbl.textContent = 'z. B. zonale';
         artLbl.classList.add('pa-combo-placeholder');
+        document.getElementById('combo-art-edit-btn').style.display = 'none';
         document.querySelectorAll('#combo-art-opts .pa-combo-option').forEach(b => b.classList.remove('selected'));
+        bpApplyFields('gattung', row.fields || {});
+    } else {
+        bpApplyFields('art', row.fields || {});
     }
 }
 
 // Close on outside click
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.pa-combo') && !e.target.closest('#pa-combo-overlay')) {
+    if (!e.target.closest('.pa-combo')) {
         ['gattung','art'].forEach(f => {
             const drop = document.getElementById('combo-'+f+'-drop');
             const trig = drop && drop.previousElementSibling;
@@ -2488,46 +2752,316 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ── Combo Add Popup ───────────────────────────────────────────────────────────
-var _hfComboAddField = null;
+// ── Blueprint-Vererbung (Gattung/Art → Formularfelder) ────────────────────────
+// Selbe Präzedenz wie in der App: 'manual' (Nutzer hat selbst editiert) blockt
+// immer; 'gattung' verliert gegen bereits von 'art' belegte Felder.
+var bpLinks = {};
+var bpApplying = false;
 
-function _hfComboOpenAdd(field, e) {
-    e.stopPropagation();
-    _hfComboAddField = field;
-    const titles = { gattung: 'Neue Gattung hinzufügen', art: 'Neue Art hinzufügen' };
-    document.getElementById('pa-combo-dialog-title').textContent = titles[field] || 'Neu hinzufügen';
-    document.getElementById('pa-combo-dialog-input').value = '';
-    document.getElementById('pa-combo-overlay').style.display = 'flex';
-    setTimeout(() => document.getElementById('pa-combo-dialog-input').focus(), 40);
+var BP_FIELD_MAP = [
+    { key:'liter_content', id:'product-liters', kind:'value' },
+    { key:'tax_class', id:'tax-class-select', kind:'value' },
+    { key:'differential_taxation', id:'differential-taxation', kind:'checked' },
+    { key:'stock', id:'product-stock', kind:'value' },
+    { key:'low_stock_threshold', id:'low-stock-threshold', kind:'low_stock' },
+    { key:'never_low_stock', id:'never-low-stock', kind:'checked' },
+    { key:'short_description', id:'product-short-description', kind:'value' },
+    { key:'description', id:'product-description', kind:'html' },
+    { key:'care_light', id:'care-light', kind:'value' },
+    { key:'care_light_tolerates_min', id:'care-light-min', kind:'value' },
+    { key:'care_light_tolerates_max', id:'care-light-max', kind:'value' },
+    { key:'care_water', id:'care-water', kind:'value' },
+    { key:'care_water_tolerates_min', id:'care-water-min', kind:'value' },
+    { key:'care_water_tolerates_max', id:'care-water-max', kind:'value' },
+    { key:'care_winter', id:'care-winter', kind:'value' },
+    { key:'care_winterhaerte', id:'care-winterhaerte', kind:'value' },
+    { key:'care_temp_min', id:'care-temp-min', kind:'value' },
+    { key:'care_temp_max', id:'care-temp-max', kind:'value' },
+];
+
+function bpCanApply(currentOwner, sourceType) {
+    if (currentOwner === 'manual') return false;
+    if (currentOwner === 'art' && sourceType === 'gattung') return false;
+    return true;
 }
 
-function paComboConfirmAdd() {
-    const val = document.getElementById('pa-combo-dialog-input').value.trim();
-    if (!val) { document.getElementById('pa-combo-dialog-input').focus(); return; }
+function _bpMarkManual(key) { if (!bpApplying) bpLinks[key] = 'manual'; }
 
-    if (_hfComboAddField === 'gattung') {
-        if (!_taxPool.gattungen.includes(val)) { _taxPool.gattungen.push(val); _taxPool.gattungen.sort(); }
-        _hfComboSelect('gattung', val);
-    } else if (_hfComboAddField === 'art') {
-        const g = document.getElementById('product-gattung').value;
-        if (g) {
-            if (!_taxPool.arts[g]) _taxPool.arts[g] = [];
-            if (!_taxPool.arts[g].includes(val)) { _taxPool.arts[g].push(val); _taxPool.arts[g].sort(); }
+function bpApplyFields(sourceType, fields) {
+    bpApplying = true;
+    Object.keys(fields).forEach(function(key) {
+        if (!bpCanApply(bpLinks[key], sourceType)) return;
+        const val = fields[key];
+        if (key === 'unit_type') {
+            document.getElementById('unit-toggle').checked = (val === 'liter');
+            document.getElementById('unit-toggle').dispatchEvent(new Event('change'));
+        } else if (key === 'product_type') {
+            document.getElementById('product-type-toggle').checked = (val === 'substrate');
+            document.getElementById('product-type-toggle').dispatchEvent(new Event('change'));
+        } else if (key === 'specification_id') {
+            _specApplyById(val);
+        } else if (key === 'delivery_time') {
+            document.getElementById('delivery-time-select').value = val;
+        } else {
+            const m = BP_FIELD_MAP.find(f => f.key === key);
+            if (!m) return;
+            const el = document.getElementById(m.id);
+            if (!el) return;
+            if (m.kind === 'checked') el.checked = !!val;
+            else if (m.kind === 'html') el.innerHTML = val || '';
+            else if (m.kind === 'low_stock') {
+                document.getElementById('custom-low-stock').checked = true;
+                toggleLowStock(document.getElementById('custom-low-stock'));
+                el.value = val;
+            } else el.value = val;
         }
-        _hfComboSelect('art', val);
-    }
-    paComboCloseOverlay();
+        bpLinks[key] = sourceType;
+    });
+    bpApplying = false;
 }
 
-function paComboCloseOverlay() {
-    document.getElementById('pa-combo-overlay').style.display = 'none';
-    _hfComboAddField = null;
-}
-
-document.getElementById('pa-combo-dialog-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); paComboConfirmAdd(); }
-    if (e.key === 'Escape') { paComboCloseOverlay(); }
+BP_FIELD_MAP.forEach(function(m) {
+    const el = document.getElementById(m.id);
+    if (!el) return;
+    const evt = (m.kind === 'checked') ? 'change' : 'input';
+    el.addEventListener(evt, function() { _bpMarkManual(m.key); });
 });
+['unit-toggle','product-type-toggle'].forEach(function(id) {
+    const key = id === 'unit-toggle' ? 'unit_type' : 'product_type';
+    document.getElementById(id).addEventListener('change', function() { _bpMarkManual(key); });
+});
+
+// ── Blueprint-Modal (Gattung/Art anlegen/bearbeiten) ──────────────────────────
+var _bpModalState = null; // { type, id }
+
+function openBlueprintModal(type, id) {
+    _bpModalState = { type, id };
+    document.getElementById('bp-tax-class').innerHTML = document.getElementById('tax-class-select').innerHTML;
+    document.getElementById('bp-delivery-time').innerHTML = document.getElementById('delivery-time-select').innerHTML;
+    document.getElementById('bp-care-light').innerHTML = document.getElementById('care-light').innerHTML;
+    document.getElementById('bp-care-light-min').innerHTML = document.getElementById('care-light-min').innerHTML;
+    document.getElementById('bp-care-light-max').innerHTML = document.getElementById('care-light-max').innerHTML;
+    document.getElementById('bp-care-water').innerHTML = document.getElementById('care-water').innerHTML;
+    document.getElementById('bp-care-water-min').innerHTML = document.getElementById('care-water-min').innerHTML;
+    document.getElementById('bp-care-water-max').innerHTML = document.getElementById('care-water-max').innerHTML;
+    document.getElementById('bp-care-winterhaerte').innerHTML = document.getElementById('care-winterhaerte').innerHTML;
+    _specPopulateSelect(document.getElementById('bp-specification'));
+
+    const row = id ? (type === 'gattung' ? _bp.gattungen : _bp.arten).find(x => x.id === id) : null;
+    const f = (row && row.fields) || {};
+    document.getElementById('bp-title').textContent = id
+        ? `${type === 'art' ? 'Art' : 'Gattung'} bearbeiten`
+        : `Neue ${type === 'art' ? 'Art' : 'Gattung'}`;
+    document.getElementById('bp-name').value = row ? row.name : '';
+    document.getElementById('bp-unit-type').value = f.unit_type || '';
+    document.getElementById('bp-product-type').value = f.product_type || '';
+    document.getElementById('bp-tax-class').value = f.tax_class || '';
+    document.getElementById('bp-delivery-time').value = f.delivery_time || '';
+    document.getElementById('bp-differential-taxation').checked = f.differential_taxation === true;
+    document.getElementById('bp-stock').value = f.stock ?? '';
+    document.getElementById('bp-low-stock-threshold').value = f.low_stock_threshold ?? '';
+    document.getElementById('bp-never-low-stock').checked = f.never_low_stock === true;
+    document.getElementById('bp-specification').value = f.specification_id || '';
+    document.getElementById('bp-short-description').value = f.short_description || '';
+    document.getElementById('bp-description').value = f.description || '';
+    document.getElementById('bp-care-light').value = f.care_light || '';
+    document.getElementById('bp-care-light-min').value = f.care_light_tolerates_min || '';
+    document.getElementById('bp-care-light-max').value = f.care_light_tolerates_max || '';
+    document.getElementById('bp-care-water').value = f.care_water || '';
+    document.getElementById('bp-care-water-min').value = f.care_water_tolerates_min || '';
+    document.getElementById('bp-care-water-max').value = f.care_water_tolerates_max || '';
+    document.getElementById('bp-care-winterhaerte').value = f.care_winterhaerte || '';
+    document.getElementById('bp-care-winter').value = f.care_winter || '';
+    document.getElementById('bp-care-temp-min').value = f.care_temp_min ?? '';
+    document.getElementById('bp-care-temp-max').value = f.care_temp_max ?? '';
+
+    document.getElementById('pa-bp-overlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('bp-name').focus(), 40);
+}
+
+function closeBlueprintModal() {
+    document.getElementById('pa-bp-overlay').style.display = 'none';
+    _bpModalState = null;
+}
+
+async function saveBlueprintModal() {
+    const name = document.getElementById('bp-name').value.trim();
+    if (!name) { document.getElementById('bp-name').focus(); return; }
+    const { type, id } = _bpModalState;
+    const gattungName = type === 'art' ? document.getElementById('product-gattung').value : '';
+    if (type === 'art' && !gattungName) { alert('Bitte zuerst eine Gattung wählen.'); return; }
+
+    const fields = {};
+    const sVal = eid => document.getElementById(eid).value;
+    if (sVal('bp-unit-type')) fields.unit_type = sVal('bp-unit-type');
+    if (sVal('bp-product-type')) fields.product_type = sVal('bp-product-type');
+    if (sVal('bp-tax-class')) fields.tax_class = sVal('bp-tax-class');
+    if (sVal('bp-delivery-time')) fields.delivery_time = sVal('bp-delivery-time');
+    fields.differential_taxation = document.getElementById('bp-differential-taxation').checked;
+    if (sVal('bp-stock') !== '') fields.stock = parseInt(sVal('bp-stock'), 10);
+    if (sVal('bp-low-stock-threshold') !== '') fields.low_stock_threshold = parseInt(sVal('bp-low-stock-threshold'), 10);
+    fields.never_low_stock = document.getElementById('bp-never-low-stock').checked;
+    if (sVal('bp-specification')) fields.specification_id = parseInt(sVal('bp-specification'), 10);
+    if (sVal('bp-short-description').trim()) fields.short_description = sVal('bp-short-description');
+    if (sVal('bp-description').trim()) fields.description = sVal('bp-description');
+    if (sVal('bp-care-light')) fields.care_light = sVal('bp-care-light');
+    if (sVal('bp-care-light-min')) fields.care_light_tolerates_min = sVal('bp-care-light-min');
+    if (sVal('bp-care-light-max')) fields.care_light_tolerates_max = sVal('bp-care-light-max');
+    if (sVal('bp-care-water')) fields.care_water = sVal('bp-care-water');
+    if (sVal('bp-care-water-min')) fields.care_water_tolerates_min = sVal('bp-care-water-min');
+    if (sVal('bp-care-water-max')) fields.care_water_tolerates_max = sVal('bp-care-water-max');
+    if (sVal('bp-care-winter').trim()) fields.care_winter = sVal('bp-care-winter');
+    if (sVal('bp-care-winterhaerte')) fields.care_winterhaerte = sVal('bp-care-winterhaerte');
+    if (sVal('bp-care-temp-min') !== '') fields.care_temp_min = parseFloat(sVal('bp-care-temp-min'));
+    if (sVal('bp-care-temp-max') !== '') fields.care_temp_max = parseFloat(sVal('bp-care-temp-max'));
+
+    const data = await paAjax('pa_save_blueprint', {
+        id: id || '', type, name, gattung: gattungName, fields: JSON.stringify(fields)
+    });
+    if (!data.success) { alert(data.data || 'Fehler beim Speichern'); return; }
+
+    const savedRow = { id: data.data.id, name: data.data.name, fields: data.data.fields, gattung_id: type === 'art' ? document.getElementById('product-gattung-bp-id').value : undefined };
+    if (type === 'gattung') {
+        const idx = _bp.gattungen.findIndex(g => g.id === savedRow.id);
+        if (idx >= 0) _bp.gattungen[idx] = savedRow; else _bp.gattungen.push(savedRow);
+        _bp.gattungen.sort((a,b) => a.name.localeCompare(b.name));
+    } else {
+        savedRow.gattung_id = document.getElementById('product-gattung-bp-id').value;
+        const idx = _bp.arten.findIndex(a => a.id === savedRow.id);
+        if (idx >= 0) _bp.arten[idx] = savedRow; else _bp.arten.push(savedRow);
+        _bp.arten.sort((a,b) => a.name.localeCompare(b.name));
+    }
+    closeBlueprintModal();
+    _hfComboSelect(type, savedRow.id);
+}
+
+// ── Spezifikations-Picker ──────────────────────────────────────────────────
+var _specs = [];
+
+(async function initSpecs() {
+    try {
+        const data = await paAjax('pa_get_specifications');
+        if (data.success) { _specs = data.data; _specPopulateSelect(document.getElementById('specification-select')); }
+    } catch(e) {}
+})();
+
+function _specLabel(s) {
+    const parts = [s.pot_size_cm ? s.pot_size_cm + 'cm' : '', s.shape === 'square' ? 'eckig' : 'rund',
+        s.weight ? s.weight + ' ' + (s.weight_unit || 'g') : '', (s.height_cm && s.width_cm) ? (s.height_cm + ' x ' + s.width_cm) : ''];
+    return parts.filter(Boolean).join(' - ') || s.name;
+}
+
+function _specPopulateSelect(sel) {
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— keine Vorgabe —</option>' +
+        _specs.map(s => `<option value="${s.id}">${escHtml(_specLabel(s))}</option>`).join('');
+    sel.value = cur;
+}
+
+function _specSelected(id) {
+    _bpMarkManual('specification_id');
+    document.getElementById('h-specification-id').value = id || '';
+    _specApplyById(id ? parseInt(id, 10) : null);
+}
+
+function _specApplyById(id) {
+    document.getElementById('specification-select').value = id || '';
+    document.getElementById('h-specification-id').value = id || '';
+    const spec = _specs.find(s => s.id === id);
+    if (!spec) return;
+    if (spec.weight) {
+        const kg = (spec.weight_unit === 'kg') ? spec.weight : spec.weight / 1000;
+        document.getElementById('product-weight').value = kg;
+    }
+    if (spec.width_cm) { document.getElementById('product-length').value = spec.width_cm; document.getElementById('product-width').value = spec.width_cm; }
+    if (spec.height_cm) document.getElementById('product-height').value = spec.height_cm;
+    syncShippingDims();
+}
+
+function openSpecificationModal() {
+    document.getElementById('spec-pot-size').value = '';
+    document.getElementById('spec-shape').value = 'round';
+    document.getElementById('spec-weight').value = '';
+    document.getElementById('spec-weight-unit').value = 'g';
+    document.getElementById('spec-height').value = '';
+    document.getElementById('spec-width').value = '';
+    document.getElementById('pa-spec-overlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('spec-pot-size').focus(), 40);
+}
+
+function closeSpecificationModal() { document.getElementById('pa-spec-overlay').style.display = 'none'; }
+
+async function saveSpecificationModal() {
+    const potSize = document.getElementById('spec-pot-size').value;
+    const weight = document.getElementById('spec-weight').value;
+    if (!potSize || !weight) { alert('Topfgröße und Gewicht sind Pflichtfelder'); return; }
+    const heightCm = document.getElementById('spec-height').value;
+    const widthCm = document.getElementById('spec-width').value;
+    const shape = document.getElementById('spec-shape').value;
+    const weightUnit = document.getElementById('spec-weight-unit').value;
+    const name = _specLabel({ pot_size_cm: potSize, shape, weight, weight_unit: weightUnit, height_cm: heightCm, width_cm: widthCm });
+    const data = await paAjax('pa_save_specification', {
+        pot_size_cm: potSize, shape, weight, weight_unit: weightUnit, height_cm: heightCm, width_cm: widthCm, name
+    });
+    if (!data.success) { alert(data.data || 'Fehler beim Speichern'); return; }
+    closeSpecificationModal();
+    const saved = data.data;
+    const idx = _specs.findIndex(s => s.id === saved.id);
+    if (idx >= 0) _specs[idx] = saved; else _specs.push(saved);
+    _specPopulateSelect(document.getElementById('specification-select'));
+    _specPopulateSelect(document.getElementById('bp-specification'));
+    if (document.getElementById('pa-bp-overlay').style.display === 'flex') {
+        document.getElementById('bp-specification').value = saved.id;
+    } else {
+        _specSelected(saved.id);
+    }
+}
+
+// ── Lieferzeit-Picker ─────────────────────────────────────────────────────
+var _dts = [];
+
+(async function initDeliveryTimes() {
+    try {
+        const data = await paAjax('pa_get_delivery_times');
+        if (data.success) { _dts = data.data; _dtPopulateSelect(document.getElementById('delivery-time-select')); }
+    } catch(e) {}
+})();
+
+function _dtPopulateSelect(sel) {
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— nicht angegeben —</option>' +
+        _dts.map(t => `<option value="${escHtml(t.label)}">${escHtml(t.label)}</option>`).join('');
+    sel.value = cur;
+}
+
+function openDeliveryTimeModal() {
+    document.getElementById('dt-label').value = '';
+    document.getElementById('dt-days-min').value = '';
+    document.getElementById('dt-days-max').value = '';
+    document.getElementById('pa-dt-overlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('dt-label').focus(), 40);
+}
+
+function closeDeliveryTimeModal() { document.getElementById('pa-dt-overlay').style.display = 'none'; }
+
+async function saveDeliveryTimeModal() {
+    const label = document.getElementById('dt-label').value.trim();
+    if (!label) { document.getElementById('dt-label').focus(); return; }
+    const data = await paAjax('pa_save_delivery_time', {
+        label, days_min: document.getElementById('dt-days-min').value || 0, days_max: document.getElementById('dt-days-max').value || 0
+    });
+    if (!data.success) { alert(data.data || 'Fehler beim Speichern'); return; }
+    closeDeliveryTimeModal();
+    const idx = _dts.findIndex(t => t.id === data.data.id);
+    if (idx >= 0) _dts[idx] = data.data; else _dts.push(data.data);
+    _dtPopulateSelect(document.getElementById('delivery-time-select'));
+    _dtPopulateSelect(document.getElementById('bp-delivery-time'));
+    const targetSel = document.getElementById('pa-bp-overlay').style.display === 'flex' ? document.getElementById('bp-delivery-time') : document.getElementById('delivery-time-select');
+    targetSel.value = label;
+    if (targetSel.id === 'delivery-time-select') _bpMarkManual('delivery_time');
+}
 
 function renderTagPool() {
     const pool = tagPoolData;

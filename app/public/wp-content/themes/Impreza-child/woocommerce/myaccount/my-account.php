@@ -5,6 +5,20 @@
  */
 defined('ABSPATH') or die();
 
+// Unterseiten (Bestellung ansehen, Adresse/Konto bearbeiten, ...) laufen über
+// die Standard-WooCommerce-Endpoint-Templates statt über dieses Dashboard.
+if (is_wc_endpoint_url()) {
+    ?>
+    <main class="pa-account-page">
+      <div class="pa-account-content" style="max-width:800px;margin:0 auto;">
+        <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" class="pa-nav-link" style="display:inline-block;">&larr; Zurück zum Konto</a>
+        <?php do_action('woocommerce_account_content'); ?>
+      </div>
+    </main>
+    <?php
+    return;
+}
+
 $current_user = wp_get_current_user();
 $customer_id = get_current_user_id();
 
@@ -154,7 +168,7 @@ $shipping_address = wc_get_account_formatted_address('shipping');
               <span id="pa-nl-track" style="position:absolute;inset:0;background:<?php echo $nl_active ? 'var(--plum-hot)' : 'var(--bg-raised)'; ?>;border:1px solid var(--border-thin);border-radius:var(--r-pill);transition:background .2s;cursor:pointer;"></span>
               <span id="pa-nl-thumb" style="position:absolute;top:3px;left:<?php echo $nl_active ? '23px' : '3px'; ?>;width:18px;height:18px;background:var(--creme);border-radius:50%;transition:left .2s;pointer-events:none;"></span>
             </div>
-            <span style="color:var(--creme-dim);font-size:13px;"><?php echo $nl_active ? 'Abonniert' : 'Abgemeldet'; ?></span>
+            <span id="pa-nl-label" style="color:var(--creme-dim);font-size:13px;"><?php echo $nl_active ? 'Abonniert' : 'Abgemeldet'; ?></span>
           </label>
         </div>
         <p id="pa-nl-msg" style="margin:12px 0 0;font-size:13px;color:var(--plum-hot);display:none;"></p>
@@ -234,7 +248,7 @@ $shipping_address = wc_get_account_formatted_address('shipping');
 
   if (loadMoreBtn && hiddenOrders) {
     loadMoreBtn.addEventListener('click', function() {
-      hiddenOrders.style.display = 'block';
+      hiddenOrders.style.display = 'flex';
       loadMoreBtn.style.display = 'none';
     });
   }
@@ -243,6 +257,7 @@ $shipping_address = wc_get_account_formatted_address('shipping');
   var nlToggle = document.getElementById('pa-nl-toggle');
   var nlTrack  = document.getElementById('pa-nl-track');
   var nlThumb  = document.getElementById('pa-nl-thumb');
+  var nlLabel  = document.getElementById('pa-nl-label');
   var nlMsg    = document.getElementById('pa-nl-msg');
   if (nlToggle) {
     var nlNonce = <?php echo json_encode($nl_nonce); ?>;
@@ -252,7 +267,7 @@ $shipping_address = wc_get_account_formatted_address('shipping');
       var checked = nlToggle.checked;
       nlTrack.style.background = checked ? 'var(--plum-hot)' : 'var(--bg-raised)';
       nlThumb.style.left = checked ? '23px' : '3px';
-      nlTrack.nextElementSibling && (nlTrack.nextElementSibling.textContent = checked ? 'Abonniert' : 'Abgemeldet');
+      nlLabel && (nlLabel.textContent = checked ? 'Abonniert' : 'Abgemeldet');
       var fd = new FormData();
       fd.append('action', 'pa_save_newsletter_pref');
       fd.append('nonce', nlNonce);

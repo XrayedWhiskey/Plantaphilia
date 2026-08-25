@@ -220,6 +220,20 @@ add_action('woocommerce_checkout_order_created', function () {
     delete_transient('pa_co_' . md5($ip));
 });
 
+// ── Passwort-Reset: Honeypot gegen Bots ───────────────────────────
+add_action('woocommerce_lostpassword_form', function () {
+    echo '<div style="display:none!important;visibility:hidden!important;position:absolute;left:-9999px;" aria-hidden="true">';
+    echo '<label for="pa_hp_pw">Leer lassen</label>';
+    echo '<input type="text" name="pa_hp_pw" id="pa_hp_pw" autocomplete="off" tabindex="-1" value="">';
+    echo '</div>';
+});
+
+add_action('lostpassword_post', function ($errors) {
+    if (!empty($_POST['pa_hp_pw'])) {
+        $errors->add('pa_honeypot', 'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.');
+    }
+});
+
 // ── Login: Brute-Force-Schutz (max. 5 Fehlversuche / 15 min) ─────
 add_filter('authenticate', function ($user, $username, $password) {
     if (empty($username) || empty($password)) {
@@ -994,6 +1008,29 @@ function adjust_availability_based_on_in_progress($availability, $product) {
     }
     
     return $availability;
+}
+
+// Meta-Description wird von der App vorformuliert gepusht (_yoast_wpseo_metadesc,
+// Muster "..., verfügbar: ..." bzw. "..., nicht verfügbar: ...", siehe
+// composeSeoDescription.js) — Yoast liest dieses Postmeta als Basiswert und
+// gibt ihn danach durch diesen Filter. Nur das Verfügbarkeits-Wort wird hier
+// live nachgezogen, damit echte Bestandsänderungen auf der Website (nicht nur
+// der nächste App-Push) sich sofort in der Meta-Description niederschlagen.
+// Gleiche Bestand-minus-_in_progress-Logik wie adjust_availability_based_on_in_progress.
+add_filter('wpseo_metadesc', 'pa_live_availability_in_metadesc');
+function pa_live_availability_in_metadesc($desc) {
+    if (!is_product() || !$desc) return $desc;
+    global $product;
+    if (!$product) return $desc;
+    $stock = $product->get_stock_quantity();
+    if ($stock === null) {
+        $available = $product->is_in_stock();
+    } else {
+        $in_progress = intval(get_post_meta($product->get_id(), '_in_progress', true));
+        $available = ($stock - $in_progress) > 0;
+    }
+    $word = $available ? 'verfügbar' : 'nicht verfügbar';
+    return preg_replace('/, (nicht verfügbar|verfügbar):/u', ", {$word}:", $desc, 1);
 }
 
 function get_product_list_data() {
@@ -3291,6 +3328,579 @@ function pa_create_tag_ajax() {
     wp_send_json_success(['term_id' => $term_id, 'name' => $name, 'type' => $type]);
 }
 
+// ── REST: Tag-Sync von der Desktop-App ────────────────────────────────────────
+// Die App ist führend für Tags/Überkategorien und pusht sie hierüber, statt sie
+// im Web-Formular anzulegen. Auth über Application Passwords (Basic Auth) —
+// dieselbe Methode, mit der die App bereits wc/v3 anspricht, kein Nonce nötig.
+add_action('rest_api_init', function () {
+    $admin_only = function () { return current_user_can('manage_options'); };
+    register_rest_route('pa/v1', '/sync-tags', [
+        'methods' => 'POST', 'callback' => 'pa_sync_tags_rest', 'permission_callback' => $admin_only,
+    ]);
+    register_rest_route('pa/v1', '/sync-blueprints', [
+        'methods' => 'POST', 'callback' => 'pa_sync_blueprints_rest', 'permission_callback' => $admin_only,
+    ]);
+    register_rest_route('pa/v1', '/sync-specifications', [
+        'methods' => 'POST', 'callback' => 'pa_sync_specifications_rest', 'permission_callback' => $admin_only,
+    ]);
+    register_rest_route('pa/v1', '/sync-delivery-times', [
+        'methods' => 'POST', 'callback' => 'pa_sync_delivery_times_rest', 'permission_callback' => $admin_only,
+    ]);
+    register_rest_route('pa/v1', '/sync-categories', [
+        'methods' => 'POST', 'callback' => 'pa_sync_categories_rest', 'permission_callback' => $admin_only,
+    ]);
+    register_rest_route('pa/v1', '/get-categories', [
+        'methods' => 'GET', 'callback' => 'pa_get_categories_rest', 'permission_callback' => $admin_only,
+    ]);
+});
+
+// ── Blueprint-/Spezifikations-/Lieferzeit-Taxonomien ──────────────────────────
+// Spiegeln das gleichnamige System der Desktop-App: Gattung/Art als
+// wiederverwendbare Vorlagen mit vererbbaren Feldern, Spezifikationen als
+// wiederverwendbare Topfgröße/Gewicht/Maße-Einheiten, Lieferzeiten als
+// benannte Presets. Alle drei sind interne Katalog-Taxonomien (nicht öffentlich),
+// Felder liegen als JSON in Term-Meta statt eigener DB-Tabellen.
+add_action('init', function () {
+    $args = ['label' => 'Intern', 'public' => false, 'show_ui' => false, 'hierarchical' => false];
+    register_taxonomy('pa_blueprint', 'product', $args);
+    register_taxonomy('pa_specification', 'product', $args);
+    register_taxonomy('pa_delivery_time', 'product', $args);
+    // Kategorien: App ist führend (Kategorien.jsx), pusht per REST hierher —
+    // frei benannt ODER an Gattung/Art/Kultivar gebunden. Hierarchisch, da die
+    // App verschachtelte Kategorien erlaubt.
+    register_taxonomy('pa_category', 'product', [
+        'label' => 'Kategorien', 'public' => false, 'show_ui' => false, 'hierarchical' => true,
+    ]);
+});
+
+function pa_sync_tags_rest(WP_REST_Request $req) {
+    $tags = $req->get_param('tags');
+    if (!is_array($tags)) return new WP_Error('bad_request', 'tags fehlt', ['status' => 400]);
+
+    $term_ids = [];
+    foreach ($tags as $t) {
+        $name     = sanitize_text_field($t['name']     ?? '');
+        $category = sanitize_text_field($t['category'] ?? '');
+        $gattung  = sanitize_text_field($t['gattung']  ?? '');
+        $art      = sanitize_text_field($t['art']      ?? '');
+        if ($name === '') continue;
+
+        $term = get_term_by('name', $name, 'product_tag');
+        if (!$term) {
+            $created = wp_insert_term($name, 'product_tag');
+            if (is_wp_error($created)) continue;
+            $term_id = $created['term_id'];
+        } else {
+            $term_id = $term->term_id;
+        }
+
+        // Leere Kategorie = App-seitig "Unkategorisiert" → flacher Tag,
+        // erscheint als eigener Filter statt in einer Überkategorie-Sektion.
+        if ($category !== '') {
+            update_term_meta($term_id, '_pa_tag_type', 'variable');
+            update_term_meta($term_id, '_pa_variable_prefix', $category);
+        } else {
+            update_term_meta($term_id, '_pa_tag_type', 'fixed');
+            delete_term_meta($term_id, '_pa_variable_prefix');
+        }
+        if ($gattung !== '') update_term_meta($term_id, '_pa_tag_gattung', $gattung);
+        else delete_term_meta($term_id, '_pa_tag_gattung');
+        if ($art !== '') update_term_meta($term_id, '_pa_tag_art', $art);
+        else delete_term_meta($term_id, '_pa_tag_art');
+
+        $term_ids[$name] = $term_id;
+    }
+
+    return ['term_ids' => $term_ids];
+}
+
+// Find-or-create a term by explicit slug (blueprint identity is type+gattung+name,
+// not just name — "vulgaris" can be an Art under several Gattungen — so unlike
+// tags we can't dedupe on the term name alone).
+function pa_upsert_term_by_slug(string $slug, string $name, string $taxonomy): int {
+    $term = get_term_by('slug', $slug, $taxonomy);
+    if (!$term) {
+        $created = wp_insert_term($name, $taxonomy, ['slug' => $slug]);
+        if (is_wp_error($created)) return 0;
+        return $created['term_id'];
+    }
+    if ($term->name !== $name) wp_update_term($term->term_id, $taxonomy, ['name' => $name]);
+    return $term->term_id;
+}
+
+// ── REST: Kategorie-Sync von der Desktop-App ──────────────────────────────────
+// "Special"-Pseudo-Kategorien (Reduziert/Rabattaktionen/Neu/Beliebt/Alle Produkte,
+// App: seedSystemCategories in database.js) sind keine echten pa_category-Terms
+// (kein fester Produktbestand), nur Sichtbarkeits-/Sortier-/Carousel-Einstellungen
+// — als Option statt Term-Meta gespeichert.
+function pa_sync_categories_rest(WP_REST_Request $req) {
+    $categories = $req->get_param('categories');
+    $special    = $req->get_param('special');
+    if (!is_array($categories)) return new WP_Error('bad_request', 'categories fehlt', ['status' => 400]);
+
+    update_option('pa_cat_special', is_array($special) ? $special : [], false);
+
+    $termIdByLocalId = [];
+
+    // Durchgang 1: Terms anlegen/aktualisieren + Meta setzen (noch ohne Parent).
+    foreach ($categories as $cat) {
+        $localId = intval($cat['localId'] ?? 0);
+        if (!$localId) continue;
+
+        $gattung  = sanitize_text_field($cat['gattung']  ?? '');
+        $art      = sanitize_text_field($cat['art']      ?? '');
+        $kultivar = sanitize_text_field($cat['kultivar']  ?? '');
+        $name     = sanitize_text_field($cat['name'] ?? '');
+
+        if ($kultivar !== '')      { $type = 'kultivar'; $displayName = $kultivar; }
+        elseif ($art !== '')       { $type = 'art';      $displayName = $art; }
+        elseif ($gattung !== '')   { $type = 'gattung';  $displayName = $gattung; }
+        else                       { $type = 'free';     $displayName = $name ?: 'Unbenannt'; }
+
+        $slug    = 'cat-' . $localId;
+        $term_id = pa_upsert_term_by_slug($slug, $displayName, 'pa_category');
+        if (!$term_id) continue;
+
+        update_term_meta($term_id, '_pa_cat_local_id', $localId);
+        update_term_meta($term_id, '_pa_cat_heading', sanitize_text_field($cat['heading'] ?? ''));
+        update_term_meta($term_id, '_pa_cat_description', sanitize_textarea_field($cat['description'] ?? ''));
+        update_term_meta($term_id, '_pa_cat_type', $type);
+        update_term_meta($term_id, '_pa_cat_gattung', $gattung);
+        update_term_meta($term_id, '_pa_cat_art', $art);
+        update_term_meta($term_id, '_pa_cat_kultivar', $kultivar);
+        update_term_meta($term_id, '_pa_cat_expandable', !empty($cat['expandable']) ? 1 : 0);
+        update_term_meta($term_id, '_pa_cat_hidden', !empty($cat['hidden']) ? 1 : 0);
+        update_term_meta($term_id, '_pa_cat_sort', intval($cat['sortOrder'] ?? 0));
+        update_term_meta($term_id, '_pa_cat_mainpage_carousel', !empty($cat['mainpageCarousel']) ? 1 : 0);
+        update_term_meta($term_id, '_pa_cat_carousel_sort', intval($cat['carouselSortOrder'] ?? 0));
+
+        $termIdByLocalId[$localId] = $term_id;
+    }
+
+    // Durchgang 2: Parent verschachteln + pro Produkt ALLE zutreffenden Term-IDs
+    // sammeln (nicht sofort zuweisen — wp_set_object_terms(..., false) ersetzt
+    // die komplette Term-Liste eines Produkts, ein Call pro Kategorie würde sich
+    // also gegenseitig überschreiben, wenn ein Produkt in mehreren Kategorien ist).
+    $termIdsByProduct = [];
+    foreach ($categories as $cat) {
+        $localId = intval($cat['localId'] ?? 0);
+        if (!$localId || !isset($termIdByLocalId[$localId])) continue;
+        $term_id = $termIdByLocalId[$localId];
+
+        $parentLocalId = $cat['parentLocalId'] ?? null;
+        $parentTermId  = $parentLocalId ? ($termIdByLocalId[intval($parentLocalId)] ?? 0) : 0;
+        wp_update_term($term_id, 'pa_category', ['parent' => $parentTermId]);
+
+        foreach ((is_array($cat['productIds'] ?? null) ? $cat['productIds'] : []) as $pid) {
+            $pid = intval($pid);
+            if (!$pid) continue;
+            $termIdsByProduct[$pid][] = $term_id;
+        }
+    }
+    foreach ($termIdsByProduct as $pid => $termIds) {
+        wp_set_object_terms($pid, array_unique($termIds), 'pa_category', false);
+    }
+
+    return ['term_ids' => $termIdByLocalId];
+}
+
+// Spiegelbild von pa_sync_categories_rest — App pullt beim Sync-Vorgang den
+// aktuellen WP-Stand zurück, um lokal neu erstellte wp_term_id zu übernehmen
+// und Konflikte zu erkennen (compareProducts-Muster wie bei Produkten). Bewusst
+// ohne Produkt-IDs vorfahren-inklusive — nur direkt zugeordnete IDs, spiegelt
+// exakt das, was pa_sync_categories_rest je Kategorie entgegennimmt, damit die
+// App bei einer frischen Installation (oder einem zweiten Rechner) den Stand
+// selbst wieder aufbauen kann.
+function pa_get_categories_rest(WP_REST_Request $req) {
+    $terms = get_terms(['taxonomy' => 'pa_category', 'hide_empty' => false]);
+    $result = [];
+    if (!is_wp_error($terms)) {
+        foreach ($terms as $term) {
+            $productIds = get_objects_in_term($term->term_id, 'pa_category');
+            $result[] = [
+                'wpTermId'          => $term->term_id,
+                'parentWpTermId'    => $term->parent,
+                'name'              => $term->name,
+                'heading'           => get_term_meta($term->term_id, '_pa_cat_heading', true),
+                'description'       => get_term_meta($term->term_id, '_pa_cat_description', true),
+                'type'              => get_term_meta($term->term_id, '_pa_cat_type', true) ?: 'free',
+                'gattung'           => get_term_meta($term->term_id, '_pa_cat_gattung', true),
+                'art'               => get_term_meta($term->term_id, '_pa_cat_art', true),
+                'kultivar'          => get_term_meta($term->term_id, '_pa_cat_kultivar', true),
+                'expandable'        => (bool) get_term_meta($term->term_id, '_pa_cat_expandable', true),
+                'hidden'            => (bool) get_term_meta($term->term_id, '_pa_cat_hidden', true),
+                'sortOrder'         => (int) get_term_meta($term->term_id, '_pa_cat_sort', true),
+                'mainpageCarousel'  => (bool) get_term_meta($term->term_id, '_pa_cat_mainpage_carousel', true),
+                'carouselSortOrder' => (int) get_term_meta($term->term_id, '_pa_cat_carousel_sort', true),
+                'productWpIds'      => is_wp_error($productIds) ? [] : array_values(array_map('intval', $productIds)),
+            ];
+        }
+    }
+    return ['categories' => $result, 'special' => get_option('pa_cat_special', [])];
+}
+
+function pa_sync_blueprints_rest(WP_REST_Request $req) {
+    $gattungen = $req->get_param('gattungen');
+    $arten     = $req->get_param('arten');
+    $result    = ['gattungen' => [], 'arten' => []];
+
+    foreach ((is_array($gattungen) ? $gattungen : []) as $g) {
+        $name = sanitize_text_field($g['name'] ?? '');
+        if ($name === '') continue;
+        $term_id = pa_upsert_term_by_slug('gattung-' . sanitize_title($name), $name, 'pa_blueprint');
+        if (!$term_id) continue;
+        update_term_meta($term_id, '_pa_bp_type', 'gattung');
+        update_term_meta($term_id, '_pa_bp_gattung', '');
+        update_term_meta($term_id, '_pa_bp_fields', wp_json_encode(is_array($g['fields'] ?? null) ? $g['fields'] : []));
+        $result['gattungen'][$name] = $term_id;
+    }
+    foreach ((is_array($arten) ? $arten : []) as $a) {
+        $name    = sanitize_text_field($a['name']    ?? '');
+        $gattung = sanitize_text_field($a['gattung'] ?? '');
+        if ($name === '' || $gattung === '') continue;
+        $slug    = 'art-' . sanitize_title($gattung) . '-' . sanitize_title($name);
+        $term_id = pa_upsert_term_by_slug($slug, $name, 'pa_blueprint');
+        if (!$term_id) continue;
+        update_term_meta($term_id, '_pa_bp_type', 'art');
+        update_term_meta($term_id, '_pa_bp_gattung', $gattung);
+        update_term_meta($term_id, '_pa_bp_fields', wp_json_encode(is_array($a['fields'] ?? null) ? $a['fields'] : []));
+        $result['arten'][$gattung . '|' . $name] = $term_id;
+    }
+    return $result;
+}
+
+function pa_sync_specifications_rest(WP_REST_Request $req) {
+    $specs  = $req->get_param('specifications');
+    $result = [];
+    foreach ((is_array($specs) ? $specs : []) as $s) {
+        $name = sanitize_text_field($s['name'] ?? '');
+        if ($name === '') continue;
+        $term_id = pa_upsert_term_by_slug(sanitize_title($name), $name, 'pa_specification');
+        if (!$term_id) continue;
+        update_term_meta($term_id, '_pa_spec_fields', wp_json_encode(is_array($s['fields'] ?? null) ? $s['fields'] : []));
+        $result[$name] = $term_id;
+    }
+    return ['term_ids' => $result];
+}
+
+function pa_sync_delivery_times_rest(WP_REST_Request $req) {
+    $times  = $req->get_param('delivery_times');
+    $result = [];
+    foreach ((is_array($times) ? $times : []) as $t) {
+        $label = sanitize_text_field($t['label'] ?? '');
+        if ($label === '') continue;
+        $term_id = pa_upsert_term_by_slug(sanitize_title($label), $label, 'pa_delivery_time');
+        if (!$term_id) continue;
+        update_term_meta($term_id, '_pa_dt_days_min', intval($t['days_min'] ?? 0));
+        update_term_meta($term_id, '_pa_dt_days_max', intval($t['days_max'] ?? 0));
+        $result[$label] = $term_id;
+    }
+    return ['term_ids' => $result];
+}
+
+// ── Blueprint/Spezifikation/Lieferzeit: Admin-Verwaltung von der Website aus ──
+// Gleiche Fachlogik wie die App (canApplyField/applyBlueprintToLinkedProducts),
+// damit auf der Website angelegte oder bearbeitete Blueprints sich identisch
+// verhalten — inkl. Kaskade auf bereits verknüpfte Produkte.
+
+function pa_can_apply_field($current_owner, $source_type) {
+    if ($current_owner === 'manual') return false;
+    if ($current_owner === 'art' && $source_type === 'gattung') return false;
+    return true;
+}
+
+// Feld-Key aus einer Blueprint (oder Spezifikation) auf ein Produkt anwenden —
+// selbe Zielfelder wie add_product_ajax, nur adressierbar über einen generischen Key.
+function pa_apply_blueprint_field_to_product(int $product_id, string $key, $value) {
+    switch ($key) {
+        case 'unit_type':
+            update_post_meta($product_id, '_unit_type', sanitize_text_field($value)); break;
+        case 'liter_content':
+            update_post_meta($product_id, '_product_liters', floatval($value)); break;
+        case 'product_type':
+            update_post_meta($product_id, '_product_type_custom', sanitize_text_field($value)); break;
+        case 'tax_class':
+            $product = wc_get_product($product_id);
+            if ($product) { $product->set_tax_class(sanitize_text_field($value) === 'standard' ? '' : sanitize_text_field($value)); $product->save(); }
+            break;
+        case 'delivery_time':
+            update_post_meta($product_id, '_pa_delivery_time', sanitize_text_field($value)); break;
+        case 'differential_taxation':
+            update_post_meta($product_id, '_differential_taxation', $value ? 1 : 0); break;
+        case 'stock':
+            $product = wc_get_product($product_id);
+            if ($product) { $product->set_stock_quantity(intval($value)); $product->set_manage_stock(true); $product->save(); }
+            break;
+        case 'low_stock_threshold':
+            update_post_meta($product_id, '_custom_low_stock_threshold', intval($value)); break;
+        case 'never_low_stock':
+            update_post_meta($product_id, '_never_low_stock', $value ? 1 : 0); break;
+        case 'short_description':
+            wp_update_post(['ID' => $product_id, 'post_excerpt' => wp_kses_post($value)]); break;
+        case 'description':
+            wp_update_post(['ID' => $product_id, 'post_content' => wp_kses_post($value)]); break;
+        case 'specification_id':
+            pa_apply_specification_to_product($product_id, intval($value)); break;
+        case 'care_light': case 'care_light_tolerates_min': case 'care_light_tolerates_max':
+        case 'care_water': case 'care_water_tolerates_min': case 'care_water_tolerates_max':
+        case 'care_winter': case 'care_winterhaerte':
+            update_post_meta($product_id, '_pa_' . $key, sanitize_text_field($value)); break;
+        case 'care_temp_min': case 'care_temp_max':
+            update_post_meta($product_id, '_pa_' . $key, (string) floatval($value)); break;
+    }
+}
+
+// Spezifikation (Topfgröße/Form/Gewicht/Maße) auf ein Produkt anwenden — setzt
+// sowohl die Verknüpfung als auch das tatsächliche WC-Gewicht/Versandmaße,
+// da WooCommerce für Versandkosten reale Zahlenwerte braucht.
+function pa_apply_specification_to_product(int $product_id, int $spec_term_id) {
+    if (!$spec_term_id) { delete_post_meta($product_id, '_pa_specification'); return; }
+    update_post_meta($product_id, '_pa_specification', $spec_term_id);
+    $fields = json_decode((string) get_term_meta($spec_term_id, '_pa_spec_fields', true), true) ?: [];
+    $product = wc_get_product($product_id);
+    if (!$product) return;
+    if (isset($fields['weight'])) {
+        $kg = ($fields['weight_unit'] ?? 'g') === 'kg' ? (float) $fields['weight'] : (float) $fields['weight'] / 1000;
+        $product->set_weight((string) $kg);
+    }
+    if (isset($fields['width_cm']))  $product->set_length((string) $fields['width_cm']);
+    if (isset($fields['width_cm']))  $product->set_width((string) $fields['width_cm']);
+    if (isset($fields['height_cm'])) $product->set_height((string) $fields['height_cm']);
+    $product->save();
+}
+
+// Wendet alle anwendbaren (noch nicht 'manual'/höher-priorisiert belegten)
+// Felder einer Blueprint auf ein Produkt an und pflegt dessen blueprint_links.
+function pa_cascade_blueprint_to_product(int $product_id, string $source_type, array $fields) {
+    $links = json_decode((string) get_post_meta($product_id, '_pa_blueprint_links', true), true) ?: [];
+    $changed = false;
+    foreach ($fields as $key => $value) {
+        if (!pa_can_apply_field($links[$key] ?? null, $source_type)) continue;
+        pa_apply_blueprint_field_to_product($product_id, $key, $value);
+        $links[$key] = $source_type;
+        $changed = true;
+    }
+    foreach (array_keys($links) as $key) {
+        if ($links[$key] === $source_type && !array_key_exists($key, $fields)) { unset($links[$key]); $changed = true; }
+    }
+    if ($changed) update_post_meta($product_id, '_pa_blueprint_links', wp_json_encode($links));
+}
+
+function pa_cascade_blueprint_to_linked_products(int $term_id, string $source_type, array $fields) {
+    $meta_key = $source_type === 'gattung' ? '_pa_gattung_bp' : '_pa_art_bp';
+    $products = get_posts([
+        'post_type' => 'product', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids',
+        'meta_query' => [['key' => $meta_key, 'value' => $term_id]],
+    ]);
+    foreach ($products as $pid) pa_cascade_blueprint_to_product($pid, $source_type, $fields);
+}
+
+// Dünger-Auto-Link (App: ProductForm.jsx Pflegehinweise, Feld "Düngertyp") —
+// die App speichert pro Pflanze nur den gewünschten Typ, keine feste Produkt-
+// ID, damit der Link automatisch entsteht, sobald irgendwann ein Dünger-
+// Produkt dieses Typs angelegt wird (siehe content-single-product.php).
+function pa_find_fertilizer_product_id($type) {
+    if (!$type) return 0;
+    $ids = get_posts([
+        'post_type'   => 'product',
+        'post_status' => 'publish',
+        'meta_query'  => [
+            ['key' => '_product_type_custom', 'value' => 'fertilizer'],
+            ['key' => '_pa_fertilizer_type',  'value' => $type],
+        ],
+        'fields'      => 'ids',
+        'numberposts' => 1,
+    ]);
+    return $ids ? (int) $ids[0] : 0;
+}
+
+add_action('wp_ajax_pa_get_blueprints', 'pa_get_blueprints_ajax');
+function pa_get_blueprints_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $terms = get_terms(['taxonomy' => 'pa_blueprint', 'hide_empty' => false]);
+    $gattungen = []; $arten = [];
+    foreach ($terms as $t) {
+        $type    = get_term_meta($t->term_id, '_pa_bp_type', true);
+        $gattung = get_term_meta($t->term_id, '_pa_bp_gattung', true);
+        $fields  = json_decode((string) get_term_meta($t->term_id, '_pa_bp_fields', true), true) ?: [];
+        if ($type === 'gattung') $gattungen[] = ['id' => $t->term_id, 'name' => $t->name, 'fields' => $fields];
+        elseif ($type === 'art') $arten[] = ['id' => $t->term_id, 'name' => $t->name, 'gattung' => $gattung, 'fields' => $fields];
+    }
+    usort($gattungen, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+    usort($arten, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+    wp_send_json_success(['gattungen' => $gattungen, 'arten' => $arten]);
+}
+
+add_action('wp_ajax_pa_save_blueprint', 'pa_save_blueprint_ajax');
+function pa_save_blueprint_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $type    = sanitize_text_field($_POST['type'] ?? '');
+    $name    = sanitize_text_field($_POST['name'] ?? '');
+    $gattung = sanitize_text_field($_POST['gattung'] ?? ''); // nur für type=art
+    $fields  = json_decode(stripslashes($_POST['fields'] ?? '{}'), true);
+    if (!is_array($fields)) $fields = [];
+    if (!in_array($type, ['gattung', 'art'], true) || $name === '') wp_send_json_error('Ungültige Eingabe');
+    if ($type === 'art' && $gattung === '') wp_send_json_error('Gattung fehlt');
+
+    $term_id = intval($_POST['id'] ?? 0);
+    $slug    = $type === 'gattung' ? ('gattung-' . sanitize_title($name)) : ('art-' . sanitize_title($gattung) . '-' . sanitize_title($name));
+    if ($term_id) {
+        $term = get_term($term_id, 'pa_blueprint');
+        if (!$term || is_wp_error($term)) wp_send_json_error('Nicht gefunden');
+        if ($term->name !== $name || $term->slug !== $slug) wp_update_term($term_id, 'pa_blueprint', ['name' => $name, 'slug' => $slug]);
+    } else {
+        $term_id = pa_upsert_term_by_slug($slug, $name, 'pa_blueprint');
+        if (!$term_id) wp_send_json_error('Konnte nicht angelegt werden');
+    }
+    update_term_meta($term_id, '_pa_bp_type', $type);
+    update_term_meta($term_id, '_pa_bp_gattung', $gattung);
+    update_term_meta($term_id, '_pa_bp_fields', wp_json_encode($fields));
+
+    pa_cascade_blueprint_to_linked_products($term_id, $type, $fields);
+
+    wp_send_json_success(['id' => $term_id, 'name' => $name, 'fields' => $fields]);
+}
+
+add_action('wp_ajax_pa_delete_blueprint', 'pa_delete_blueprint_ajax');
+function pa_delete_blueprint_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $term_id = intval($_POST['id'] ?? 0);
+    $term = get_term($term_id, 'pa_blueprint');
+    if (!$term || is_wp_error($term)) wp_send_json_error('Nicht gefunden');
+    $type = get_term_meta($term_id, '_pa_bp_type', true);
+
+    // Verlinkte Produkte behalten ihren letzten Feldstand, verlieren nur die Verknüpfung.
+    $meta_key = $type === 'gattung' ? '_pa_gattung_bp' : '_pa_art_bp';
+    $products = get_posts(['post_type' => 'product', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids',
+        'meta_query' => [['key' => $meta_key, 'value' => $term_id]]]);
+    foreach ($products as $pid) {
+        delete_post_meta($pid, $meta_key);
+        $links = json_decode((string) get_post_meta($pid, '_pa_blueprint_links', true), true) ?: [];
+        foreach (array_keys($links) as $key) if ($links[$key] === $type) unset($links[$key]);
+        update_post_meta($pid, '_pa_blueprint_links', wp_json_encode($links));
+    }
+
+    // Gattung löschen: zugehörige Arten fallen auf "unverknüpft" (nicht mitgelöscht,
+    // gleiches Verhalten wie deleteGattung/deleteArt in der App).
+    if ($type === 'gattung') {
+        $art_terms = get_terms(['taxonomy' => 'pa_blueprint', 'hide_empty' => false,
+            'meta_query' => [['key' => '_pa_bp_gattung', 'value' => $term->name]]]);
+        foreach ($art_terms as $at) {
+            $art_products = get_posts(['post_type' => 'product', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids',
+                'meta_query' => [['key' => '_pa_art_bp', 'value' => $at->term_id]]]);
+            foreach ($art_products as $pid) {
+                delete_post_meta($pid, '_pa_art_bp');
+                $links = json_decode((string) get_post_meta($pid, '_pa_blueprint_links', true), true) ?: [];
+                foreach (array_keys($links) as $key) if ($links[$key] === 'art') unset($links[$key]);
+                update_post_meta($pid, '_pa_blueprint_links', wp_json_encode($links));
+            }
+            wp_delete_term($at->term_id, 'pa_blueprint');
+        }
+    }
+
+    wp_delete_term($term_id, 'pa_blueprint');
+    wp_send_json_success();
+}
+
+add_action('wp_ajax_pa_get_specifications', 'pa_get_specifications_ajax');
+function pa_get_specifications_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $terms = get_terms(['taxonomy' => 'pa_specification', 'hide_empty' => false]);
+    $specs = [];
+    foreach ($terms as $t) {
+        $fields = json_decode((string) get_term_meta($t->term_id, '_pa_spec_fields', true), true) ?: [];
+        $specs[] = array_merge(['id' => $t->term_id, 'name' => $t->name], $fields);
+    }
+    usort($specs, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+    wp_send_json_success($specs);
+}
+
+add_action('wp_ajax_pa_save_specification', 'pa_save_specification_ajax');
+function pa_save_specification_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $name = sanitize_text_field($_POST['name'] ?? '');
+    if ($name === '') wp_send_json_error('Name fehlt');
+    $fields = [
+        'pot_size_cm' => floatval($_POST['pot_size_cm'] ?? 0),
+        'shape'       => in_array($_POST['shape'] ?? '', ['round', 'square'], true) ? $_POST['shape'] : 'round',
+        'weight'      => floatval($_POST['weight'] ?? 0),
+        'weight_unit' => ($_POST['weight_unit'] ?? 'g') === 'kg' ? 'kg' : 'g',
+        'height_cm'   => isset($_POST['height_cm']) && $_POST['height_cm'] !== '' ? floatval($_POST['height_cm']) : null,
+        'width_cm'    => isset($_POST['width_cm'])  && $_POST['width_cm']  !== '' ? floatval($_POST['width_cm'])  : null,
+    ];
+
+    $term_id = intval($_POST['id'] ?? 0);
+    if ($term_id) {
+        $term = get_term($term_id, 'pa_specification');
+        if (!$term || is_wp_error($term)) wp_send_json_error('Nicht gefunden');
+        if ($term->name !== $name) wp_update_term($term_id, 'pa_specification', ['name' => $name, 'slug' => sanitize_title($name)]);
+    } else {
+        $term_id = pa_upsert_term_by_slug(sanitize_title($name), $name, 'pa_specification');
+        if (!$term_id) wp_send_json_error('Konnte nicht angelegt werden');
+    }
+    update_term_meta($term_id, '_pa_spec_fields', wp_json_encode($fields));
+    wp_send_json_success(array_merge(['id' => $term_id, 'name' => $name], $fields));
+}
+
+add_action('wp_ajax_pa_get_delivery_times', 'pa_get_delivery_times_ajax');
+function pa_get_delivery_times_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $terms = get_terms(['taxonomy' => 'pa_delivery_time', 'hide_empty' => false]);
+    $times = [];
+    foreach ($terms as $t) {
+        $times[] = [
+            'id' => $t->term_id, 'label' => $t->name,
+            'days_min' => (int) get_term_meta($t->term_id, '_pa_dt_days_min', true),
+            'days_max' => (int) get_term_meta($t->term_id, '_pa_dt_days_max', true),
+        ];
+    }
+    usort($times, fn($a, $b) => $a['days_min'] <=> $b['days_min']);
+    wp_send_json_success($times);
+}
+
+add_action('wp_ajax_pa_save_delivery_time', 'pa_save_delivery_time_ajax');
+function pa_save_delivery_time_ajax() {
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    $n = $_POST['nonce'] ?? '';
+    if (!wp_verify_nonce($n, 'add_product_nonce') && !wp_verify_nonce($n, 'product_list_nonce')) wp_send_json_error('Invalid nonce');
+
+    $label = sanitize_text_field($_POST['label'] ?? '');
+    if ($label === '') wp_send_json_error('Bezeichnung fehlt');
+    $days_min = intval($_POST['days_min'] ?? 0);
+    $days_max = intval($_POST['days_max'] ?? 0);
+
+    $term_id = intval($_POST['id'] ?? 0);
+    if ($term_id) {
+        $term = get_term($term_id, 'pa_delivery_time');
+        if (!$term || is_wp_error($term)) wp_send_json_error('Nicht gefunden');
+        if ($term->name !== $label) wp_update_term($term_id, 'pa_delivery_time', ['name' => $label, 'slug' => sanitize_title($label)]);
+    } else {
+        $term_id = pa_upsert_term_by_slug(sanitize_title($label), $label, 'pa_delivery_time');
+        if (!$term_id) wp_send_json_error('Konnte nicht angelegt werden');
+    }
+    update_term_meta($term_id, '_pa_dt_days_min', $days_min);
+    update_term_meta($term_id, '_pa_dt_days_max', $days_max);
+    wp_send_json_success(['id' => $term_id, 'label' => $label, 'days_min' => $days_min, 'days_max' => $days_max]);
+}
+
 // ── Botanischer Produktname zusammensetzen ────────────────────────────────────
 function pa_compose_product_name(string $gattung, string $art, string $kultivar): string {
     $gattung  = trim($gattung);
@@ -3314,12 +3924,20 @@ function add_product_ajax() {
         wp_send_json_error('Unauthorized');
     }
 
-    $gattung  = sanitize_text_field($_POST['gattung']  ?? '');
-    $art      = sanitize_text_field($_POST['art']      ?? '');
-    $kultivar = sanitize_text_field($_POST['kultivar'] ?? '');
-    $name     = pa_compose_product_name($gattung, $art, $kultivar);
-    if ($name === 'Unbenannt' && !$gattung && !$art && !$kultivar) {
-        wp_send_json_error('Gattung, Art oder Kultivar fehlt');
+    $gattung      = sanitize_text_field($_POST['gattung']      ?? '');
+    $art          = sanitize_text_field($_POST['art']          ?? '');
+    $kultivar     = sanitize_text_field($_POST['kultivar']     ?? '');
+    $product_name = sanitize_text_field($_POST['product_name'] ?? '');
+
+    // Substrat-Produkte haben einen freien Namen statt Gattung/Art/Kultivar
+    $product_type_raw = sanitize_text_field($_POST['product_type'] ?? 'pflanze');
+    if ($product_type_raw === 'substrat' && $product_name !== '') {
+        $name = $product_name;
+    } else {
+        $name = pa_compose_product_name($gattung, $art, $kultivar);
+    }
+    if ($name === 'Unbenannt' && !$gattung && !$art && !$kultivar && $product_name === '') {
+        wp_send_json_error('Name/Produkttitel bzw. Gattung, Art oder Kultivar fehlt');
     }
 
     $product = new WC_Product_Simple();
@@ -3387,7 +4005,7 @@ function add_product_ajax() {
     }
 
     $unit_type    = sanitize_text_field($_POST['unit_type']         ?? 'stueck');
-    $product_type = sanitize_text_field($_POST['product_type']      ?? 'pflanze');
+    $product_type = $product_type_raw;
     update_post_meta($product_id, '_unit_type',           $unit_type);
     update_post_meta($product_id, '_product_type_custom', $product_type);
 
@@ -3418,7 +4036,7 @@ function add_product_ajax() {
     }
 
     update_post_meta($product_id, '_differential_taxation',     intval($_POST['differential_taxation']  ?? 0));
-    update_post_meta($product_id, '_delivery_time_days',        intval($_POST['delivery_time']           ?? 7));
+    update_post_meta($product_id, '_pa_delivery_time',          sanitize_text_field($_POST['delivery_time'] ?? ''));
     update_post_meta($product_id, '_never_low_stock',           intval($_POST['never_low_stock']         ?? 0));
     update_post_meta($product_id, '_custom_low_stock_threshold',
         intval($_POST['custom_low_stock'] ?? 0) ? intval($_POST['low_stock_threshold'] ?? 5) : 5
@@ -3438,6 +4056,11 @@ function add_product_ajax() {
 	$care_water = sanitize_text_field($_POST["care_water"] ?? "");
 	update_post_meta($product_id, "_pa_care_water", $care_water);
 
+	update_post_meta($product_id, "_pa_care_light_tolerates_min", sanitize_text_field($_POST["care_light_tolerates_min"] ?? ""));
+	update_post_meta($product_id, "_pa_care_light_tolerates_max", sanitize_text_field($_POST["care_light_tolerates_max"] ?? ""));
+	update_post_meta($product_id, "_pa_care_water_tolerates_min", sanitize_text_field($_POST["care_water_tolerates_min"] ?? ""));
+	update_post_meta($product_id, "_pa_care_water_tolerates_max", sanitize_text_field($_POST["care_water_tolerates_max"] ?? ""));
+
 	$care_winter = sanitize_text_field($_POST["care_winter"] ?? "");
 	update_post_meta($product_id, "_pa_care_winter", $care_winter);
 
@@ -3451,6 +4074,26 @@ function add_product_ajax() {
 	$care_winterhaerte = sanitize_text_field($_POST["care_winterhaerte"] ?? "");
 	if (!in_array($care_winterhaerte, $allowed_wh, true)) $care_winterhaerte = '';
 	update_post_meta($product_id, "_pa_winterhaerte", $care_winterhaerte);
+
+	// ── Blueprint-Verknüpfung (Gattung/Art) & Spezifikation ────────────────
+	$gattung_bp_id = intval($_POST['gattung_bp_id'] ?? 0);
+	$art_bp_id     = intval($_POST['art_bp_id'] ?? 0);
+	if ($gattung_bp_id) update_post_meta($product_id, '_pa_gattung_bp', $gattung_bp_id);
+	else delete_post_meta($product_id, '_pa_gattung_bp');
+	if ($art_bp_id) update_post_meta($product_id, '_pa_art_bp', $art_bp_id);
+	else delete_post_meta($product_id, '_pa_art_bp');
+
+	$blueprint_links = json_decode(stripslashes($_POST['blueprint_links'] ?? '{}'), true);
+	update_post_meta($product_id, '_pa_blueprint_links', wp_json_encode(is_array($blueprint_links) ? $blueprint_links : []));
+
+	// Nur die Verknüpfung merken — Gewicht/Maße kommen aus den regulären
+	// Formularfeldern (von der gewählten Spezifikation nur vorausgefüllt, hier
+	// aber ggf. schon manuell angepasst), nicht nochmal aus der Spezifikation
+	// überschrieben. Die Kaskade auf bereits verknüpfte Produkte nutzt dafür
+	// separat pa_apply_specification_to_product().
+	$specification_id = intval($_POST['specification_id'] ?? 0);
+	if ($specification_id) update_post_meta($product_id, '_pa_specification', $specification_id);
+	else delete_post_meta($product_id, '_pa_specification');
 
 	$species_id = intval($_POST["plant_species_id"] ?? 0);
 	if ($species_id) {
@@ -3526,6 +4169,98 @@ function add_product_ajax() {
     }
 
     wp_send_json_success(['product_id' => $product_id, 'product_name' => $product->get_name()]);
+}
+
+// ── Bild-Upload (Zuschnitt/Wasserzeichen) — Produkt-Neuanlage ────────────────
+add_action('wp_ajax_upload_cropped_image', 'pa_upload_cropped_image_ajax');
+
+function pa_upload_cropped_image_ajax() {
+    check_ajax_referer('add_product_nonce', 'nonce');
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+    if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        wp_send_json_error('Kein Bild hochgeladen');
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+
+    $attachment_id = media_handle_sideload($_FILES['image'], 0);
+    if (is_wp_error($attachment_id)) {
+        wp_send_json_error($attachment_id->get_error_message());
+    }
+
+    $src = wp_get_attachment_image_src($attachment_id, 'thumbnail');
+    wp_send_json_success([
+        'attachment_id' => $attachment_id,
+        'thumb_url'     => $src ? $src[0] : wp_get_attachment_url($attachment_id),
+    ]);
+}
+
+// ── Bild-Upload (Zuschnitt/Wasserzeichen) — Produkt-Bearbeitung ──────────────
+add_action('wp_ajax_upload_cropped_image_for_edit', 'pa_upload_cropped_image_for_edit_ajax');
+
+function pa_upload_cropped_image_for_edit_ajax() {
+    check_ajax_referer('product_list_nonce', 'nonce');
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+
+    $product_id = intval($_POST['product_id'] ?? 0);
+    $product    = wc_get_product($product_id);
+    if (!$product) wp_send_json_error('Produkt nicht gefunden');
+
+    if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        wp_send_json_error('Kein Bild hochgeladen');
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+
+    $attachment_id = media_handle_sideload($_FILES['image'], $product_id);
+    if (is_wp_error($attachment_id)) {
+        wp_send_json_error($attachment_id->get_error_message());
+    }
+
+    // Erstes Bild wird Titelbild, alle weiteren gehen in die Galerie
+    if (!$product->get_image_id()) {
+        $product->set_image_id($attachment_id);
+    } else {
+        $gallery   = $product->get_gallery_image_ids();
+        $gallery[] = $attachment_id;
+        $product->set_gallery_image_ids($gallery);
+    }
+    $product->save();
+    wc_delete_product_transients($product_id);
+
+    $src = wp_get_attachment_image_src($attachment_id, 'thumbnail');
+    wp_send_json_success([
+        'attachment_id' => $attachment_id,
+        'thumb_url'     => $src ? $src[0] : wp_get_attachment_url($attachment_id),
+    ]);
+}
+
+// ── Produktbild entfernen (Titelbild oder Galerie) ───────────────────────────
+add_action('wp_ajax_delete_product_image', 'pa_delete_product_image_ajax');
+
+function pa_delete_product_image_ajax() {
+    check_ajax_referer('product_list_nonce', 'nonce');
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+
+    $product_id = intval($_POST['product_id'] ?? 0);
+    $image_id   = intval($_POST['image_id']   ?? 0);
+    $product    = wc_get_product($product_id);
+    if (!$product) wp_send_json_error('Produkt nicht gefunden');
+
+    if ((int) $product->get_image_id() === $image_id) {
+        $product->set_image_id('');
+    } else {
+        $gallery = array_values(array_diff($product->get_gallery_image_ids(), [$image_id]));
+        $product->set_gallery_image_ids($gallery);
+    }
+    $product->save();
+    wc_delete_product_transients($product_id);
+
+    wp_send_json_success();
 }
 
 // ── Produkt-Detail für Edit-Modal ─────────────────────────────────────────────
@@ -3604,12 +4339,20 @@ function get_product_detail_ajax() {
         'width'                 => $product->get_width(),
         'height'                => $product->get_height(),
         'shipping_class_id'     => (int) $product->get_shipping_class_id(),
-        'delivery_time_days'    => (int) get_post_meta($product_id, '_delivery_time_days', true),
+        'delivery_time'         => get_post_meta($product_id, '_pa_delivery_time', true),
+        'gattung_bp_id'         => (int) get_post_meta($product_id, '_pa_gattung_bp', true),
+        'art_bp_id'             => (int) get_post_meta($product_id, '_pa_art_bp', true),
+        'specification_id'      => (int) get_post_meta($product_id, '_pa_specification', true),
+        'blueprint_links'       => get_post_meta($product_id, '_pa_blueprint_links', true) ?: '{}',
         'gattung'               => get_post_meta($product_id, '_pa_gattung', true),
         'art'                   => get_post_meta($product_id, '_pa_art', true),
         'kultivar'              => get_post_meta($product_id, '_pa_kultivar', true),
         'care_light'            => get_post_meta($product_id, '_pa_care_light', true),
         'care_water'            => get_post_meta($product_id, '_pa_care_water', true),
+        'care_light_tolerates_min' => get_post_meta($product_id, '_pa_care_light_tolerates_min', true),
+        'care_light_tolerates_max' => get_post_meta($product_id, '_pa_care_light_tolerates_max', true),
+        'care_water_tolerates_min' => get_post_meta($product_id, '_pa_care_water_tolerates_min', true),
+        'care_water_tolerates_max' => get_post_meta($product_id, '_pa_care_water_tolerates_max', true),
         'care_winter'           => get_post_meta($product_id, '_pa_care_winter', true),
         'care_winterhaerte'     => get_post_meta($product_id, '_pa_winterhaerte', true),
         'care_temp_min'         => get_post_meta($product_id, '_pa_care_temp_min', true),
@@ -3800,8 +4543,12 @@ function update_product_field_ajax() {
             update_post_meta($product_id, '_never_low_stock', intval($value));
             $needs_wc_save = false;
             break;
-        case 'delivery_time_days':
-            update_post_meta($product_id, '_delivery_time_days', intval($value));
+        case 'delivery_time':
+            update_post_meta($product_id, '_pa_delivery_time', sanitize_text_field($value));
+            $needs_wc_save = false;
+            break;
+        case 'specification_id':
+            pa_apply_specification_to_product($product_id, intval($value));
             $needs_wc_save = false;
             break;
         case 'care_light':
@@ -3810,6 +4557,22 @@ function update_product_field_ajax() {
             break;
         case 'care_water':
             update_post_meta($product_id, '_pa_care_water', sanitize_text_field($value));
+            $needs_wc_save = false;
+            break;
+        case 'care_light_tolerates_min':
+            update_post_meta($product_id, '_pa_care_light_tolerates_min', sanitize_text_field($value));
+            $needs_wc_save = false;
+            break;
+        case 'care_light_tolerates_max':
+            update_post_meta($product_id, '_pa_care_light_tolerates_max', sanitize_text_field($value));
+            $needs_wc_save = false;
+            break;
+        case 'care_water_tolerates_min':
+            update_post_meta($product_id, '_pa_care_water_tolerates_min', sanitize_text_field($value));
+            $needs_wc_save = false;
+            break;
+        case 'care_water_tolerates_max':
+            update_post_meta($product_id, '_pa_care_water_tolerates_max', sanitize_text_field($value));
             $needs_wc_save = false;
             break;
         case 'care_winter':
@@ -4217,8 +4980,9 @@ function pa_reject_deal_ajax() {
 add_action('wp_ajax_pa_reject_deal', 'pa_reject_deal_ajax');
 
 // Shared deal popup HTML used on order-received page and account page
-function pa_deal_popup_html(int $order_id, array $platforms, string $nonce, string $ajax): string {
+function pa_deal_popup_html(int $order_id, array $platforms, string $nonce, string $ajax, bool $show_banner = true): string {
     ob_start();
+    if ($show_banner) :
     ?>
 <div class="pa-deal-banner" style="margin-top:28px;padding:18px 22px;background:#f0faf4;border:1px solid #b7dfc4;border-radius:6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
     <div style="flex:1;min-width:200px;">
@@ -4227,6 +4991,7 @@ function pa_deal_popup_html(int $order_id, array $platforms, string $nonce, stri
     </div>
     <button onclick="paOpenDeal(<?php echo intval($order_id); ?>)" style="padding:10px 20px;background:#2d6a4f;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;">Rabattcode verdienen</button>
 </div>
+    <?php endif; ?>
 
 <div id="pa-deal-overlay" onclick="if(event.target===this)paCloseDeal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;align-items:center;justify-content:center;">
 <div style="background:#fff;border-radius:10px;padding:30px;max-width:480px;width:92%;position:relative;max-height:88vh;overflow-y:auto;">
@@ -5300,7 +6065,7 @@ function pa_account_deal_popup_footer() {
         function($p) { return !empty($p['active']); }
     ));
     if (empty($platforms)) return;
-    echo pa_deal_popup_html(0, $platforms, wp_create_nonce('pa_deal_nonce'), admin_url('admin-ajax.php'));
+    echo pa_deal_popup_html(0, $platforms, wp_create_nonce('pa_deal_nonce'), admin_url('admin-ajax.php'), false);
     ?>
     <script>
     document.querySelectorAll('a.pa-deal[href^="#pa-deal-"]').forEach(function(btn) {

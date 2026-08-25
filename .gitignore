@@ -20,3 +20,15 @@ app/public/wp-content/cache/
 *.tmp
 .DS_Store
 Thumbs.db
+
+# ── Vollständige DB-Dumps / Seiten-Backups (enthalten Kundendaten,
+#    nie committen — siehe History-Bereinigung 2026-08-25) ────────
+app/sql/*.sql
+app/sql/*.tmp
+app/public/wp-content/wpvividbackups/
+
+# ── Desktop-App (Electron) ─────────────────────────────────────────
+desktop-app/node_modules/
+desktop-app/dist/
+desktop-app/dist-electron/
+desktop-app/*.db
