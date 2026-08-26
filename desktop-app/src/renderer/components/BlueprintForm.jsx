@@ -7,11 +7,12 @@ import TagPool from './TagPool.jsx'
 import CategoryAssignPicker from './CategoryAssignPicker.jsx'
 import { Section, Row, Field, Toggle } from './FormPrimitives.jsx'
 import { ToastContext } from '../App.jsx'
-import { CARE_LIGHT_OPTIONS, CARE_WATER_OPTIONS } from '../../shared/constants.js'
+import { CARE_LIGHT_OPTIONS, CARE_WATER_OPTIONS, CARE_FERTILIZER_OPTIONS, FERTILIZER_TYPES } from '../../shared/constants.js'
 
 const EMPTY_STATE = {
   name: '', common_name: '',
-  unit_type: '', liter_content: '', product_type: '',
+  unit_type: '', liter_content: '', weight_content: '', product_type: '',
+  substrate_display_text: '',
   tax_class: '', tax_class_id: null, delivery_time: '', differential_taxation: '',
   stock: '', low_stock_threshold: '', never_low_stock: '',
   short_description: '', description: '',
@@ -21,6 +22,7 @@ const EMPTY_STATE = {
   care_winter: '',
   care_temp_min: '', care_temp_max: '',
   care_temp_ausgepflanzt_min: '', care_temp_ausgepflanzt_max: '',
+  fertilizer_type_choice: '', fertilizer_amount: '',
   category_ids: [],
 }
 
@@ -36,7 +38,9 @@ function unpackFields(fields) {
     common_name: f.common_name ?? '',
     unit_type: f.unit_type ?? '',
     liter_content: f.liter_content != null ? String(f.liter_content) : '',
+    weight_content: f.weight_content != null ? String(f.weight_content) : '',
     product_type: f.product_type ?? '',
+    substrate_display_text: f.substrate_display_text ?? '',
     tax_class: f.tax_class ?? '',
     tax_class_id: f.tax_class_id ?? null,
     delivery_time: f.delivery_time ?? '',
@@ -58,6 +62,8 @@ function unpackFields(fields) {
     care_temp_max: f.care_temp_max != null ? String(f.care_temp_max) : '',
     care_temp_ausgepflanzt_min: f.care_temp_ausgepflanzt_min != null ? String(f.care_temp_ausgepflanzt_min) : '',
     care_temp_ausgepflanzt_max: f.care_temp_ausgepflanzt_max != null ? String(f.care_temp_ausgepflanzt_max) : '',
+    fertilizer_type_choice: f.fertilizer_type_choice ?? '',
+    fertilizer_amount: f.fertilizer_amount ?? '',
   }
 }
 
@@ -69,7 +75,9 @@ function buildFields(state, description) {
   if (state.common_name.trim()) f.common_name = state.common_name
   if (state.unit_type) f.unit_type = state.unit_type
   if (state.unit_type === 'liter' && state.liter_content !== '') f.liter_content = parseFloat(state.liter_content)
+  if (state.unit_type === 'kg' && state.weight_content !== '') f.weight_content = parseFloat(state.weight_content)
   if (state.product_type) f.product_type = state.product_type
+  if (state.product_type === 'substrate' && state.substrate_display_text.trim()) f.substrate_display_text = state.substrate_display_text
   // tax_class_id only travels alongside a real (already WC-synced) tax_class
   // slug — persisting the id without it would let a blueprint apply an id
   // whose text half never actually reaches products.
@@ -96,6 +104,8 @@ function buildFields(state, description) {
   if (state.care_temp_max !== '') f.care_temp_max = parseFloat(state.care_temp_max)
   if (state.care_temp_ausgepflanzt_min !== '') f.care_temp_ausgepflanzt_min = parseFloat(state.care_temp_ausgepflanzt_min)
   if (state.care_temp_ausgepflanzt_max !== '') f.care_temp_ausgepflanzt_max = parseFloat(state.care_temp_ausgepflanzt_max)
+  if (state.fertilizer_type_choice) f.fertilizer_type_choice = state.fertilizer_type_choice
+  if (state.fertilizer_amount) f.fertilizer_amount = state.fertilizer_amount
   return f
 }
 
@@ -217,7 +227,7 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
               <Row>
                 <Field label="Einheit">
                   <Toggle
-                    options={[{ value: '', label: '— keine Vorgabe —' }, { value: 'piece', label: 'Stück' }, { value: 'liter', label: 'Liter' }]}
+                    options={[{ value: '', label: '— keine Vorgabe —' }, { value: 'piece', label: 'Stück' }, { value: 'liter', label: 'Liter' }, { value: 'kg', label: 'kg' }]}
                     value={form.unit_type}
                     onChange={v => set('unit_type', v)}
                   />
@@ -225,6 +235,11 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
                 {form.unit_type === 'liter' && (
                   <Field label="Inhalt (Liter)">
                     <input className="input" type="number" step="0.1" min="0" value={form.liter_content} onChange={e => set('liter_content', e.target.value)} placeholder="1.0" />
+                  </Field>
+                )}
+                {form.unit_type === 'kg' && (
+                  <Field label="Inhalt (kg)">
+                    <input className="input" type="number" step="0.1" min="0" value={form.weight_content} onChange={e => set('weight_content', e.target.value)} placeholder="5.0" />
                   </Field>
                 )}
               </Row>
@@ -237,6 +252,13 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
                   />
                 </Field>
               </Row>
+              {form.product_type === 'substrate' && (
+                <Field label="Website-Text" full hint="wird nur angezeigt, wenn bei einem Substrat-Produkt oben Verkaufe ich aktiviert ist">
+                  <textarea className="input" rows={3} value={form.substrate_display_text}
+                    onChange={e => set('substrate_display_text', e.target.value)}
+                    placeholder="z. B. Torffreie Bio-Erde speziell für Pelargonien..." />
+                </Field>
+              )}
             </Section>
 
             <Section title="Steuer & Versand" defaultOpen={false}>
@@ -357,11 +379,9 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
                   </select>
                 </Field>
               </Row>
-              <Row>
-                <Field label="Pflegehinweise">
-                  <input className="input" value={form.care_winter} onChange={e => set('care_winter', e.target.value)} placeholder="z. B. hell und kühl, min. 5 °C" />
-                </Field>
-              </Row>
+              <Field label="Pflegehinweise" full>
+                <textarea className="input" rows={3} value={form.care_winter} onChange={e => set('care_winter', e.target.value)} placeholder="z. B. hell und kühl, min. 5 °C" />
+              </Field>
               <Row>
                 <Field label="Temp. min. (Topf, °C)">
                   <input className="input" type="number" step="1" value={form.care_temp_min} onChange={e => set('care_temp_min', e.target.value)} placeholder="—" />
@@ -376,6 +396,19 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
                 </Field>
                 <Field label="Temp. max. (Ausgepflanzt, °C)">
                   <input className="input" type="number" step="1" value={form.care_temp_ausgepflanzt_max} onChange={e => set('care_temp_ausgepflanzt_max', e.target.value)} placeholder="—" />
+                </Field>
+              </Row>
+              <Row>
+                <Field label="Düngertyp">
+                  <select className="input" value={form.fertilizer_type_choice} onChange={e => set('fertilizer_type_choice', e.target.value)}>
+                    <option value="">— keine Vorgabe —</option>
+                    {FERTILIZER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </Field>
+                <Field label="Düngemenge">
+                  <select className="input" value={form.fertilizer_amount} onChange={e => set('fertilizer_amount', e.target.value)}>
+                    {CARE_FERTILIZER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
                 </Field>
               </Row>
             </Section>

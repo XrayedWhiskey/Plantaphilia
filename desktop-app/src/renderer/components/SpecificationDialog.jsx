@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
-export default function SpecificationDialog({ onSave, onCancel, editSpec = null }) {
+export default function SpecificationDialog({ onSave, onCancel, editSpec = null, specType = 'plant' }) {
+  const isPackage = specType === 'package'
   const [potSize, setPotSize] = useState('')
   const [shape, setShape] = useState('round') // 'round' or 'square'
   const [weight, setWeight] = useState('')
@@ -23,19 +24,23 @@ export default function SpecificationDialog({ onSave, onCancel, editSpec = null 
 
   // Generate name from fields
   const generateName = () => {
-    const pot = potSize ? `${potSize}cm` : ''
-    const shapeLabel = shape === 'round' ? 'rund' : 'eckig'
+    const pot = !isPackage && potSize ? `${potSize}cm` : ''
+    const shapeLabel = !isPackage ? (shape === 'round' ? 'rund' : 'eckig') : ''
     const weightLabel = weight ? `${weight} ${weightUnit}` : ''
     const dims = height && width ? `${height} x ${width}` : ''
-    
+
     const parts = [pot, shapeLabel, weightLabel, dims].filter(Boolean)
     return parts.join(' - ')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!potSize || !weight) {
-      alert('Topfgröße und Gewicht sind Pflichtfelder')
+    if (!isPackage && !potSize) {
+      alert('Topfgröße ist Pflichtfeld')
+      return
+    }
+    if (!weight) {
+      alert('Gewicht ist Pflichtfeld')
       return
     }
 
@@ -44,12 +49,15 @@ export default function SpecificationDialog({ onSave, onCancel, editSpec = null 
       const spec = {
         id: editSpec?.id,
         name: generateName(),
-        pot_size_cm: parseFloat(potSize),
+        // Ohne Topfgröße (Substrat/Dünger-Presets) bleibt die NOT-NULL-Spalte
+        // pot_size_cm mit 0 als nie angezeigtem Platzhalter befüllt.
+        pot_size_cm: isPackage ? 0 : parseFloat(potSize),
         shape,
         weight: parseFloat(weight),
         weight_unit: weightUnit,
         height_cm: height ? parseFloat(height) : null,
-        width_cm: width ? parseFloat(width) : null
+        width_cm: width ? parseFloat(width) : null,
+        spec_type: specType,
       }
       await onSave(spec)
     } finally {
@@ -73,12 +81,14 @@ export default function SpecificationDialog({ onSave, onCancel, editSpec = null 
             {editSpec ? 'Spezifikation bearbeiten' : 'Neue Spezifikation'}
           </div>
           <div style={{ fontSize: 11, color: '#9CA59E', marginTop: 2 }}>
-            Topfgröße, Form, Gewicht und Maße
+            {isPackage ? 'Gewicht und Maße' : 'Topfgröße, Form, Gewicht und Maße'}
           </div>
         </div>
 
         {/* Body */}
         <form onSubmit={handleSubmit} style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {!isPackage && (
+          <>
           {/* Topfgröße */}
           <div>
             <label className="label">Topfgröße (cm) *</label>
@@ -134,6 +144,8 @@ export default function SpecificationDialog({ onSave, onCancel, editSpec = null 
               </button>
             </div>
           </div>
+          </>
+          )}
 
           {/* Gewicht */}
           <div>

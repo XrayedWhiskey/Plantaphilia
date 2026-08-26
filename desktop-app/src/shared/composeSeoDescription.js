@@ -25,8 +25,12 @@ function formatPrice(n) {
 }
 
 // data: { product_type, is_variable, gattung, art, kultivar, name,
-//   short_description, price, regular_price, care_light, care_water,
+//   common_name, short_description, price, regular_price,
 //   variants: [{ price, regular_price }] }
+//
+// Immer die gleiche Bauweise (Name[, gängiger Name][, Preis-Segment]: Kurzbeschreibung),
+// nur die vorhandenen Teile — kein Sonderfall-Fließtext mehr, damit die Ausgabe
+// über alle Produkte hinweg einheitlich aussieht.
 export function composeSeoDescription(data) {
   const isPlant = (data.product_type || 'plant') === 'plant'
   const productName = isPlant
@@ -35,27 +39,19 @@ export function composeSeoDescription(data) {
   if (!productName) return ''
 
   const shortDesc = stripHtml(data.short_description)
+  const commonName = isPlant ? (data.common_name || '').trim() : ''
 
   let priceSegment = null
   if (data.is_variable) {
     const prices = (data.variants || [])
       .map(v => Number(v.price || v.regular_price || 0))
       .filter(p => p > 0)
-    if (prices.length > 0) priceSegment = `ab ${formatPrice(Math.min(...prices))}€`
+    if (prices.length > 0) priceSegment = `ab ${formatPrice(Math.min(...prices))}€ kaufen`
   } else {
     const price = Number(data.price || data.regular_price || 0)
-    if (price > 0) priceSegment = `für ${formatPrice(price)}€`
+    if (price > 0) priceSegment = `für ${formatPrice(price)}€ kaufen`
   }
 
-  if (!priceSegment) {
-    // Kein Preis bekannt (z. B. Varianten noch nicht gespeichert) -> alter Fallback
-    if (shortDesc) return truncate(`${productName}: ${shortDesc}`, 155)
-    const careParts = []
-    if (data.care_light) careParts.push(`Licht: ${data.care_light}`)
-    if (data.care_water) careParts.push(`Wasser: ${data.care_water}`)
-    const careLine = careParts.length ? ` ${careParts.join(', ')}.` : ''
-    return truncate(`${productName} online kaufen bei Plantaphilia.${careLine} Sorgfältig verpackt, schnelle Lieferung.`, 155)
-  }
-
-  return truncate(`${productName} ${priceSegment}: ${shortDesc}`, 155)
+  const head = [productName, commonName, priceSegment].filter(Boolean).join(', ')
+  return truncate(shortDesc ? `${head}: ${shortDesc}` : head, 160)
 }

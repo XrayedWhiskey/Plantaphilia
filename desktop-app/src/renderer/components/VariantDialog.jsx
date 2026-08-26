@@ -9,7 +9,7 @@ import { copyImagesToTemp } from '../utils/imageLifecycle.js'
 // `index` scopes this session's temp staging (images/temp/variant-N) so two
 // variants (or the base product's own temp/) never fight over the same
 // "Bild 1" filename while several are being edited across one session.
-export default function VariantDialog({ variant, index, defaultSpecificationId = null, availableSpecs, onSave, onCancel, onSpecCreated, gattungId, gattungName, artId, artName }) {
+export default function VariantDialog({ variant, index, defaultSpecificationId = null, availableSpecs, parentUnitType, parentProductType, onSave, onCancel, onSpecCreated, gattungId, gattungName, artId, artName }) {
   const isEdit = !!variant
   const [name, setName] = useState(variant?.name || '')
   const [sku, setSku] = useState(variant?.sku || '')
@@ -18,7 +18,14 @@ export default function VariantDialog({ variant, index, defaultSpecificationId =
   const [lowStockThreshold, setLowStockThreshold] = useState(variant?.low_stock_threshold ?? '')
   const [neverLowStock, setNeverLowStock] = useState(!!variant?.never_low_stock)
   const [showExactStock, setShowExactStock] = useState(variant ? !!variant.show_exact_stock : true)
-  const [specs, setSpecs] = useState(availableSpecs)
+  // Leer = von der Einheit des Hauptprodukts geerbt; wird beim aktiven Ändern
+  // hier zur expliziten Override nur für diese Variante.
+  const [unitType, setUnitType] = useState(variant?.unit_type || '')
+  const [literContent, setLiterContent] = useState(variant?.liter_content ?? '')
+  const [weightContent, setWeightContent] = useState(variant?.weight_content ?? '')
+  const effectiveUnitType = unitType || parentUnitType || 'piece'
+  const specType = (parentProductType === 'substrate' || parentProductType === 'fertilizer') ? 'package' : 'plant'
+  const [specs, setSpecs] = useState((availableSpecs || []).filter(s => (s.spec_type || 'plant') === specType))
   const [specificationId, setSpecificationId] = useState(variant?.specification_id ?? defaultSpecificationId)
   const [showSpecDialog, setShowSpecDialog] = useState(false)
   const [tagIds, setTagIds] = useState(variant?.tag_ids || [])
@@ -28,7 +35,7 @@ export default function VariantDialog({ variant, index, defaultSpecificationId =
   const handleSaveSpecification = async (spec) => {
     const savedId = await window.api.saveSpecification(spec)
     const fresh = await window.api.getSpecifications() || []
-    setSpecs(fresh)
+    setSpecs(fresh.filter(s => (s.spec_type || 'plant') === specType))
     setSpecificationId(savedId)
     setShowSpecDialog(false)
     onSpecCreated && onSpecCreated(fresh)
@@ -64,6 +71,9 @@ export default function VariantDialog({ variant, index, defaultSpecificationId =
         low_stock_threshold: neverLowStock ? null : (lowStockThreshold ? parseInt(lowStockThreshold, 10) : 3),
         never_low_stock: neverLowStock,
         show_exact_stock: showExactStock,
+        unit_type: unitType,
+        liter_content: literContent !== '' ? parseFloat(literContent) : null,
+        weight_content: weightContent !== '' ? parseFloat(weightContent) : null,
         specification_id: specificationId,
         tag_ids: tagIds,
         images,
@@ -129,6 +139,30 @@ export default function VariantDialog({ variant, index, defaultSpecificationId =
             <span style={{ fontSize: 12, color: '#C8C0AF' }}>Genaue Stückzahl bei niedrigem Bestand anzeigen (sonst nur „Niedriger Bestand")</span>
           </label>
 
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <label className="label">Einheit</label>
+              <select className="input" value={unitType} onChange={e => setUnitType(e.target.value)}>
+                <option value="">— wie Hauptprodukt {parentUnitType === 'liter' ? '(Liter)' : parentUnitType === 'kg' ? '(kg)' : '(Stück)'} —</option>
+                <option value="piece">Stück</option>
+                <option value="liter">Liter</option>
+                <option value="kg">kg</option>
+              </select>
+            </div>
+            {effectiveUnitType === 'liter' && (
+              <div style={{ flex: 1 }}>
+                <label className="label">Inhalt (Liter)</label>
+                <input className="input" type="number" step="0.1" min="0" value={literContent} onChange={e => setLiterContent(e.target.value)} placeholder="1.0" />
+              </div>
+            )}
+            {effectiveUnitType === 'kg' && (
+              <div style={{ flex: 1 }}>
+                <label className="label">Inhalt (kg)</label>
+                <input className="input" type="number" step="0.1" min="0" value={weightContent} onChange={e => setWeightContent(e.target.value)} placeholder="5.0" />
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="label">Produktspezifikation</label>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -172,6 +206,7 @@ export default function VariantDialog({ variant, index, defaultSpecificationId =
 
       {showSpecDialog && (
         <SpecificationDialog
+          specType={specType}
           onSave={handleSaveSpecification}
           onCancel={() => setShowSpecDialog(false)}
         />

@@ -460,6 +460,8 @@ export default function ProductList() {
           index={variantDialog.index}
           defaultSpecificationId={null}
           availableSpecs={availableSpecs}
+          parentUnitType={variantDialog.product.unit_type}
+          parentProductType={variantDialog.product.product_type}
           onSave={saveVariantFromDialog}
           onCancel={() => setVariantDialog(null)}
           onSpecCreated={setAvailableSpecs}

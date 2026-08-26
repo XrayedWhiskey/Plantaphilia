@@ -33,8 +33,15 @@ const EMPTY = {
   care_winter: '',
   care_temp_min: '', care_temp_max: '',
   care_temp_ausgepflanzt_min: '', care_temp_ausgepflanzt_max: '',
-  status: 'draft', is_variable: false,
+  status: 'publish', is_variable: false,
   slug: '', seo_title: '', seo_description: '', seo_focus_keyword: '',
+}
+
+// Truthy-Check (`value ? ... : null`) verwirft die Zahl 0 fälschlich als "leer" —
+// betraf u. a. Temp-Min-Felder, die bei 0°C beim Speichern stillschweigend
+// geleert wurden. Leerstring/null/undefined sind "leer", 0 ist ein echter Wert.
+function numOrNull(value) {
+  return value !== '' && value != null ? parseFloat(value) : null
 }
 
 // Deutsche Umlaute korrekt transliterieren statt sie stumpf wegzufiltern
@@ -62,10 +69,10 @@ function composeSeoTitle(data) {
   return `${productName} kaufen | Plantaphilia`
 }
 
-// Fokus-Keyword: botanischer Name (Gattung + Art, ohne Kultivar) + "kaufen"
+// Fokus-Keyword: botanischer Name (Gattung + Art + Kultivar) + "kaufen"
 function composeSeoFocusKeyword(data) {
   if (isRecipeType(data.product_type)) return ''
-  const botanical = [data.gattung, data.art].filter(Boolean).join(' ').trim()
+  const botanical = composeProductName(data.gattung, data.art, data.kultivar)
   return botanical ? `${botanical} kaufen` : ''
 }
 
@@ -240,6 +247,20 @@ export default function ProductForm({ productId, onClose, onSaved }) {
     setSelectedSpecId(specId)
     setForm(f => ({ ...f, blueprint_links: { ...f.blueprint_links, specification_id: 'manual' } }))
   }
+
+  const handleDeleteSpec = async () => {
+    if (!selectedSpecId) return
+    const spec = availableSpecs.find(s => s.id === selectedSpecId)
+    if (!window.confirm(`Spezifikation „${spec?.name || ''}" wirklich löschen? Andere Produkte, die sie verwenden, verlieren die Zuordnung.`)) return
+    await window.api.deleteSpecification(selectedSpecId)
+    setAvailableSpecs(await window.api.getSpecifications() || [])
+    handleSpecChange('')
+  }
+
+  // Substrat/Dünger haben keinen Topf — eigene Spezifikations-Presets ohne
+  // Topfgröße/Form (siehe spec_type in database.js).
+  const specTypeForProduct = isRecipeType(form.product_type) ? 'package' : 'plant'
+  const filteredSpecs = availableSpecs.filter(s => (s.spec_type || 'plant') === specTypeForProduct)
 
   // Steuerklasse needs both the local catalog id (for TaxClassPicker's own
   // selection) and the resolved WC slug (the actual value that gets synced,
@@ -436,13 +457,13 @@ export default function ProductForm({ productId, onClose, onSaved }) {
       regular_price: parseFloat(data.regular_price) || 0,
       stock: parseInt(data.stock) || 0,
       // Blank + "nie niedriger Bestand" not checked → defaults to 3, not left empty.
-      low_stock_threshold: data.never_low_stock ? null : (data.low_stock_threshold ? parseInt(data.low_stock_threshold) : 3),
-      care_temp_min: data.care_temp_min ? parseFloat(data.care_temp_min) : null,
-      care_temp_max: data.care_temp_max ? parseFloat(data.care_temp_max) : null,
-      care_temp_ausgepflanzt_min: data.care_temp_ausgepflanzt_min ? parseFloat(data.care_temp_ausgepflanzt_min) : null,
-      care_temp_ausgepflanzt_max: data.care_temp_ausgepflanzt_max ? parseFloat(data.care_temp_ausgepflanzt_max) : null,
-      liter_content: data.liter_content ? parseFloat(data.liter_content) : null,
-      weight_content: data.weight_content ? parseFloat(data.weight_content) : null,
+      low_stock_threshold: data.never_low_stock ? null : (data.low_stock_threshold !== '' && data.low_stock_threshold != null ? parseInt(data.low_stock_threshold) : 3),
+      care_temp_min: numOrNull(data.care_temp_min),
+      care_temp_max: numOrNull(data.care_temp_max),
+      care_temp_ausgepflanzt_min: numOrNull(data.care_temp_ausgepflanzt_min),
+      care_temp_ausgepflanzt_max: numOrNull(data.care_temp_ausgepflanzt_max),
+      liter_content: numOrNull(data.liter_content),
+      weight_content: numOrNull(data.weight_content),
       differential_taxation: data.differential_taxation ? 1 : 0,
       never_low_stock: data.never_low_stock ? 1 : 0,
       show_exact_stock: data.show_exact_stock ? 1 : 0,
@@ -732,15 +753,20 @@ export default function ProductForm({ productId, onClose, onSaved }) {
                   onChange={v => setField('unit_type', v)}
                 />
               </Field>
-              {form.unit_type === 'liter' && (
+              {!form.is_variable && form.unit_type === 'liter' && (
                 <Field label="Inhalt (Liter)" hint={linkHint('liter_content')}>
                   <input className="input" type="number" step="0.1" min="0" value={form.liter_content} onChange={e => setField('liter_content', e.target.value)} placeholder="1.0" />
                 </Field>
               )}
-              {form.unit_type === 'kg' && (
+              {!form.is_variable && form.unit_type === 'kg' && (
                 <Field label="Inhalt (kg)" hint={linkHint('weight_content')}>
                   <input className="input" type="number" step="0.1" min="0" value={form.weight_content} onChange={e => setField('weight_content', e.target.value)} placeholder="5.0" />
                 </Field>
+              )}
+              {form.is_variable && (
+                <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 8, fontSize: 11, color: '#9CA59E' }}>
+                  Menge pro Variante wird bei den Varianten festgelegt.
+                </div>
               )}
             </Row>
             {!form.is_variable && (
@@ -879,7 +905,7 @@ export default function ProductForm({ productId, onClose, onSaved }) {
                   style={{ flex: 1 }}
                 >
                   <option value="">Keine Spezifikation</option>
-                  {availableSpecs.map(spec => (
+                  {filteredSpecs.map(spec => (
                     <option key={spec.id} value={spec.id}>{spec.name}</option>
                   ))}
                 </select>
@@ -891,6 +917,11 @@ export default function ProductForm({ productId, onClose, onSaved }) {
                 >
                   + Neue
                 </button>
+                {selectedSpecId && (
+                  <button type="button" className="btn-secondary" onClick={handleDeleteSpec} title="Spezifikation löschen">
+                    ✕
+                  </button>
+                )}
               </div>
               
               {/* Selected specification details */}
@@ -901,7 +932,9 @@ export default function ProductForm({ productId, onClose, onSaved }) {
                   <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(155,111,208,0.08)', border: '1px solid rgba(155,111,208,0.2)', borderRadius: 4 }}>
                     <div style={{ fontSize: 12, color: '#B8A8D8', marginBottom: 4 }}>{spec.name}</div>
                     <div style={{ fontSize: 11, color: '#9CA59E' }}>
-                      {spec.shape === 'round' ? 'Rund' : 'Eckig'} • {spec.pot_size}cm • {spec.weight}{spec.weight_unit === 'g' ? 'g' : 'kg'} • {spec.height}×{spec.width}cm
+                      {spec.spec_type === 'package'
+                        ? <>{spec.weight}{spec.weight_unit === 'g' ? 'g' : 'kg'}{spec.height_cm && spec.width_cm ? ` • ${spec.height_cm}×${spec.width_cm}cm` : ''}</>
+                        : <>{spec.shape === 'round' ? 'Rund' : 'Eckig'} • {spec.pot_size_cm}cm • {spec.weight}{spec.weight_unit === 'g' ? 'g' : 'kg'}{spec.height_cm && spec.width_cm ? ` • ${spec.height_cm}×${spec.width_cm}cm` : ''}</>}
                     </div>
                   </div>
                 )
@@ -1077,6 +1110,7 @@ export default function ProductForm({ productId, onClose, onSaved }) {
       
       {showSpecDialog && (
         <SpecificationDialog
+          specType={specTypeForProduct}
           onSave={handleSaveSpecification}
           onCancel={() => setShowSpecDialog(false)}
         />

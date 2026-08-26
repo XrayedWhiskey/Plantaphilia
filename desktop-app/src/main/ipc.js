@@ -424,6 +424,9 @@ async function doPushProduct(product, resolutions) {
         .filter(i => i.remote_url)
         .map(i => i.remote_url)
       const variantSpecWpId = v.specification_id ? specTermIdByLocalId.get(v.specification_id) : null
+      // Leere Einheit an der Variante = geerbt vom Hauptprodukt (siehe VariantDialog.jsx).
+      const variantUnitType = v.unit_type || productToSave.unit_type || ''
+      const variantContent = variantUnitType === 'liter' ? v.liter_content : variantUnitType === 'kg' ? v.weight_content : null
 
       const variationData = {
         regular_price: String(v.regular_price || v.price || 0),
@@ -442,6 +445,8 @@ async function doPushProduct(product, resolutions) {
           { key: '_pa_low_stock_threshold', value: v.low_stock_threshold != null ? String(v.low_stock_threshold) : '' },
           { key: '_pa_never_low_stock', value: v.never_low_stock ? '1' : '0' },
           { key: '_pa_show_exact_stock', value: v.show_exact_stock ? '1' : '0' },
+          { key: '_pa_variant_unit_type', value: variantUnitType },
+          { key: '_pa_variant_content', value: variantContent != null ? String(variantContent) : '' },
         ],
         // Always set explicitly (never just omitted) so removing a variant's
         // last image actually clears a previously-set WC variation image

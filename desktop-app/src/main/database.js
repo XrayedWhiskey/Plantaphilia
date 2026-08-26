@@ -177,6 +177,9 @@ CREATE TABLE IF NOT EXISTS variants (
   never_low_stock INTEGER DEFAULT 0,
   show_exact_stock INTEGER DEFAULT 1,
   sort_order INTEGER DEFAULT 0,
+  unit_type TEXT DEFAULT '',
+  liter_content REAL,
+  weight_content REAL,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
@@ -228,6 +231,7 @@ CREATE TABLE IF NOT EXISTS specifications (
   weight_unit TEXT DEFAULT 'g', -- 'g' or 'kg'
   height_cm REAL,
   width_cm REAL,
+  spec_type TEXT DEFAULT 'plant', -- 'plant' (Topf-Preset) or 'package' (Substrat/Dünger, ohne Topfgröße)
   created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -1167,8 +1171,8 @@ export function saveVariants(productId, variants) {
   recomputeVariableSeoDescription(d, productId, variants)
   d.prepare('DELETE FROM variants WHERE product_id = ?').run(productId)
   const insert = d.prepare(`
-    INSERT INTO variants (product_id, wp_id, name, sku, price, regular_price, sale_price, stock, low_stock_threshold, never_low_stock, show_exact_stock, sort_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO variants (product_id, wp_id, name, sku, price, regular_price, sale_price, stock, low_stock_threshold, never_low_stock, show_exact_stock, sort_order, unit_type, liter_content, weight_content)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
   const insertImage = d.prepare(`
     INSERT INTO variant_images (
@@ -1182,7 +1186,8 @@ export function saveVariants(productId, variants) {
     const v = variants[i]
     const info = insert.run(
       productId, v.wp_id ?? null, v.name ?? '', v.sku ?? '', v.price ?? 0, v.regular_price ?? 0, v.sale_price ?? null, v.stock ?? 0,
-      v.low_stock_threshold ?? null, v.never_low_stock ? 1 : 0, v.show_exact_stock === false ? 0 : 1, i
+      v.low_stock_threshold ?? null, v.never_low_stock ? 1 : 0, v.show_exact_stock === false ? 0 : 1, i,
+      v.unit_type ?? '', v.liter_content ?? null, v.weight_content ?? null
     )
     const variantId = info.lastInsertRowid
     const images = v.images || []
@@ -1207,20 +1212,20 @@ export function saveSpecification(spec) {
   if (spec.id) {
     d.prepare(`
       UPDATE specifications SET
-        name=?, pot_size_cm=?, shape=?, weight=?, weight_unit=?, height_cm=?, width_cm=?
+        name=?, pot_size_cm=?, shape=?, weight=?, weight_unit=?, height_cm=?, width_cm=?, spec_type=?
       WHERE id=?
     `).run(
       spec.name, spec.pot_size_cm, spec.shape, spec.weight, spec.weight_unit,
-      spec.height_cm, spec.width_cm, spec.id
+      spec.height_cm, spec.width_cm, spec.spec_type ?? 'plant', spec.id
     )
     return spec.id
   } else {
     const info = d.prepare(`
-      INSERT INTO specifications (name, pot_size_cm, shape, weight, weight_unit, height_cm, width_cm)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO specifications (name, pot_size_cm, shape, weight, weight_unit, height_cm, width_cm, spec_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       spec.name, spec.pot_size_cm, spec.shape, spec.weight, spec.weight_unit,
-      spec.height_cm, spec.width_cm
+      spec.height_cm, spec.width_cm, spec.spec_type ?? 'plant'
     )
     return info.lastInsertRowid
   }
