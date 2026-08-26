@@ -12,7 +12,7 @@ import { CARE_LIGHT_OPTIONS, CARE_WATER_OPTIONS, CARE_FERTILIZER_OPTIONS, FERTIL
 const EMPTY_STATE = {
   name: '', common_name: '',
   unit_type: '', liter_content: '', weight_content: '', product_type: '',
-  substrate_display_text: '',
+  substrate_display_text: '', substrate_product_id: null, substrate_note: '',
   tax_class: '', tax_class_id: null, delivery_time: '', differential_taxation: '',
   stock: '', low_stock_threshold: '', never_low_stock: '',
   short_description: '', description: '',
@@ -41,6 +41,8 @@ function unpackFields(fields) {
     weight_content: f.weight_content != null ? String(f.weight_content) : '',
     product_type: f.product_type ?? '',
     substrate_display_text: f.substrate_display_text ?? '',
+    substrate_product_id: f.substrate_product_id ?? null,
+    substrate_note: f.substrate_note ?? '',
     tax_class: f.tax_class ?? '',
     tax_class_id: f.tax_class_id ?? null,
     delivery_time: f.delivery_time ?? '',
@@ -78,6 +80,8 @@ function buildFields(state, description) {
   if (state.unit_type === 'kg' && state.weight_content !== '') f.weight_content = parseFloat(state.weight_content)
   if (state.product_type) f.product_type = state.product_type
   if (state.product_type === 'substrate' && state.substrate_display_text.trim()) f.substrate_display_text = state.substrate_display_text
+  if (state.substrate_product_id) f.substrate_product_id = state.substrate_product_id
+  if (state.substrate_note.trim()) f.substrate_note = state.substrate_note
   // tax_class_id only travels alongside a real (already WC-synced) tax_class
   // slug — persisting the id without it would let a blueprint apply an id
   // whose text half never actually reaches products.
@@ -115,6 +119,7 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
   const [loading, setLoading] = useState(!!id)
   const [saving, setSaving] = useState(false)
   const [availableSpecs, setAvailableSpecs] = useState([])
+  const [substrateProducts, setSubstrateProducts] = useState([])
   const [showSpecDialog, setShowSpecDialog] = useState(false)
   const [bulkTagIds, setBulkTagIds] = useState([])
   const [applyingTags, setApplyingTags] = useState(false)
@@ -126,6 +131,8 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
   useEffect(() => {
     async function load() {
       setAvailableSpecs(await window.api.getSpecifications() || [])
+      const products = await window.api.getProducts() || []
+      setSubstrateProducts(products.filter(p => p.product_type === 'substrate'))
 
       if (id) {
         const row = isArt ? await window.api.getArt(id) : await window.api.getGattung(id)
@@ -396,6 +403,17 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
                 </Field>
                 <Field label="Temp. max. (Ausgepflanzt, °C)">
                   <input className="input" type="number" step="1" value={form.care_temp_ausgepflanzt_max} onChange={e => set('care_temp_ausgepflanzt_max', e.target.value)} placeholder="—" />
+                </Field>
+              </Row>
+              <Field label="Substrat-Hausrezept (Notiz)" full>
+                <textarea className="input" rows={3} value={form.substrate_note} onChange={e => set('substrate_note', e.target.value)} placeholder="z. B. 2 Teile Blumenerde, 1 Teil Perlite, 1 Teil Kokoshum mischen" />
+              </Field>
+              <Row>
+                <Field label="Substrat (zum Kauf verlinken)">
+                  <select className="input" value={form.substrate_product_id ?? ''} onChange={e => set('substrate_product_id', e.target.value ? parseInt(e.target.value, 10) : null)}>
+                    <option value="">— keins —</option>
+                    {substrateProducts.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
                 </Field>
               </Row>
               <Row>

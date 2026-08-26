@@ -23,7 +23,7 @@ const EMPTY = {
   price: '', regular_price: '',
   product_type: 'plant', unit_type: 'piece', liter_content: '', weight_content: '',
   fertilizer_type: '', composition: [], sell_own_substrate: false, substrate_display_text: '',
-  substrate_product_id: null, fertilizer_type_choice: '', fertilizer_amount: '',
+  substrate_product_id: null, substrate_note: '', fertilizer_type_choice: '', fertilizer_amount: '',
   tax_class: 'reduced-rate', tax_class_id: null, differential_taxation: false,
   delivery_time: '',
   stock: '', low_stock_threshold: '', never_low_stock: false, show_exact_stock: true,
@@ -1018,32 +1018,29 @@ export default function ProductForm({ productId, onClose, onSaved }) {
                 <input className="input" type="number" step="1" value={form.care_temp_ausgepflanzt_max} onChange={e => setField('care_temp_ausgepflanzt_max', e.target.value)} placeholder="40" />
               </Field>
             </Row>
+            <Field label="Substrat-Hausrezept (Notiz)" full hint={linkHint('substrate_note')}>
+              <textarea className="input" rows={3} value={form.substrate_note} onChange={e => setField('substrate_note', e.target.value)} placeholder="z. B. 2 Teile Blumenerde, 1 Teil Perlite, 1 Teil Kokoshum mischen" />
+            </Field>
             <Row>
-              <Field label="Substrat" hint={linkHint('substrate_product_id')}>
+              <Field label="Substrat (zum Kauf verlinken)" hint={linkHint('substrate_product_id')}>
                 <select className="input" value={form.substrate_product_id ?? ''} onChange={e => setField('substrate_product_id', e.target.value ? parseInt(e.target.value, 10) : null)}>
                   <option value="">— keins —</option>
                   {allProducts.filter(p => p.product_type === 'substrate').map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </Field>
             </Row>
-            {form.substrate_product_id && (() => {
-              const sub = allProducts.find(p => p.id === form.substrate_product_id)
-              if (!sub) return null
+            {(form.substrate_note || form.substrate_product_id) && (() => {
+              const sub = form.substrate_product_id ? allProducts.find(p => p.id === form.substrate_product_id) : null
               return (
                 <div style={{ marginTop: -4, marginBottom: 12, padding: '10px 14px', background: 'rgba(155,111,208,0.08)', border: '1px solid rgba(155,111,208,0.2)', borderRadius: 4, fontSize: 12, color: '#C8C0AF' }}>
-                  <div style={{ color: '#B8A8D8', marginBottom: 4 }}>
-                    {sub.sell_own_substrate ? sub.name : 'Empfohlenes Substrat nach Hausrezept'}
-                  </div>
-                  {sub.sell_own_substrate ? (
-                    <>
-                      <div>{sub.substrate_display_text || <em style={{ color: '#9CA59E' }}>(kein Website-Text hinterlegt)</em>}</div>
-                      <div style={{ marginTop: 4, color: '#9CA59E' }}>Wird zusätzlich als eigenes Produkt verkauft — „Oder hier kaufen"-Link erscheint automatisch auf der Live-Produktseite.</div>
-                    </>
-                  ) : (() => {
-                    let ingredients = []
-                    try { ingredients = JSON.parse(sub.composition || '[]') } catch { ingredients = [] }
-                    return ingredients.map((ing, i) => <div key={i}>{ing.percent}% {ing.name}</div>)
-                  })()}
+                  <div style={{ color: '#B8A8D8', marginBottom: 4 }}>Empfohlenes Substrat nach Hausrezept</div>
+                  <div>{form.substrate_note || <em style={{ color: '#9CA59E' }}>(keine Notiz hinterlegt)</em>}</div>
+                  {sub && sub.sell_own_substrate && (
+                    <div style={{ marginTop: 4, color: '#9CA59E' }}>„Oder hier kaufen" verlinkt automatisch zu „{sub.name}" auf der Live-Produktseite.</div>
+                  )}
+                  {sub && !sub.sell_own_substrate && (
+                    <div style={{ marginTop: 4, color: '#9CA59E' }}>„{sub.name}" hat „Verkaufe ich" nicht aktiviert — kein „Oder hier kaufen"-Link auf der Live-Seite.</div>
+                  )}
                 </div>
               )
             })()}

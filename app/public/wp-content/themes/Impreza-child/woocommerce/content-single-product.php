@@ -79,11 +79,9 @@ if ( $temp_min !== null || $temp_max !== null ) $has_care = true;
 // Substrat-Empfehlung + Dünger — nur bei Pflanzen-Produkten gepflegt (App:
 // ProductForm.jsx, Pflegehinweise-Sektion). Strukturierte Meta-Werte wie bei
 // den übrigen _pa_care_*-Feldern, kein fertiges HTML aus der App.
-$pa_substrate_name         = get_post_meta( $product_id, '_pa_substrate_name', true );
-$pa_substrate_composition  = json_decode( (string) get_post_meta( $product_id, '_pa_substrate_composition', true ), true ) ?: [];
 $pa_substrate_sell_own     = get_post_meta( $product_id, '_pa_substrate_sell_own', true ) === '1';
-$pa_substrate_display_text = get_post_meta( $product_id, '_pa_substrate_display_text', true );
 $pa_substrate_wp_id        = (int) get_post_meta( $product_id, '_pa_substrate_wp_id', true );
+$pa_substrate_note         = get_post_meta( $product_id, '_pa_substrate_note', true );
 
 // Dünger-Produkt dieses Typs wird zur Anzeigezeit gesucht, nicht von der App
 // fest verlinkt — existiert noch keins, verlinkt es automatisch, sobald eins
@@ -94,7 +92,7 @@ $pa_fertilizer_type_labels   = [ 'langzeit' => 'Langzeitdünger', 'kalibetont' =
 $pa_fertilizer_amount_labels = [ 'viel' => 'Viel', 'maessig' => 'Mäßig', 'wenig' => 'Wenig' ];
 $pa_fertilizer_product_id    = $pa_fertilizer_type_choice ? pa_find_fertilizer_product_id( $pa_fertilizer_type_choice ) : 0;
 
-if ( $pa_substrate_name || $pa_fertilizer_type_choice ) $has_care = true;
+if ( $pa_substrate_note || $pa_fertilizer_type_choice ) $has_care = true;
 
 // Licht/Wasser: 4- bzw. 3-stufige Skala, Range-Bar von tolerates_min bis
 // tolerates_max mit Strich bei der bevorzugten Stufe. Ohne gepflegten Range
@@ -466,23 +464,12 @@ $pa_crumbs[ count( $pa_crumbs ) - 1 ]['href'] = null; // letztes Element = aktue
           </div>
           <?php endif; ?>
 
-          <?php if ( $pa_substrate_name ) : ?>
+          <?php if ( $pa_substrate_note || ( $pa_substrate_sell_own && $pa_substrate_wp_id ) ) : ?>
           <div class="pdp-iconscale-cell pdp-iconscale-wide">
-            <div class="label"><?php echo $pa_substrate_sell_own ? 'Substrat' : 'Empfohlenes Substrat'; ?></div>
-            <p class="value">
-              <?php
-              if ( $pa_substrate_sell_own ) {
-                echo esc_html( $pa_substrate_display_text );
-              } else {
-                echo 'Empfohlenes Substrat nach Hausrezept: ';
-                $pa_ingredient_lines = array_filter( array_map(
-                  function ( $ing ) { return trim( ( $ing['percent'] ?? '' ) . '% ' . ( $ing['name'] ?? '' ) ); },
-                  $pa_substrate_composition
-                ) );
-                echo esc_html( implode( ', ', $pa_ingredient_lines ) );
-              }
-              ?>
-            </p>
+            <div class="label">Empfohlenes Substrat</div>
+            <?php if ( $pa_substrate_note ) : ?>
+            <p class="value">Empfohlenes Substrat nach Hausrezept: <?php echo esc_html( $pa_substrate_note ); ?></p>
+            <?php endif; ?>
             <?php if ( $pa_substrate_sell_own && $pa_substrate_wp_id ) : ?>
             <p class="value"><a href="<?php echo esc_url( get_permalink( $pa_substrate_wp_id ) ); ?>">Oder hier kaufen</a></p>
             <?php endif; ?>

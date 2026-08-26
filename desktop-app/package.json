@@ -1,6 +1,6 @@
 {
     "name":  "plantaphilia-app",
-    "version":  "2.2.5",
+    "version":  "2.2.6",
     "description":  "Plantaphilia Desktop App",
     "author":  "Plantaphilia",
     "main":  "dist-electron/main/index.js",
