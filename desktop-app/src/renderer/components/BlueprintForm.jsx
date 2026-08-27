@@ -14,7 +14,7 @@ const EMPTY_STATE = {
   unit_type: '', liter_content: '', weight_content: '', product_type: '',
   substrate_display_text: '', substrate_product_id: null, substrate_note: '',
   tax_class: '', tax_class_id: null, delivery_time: '', differential_taxation: '',
-  stock: '', low_stock_threshold: '', never_low_stock: '',
+  stock: '', low_stock_threshold: '', never_low_stock: '', show_exact_stock: '',
   short_description: '', description: '',
   specification_id: '',
   care_light: '', care_light_tolerates_min: '', care_light_tolerates_max: '',
@@ -50,6 +50,7 @@ function unpackFields(fields) {
     stock: f.stock != null ? String(f.stock) : '',
     low_stock_threshold: f.low_stock_threshold != null ? String(f.low_stock_threshold) : '',
     never_low_stock: f.never_low_stock === true ? 'yes' : f.never_low_stock === false ? 'no' : '',
+    show_exact_stock: f.show_exact_stock === true ? 'yes' : f.show_exact_stock === false ? 'no' : '',
     short_description: f.short_description ?? '',
     description: f.description ?? '',
     specification_id: f.specification_id ?? '',
@@ -94,6 +95,7 @@ function buildFields(state, description) {
   if (state.stock !== '') f.stock = parseInt(state.stock, 10)
   if (state.low_stock_threshold !== '') f.low_stock_threshold = parseInt(state.low_stock_threshold, 10)
   if (state.never_low_stock !== '') f.never_low_stock = state.never_low_stock === 'yes'
+  if (state.show_exact_stock !== '') f.show_exact_stock = state.show_exact_stock === 'yes'
   if (state.short_description.trim()) f.short_description = state.short_description
   if (description && description.trim()) f.description = description
   if (state.specification_id) f.specification_id = parseInt(state.specification_id, 10)
@@ -291,6 +293,9 @@ export default function BlueprintForm({ type, id, parentGattungId, initialName, 
               </Row>
               <Field label={'Nie als „Niedriger Bestand" markieren'}>
                 <Toggle options={TRISTATE} value={form.never_low_stock} onChange={v => set('never_low_stock', v)} />
+              </Field>
+              <Field label="Genaue Stückzahl bei niedrigem Bestand anzeigen">
+                <Toggle options={TRISTATE} value={form.show_exact_stock} onChange={v => set('show_exact_stock', v)} />
               </Field>
             </Section>
 
